@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net8.0-windows10.0.19041</TargetFramework>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MarketMinds\MarketMinds.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NUnit" Version="4.3.2" />
+		<PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
+		<PackageReference Include="Moq" Version="4.20.70" />
+	</ItemGroup>
+</Project>

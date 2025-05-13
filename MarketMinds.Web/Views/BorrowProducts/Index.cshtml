@@ -1,0 +1,84 @@
+@model IEnumerable<MarketMinds.Shared.Models.BorrowProduct>
+
+@{
+    ViewData["Title"] = "Borrow Products";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Borrow Products</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        @foreach (var item in Model) 
+        {
+            <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                <div class="h-48 bg-gradient-to-r from-green-300 via-teal-300 to-cyan-300 flex items-center justify-center">
+                    @if (item.Images != null && item.Images.Any())
+                    {
+                        <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
+                    }
+                    else
+                    {
+                        <div class="text-white text-lg">No Image</div>
+                    }
+                </div>
+                <div class="p-4">
+                    <h2 class="text-xl font-semibold">@item.Title</h2>
+                    <p class="text-gray-600 mb-1">@(item.Category?.Name ?? "Uncategorized")</p>
+                    
+                    @if (!string.IsNullOrEmpty(item.Description) && item.Description.Length > 50)
+                    {
+                        <p class="text-gray-700 text-sm mb-3">@(item.Description.Substring(0, 50))...</p>
+                    }
+                    else
+                    {
+                        <p class="text-gray-700 text-sm mb-3">@(item.Description ?? "No description")</p>
+                    }
+                    
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-green-600 font-bold text-xl">$@item.DailyRate.ToString("N2")</span>
+                        <span class="text-gray-600 text-sm">Per Day</span>
+                    </div>
+                    
+                    <div class="text-orange-600 font-medium mb-3">
+                        Status: 
+                        @if (item.IsBorrowed)
+                        {
+                            <span class="text-red-600">Currently Borrowed</span>
+                        }
+                        else
+                        {
+                            <span class="text-green-600">Available</span>
+                        }
+                    </div>
+                    
+                    <div class="text-gray-600 font-medium mb-3">
+                        @{
+                            var availability = "";
+                            if (item.StartDate.HasValue && item.EndDate.HasValue)
+                            {
+                                availability = $"Available: {item.StartDate.Value.ToShortDateString()} - {item.EndDate.Value.ToShortDateString()}";
+                            }
+                            else if (item.EndDate.HasValue)
+                            {
+                                availability = $"Available until: {item.EndDate.Value.ToShortDateString()}";
+                            }
+                            else
+                            {
+                                availability = "No availability information";
+                            }
+                        }
+                        @availability
+                    </div>
+                    
+                    <a asp-action="Details" asp-route-id="@item.Id" class="block text-center bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">View Details</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Any additional page-specific JavaScript can go here
+    </script>
+} 

@@ -1,0 +1,164 @@
+@model MarketMinds.Web.Models.ChatViewModel
+@using MarketMinds.Web.Models
+@{
+    ViewData["Title"] = "ChatBot";
+    const int DefaultBotId = 1;
+    const int StartIndex = 0;
+    var currentUserId = User.GetCurrentUserId();
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">ChatBot Assistant</h1>
+    
+    <div class="flex flex-col md:flex-row gap-6">
+        <!-- Conversations List -->
+        <div class="w-full md:w-1/4 bg-white rounded-lg shadow-md p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Conversations</h2>
+                <form asp-action="CreateConversation" asp-controller="ChatBot" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition">
+                        New Chat
+                    </button>
+                </form>
+            </div>
+            
+            <div class="space-y-2 mt-4">
+                @if (Model.Conversations != null && Model.Conversations.Any())
+                {
+                    @foreach (var conversation in Model.Conversations)
+                    {
+                        <a href="@Url.Action("Index", "ChatBot", new { conversationId = conversation.Id })" 
+                           class="block p-3 @(Model.CurrentConversation?.Id == conversation.Id 
+                               ? "bg-primary/10 border-l-4 border-primary hover:bg-primary/20" 
+                               : "bg-gray-100 hover:bg-gray-200") rounded-md cursor-pointer">
+                            <p class="font-medium">Conversation @conversation.Id</p>
+                            <p class="text-sm text-gray-600 truncate">@(DateTime.Now.AddDays(-conversation.Id % 7).ToString("MMM dd, yyyy"))</p>
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="p-4 bg-gray-50 rounded-md text-center">
+                        <p class="text-gray-600">No conversations yet</p>
+                        <p class="text-sm text-gray-500 mt-1">Click "New Chat" to start one</p>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="w-full md:w-3/4 bg-white rounded-lg shadow-md flex flex-col h-[600px]">
+            <!-- Chat Header -->
+            <div class="border-b p-4">
+                <h2 class="text-xl font-semibold">
+                    @if (Model.CurrentConversation != null)
+                    {
+                        <span>Conversation @Model.CurrentConversation.Id</span>
+                    }
+                    else
+                    {
+                        <span>Select or create a conversation</span>
+                    }
+                </h2>
+            </div>
+            
+            <!-- Messages Container -->
+            <div class="flex-1 p-4 overflow-y-auto space-y-4" id="messagesContainer">
+                @if (Model.Messages != null && Model.Messages.Any())
+                {
+                    @for (int messageIndex = StartIndex; messageIndex < Model.Messages.Count; messageIndex++)
+                    {
+                        var message = Model.Messages[messageIndex];
+                        var isUserMessage = message.UserId != DefaultBotId; // Message is from user if UserId is not 1 (bot)
+                        
+                        @if (isUserMessage)
+                        {
+                            <!-- User Message -->
+                            <div class="flex justify-end mb-2">
+                                <div class="bg-primary text-white p-3 rounded-lg max-w-[80%]">
+                                    <p>@message.Content</p>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Bot Message -->
+                            <div class="flex justify-start mb-2">
+                                <div class="bg-gray-100 p-3 rounded-lg max-w-[80%]">
+                                    <p>@message.Content</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+                else if (Model.CurrentConversation != null)
+                {
+                    <div class="flex justify-center items-center h-full">
+                        <p class="text-gray-500">No messages yet. Start the conversation!</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="flex justify-center items-center h-full">
+                        <p class="text-gray-500">Select a conversation or create a new one to start chatting.</p>
+                    </div>
+                }
+            </div>
+            
+            <!-- Message Input -->
+            <div class="border-t p-4">
+                @if (Model.CurrentConversation != null)
+                {
+                    <form asp-action="SendMessage" asp-controller="ChatBot" method="post" class="flex gap-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="conversationId" value="@Model.CurrentConversation.Id" />
+                        <input 
+                            type="text" 
+                            name="content"
+                            id="messageInput"
+                            class="flex-1 border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" 
+                            placeholder="Type your message here..."
+                            required
+                        />
+                        <button type="submit" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition">
+                            Send
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="flex gap-2">
+                        <input 
+                            type="text" 
+                            class="flex-1 border rounded-md px-4 py-2 bg-gray-100" 
+                            placeholder="Select a conversation first..."
+                            disabled
+                        />
+                        <button class="bg-gray-400 text-white px-4 py-2 rounded-md cursor-not-allowed">
+                            Send
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Scroll to bottom of messages on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Auto-focus the message input if a conversation is selected
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.focus();
+            }
+        });
+    </script>
+} 

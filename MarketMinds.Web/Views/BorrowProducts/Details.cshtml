@@ -1,0 +1,237 @@
+@model MarketMinds.Shared.Models.BorrowProduct
+
+@{
+    ViewData["Title"] = "Borrowing Details";
+    var isAvailable = !Model.IsBorrowed;
+    var remainingTime = "";
+    
+    if (Model.EndDate.HasValue)
+    {
+        var timeLeft = Model.EndDate.Value - DateTime.Now;
+        if (timeLeft <= TimeSpan.Zero)
+        {
+            remainingTime = "Borrowing period ended";
+        }
+        else
+        {
+            remainingTime = $"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m";
+        }
+    }
+    else
+    {
+        remainingTime = "No end date specified";
+    }
+}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">@Model.Title</h1>
+        <a asp-action="Index" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition">Back to List</a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+            <div>
+                @if (Model.Images != null && Model.Images.Any())
+                {
+                    <img src="@Model.Images.First().Url" alt="@Model.Title" class="w-full h-auto rounded-lg object-cover" />
+                }
+                else
+                {
+                    <div class="bg-gray-200 w-full h-64 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-500">No Image Available</span>
+                    </div>
+                }
+            </div>
+            <div>
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <h2 class="text-2xl font-semibold">Description</h2>
+                        <p class="text-gray-700 mt-2">@Model.Description</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <h3 class="text-lg font-medium">Daily Rate</h3>
+                            <p class="text-green-600 font-bold text-2xl">$@Model.DailyRate.ToString("F2")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Status</h3>
+                            <p class="@(isAvailable ? "text-green-600" : "text-red-600") font-medium">
+                                @(isAvailable ? "Available" : "Currently Borrowed")
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Availability Period</h3>
+                            <p class="text-gray-600">
+                                @if (Model.StartDate.HasValue && Model.EndDate.HasValue)
+                                {
+                                    @($"From {Model.StartDate.Value.ToShortDateString()} to {Model.EndDate.Value.ToShortDateString()}")
+                                }
+                                else if (Model.EndDate.HasValue)
+                                {
+                                    @($"Until {Model.EndDate.Value.ToShortDateString()}")
+                                }
+                                else if (Model.StartDate.HasValue)
+                                {
+                                    @($"From {Model.StartDate.Value.ToShortDateString()}")
+                                }
+                                else
+                                {
+                                    @("No availability information")
+                                }
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Time Limit</h3>
+                            <p class="text-gray-600">@Model.TimeLimit.ToShortDateString()</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Category</h3>
+                            <p class="text-gray-600">@(Model.Category?.Name ?? "Uncategorized")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Condition</h3>
+                            <p class="text-gray-600">@(Model.Condition?.Name ?? "Unknown")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Seller</h3>
+                            <p class="text-gray-600">@(Model.Seller?.Username ?? "Unknown")</p>
+                            <a href="/Reviews/Create?sellerId=@Model.Seller?.Id" class="inline-block mt-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-sm">
+                                Review Seller
+                            </a>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Remaining Time</h3>
+                            <p class="@(Model.EndDate.HasValue && Model.EndDate.Value < DateTime.Now ? "text-red-600" : "text-orange-600") font-medium">
+                                @remainingTime
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        @if (Model.Images != null && Model.Images.Count() > 1)
+        {
+            <div class="p-6 border-t">
+                <h2 class="text-xl font-semibold mb-4">All Images</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    @foreach (var image in Model.Images)
+                    {
+                        <a href="@image.Url" target="_blank" class="block">
+                            <img src="@image.Url" alt="@Model.Title" class="w-full h-48 object-cover rounded-lg hover:opacity-90 transition" />
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md overflow-hidden p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <h3 class="text-lg font-medium">Start Date:</h3>
+                        <p class="text-gray-800 font-medium">@(Model.StartDate?.ToShortDateString() ?? DateTime.Now.ToShortDateString())</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium">Time Limit Date:</h3>
+                        <p class="text-gray-800 font-medium">@Model.TimeLimit.ToShortDateString()</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium">Choose End Date:</h3>
+                        <input type="date" id="endDate" class="w-full border rounded-md px-3 py-2" 
+                               min="@((Model.StartDate?.AddDays(1) ?? DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd"))" 
+                               max="@Model.TimeLimit.ToString("yyyy-MM-dd")" />
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium">Price:</h3>
+                        <div class="flex items-center gap-4">
+                            <p id="priceDisplay" class="text-gray-500 italic">Choose an end date and click Get</p>
+                            <button id="getPrice" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition">
+                                Get
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col justify-center items-center">
+                <h3 class="text-xl font-semibold mb-4">Waiting List</h3>
+                <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
+                    <button id="joinWaitingList" class="bg-green-600 text-white px-4 py-4 rounded hover:bg-green-700 transition">
+                        Join
+                    </button>
+                    <button id="leaveWaitingList" class="bg-gray-200 text-gray-800 px-4 py-4 rounded hover:bg-gray-300 transition">
+                        Leave
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const endDateInput = document.getElementById('endDate');
+            const getPriceButton = document.getElementById('getPrice');
+            const priceDisplay = document.getElementById('priceDisplay');
+            const joinWaitingListButton = document.getElementById('joinWaitingList');
+            const leaveWaitingListButton = document.getElementById('leaveWaitingList');
+            
+            // Calculate price when Get button is clicked
+            getPriceButton.addEventListener('click', function() {
+                const endDate = endDateInput.value;
+                
+                if (!endDate) {
+                    priceDisplay.textContent = 'Please select an end date first';
+                    priceDisplay.classList.add('text-red-500');
+                    return;
+                }
+                
+                // Call the controller method to calculate the price using form data
+                const formData = new FormData();
+                formData.append('productId', @Model.Id);
+                formData.append('endDate', endDate);
+                
+                fetch('@Url.Action("CalculatePrice", "BorrowProducts")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        priceDisplay.textContent = `${data.formattedPrice} for ${data.days} days`;
+                        priceDisplay.classList.remove('text-red-500', 'text-gray-500', 'italic');
+                        priceDisplay.classList.add('text-green-600', 'font-bold');
+                    } else {
+                        priceDisplay.textContent = data.error;
+                        priceDisplay.classList.remove('text-green-600', 'font-bold', 'text-gray-500', 'italic');
+                        priceDisplay.classList.add('text-red-500');
+                    }
+                })
+                .catch(error => {
+                    priceDisplay.textContent = 'Error calculating price';
+                    priceDisplay.classList.remove('text-green-600', 'font-bold', 'text-gray-500', 'italic');
+                    priceDisplay.classList.add('text-red-500');
+                    console.error('Error:', error);
+                });
+            });
+            
+            // Waiting list buttons (not implemented)
+            joinWaitingListButton.addEventListener('click', function() {
+                alert('Joining waiting list functionality is not implemented yet.');
+            });
+            
+            leaveWaitingListButton.addEventListener('click', function() {
+                alert('Leaving waiting list functionality is not implemented yet.');
+            });
+        });
+    </script>
+} 

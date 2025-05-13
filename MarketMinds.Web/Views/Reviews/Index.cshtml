@@ -1,0 +1,68 @@
+@model System.Collections.ObjectModel.ObservableCollection<MarketMinds.Shared.Models.Review>
+
+@{
+    ViewData["Title"] = "Reviews";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Reviews</h1>
+
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex mb-6 border-b">
+            <a class="px-4 py-2 text-primary border-b-2 border-primary font-semibold" asp-action="ReviewsReceived">
+                Reviews Received
+            </a>
+            <a class="px-4 py-2 hover:text-primary mr-4" asp-action="ReviewsGiven">
+                Reviews Given
+            </a>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="bg-blue-50 text-blue-700 p-4 rounded-md">
+                <p>No reviews found.</p>
+            </div>
+        }
+        else
+        {
+            <div class="space-y-4">
+                @foreach (var review in Model)
+                {
+                    <div class="border rounded-lg p-4 hover:shadow-md transition">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-lg font-semibold mb-2">From: @review.BuyerUsername</h3>
+                            <div class="flex items-center">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= review.Rating)
+                                    {
+                                        <i class="fas fa-star text-yellow-400"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star text-yellow-400"></i>
+                                    }
+                                }
+                                <span class="ml-1 font-medium">@review.Rating.ToString("0.0")</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-gray-700 mb-4">@review.Description</p>
+                        
+                        @if (review.Images != null && review.Images.Any())
+                        {
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-4">
+                                @foreach (var image in review.Images)
+                                {
+                                    <a href="@image.Url" target="_blank" class="block overflow-hidden rounded-md h-24">
+                                        <img src="@image.Url" class="w-full h-full object-cover" alt="Review image" />
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div> 

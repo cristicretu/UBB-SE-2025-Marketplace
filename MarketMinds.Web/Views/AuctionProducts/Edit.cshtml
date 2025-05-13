@@ -1,0 +1,108 @@
+@model MarketMinds.Shared.Models.AuctionProduct
+
+@{
+    ViewData["Title"] = "Edit Auction Product";
+}
+
+<h1>Edit Auction Product</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            
+            <div class="form-group mb-3">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="StartPrice" class="control-label">Start Price ($)</label>
+                        <input asp-for="StartPrice" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="StartPrice" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="CurrentPrice" class="control-label">Current Price ($)</label>
+                        <input asp-for="CurrentPrice" class="form-control" type="number" step="0.01" min="0" readonly />
+                        <span asp-validation-for="CurrentPrice" class="text-danger"></span>
+                        <small class="text-muted">Current price is determined by bids and cannot be directly edited</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="StartTime" class="control-label">Start Time</label>
+                        <input asp-for="StartTime" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="StartTime" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="EndTime" class="control-label">End Time</label>
+                        <input asp-for="EndTime" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="EndTime" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="imageUrls" class="control-label">Image URLs (One per line)</label>
+                <textarea id="imageUrls" name="imageUrls" class="form-control" rows="3">@(Model.Images != null ? string.Join(Environment.NewLine, Model.Images.Select(img => img.Url)) : "")</textarea>
+            </div>
+            
+            <div class="form-group mt-4">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Images != null && Model.Images.Any())
+{
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h3>Current Images</h3>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var image in Model.Images)
+                {
+                    <div class="card" style="width: 18rem;">
+                        <img src="@image.Url" class="card-img-top" alt="@Model.Title" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <p class="card-text text-truncate">@image.Url</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Format dates for datetime-local inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            // Format the datetime values for the inputs
+            const startTime = new Date('@Model.StartTime.ToString("o")');
+            const endTime = new Date('@Model.EndTime.ToString("o")');
+            
+            document.getElementById("StartTime").value = startTime.toISOString().slice(0, 16);
+            document.getElementById("EndTime").value = endTime.toISOString().slice(0, 16);
+        });
+    </script>
+} 

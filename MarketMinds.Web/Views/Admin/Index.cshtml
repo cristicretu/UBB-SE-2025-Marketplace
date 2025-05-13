@@ -1,0 +1,85 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1 class="text-3xl font-bold mb-8">Hello Admin</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <!-- Categories Panel -->
+    <div class="border rounded-lg p-6 shadow-sm bg-white">
+        <h2 class="text-xl font-semibold mb-4">Categories</h2>
+        
+        <form asp-action="AddCategory" method="post" class="mb-6">
+            <div class="mb-4">
+                <label for="categoryName" class="block mb-1">Name:</label>
+                <input type="text" id="categoryName" name="name" class="w-full border rounded px-3 py-2">
+            </div>
+            
+            <div class="mb-4">
+                <label for="categoryDescription" class="block mb-1">Description:</label>
+                <input type="text" id="categoryDescription" name="description" class="w-full border rounded px-3 py-2">
+            </div>
+            
+            <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition">
+                Add Category
+            </button>
+        </form>
+        
+        <h3 class="text-lg font-semibold mb-2">Existing Categories</h3>
+        <div class="space-y-4">
+            @foreach (var category in ViewBag.Categories)
+            {
+                <div class="border-b pb-2">
+                    <div class="font-medium">@category.Name</div>
+                    <div class="text-gray-600 text-sm">@category.Description</div>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <!-- Conditions Panel -->
+    <div class="border rounded-lg p-6 shadow-sm bg-white">
+        <h2 class="text-xl font-semibold mb-4">Conditions</h2>
+        
+        <form asp-action="AddCondition" method="post" class="mb-6">
+            <div class="mb-4">
+                <label for="conditionName" class="block mb-1">Name:</label>
+                <input type="text" id="conditionName" name="name" class="w-full border rounded px-3 py-2">
+            </div>
+            
+            <div class="mb-4">
+                <label for="conditionDescription" class="block mb-1">Description:</label>
+                <input type="text" id="conditionDescription" name="description" class="w-full border rounded px-3 py-2">
+            </div>
+            
+            <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition">
+                Add Condition
+            </button>
+        </form>
+        
+        <h3 class="text-lg font-semibold mb-2">Existing Conditions</h3>
+        <div class="space-y-4">
+            @foreach (var condition in ViewBag.Conditions)
+            {
+                <div class="border-b pb-2">
+                    <div class="font-medium">@condition.Name</div>
+                    <div class="text-gray-600 text-sm">@condition.Description</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="mt-4 p-4 bg-green-100 text-green-800 rounded-md">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="mt-4 p-4 bg-red-100 text-red-800 rounded-md">
+        @TempData["Error"]
+    </div>
+} 

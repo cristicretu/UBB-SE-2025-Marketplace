@@ -1,0 +1,126 @@
+@model MarketMinds.Shared.Models.BorrowProduct
+
+@{
+    ViewData["Title"] = "Edit Borrow Product";
+}
+
+<h1>Edit Borrow Product</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            
+            <div class="form-group mb-3">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="DailyRate" class="control-label">Daily Rate ($)</label>
+                        <input asp-for="DailyRate" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="DailyRate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="IsBorrowed" class="control-label">Currently Borrowed</label>
+                        <select asp-for="IsBorrowed" class="form-control">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                        <span asp-validation-for="IsBorrowed" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="StartDate" class="control-label">Start Date</label>
+                        <input asp-for="StartDate" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="EndDate" class="control-label">End Date</label>
+                        <input asp-for="EndDate" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="TimeLimit" class="control-label">Time Limit</label>
+                        <input asp-for="TimeLimit" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="TimeLimit" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="imageUrls" class="control-label">Image URLs (One per line)</label>
+                <textarea id="imageUrls" name="imageUrls" class="form-control" rows="3">@(Model.Images != null ? string.Join(Environment.NewLine, Model.Images.Select(img => img.Url)) : "")</textarea>
+            </div>
+            
+            <div class="form-group mt-4">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Images != null && Model.Images.Any())
+{
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h3>Current Images</h3>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var image in Model.Images)
+                {
+                    <div class="card" style="width: 18rem;">
+                        <img src="@image.Url" class="card-img-top" alt="@Model.Title" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <p class="card-text text-truncate">@image.Url</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Format dates for datetime-local inputs
+        $(document).ready(function() {
+            // Format the datetime values for the inputs
+            if ('@Model.StartDate' && '@Model.StartDate.HasValue') {
+                const startDate = new Date('@(Model.StartDate.HasValue ? Model.StartDate.Value.ToString("o") : "")');
+                $("#StartDate").val(startDate.toISOString().slice(0, 16));
+            }
+            
+            if ('@Model.EndDate' && '@Model.EndDate.HasValue') {
+                const endDate = new Date('@(Model.EndDate.HasValue ? Model.EndDate.Value.ToString("o") : "")');
+                $("#EndDate").val(endDate.toISOString().slice(0, 16));
+            }
+            
+            const timeLimit = new Date('@Model.TimeLimit.ToString("o")');
+            $("#TimeLimit").val(timeLimit.toISOString().slice(0, 16));
+        });
+    </script>
+} 

@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketMinds.Views.Pages.BasketView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds.Views.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:MarketMinds.Converters"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:FirstImageUrlConverter x:Key="FirstImageUrlConverter"/>
+    </Page.Resources>
+
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Header -->
+            <RowDefinition Height="*"/>
+            <!-- Basket Items -->
+            <RowDefinition Height="Auto"/>
+            <!-- Summary and Checkout Section -->
+        </Grid.RowDefinitions>
+
+        <!-- Header Section -->
+        <Grid Grid.Row="0"
+              Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Your Basket"
+                           FontSize="28"
+                           FontWeight="Bold"/>
+                <TextBlock x:Name="ItemCountTextBlock"
+                           Text="0 items in your basket"
+                           Margin="0,5,0,0"
+                           Foreground="Gray"/>
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                    Content="Continue Shopping"
+                    Click="HandleContinueShoppingButton_Click"
+                    Padding="15,8"
+                    VerticalAlignment="Center"
+                    Margin="0,0,10,0"/>
+        </Grid>
+
+        <!-- Basket Items Section -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="7*"/>
+                <!-- Basket Items -->
+                <ColumnDefinition Width="3*"/>
+                <!-- Order Summary -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Empty Basket Message -->
+            <StackPanel x:Name="EmptyBasketMessage"
+                        Visibility="Collapsed"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center">
+                <TextBlock Text="Your basket is empty"
+                           FontSize="18"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Add some items to get started"
+                           Foreground="Gray"
+                           HorizontalAlignment="Center"
+                           Margin="0,10,0,0"/>
+                <Button Content="Browse Products"
+                        Margin="0,20,0,0"
+                        HorizontalAlignment="Center"
+                        Click="HandleContinueShoppingButton_Click"/>
+            </StackPanel>
+
+            <!-- Basket Items ListView -->
+            <ListView x:Name="BasketItemsListView"
+                      Grid.Column="0"
+                      Margin="0,0,20,0"
+                      SelectionMode="None"
+                      IsItemClickEnabled="False">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10"
+                              Margin="0,5"
+                              BorderThickness="0,0,0,1"
+                              BorderBrush="LightGray">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Image -->
+                                <ColumnDefinition Width="*"/>
+                                <!-- Details -->
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Quantity -->
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Price -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Product Image -->
+                            <Border Grid.Column="0"
+                                    Width="100"
+                                    Height="100"
+                                    Background="LightGray"
+                                    Margin="0,0,15,0"
+                                    CornerRadius="5">
+                                <Grid>
+                                    <!-- Fallback placeholder -->
+                                    <Image Source="/Assets/placeholder.png"
+                                           Stretch="UniformToFill"/>
+
+                                    <!-- Actual product image (will overlay the placeholder if loaded successfully) -->
+                                    <Image Source="{Binding Product.Images, Converter={StaticResource FirstImageUrlConverter}}"
+                                           Stretch="UniformToFill"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Product Details -->
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Product.Title}"
+                                           FontWeight="SemiBold"
+                                           FontSize="16"/>
+                                <TextBlock Text="{Binding Product.Condition.DisplayTitle}"
+                                           Foreground="Gray"
+                                           Margin="0,5,0,0"/>
+                                <TextBlock Text="{Binding Product.Seller.Username}"
+                                           Foreground="Gray"/>
+                            </StackPanel>
+
+                            <!-- Quantity Selection -->
+                            <StackPanel Grid.Column="2"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Margin="10,0">
+                                <Button Content="-"
+                                        Width="30"
+                                        Height="30"
+                                        Click="HandleDecreaseQuantityButton_Click"
+                                        CommandParameter="{Binding Id}"/>
+
+                                <TextBox x:Name="QuantityTextBox"
+                                         Text="{Binding Quantity, Mode=TwoWay}"
+                                         Width="50"
+                                         TextAlignment="Center"
+                                         LostFocus="QuantityTextBox_LostFocus"
+                                         KeyDown="QuantityTextBox_KeyDown"
+                                         Tag="{Binding Id}"/>
+                                <Button Content="+"
+                                        Width="30"
+                                        Height="30"
+                                        Click="HandleIncreaseQuantityButton_Click"
+                                        CommandParameter="{Binding Id}"/>
+                            </StackPanel>
+
+                            <!-- Price and Remove -->
+                            <StackPanel Grid.Column="3"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding FormattedPrice}"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Right"/>
+                                <TextBlock Text="{Binding Quantity}"
+                                           Foreground="Gray"
+                                           HorizontalAlignment="Right"
+                                           Margin="0,5,0,0"/>
+                                <Button Content="Remove"
+                                        Margin="0,10,0,0"
+                                        Click="HandleRemoveItemButton_Click"
+                                        CommandParameter="{Binding Id}"/>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <!-- Order Summary -->
+            <Border Grid.Column="1"
+                    BorderBrush="LightGray"
+                    BorderThickness="1"
+                    Padding="15"
+                    CornerRadius="5">
+                <StackPanel>
+                    <TextBlock Text="Order Summary"
+                               FontSize="20"
+                               FontWeight="SemiBold"/>
+
+                    <!-- Subtotal -->
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Subtotal"
+                                   Grid.Column="0"/>
+                        <TextBlock x:Name="SubtotalTextBlock"
+                                   Text="$0.00"
+                                   Grid.Column="1"/>
+                    </Grid>
+
+                    <!-- Discount -->
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Discount"
+                                   Grid.Column="0"/>
+                        <TextBlock x:Name="DiscountTextBlock"
+                                   Text="$0.00"
+                                   Grid.Column="1"/>
+                    </Grid>
+
+                    <!-- Divider -->
+                    <Rectangle Height="1"
+                               Fill="LightGray"
+                               Margin="0,15"/>
+
+                    <!-- Total -->
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Total"
+                                   FontWeight="Bold"
+                                   Grid.Column="0"/>
+                        <TextBlock x:Name="TotalTextBlock"
+                                   Text="$0.00"
+                                   FontWeight="Bold"
+                                   Grid.Column="1"/>
+                    </Grid>
+
+                    <!-- Promo Code -->
+                    <TextBlock Text="Promo Code"
+                               Margin="0,10,0,5"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="PromoCodeTextBox"
+                                 Grid.Column="0"
+                                 PlaceholderText="Enter code"/>
+                        <Button Content="Apply"
+                                Grid.Column="1"
+                                Margin="5,0,0,0"
+                                Click="HandleApplyPromoCodeButton_Click"/>
+                    </Grid>
+
+                    <!-- Error Message -->
+                    <TextBlock x:Name="ErrorMessageTextBlock"
+                               Foreground="Red"
+                               TextWrapping="Wrap"
+                               Margin="0,10,0,0"
+                               Visibility="Collapsed"/>
+
+                    <!-- Checkout Button -->
+                    <Button x:Name="CheckoutButton"
+                            Content="Proceed to Checkout"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,20,0,0"
+                            Padding="0,10"
+                            FontWeight="SemiBold"
+                            Click="HandleCheckoutButton_Click"/>
+
+                    <!-- Clear Basket Button -->
+                    <Button Content="Clear Basket"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,10,0,0"
+                            Padding="0,10"
+                            Click="HandleClearBasketButton_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

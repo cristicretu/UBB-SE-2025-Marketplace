@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MarketMinds</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#3B82F6',
+                            dark: '#2563EB',
+                            light: '#60A5FA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <header>
+        <nav class="bg-primary text-white py-4">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <a class="font-bold text-2xl" asp-area="" asp-controller="Home" asp-action="Index">MarketMinds</a>
+                <div>
+                    <ul class="flex space-x-6">
+                        <li>
+                            <a class="hover:text-primary-light transition" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li>
+                                <a class="hover:text-primary-light transition" asp-area="" asp-controller="Account" asp-action="Index">Account</a>
+                            </li>
+                            <li>
+                                <a class="hover:text-primary-light transition" asp-area="" asp-controller="Home" asp-action="Create">Create</a>
+                            </li>
+                            <li>
+                                <a class="hover:text-primary-light transition" asp-area="" asp-controller="ChatBot" asp-action="Index">ChatBot</a>
+                            </li>
+                            <li>
+                                <a class="hover:text-primary-light transition" asp-area="" asp-controller="Basket" asp-action="Index">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </a>
+                            </li>
+                                <li>
+                                    <a class="hover:text-primary-light transition" asp-controller="Admin" asp-action="Index">Admin</a>
+                                </li>
+                            <li class="relative group">
+                                <a class="hover:text-primary-light transition flex items-center" href="#">
+                                    <span>@User.Identity.Name</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </a>
+                                <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block z-10">
+                                    <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Profile</a>
+                                    <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Settings</a>
+                                    <div class="border-t border-gray-100"></div>
+                                    <form asp-controller="Account" asp-action="Logout" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">Logout</button>
+                                    </form>
+                                </div>
+                            </li>
+                        }
+                        else
+                        {
+                            <li>
+                                <a class="hover:text-primary-light transition" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                            <li>
+                                <a class="hover:text-primary-light transition bg-white text-primary px-4 py-2 rounded-md hover:bg-gray-100" asp-controller="Account" asp-action="Register">Sign Up</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="container mx-auto my-4 px-4">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="bg-gray-100 py-4 mt-8 border-t">
+        <div class="container mx-auto px-4">
+            <div class="text-center text-gray-600">
+                &copy; @DateTime.Now.Year - MarketMinds - <a class="text-primary hover:text-primary-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html> 

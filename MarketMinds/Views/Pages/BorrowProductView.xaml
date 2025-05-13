@@ -1,0 +1,179 @@
+<Window
+    x:Class="MarketMinds.BorrowProductView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:xaml="using:Microsoft.UI.Xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Product Details">
+
+    <ScrollViewer>
+        <Grid ColumnDefinitions="1*,1*"
+              Padding="20"
+              ColumnSpacing="60"
+              Margin="20,20,20,0">
+            <!-- Left Panel -->
+            <StackPanel Grid.Column="0"
+                        Spacing="12">
+                <!-- Title -->
+                <TextBlock x:Name="TitleTextBlock"
+                           FontSize="24"
+                           FontWeight="Bold"/>
+
+                <!-- Image Carousel -->
+                <FlipView x:Name="ImageCarousel"
+                          Height="250"/>
+
+                <!-- Category -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                    <TextBlock Text="Category:"
+                               FontWeight="Bold"
+                               Width="100"/>
+                    <TextBlock x:Name="CategoryTextBlock"/>
+                </StackPanel>
+
+                <!-- Tags -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="Tags:"
+                               FontWeight="Bold"
+                               Width="100"/>
+                    <ItemsControl x:Name="TagsItemsControl">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Condition -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                    <TextBlock Text="Condition:"
+                               FontWeight="Bold"
+                               Width="100"/>
+                    <TextBlock x:Name="ConditionTextBlock"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Right Panel -->
+            <StackPanel Grid.Column="1"
+                        Spacing="12">
+                <!-- Seller Info -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                    <TextBlock Text="Seller:"
+                               FontWeight="Bold"
+                               Width="120"/>
+                    <TextBlock x:Name="SellerTextBlock"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                    <Button Content="See Seller Reviews"
+                            Click="OnSeeReviewsClicked"
+                            Width="160"
+                            Margin="130,0,0,0"/>
+
+                    <Button Content="Leave a Review"
+                            Click="OnLeaveReviewClicked"
+                            Width="160"
+                            Margin="10,0,0,0"/>
+                </StackPanel>
+
+                <!-- Description -->
+                <TextBlock Text="Description:"
+                           FontWeight="Bold"/>
+                <TextBox x:Name="DescriptionTextBox"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         IsReadOnly="True"
+                         Height="100"
+                         BorderThickness="1"
+                         BorderBrush="{ThemeResource TextBoxBorderThemeBrush}"/>
+
+                <!-- Date and Price Information Section -->
+                <StackPanel Spacing="8"
+                            Margin="0,10,0,0">
+                    <!-- Start Date -->
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <TextBlock Text="Start Date:"
+                                   FontWeight="Bold"
+                                   Width="120"/>
+                        <TextBlock x:Name="StartDateTextBlock"/>
+                    </StackPanel>
+
+                    <!-- Time Limit -->
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <TextBlock Text="Time Limit Date:"
+                                   FontWeight="Bold"
+                                   Width="120"/>
+                        <TextBlock x:Name="TimeLimitTextBlock"/>
+                    </StackPanel>
+
+                    <!-- End Date Selection -->
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <TextBlock Text="Choose End Date:"
+                                   FontWeight="Bold"
+                                   Width="120"/>
+                        <CalendarDatePicker x:Name="EndDatePicker"
+                                            Width="300"
+                                            HorizontalAlignment="Left"
+                                            DateChanged="EndDatePicker_DateChanged"/>
+                    </StackPanel>
+
+                    <!-- Price Calculation -->
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10"
+                                Margin="0,10,0,0">
+                        <TextBlock Text="Price:"
+                                   FontWeight="Bold"
+                                   Width="120"/>
+                        <TextBlock x:Name="PriceTextBlock"
+                                   MinWidth="100"
+                                   Text="Choose an end date and click Get"
+                                   FontWeight="Bold"
+                                   FontStyle="Italic"
+                                   Foreground="Gray"/>
+                        <Button Content="Get"
+                                x:Name="CalculatePriceButton"
+                                Click="OnCalculatePriceClicked"
+                                Width="100"
+                                IsEnabled="False"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="130,10,0,0"
+                                Spacing="5">
+                        <!-- Wait List Text -->
+                        <TextBlock Text="Waiting List"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Left"/>
+
+                        <!-- Join Button -->
+                        <Button Content="Join"
+                                x:Name="JoinWaitListButton"
+                                Click="OnJoinWaitListClicked"
+                                Width="120"
+                                HorizontalAlignment="Left"/>
+
+                        <!-- Leave Button -->
+                        <Button Content="Leave"
+                                x:Name="LeaveWaitListButton"
+                                Click="OnLeaveWaitListClicked"
+                                Width="120"
+                                HorizontalAlignment="Left"
+                                Margin="0,5,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Window>

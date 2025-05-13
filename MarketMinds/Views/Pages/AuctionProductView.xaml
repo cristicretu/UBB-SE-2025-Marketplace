@@ -1,0 +1,174 @@
+<Window
+    x:Class="MarketMinds.AuctionProductView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:xaml="using:Microsoft.UI.Xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Product Details">
+
+    <ScrollViewer>
+        <Grid ColumnDefinitions="1*,1*"
+              Padding="20"
+              ColumnSpacing="60"
+              Margin="20,20,20,0">
+            <!-- Left Panel -->
+            <StackPanel Grid.Column="0"
+                        Spacing="12">
+                <!-- Title -->
+                <TextBlock x:Name="TitleTextBlock"
+                           FontSize="24"
+                           FontWeight="Bold"/>
+
+                <!-- Image Carousel -->
+                <FlipView x:Name="ImageCarousel"
+                          Height="200"/>
+
+                <!-- Category -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                    <TextBlock Text="Category:"
+                               FontWeight="Bold"/>
+                    <TextBlock x:Name="CategoryTextBlock"/>
+                </StackPanel>
+
+                <!-- Tags (Horizontal Wrap Panel) -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="Tags:"
+                               FontWeight="Bold"
+                               Margin="0,0,5,0"/>
+
+                    <ItemsControl x:Name="TagsItemsControl"
+                                  VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           Margin="5,0,5,0"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Condition -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                    <TextBlock Text="Condition:"
+                               FontWeight="Bold"/>
+                    <TextBlock x:Name="ConditionTextBlock"/>
+                </StackPanel>
+
+                <!-- Bidding Details -->
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <TextBlock Text="Starting Price:"
+                                   FontWeight="Bold"/>
+                        <TextBlock x:Name="StartingPriceTextBlock"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <TextBlock Text="Current Price:"
+                                   FontWeight="Bold"/>
+                        <TextBlock x:Name="CurrentPriceTextBlock"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <TextBlock Text="Time Left:"
+                                   FontWeight="Bold"/>
+                        <TextBlock x:Name="TimeLeftTextBlock"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="Your Bid:"
+                                   FontWeight="Bold"/>
+                        <TextBox x:Name="BidTextBox"
+                                 Width="100"/>
+                    </StackPanel>
+
+                    <Button Content="Place Bid"
+                            Click="OnPlaceBidClicked"
+                            Width="120"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Right Panel -->
+            <StackPanel Grid.Column="1"
+                        Spacing="12">
+                <!-- Seller Info -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                    <TextBlock Text="Seller:"
+                               FontWeight="Bold"/>
+                    <TextBlock x:Name="SellerTextBlock"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                    <Button Content="See Seller Reviews"
+                            Click="OnSeeReviewsClicked"
+                            Width="160"/>
+                    <Button Content="Leave a Review"
+                            Click="OnLeaveReviewClicked"
+                            Width="160"/>
+                </StackPanel>
+
+                <!-- Description -->
+                <TextBlock Text="Description:"
+                           FontWeight="Bold"/>
+                <TextBox x:Name="DescriptionTextBox"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         IsReadOnly="True"
+                         Height="100"/>
+
+                <!-- Bid History Table -->
+                <TextBlock Text="Bid History:"
+                           FontWeight="Bold"/>
+
+                <ListView x:Name="BidHistoryListView"
+                          Height="250">
+                    <ListView.Header>
+                        <Grid ColumnDefinitions="3*,2*,2*"
+                              Padding="5">
+                            <TextBlock Text="Bidder"
+                                       FontWeight="Bold"/>
+                            <TextBlock Text="Bid Price"
+                                       Grid.Column="1"
+                                       FontWeight="Bold"/>
+                            <TextBlock Text="Date"
+                                       Grid.Column="2"
+                                       FontWeight="Bold"/>
+                        </Grid>
+                    </ListView.Header>
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="3*,2*,2*"
+                                  Padding="5">
+                                <TextBlock Text="{Binding Bidder.Username}"/>
+                                <TextBlock Text="{Binding Price}"
+                                           Grid.Column="1"/>
+                                <TextBlock Text="{Binding Timestamp}"
+                                           Grid.Column="2"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Window>

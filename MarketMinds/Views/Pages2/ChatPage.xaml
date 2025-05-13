@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketMinds.Views.Pages2.ChatPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds.Views.Pages2"
+    xmlns:domain="using:MarketMinds.Shared.Models"
+    xmlns:converters="using:MarketMinds.Converters"
+    xmlns:selectors="using:MarketMinds.Helpers.Selectors"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <!-- Converter for Hex Image Strings -->
+        <converters:HexToBitmapImageConverter x:Key="HexImageConverter"/>
+        <!-- Converter for Width Percentage -->
+        <converters:WidthPercentageConverter x:Key="WidthPercentageConverter"/>
+
+        <!-- DataTemplate for MY Text Messages -->
+        <DataTemplate x:Key="MyTextMessageTemplate"
+                      x:DataType="domain:Message">
+            <Border Background="LightGreen"
+                    CornerRadius="6"
+                    Margin="40,4,0,4"
+                    Padding="8"
+                    HorizontalAlignment="Right"
+                    MaxWidth="{Binding ActualWidth, ElementName=ChatListView, Converter={StaticResource WidthPercentageConverter}, ConverterParameter=0.7}">
+                <TextBlock Text="{Binding Content}"
+                           TextWrapping="WrapWholeWords"
+                           Foreground="Black"/>
+            </Border>
+        </DataTemplate>
+
+        <!-- DataTemplate for TARGET's Text Messages -->
+        <DataTemplate x:Key="TargetTextMessageTemplate"
+                      x:DataType="domain:Message">
+            <Border Background="LightGray"
+                    CornerRadius="6"
+                    Margin="0,4,40,4"
+                    Padding="8"
+                    HorizontalAlignment="Left"
+                    MaxWidth="{Binding ActualWidth, ElementName=ChatListView, Converter={StaticResource WidthPercentageConverter}, ConverterParameter=0.7}">
+                <TextBlock Text="{Binding Content}"
+                           TextWrapping="WrapWholeWords"
+                           Foreground="Black"/>
+            </Border>
+        </DataTemplate>
+
+        <!-- DataTemplate for MY Image Messages -->
+        <DataTemplate x:Key="MyImageMessageTemplate"
+                      x:DataType="domain:Message">
+            <Border Background="LightGreen"
+                    CornerRadius="6"
+                    Margin="40,4,0,4"
+                    Padding="4"
+                    HorizontalAlignment="Right">
+                <Image Source="{Binding Content, Converter={StaticResource HexImageConverter}}"
+                       Width="150"
+                       Height="150"
+                       Stretch="UniformToFill"/>
+            </Border>
+        </DataTemplate>
+
+        <!-- DataTemplate for TARGET's Image Messages -->
+        <DataTemplate x:Key="TargetImageMessageTemplate"
+                      x:DataType="domain:Message">
+            <Border Background="LightGray"
+                    CornerRadius="6"
+                    Margin="0,4,40,4"
+                    Padding="4"
+                    HorizontalAlignment="Left">
+                <Image Source="{Binding Content, Converter={StaticResource HexImageConverter}}"
+                       Width="150"
+                       Height="150"
+                       Stretch="UniformToFill"/>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Background="White"
+          Padding="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,10">
+            <Button x:Name="BackButton"
+                    Content="←"
+                    Click="BackButton_Click"
+                    Width="40"
+                    Height="40"
+                    Margin="0,0,10,0"/>
+            <TextBlock x:Name="TargetUserTextBlock"
+                       Text="Chat"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Foreground="#2C3E50"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Chat area -->
+        <ListView
+            x:Name="ChatListView"
+            Grid.Row="1"
+            Background="WhiteSmoke"
+            BorderBrush="#ccc"
+            BorderThickness="1"
+            Padding="10,5"
+            Margin="0"
+            SelectionMode="None"
+            IsItemClickEnabled="False"
+            CanReorderItems="False"
+            CanDragItems="False">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding"
+                            Value="0"/>
+                    <Setter Property="Margin"
+                            Value="0"/>
+                    <Setter Property="HorizontalContentAlignment"
+                            Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+
+        <!-- Input area -->
+        <Grid Grid.Row="2"
+              Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox x:Name="MessageBox"
+                     Grid.Column="0"
+                     PlaceholderText="Type a message..."
+                     Margin="0,0,10,0"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"/>
+
+            <Button x:Name="AttachButton"
+                    Grid.Column="1"
+                    Content="📎"
+                    Click="AttachButton_Click"
+                    Width="40"
+                    Height="40"
+                    Margin="0,0,10,0"/>
+
+            <Button x:Name="SendButton"
+                    Grid.Column="2"
+                    Content="Send"
+                    Click="SendButton_Click"
+                    Width="80"
+                    Height="40"
+                    Margin="0,0,10,0"/>
+
+            <Button x:Name="ExportButton"
+                    Grid.Column="3"
+                    Content="Export"
+                    Click="ExportButton_Click"
+                    Width="80"
+                    Height="40"/>
+        </Grid>
+
+        <!-- Loading indicator -->
+        <ProgressRing x:Name="LoadingIndicator"
+                      Grid.Row="1"
+                      IsActive="False"
+                      Visibility="Collapsed"
+                      Width="50"
+                      Height="50"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"/>
+    </Grid>
+</Page>

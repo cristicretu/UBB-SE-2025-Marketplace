@@ -1,0 +1,74 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch MarketMinds (ARM64)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-arm64",
+            "program": "${workspaceFolder}/MarketMinds/bin/Debug/net8.0-windows10.0.19041.0/win-arm64/MarketMinds.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/MarketMinds",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch Without Analysis (ARM64)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-without-analysis",
+            "program": "${workspaceFolder}/MarketMinds/bin/Debug/net8.0-windows10.0.19041.0/win-arm64/MarketMinds.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/MarketMinds",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch Clean Build (ARM64)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "clean-build",
+            "program": "${workspaceFolder}/MarketMinds/bin/Debug/net8.0-windows10.0.19041.0/win-arm64/MarketMinds.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/MarketMinds",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch API Server",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-api",
+            "program": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/server/server.csproj",
+                "--urls",
+                "http://0.0.0.0:5000"
+            ],
+            "cwd": "${workspaceFolder}/server",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s/swagger"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch MarketMinds with API Server",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "start-api-background",
+            "program": "${workspaceFolder}/MarketMinds/bin/Debug/net8.0-windows10.0.19041.0/win-arm64/MarketMinds.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/MarketMinds",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ]
+} 

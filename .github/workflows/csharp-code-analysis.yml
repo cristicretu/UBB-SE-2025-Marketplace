@@ -1,0 +1,162 @@
+name: C# Code Analysis
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "**/*.cs"
+      - "**/*.csproj"
+      - ".github/workflows/csharp-code-analysis.yml"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "The branch, tag or SHA to check out"
+        required: false
+        default: ""
+
+jobs:
+  analyze:
+    name: StyleCop Analysis
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.402"
+
+      - name: Create global.json to force .NET version
+        run: |
+          @"
+          {
+            "sdk": {
+              "version": "8.0.402",
+              "rollForward": "latestMajor"
+            }
+          }
+          "@ | Out-File -FilePath global.json -Encoding utf8
+          Get-Content global.json
+
+      - name: Verify .NET installation
+        run: |
+          dotnet --info
+          dotnet --version
+          Write-Output "DOTNET_ROOT=$env:DOTNET_ROOT"
+
+      - name: Create placeholder appsettings.json
+        run: |
+          @"
+          {
+            "LocalDataSource": "np:\\\\.\\pipe\\LOCALDB#PLACEHOLDER\\tsql\\query",
+            "InitialCatalog": "MarketPlace",
+            "ImgurSettings": {
+              "ClientId": "placeholder_client_id"
+            }
+          }
+          "@ | Out-File -FilePath MarketMinds/appsettings.json -Encoding utf8
+          Write-Output "Created placeholder appsettings.json for CI"
+
+      - name: Check existing project file packages
+        run: |
+          Write-Output "Checking existing packages in project file:"
+          Get-ChildItem -Path MarketMinds -Include *.csproj -Recurse | ForEach-Object {
+            $content = Get-Content $_
+            if ($content -match "StyleCop.Analyzers") {
+              Write-Output "Found StyleCop.Analyzers in $_"
+              $content | Select-String "StyleCop.Analyzers"
+            }
+          }
+
+      - name: Create Windows SDK reference props
+        run: |
+          @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <Project>
+            <PropertyGroup>
+              <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
+              <!-- Enable unsafe code to avoid generated file errors -->
+              <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+            </PropertyGroup>
+          </Project>
+          "@ | Out-File -FilePath MarketMinds/Windows.props -Encoding utf8
+
+      - name: Create Directory.Build.props with StyleCop config
+        run: |
+          @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <Project>
+            <Import Project="Windows.props" Condition="Exists('Windows.props')" />
+            <PropertyGroup>
+              <CodeAnalysisRuleSet>`$(MSBuildThisFileDirectory)/SE.ruleset</CodeAnalysisRuleSet>
+              <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+              <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+              <RunAnalyzers>true</RunAnalyzers>
+              <AnalysisLevel>latest</AnalysisLevel>
+              <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+              <!-- Allow building Windows projects on CI -->
+              <EnableWindowsTargeting>true</EnableWindowsTargeting>
+              <!-- Enable unsafe code to avoid generated file errors -->
+              <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+              <!-- Ignore generated files and XML doc warnings -->
+              <NoWarn>CS0227;SA0001</NoWarn>
+              <!-- Disable documentation requirements for CI -->
+              <DocumentationFile></DocumentationFile>
+            </PropertyGroup>
+            
+            <!-- No PackageReference for StyleCop.Analyzers here, using the one in the project file -->
+          </Project>
+          "@ | Out-File -FilePath MarketMinds/Directory.Build.props -Encoding utf8
+          Get-Content MarketMinds/Directory.Build.props
+
+      - name: Restore dependencies
+        run: dotnet restore MarketMinds/MarketMinds.sln
+
+      - name: Build with StyleCop analysis
+        run: |
+          dotnet build MarketMinds/MarketMinds.sln --no-restore /p:GenerateFullPaths=true /p:TreatWarningsAsErrors=false /p:AllowUnsafeBlocks=true
+        continue-on-error: true
+
+      - name: Extract StyleCop analysis results
+        if: always()
+        run: |
+          Write-Output "## StyleCop Analysis Results" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+          $buildOutput = dotnet build MarketMinds/MarketMinds.sln --no-restore -v detailed /p:TreatWarningsAsErrors=false /p:AllowUnsafeBlocks=true
+
+          # Filter to only include StyleCop warnings (SA prefix)
+          $styleCopIssues = $buildOutput | Where-Object { $_ -match "warning SA\d+:" -and $_ -notmatch "warning SA0001:" }
+
+          if ($styleCopIssues) {
+            Write-Output "StyleCop violations found. Please fix the issues before merging." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            $styleCopIssues | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          } else {
+            Write-Output "✅ No StyleCop violations found." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          }
+
+          Write-Output "Note: XML comment analysis warnings (SA0001) are intentionally ignored for CI builds." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+      - name: Report code analysis results as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const stepSummary = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## StyleCop Analysis Results\n\n${stepSummary}`
+            });

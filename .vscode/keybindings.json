@@ -1,0 +1,9 @@
+[
+    {
+        "key": "f6",
+        "command": "workbench.action.debug.start",
+        "args": {
+            "name": "Launch Without Analysis (ARM64)"
+        }
+    }
+] 

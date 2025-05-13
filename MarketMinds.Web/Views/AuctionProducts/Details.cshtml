@@ -1,0 +1,169 @@
+@model MarketMinds.Shared.Models.AuctionProduct
+
+@{
+    ViewData["Title"] = "Auction Details";
+    var timeLeft = Model.EndTime - DateTime.Now;
+    var isAuctionEnded = timeLeft <= TimeSpan.Zero;
+}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">@Model.Title</h1>
+        <a asp-action="Index" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition">Back to List</a>
+    </div>
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">@TempData["ErrorMessage"]</span>
+        </div>
+    }
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">@TempData["SuccessMessage"]</span>
+        </div>
+    }
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+            <div>
+                @if (Model.Images != null && Model.Images.Any())
+                {
+                    <img src="@Model.Images.First().Url" alt="@Model.Title" class="w-full h-auto rounded-lg object-cover" />
+                }
+                else
+                {
+                    <div class="bg-gray-200 w-full h-64 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-500">No Image Available</span>
+                    </div>
+                }
+            </div>
+            <div>
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <h2 class="text-2xl font-semibold">Description</h2>
+                        <p class="text-gray-700 mt-2">@Model.Description</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <h3 class="text-lg font-medium">Current Price</h3>
+                            <p class="text-primary-dark font-bold text-2xl">$@Model.CurrentPrice.ToString("F2")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Starting Price</h3>
+                            <p class="text-gray-600">$@Model.StartPrice.ToString("F2")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Time Left</h3>
+                            <p class="@(isAuctionEnded ? "text-red-600" : "text-orange-600") font-medium" data-countdown="@Model.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                @(isAuctionEnded ? "Auction Ended" : $"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m")
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Category</h3>
+                            <p class="text-gray-600">@(Model.Category?.Name ?? "Uncategorized")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Condition</h3>
+                            <p class="text-gray-600">@(Model.Condition?.Name ?? "Unknown")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Seller</h3>
+                            <p class="text-gray-600">@(Model.Seller?.Username ?? "Unknown")</p>
+                            <a href="/Reviews/Create?sellerId=@Model.Seller?.Id" class="inline-block mt-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-sm">
+                                Review Seller
+                            </a>
+                        </div>
+                    </div>
+                    
+                    @if (!isAuctionEnded)
+                    {
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium mb-2">Place a Bid</h3>
+                            <form action="/AuctionProducts/PlaceBid" method="post" class="flex gap-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <input type="number" name="bidAmount" min="@((int)Model.CurrentPrice + 1)" step="1" class="form-control w-full" placeholder="Enter your bid amount (minimum @((int)Model.CurrentPrice + 1))" required />
+                                <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition">Bid</button>
+                            </form>
+                            <p class="text-sm text-gray-500 mt-2">Your bid must be at least $@((int)Model.CurrentPrice + 1)</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mt-6 p-4 bg-red-50 text-red-600 rounded-lg">
+                            <p class="font-medium">This auction has ended.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        @if (Model.Bids != null && Model.Bids.Any())
+        {
+            <div class="p-6 border-t">
+                <h2 class="text-xl font-semibold mb-4">Bid History</h2>
+                <table class="table w-full">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2 text-left">Bidder</th>
+                            <th class="px-4 py-2 text-left">Amount</th>
+                            <th class="px-4 py-2 text-left">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var bid in Model.Bids.OrderByDescending(b => b.Timestamp))
+                        {
+                            <tr class="border-b">
+                                <td class="px-4 py-2">@(bid.Bidder?.Username ?? $"User #{bid.BidderId}")</td>
+                                <td class="px-4 py-2">$@bid.Price.ToString("F2")</td>
+                                <td class="px-4 py-2">@bid.Timestamp.ToString("MM/dd/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-6 border-t">
+                <p class="text-gray-500">No bids have been placed on this auction yet.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add countdown functionality if needed
+        const countdownElements = document.querySelectorAll('[data-countdown]');
+        if (countdownElements.length > 0) {
+            // Update countdown every second
+            setInterval(function() {
+                countdownElements.forEach(element => {
+                    const endTime = new Date(element.getAttribute('data-countdown')).getTime();
+                    const now = new Date().getTime();
+                    const timeLeft = endTime - now;
+                    
+                    if (timeLeft <= 0) {
+                        element.textContent = "Auction Ended";
+                        element.classList.remove("text-orange-600");
+                        element.classList.add("text-red-600");
+                        // Optionally refresh the page to update the auction status
+                        // location.reload();
+                    } else {
+                        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                        
+                        element.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                    }
+                });
+            }, 1000);
+        }
+    </script>
+} 

@@ -1,0 +1,79 @@
+@model System.Collections.ObjectModel.ObservableCollection<MarketMinds.Shared.Models.Review>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        No reviews found.
+    </div>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var review in Model)
+        {
+            <div class="list-group-item mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">
+                            @if (ViewContext.RouteData.Values["action"].ToString() == "ReviewsReceived")
+                            {
+                                <span>From: @review.BuyerUsername</span>
+                            }
+                            else
+                            {
+                                <span>To: @review.SellerUsername</span>
+                            }
+                        </h5>
+                    </div>
+                    <div>
+                        <div class="star-rating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= review.Rating)
+                                {
+                                    <i class="fas fa-star text-warning"></i>
+                                }
+                                else
+                                {
+                                    <i class="far fa-star text-warning"></i>
+                                }
+                            }
+                            <span class="ml-1">@review.Rating.ToString("0.0")</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="mb-2">@review.Description</p>
+                
+                @if (review.Images != null && review.Images.Any())
+                {
+                    <div class="review-images mt-2 mb-2">
+                        <div class="row">
+                            @foreach (var image in review.Images)
+                            {
+                                <div class="col-md-2 col-sm-3 col-4 mb-2">
+                                    <img src="@image.Url" class="img-thumbnail" alt="Review image" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                
+                @if (ViewContext.RouteData.Values["action"].ToString() == "ReviewsGiven")
+                {
+                    <div class="mt-2">
+                        <a asp-action="Edit" 
+                           asp-route-id="@review.Id" 
+                           asp-route-sellerId="@review.SellerId" 
+                           asp-route-buyerId="@review.BuyerId" 
+                           class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <a asp-action="Delete" 
+                           asp-route-id="@review.Id" 
+                           asp-route-sellerId="@review.SellerId" 
+                           asp-route-buyerId="@review.BuyerId" 
+                           class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+} 

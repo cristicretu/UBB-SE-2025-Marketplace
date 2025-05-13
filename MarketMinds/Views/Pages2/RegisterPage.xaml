@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Marketplace_SE.RegisterPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Marketplace_SE"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+	<Grid VerticalAlignment="Center" HorizontalAlignment="Center" Padding="30">
+		<StackPanel Spacing="15" Width="320">
+			<TextBlock Text="Sign Up" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+			<TextBox x:Name="UsernameTextBox" PlaceholderText="Username"/>
+
+
+			<TextBox x:Name="EmailTextBox" PlaceholderText="Email"/>
+
+			<PasswordBox x:Name="PasswordBoxWithRevealMode" PlaceholderText="Password" PasswordChanged="PasswordBoxWithRevealMode_PasswordChanged"/>
+
+			<PasswordBox x:Name="ConfirmPasswordBox" PlaceholderText="Confirm Password"/>
+			<TextBlock x:Name="PasswordStrengthTextBlock" Foreground="Blue" FontSize="12"/>
+			<CheckBox x:Name="RevealModeCheckBox" Content="Show Password" Checked="RevealModeCheckbox_Changed" Unchecked="RevealModeCheckbox_Changed"/>
+
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+				<Button x:Name="CreateAccountButton" Content="Create Account" Click="OnCreateUserClick" HorizontalAlignment="Center" Margin="0,0,10,0"/>
+				<ProgressRing x:Name="RegisterProgressRing" IsActive="False" Height="20" Width="20"/>
+			</StackPanel>
+
+			<Button Content="Already have an account? Login"
+                    Click="NavigateToLoginPage"
+                    HorizontalAlignment="Center"
+                    Foreground="#0078D4"
+                    BorderThickness="0"
+                    FontSize="14"/>
+			<TextBlock x:Name="ConfirmPasswordValidationTextBlock" Foreground="Red" FontSize="12"/>
+			<TextBlock x:Name="UsernameValidationTextBlock" Foreground="Red" FontSize="12"/>
+		</StackPanel>
+	</Grid>
+</Page>

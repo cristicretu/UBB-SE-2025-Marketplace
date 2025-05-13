@@ -1,0 +1,43 @@
+<Window
+    x:Class="MarketMinds.CreateReviewView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <!-- TODO: Make the window look good if updating the size -->
+    <Grid Padding="20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Spacing="10">
+            <!-- Seller Name -->
+            <TextBlock Text="Seller:" FontWeight="Bold"/>
+            <TextBlock Text="{x:Bind ViewModel.Seller.Username, Mode=OneWay}"/>
+
+            <!-- Rating -->
+            <TextBlock Text="Rating:" FontWeight="Bold"/>
+            <RatingControl  x:Name="RatingStars" Value="{x:Bind ViewModel.Rating, Mode=TwoWay}" 
+               IsClearEnabled="True" IsReadOnly="False" MaxRating="5" 
+               PlaceholderValue="0.5" Foreground="Gold" />
+
+            <!-- Description -->
+            <TextBlock Text="Description:" FontWeight="Bold"/>
+            <TextBox Text="{x:Bind ViewModel.Description, Mode=TwoWay}" AcceptsReturn="True" Height="250" TextWrapping="Wrap"/>
+
+            <!-- Image Links -->
+            <TextBlock Text="Images:" FontWeight="Bold"/>
+            <Button Content="Upload Image" Click="OnUploadImageClick" Width="150"/>
+            
+            <!-- Status Message -->
+            <TextBlock x:Name="StatusMessageTextBlock" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" 
+                       Foreground="#007ACC" FontStyle="Italic" TextWrapping="Wrap"
+                       Margin="0,10,0,10"/>
+
+            <!-- Confirm button -->
+            <Button x:Name="ConfirmButton" Content="Publish Review"
+                VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                Width="150" Height="50" Margin="0,0,0,20"
+                Click="HandleSubmit_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

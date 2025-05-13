@@ -1,0 +1,75 @@
+@model MarketMinds.Shared.Models.BorrowProduct
+
+@{
+    ViewData["Title"] = "Delete Borrow Product";
+}
+
+<h1>Delete Borrow Product</h1>
+
+<div class="alert alert-danger">
+    <h3>Are you sure you want to delete this?</h3>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Borrow Product Details</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                @if (Model.Images != null && Model.Images.Any())
+                {
+                    <img src="@Model.Images.First().Url" alt="@Model.Title" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: contain;" />
+                }
+                else
+                {
+                    <div class="bg-light rounded mb-3 p-5 text-center">
+                        <span class="text-muted">No image available</span>
+                    </div>
+                }
+            </div>
+            <div class="col-md-6">
+                <h5 class="card-title">@Model.Title</h5>
+                <p class="card-text">@Model.Description</p>
+
+                <dl class="row">
+                    <dt class="col-sm-5">Daily Rate:</dt>
+                    <dd class="col-sm-7">$@Model.DailyRate.ToString("F2")</dd>
+
+                    <dt class="col-sm-5">Status:</dt>
+                    <dd class="col-sm-7">@(Model.IsBorrowed ? "Currently Borrowed" : "Available")</dd>
+
+                    <dt class="col-sm-5">Time Limit:</dt>
+                    <dd class="col-sm-7">@Model.TimeLimit.ToString("g")</dd>
+
+                    @if (Model.StartDate.HasValue)
+                    {
+                        <dt class="col-sm-5">Start Date:</dt>
+                        <dd class="col-sm-7">@Model.StartDate.Value.ToString("g")</dd>
+                    }
+
+                    @if (Model.EndDate.HasValue)
+                    {
+                        <dt class="col-sm-5">End Date:</dt>
+                        <dd class="col-sm-7">@Model.EndDate.Value.ToString("g")</dd>
+                    }
+
+                    <dt class="col-sm-5">Category:</dt>
+                    <dd class="col-sm-7">@(Model.Category?.Name ?? "Uncategorized")</dd>
+
+                    <dt class="col-sm-5">Condition:</dt>
+                    <dd class="col-sm-7">@(Model.Condition?.Name ?? "Unknown")</dd>
+
+                    <dt class="col-sm-5">Seller:</dt>
+                    <dd class="col-sm-7">@(Model.Seller?.Username ?? "Unknown")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+    <input type="submit" value="Delete" class="btn btn-danger" />
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</form> 

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MarketMinds (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "MarketMinds (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

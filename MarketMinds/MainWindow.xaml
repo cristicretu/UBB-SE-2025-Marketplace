@@ -1,0 +1,84 @@
+<Window x:Class="UiLayer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:UiLayer"
+        Title="MarketMinds Marketplace">
+
+        <Grid Margin="20">
+                <!-- Welcome Header -->
+                <TextBlock Text="Welcome to MarketMinds Marketplace"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Margin="0,10,0,0"/>
+
+                <!-- Top Navigation Bar -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Spacing="15">
+                        <!-- Admin Panel Button -->
+                        <Button x:Name="AdminViewButton"
+                                Content="Admin Panel"
+                                Width="140"
+                                Height="40"
+                                Click="HandleAdminViewButton_Click"/>
+
+                        <!-- See My Reviews Button -->
+                        <Button x:Name="ReviewViewButton"
+                                Content="See My Reviews"
+                                Width="140"
+                                Height="40"
+                                Click="HandleSeeReviewViewButton_Click"/>
+
+                        <!-- Create Listing Button -->
+                        <Button x:Name="CreateListingButton"
+                                Content="Create Listing"
+                                Width="140"
+                                Height="40"
+                                Click="HandleCreateListingButton_Click"/>
+
+                        <!-- Basket Button -->
+                        <Button x:Name="BasketButton"
+                                Width="50"
+                                Height="40"
+                                Click="HandleBasketViewButton_Click"
+                                BorderThickness="0"
+                                Background="Transparent">
+                                <FontIcon Glyph="&#xE719;"
+                                          FontSize="20"/>
+                        </Button>
+                </StackPanel>
+
+                <!-- Product View Buttons Centered -->
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                        <Button x:Name="AuctionProductListViewButton"
+                                Content="View Auction Products"
+                                Width="200"
+                                Height="50"
+                                Margin="10,10,10,10"
+                                Click="HandleAuctionProductListViewButton_Click"/>
+                        <Button x:Name="BorrowProductListViewButton"
+                                Content="View Borrow Products"
+                                Width="200"
+                                Height="50"
+                                Margin="10,10,10,10"
+                                Click="HandleBorrowProductListViewButton_Click"/>
+                        <Button x:Name="BuyProductListViewButton"
+                                Content="View Buy Products"
+                                Width="200"
+                                Height="50"
+                                Margin="10,10,10,10"
+                                Click="HandleBuyProductListViewButton_Click"/>
+                        <Button x:Name="OpenMainMarketplacePageButton"
+                                Content="Open Main Marketplace Page"
+                                Width="250"
+                                Height="50"
+                                Margin="10,10,10,10"
+                                Click="HandleOpenMainMarketplacePageButton_Click"/>
+                </StackPanel>
+        </Grid>
+</Window>

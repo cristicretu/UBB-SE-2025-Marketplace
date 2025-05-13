@@ -1,0 +1,196 @@
+@model MarketMinds.Shared.Models.Basket
+@using System.Linq
+@{
+    ViewData["Title"] = "Shopping Basket";
+    
+    double subtotal = 0;
+    double discount = 0;
+    double total = 0;
+    string promoCode = ViewBag.AppliedPromoCode;
+    
+    if (Model.Items != null && Model.Items.Count > 0)
+    {
+        foreach (var item in Model.Items)
+        {
+            subtotal += (item.Price * item.Quantity);
+        }
+        
+        if (ViewBag.BasketTotals != null)
+        {
+            discount = ViewBag.BasketTotals.Discount;
+        }
+        
+        // Calculate total
+        total = subtotal - discount;
+    }
+}
+
+<div class="container mx-auto my-8">
+    <h1 class="text-2xl font-bold mb-6">Your Shopping Basket</h1>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+            <span class="font-bold">Error:</span> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="bg-green-100 border border-green-300 text-green-700 px-4 py-3 rounded mb-4" role="alert">
+            <span class="font-bold">Success:</span> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (Model.Items == null || Model.Items.Count == 0)
+    {
+        <div class="bg-gray-100 p-8 rounded-lg text-center">
+            <p class="text-xl text-gray-600 mb-4">Your basket is empty</p>
+            <a href="@Url.Action("Index", "Home")" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition">
+                Continue Shopping
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="lg:w-2/3">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Product
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Price
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Quantity
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            @if (item.Product != null)
+                                            {
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <img class="h-10 w-10 rounded-md object-cover bg-gray-200" 
+                                                         src="@(item.Product.Images?.FirstOrDefault()?.Url ?? item.Product.NonMappedImages?.FirstOrDefault()?.Url ?? "#")" 
+                                                         alt="@item.Product.Title"
+                                                         onerror="this.src='#';this.onerror=null;this.classList.add('bg-gray-200');">
+                                                </div>
+                                            }
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    @(item.Product?.Title ?? "Unknown Product")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">@string.Format("${0:F2}", item.Price)</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center space-x-2">
+                                            <form asp-action="DecreaseQuantity" method="post" class="inline">
+                                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                                <button type="submit" class="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">-</button>
+                                            </form>
+                                            
+                                            <span class="px-2">@item.Quantity</span>
+                                            
+                                            <form asp-action="IncreaseQuantity" method="post" class="inline">
+                                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                                <button type="submit" class="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">+</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">@string.Format("${0:F2}", item.Price * item.Quantity)</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <form asp-action="RemoveItem" method="post" class="inline">
+                                            <input type="hidden" name="productId" value="@item.ProductId" />
+                                            <button type="submit" class="text-red-600 hover:text-red-900">
+                                                Remove
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <a href="@Url.Action("Index", "Home")" class="text-primary hover:text-primary-dark">
+                        <span>← Continue Shopping</span>
+                    </a>
+                    <form asp-action="ClearBasket" method="post">
+                        <button type="submit" class="text-red-600 hover:text-red-900">
+                            Clear Basket
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:w-1/3">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
+                    
+                    <div class="flex justify-between py-2 border-b">
+                        <span>Subtotal</span>
+                        <span>@string.Format("${0:F2}", subtotal)</span>
+                    </div>
+                    
+                    @if (discount > 0)
+                    {
+                        <div class="flex justify-between py-2 border-b text-green-600">
+                            <span>Discount @(!string.IsNullOrEmpty(promoCode) ? $"({promoCode})" : "")</span>
+                            <span>-@string.Format("${0:F2}", discount)</span>
+                        </div>
+                    }
+                    
+                    <div class="flex justify-between py-2 border-b font-bold">
+                        <span>Total</span>
+                        <span>@string.Format("${0:F2}", total)</span>
+                    </div>
+                    
+                    <form asp-action="ApplyPromoCode" method="post" class="mt-4">
+                        <div class="flex space-x-2">
+                            <input type="text" name="promoCode" placeholder="Promo code" class="flex-grow px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" 
+                                   value="@promoCode" />
+                            <button type="submit" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+                                Apply
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <form asp-action="Checkout" method="post" class="mt-6">
+                        @if (!string.IsNullOrEmpty(promoCode))
+                        {
+                            <input type="hidden" name="promoCode" value="@promoCode" />
+                            <div class="mb-4 bg-green-50 p-2 rounded text-sm text-green-700">
+                                <span class="font-semibold">Promo code applied:</span> @promoCode
+                            </div>
+                        }
+                        <button type="submit" class="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition">
+                            Proceed to Checkout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div> 

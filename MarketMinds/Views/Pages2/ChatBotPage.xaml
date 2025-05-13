@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Marketplace_SE.ChatBotPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Marketplace_SE"
+    xmlns:models="using:MarketMinds.Shared.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Page Title -->
+        <TextBlock 
+            Grid.Row="0"
+            Text="Technical Support Chat" 
+            FontSize="24" 
+            FontWeight="SemiBold"
+            Margin="0,0,0,15"/>
+
+        <!-- Chat Messages Area -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="ChatMessagesPanel" Spacing="12">
+                <!-- Initial Welcome Message -->
+                <Border 
+                    Background="{ThemeResource SystemControlBackgroundAccentBrush}" 
+                    CornerRadius="8" 
+                    Padding="15,10" 
+                    HorizontalAlignment="Left"
+                    MaxWidth="500">
+                    <TextBlock 
+                        Text="Hi, this is the technical chatbot - I will take your ticket and will pass it down the line, so that someone can fix the issue you're having. What is it that I can help you with today? Please describe your issue in detail so our team can assist you better."
+                        TextWrapping="Wrap"
+                        Foreground="White"/>
+                </Border>
+
+                <!-- User Message will be added here dynamically -->
+
+                <!-- Bot Response will be added here dynamically -->
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Text Input Area -->
+        <Grid Grid.Row="2" Margin="0,15,0,15">
+                        <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+            <TextBox 
+                x:Name="UserMessageTextBox"
+                            Grid.Column="0"
+                PlaceholderText="Type your message here..."
+                TextWrapping="Wrap"
+                AcceptsReturn="True"
+                MinHeight="80"
+                MaxHeight="120"
+                            VerticalAlignment="Stretch"
+                Margin="0,0,10,0"
+                KeyDown="UserMessageTextBox_KeyDown"/>
+
+            <Button 
+                x:Name="SendMessageButton"
+                            Grid.Column="1"
+                Content="Send"
+                VerticalAlignment="Bottom"
+                Click="SendMessageButton_Click"/>
+                    </Grid>
+
+        <!-- Exit Button -->
+        <Button
+            Grid.Row="3"
+            x:Name="ChatBotKill"
+            Height="40"
+            Content="Exit conversation"
+            FontSize="16"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Click="OnButtonClickChatBotKill"/>
+    </Grid>
+</Page>

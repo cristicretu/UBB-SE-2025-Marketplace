@@ -1,0 +1,133 @@
+@model MarketMinds.Shared.Models.DTOs.CreateBorrowProductDTO
+
+@{
+    ViewData["Title"] = "Create Borrow Product";
+}
+
+<h1>Create Borrow Product</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="DailyRate" class="control-label">Daily Rate ($)</label>
+                        <input asp-for="DailyRate" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="DailyRate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="IsBorrowed" class="control-label">Currently Borrowed</label>
+                        <select asp-for="IsBorrowed" class="form-control">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                        <span asp-validation-for="IsBorrowed" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="StartDate" class="control-label">Start Date</label>
+                        <input asp-for="StartDate" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="EndDate" class="control-label">End Date</label>
+                        <input asp-for="EndDate" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="TimeLimit" class="control-label">Time Limit</label>
+                        <input asp-for="TimeLimit" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="TimeLimit" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="CategoryId" class="control-label">Category</label>
+                        <input asp-for="CategoryId" class="form-control" type="number" />
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="ConditionId" class="control-label">Condition</label>
+                        <input asp-for="ConditionId" class="form-control" type="number" />
+                        <span asp-validation-for="ConditionId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="SellerId" class="control-label">Seller ID</label>
+                <input asp-for="SellerId" class="form-control" type="number" />
+                <span asp-validation-for="SellerId" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="imageUrls" class="control-label">Image URLs (One per line)</label>
+                <textarea id="imageUrls" name="imageUrls" class="form-control" rows="3" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"></textarea>
+            </div>
+            
+            <div class="form-group mt-4">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Convert the date to local datetime-local format when page loads
+        $(document).ready(function() {
+            // Set default start time to now
+            if (!$("#StartDate").val()) {
+                $("#StartDate").val(new Date().toISOString().slice(0, 16));
+            }
+            
+            // Set default end time to 7 days from now
+            if (!$("#EndDate").val()) {
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + 7);
+                $("#EndDate").val(endDate.toISOString().slice(0, 16));
+            }
+            
+            // Set default time limit to 7 days from now
+            if (!$("#TimeLimit").val()) {
+                const timeLimit = new Date();
+                timeLimit.setDate(timeLimit.getDate() + 7);
+                $("#TimeLimit").val(timeLimit.toISOString().slice(0, 16));
+            }
+        });
+    </script>
+} 

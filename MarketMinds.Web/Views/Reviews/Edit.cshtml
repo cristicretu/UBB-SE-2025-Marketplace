@@ -1,0 +1,250 @@
+@model MarketMinds.Shared.Models.Review
+
+@{
+    ViewData["Title"] = "Edit Review";
+    var seller = ViewBag.Seller as MarketMinds.Shared.Models.User;
+}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Edit Review for @seller?.Username</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <form asp-action="Edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="SellerId" />
+                <input type="hidden" asp-for="BuyerId" />
+                
+                <div class="mb-6">
+                    <label asp-for="Rating" class="block text-gray-700 font-semibold mb-2">Rating</label>
+                    <div class="rating-input">
+                        <div class="flex space-x-3">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <div class="flex items-center">
+                                    @if (Model.Rating == i)
+                                    {
+                                        <input class="hidden" type="radio" asp-for="Rating" id="rating-@i" value="@i" checked required />
+                                    }
+                                    else
+                                    {
+                                        <input class="hidden" type="radio" asp-for="Rating" id="rating-@i" value="@i" required />
+                                    }
+                                    <label class="cursor-pointer" for="rating-@i">
+                                        <i class="@(Model.Rating >= i ? "fa" : "far") fa-star text-2xl text-yellow-400" id="star-@i"></i>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <span asp-validation-for="Rating" class="text-red-500 text-sm"></span>
+                </div>
+                
+                <div class="mb-6">
+                    <label asp-for="Description" class="block text-gray-700 font-semibold mb-2">Your Review</label>
+                    <textarea asp-for="Description" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="5" required></textarea>
+                    <span asp-validation-for="Description" class="text-red-500 text-sm"></span>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Images (Optional)</label>
+                    
+                    <div class="mb-3 flex items-center">
+                        <input type="file" id="imageUpload" accept="image/*" multiple class="border border-gray-300 rounded px-3 py-2 focus:outline-none" />
+                        <button type="button" id="uploadButton" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50 transition">
+                            <i class="fas fa-upload mr-2"></i> Upload
+                        </button>
+                    </div>
+                    
+                    <div id="uploadStatus" class="my-2 text-sm"></div>
+                    <div id="errorDetails" class="my-2 text-sm text-red-500 hidden"></div>
+                    
+                    <div id="previewContainer" class="grid grid-cols-3 gap-3 mb-3 @(Model.Images != null && Model.Images.Any() ? "" : "hidden")">
+                        @if (Model.Images != null)
+                        {
+                            foreach (var image in Model.Images)
+                            {
+                                <div class="relative image-preview">
+                                    <img src="@image.Url" alt="Review image" class="w-full h-32 object-cover rounded-md">
+                                    <button type="button" class="remove-image absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 focus:outline-none" data-url="@image.Url">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            }
+                        }
+                    </div>
+                    
+                    <input type="hidden" name="imageUrls" id="imageUrls" 
+                           value="@(Model.Images != null ? string.Join('\n', Model.Images.Select(img => img.Url)) : "")" />
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" id="submitButton" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-opacity-50 transition">Save Changes</button>
+                    <a asp-action="ReviewsGiven" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            console.log("Document ready - Edit form");
+            
+            // Show debug info for troubleshooting
+            function showError(message, error) {
+                console.error(message, error);
+                $('#errorDetails').removeClass('hidden').text(message + (error ? ': ' + JSON.stringify(error) : ''));
+            }
+            
+            // Check if jQuery is working
+            if (typeof $ === 'undefined') {
+                alert('jQuery is not loaded!');
+            } else {
+                console.log("jQuery is loaded, version: " + $.fn.jquery);
+            }
+            
+            // Rating star selection
+            $('.rating-input input[type="radio"]').change(function () {
+                var selectedRating = $(this).val();
+                $('.rating-input .far.fa-star, .rating-input .fa.fa-star').removeClass('fa').addClass('far');
+                
+                for (var i = 1; i <= selectedRating; i++) {
+                    $('#star-' + i).removeClass('far').addClass('fa');
+                }
+            });
+            
+            // Star hover effect
+            $('.rating-input label').hover(
+                function() {
+                    var starId = $(this).attr('for').split('-')[1];
+                    for (var i = 1; i <= starId; i++) {
+                        $('#star-' + i).addClass('fa').removeClass('far');
+                    }
+                },
+                function() {
+                    var selectedRating = $('input[name="Rating"]:checked').val() || 0;
+                    $('.rating-input .fa.fa-star, .rating-input .far.fa-star').removeClass('fa').addClass('far');
+                    for (var i = 1; i <= selectedRating; i++) {
+                        $('#star-' + i).removeClass('far').addClass('fa');
+                    }
+                }
+            );
+            
+            // Image upload handling
+            $('#uploadButton').click(function() {
+                console.log("Upload button clicked");
+                const files = $('#imageUpload')[0].files;
+                
+                if (files.length === 0) {
+                    $('#uploadStatus').html('<div class="text-yellow-500">Please select an image first</div>');
+                    return;
+                }
+                
+                $('#uploadStatus').html('<div class="text-blue-500">Uploading...</div>');
+                
+                // Upload each file
+                for (let i = 0; i < files.length; i++) {
+                    uploadImage(files[i]);
+                }
+                
+                // Clear the file input for future uploads
+                $('#imageUpload').val('');
+            });
+            
+            // Image upload function
+            function uploadImage(file) {
+                console.log("Uploading file:", file.name);
+                
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                $.ajax({
+                    url: '/api/Images/Upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        console.log("Upload success:", response);
+                        $('#uploadStatus').html('<div class="text-green-500">Upload successful!</div>');
+                        if (response && response.url) {
+                            addImageToCollection(response.url, file.name);
+                        } else {
+                            showError('Response missing URL property', response);
+                        }
+                    },
+                    error: function(error) {
+                        console.error("Upload error:", error);
+                        $('#uploadStatus').html('<div class="text-red-500">Upload failed: ' + (error.responseJSON?.message || error.statusText || 'Unknown error') + '</div>');
+                        showError('Error uploading image', error);
+                    }
+                });
+            }
+            
+            // Add image to the collection
+            function addImageToCollection(imageUrl, fileName) {
+                console.log("Adding image to collection:", imageUrl);
+                
+                // Add URL to hidden input
+                const currentUrls = $('#imageUrls').val();
+                $('#imageUrls').val(currentUrls ? currentUrls + '\n' + imageUrl : imageUrl);
+                
+                // Show preview container if hidden
+                $('#previewContainer').removeClass('hidden');
+                
+                // Add image preview
+                const previewHtml = `
+                    <div class="relative image-preview">
+                        <img src="${imageUrl}" alt="${fileName}" class="w-full h-32 object-cover rounded-md">
+                        <button type="button" class="remove-image absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 focus:outline-none" data-url="${imageUrl}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                $('#previewContainer').append(previewHtml);
+            }
+            
+            // Remove image
+            $(document).on('click', '.remove-image', function() {
+                const urlToRemove = $(this).data('url');
+                $(this).closest('.image-preview').remove();
+                
+                // Remove URL from hidden input
+                const currentUrls = $('#imageUrls').val().split('\n');
+                const filteredUrls = currentUrls.filter(url => url !== urlToRemove);
+                $('#imageUrls').val(filteredUrls.join('\n'));
+                
+                // Hide container if no images left
+                if (filteredUrls.length === 0 || filteredUrls[0] === '') {
+                    $('#previewContainer').addClass('hidden');
+                }
+            });
+            
+            // Form submit
+            $('form').on('submit', function(e) {
+                console.log("Form submitted");
+                
+                // Additional validation can be added here if needed
+                const rating = $('input[name="Rating"]:checked').val();
+                const description = $('#Description').val();
+                
+                if (!rating) {
+                    e.preventDefault();
+                    alert('Please select a rating');
+                    return false;
+                }
+                
+                if (!description) {
+                    e.preventDefault();
+                    alert('Please enter a review description');
+                    return false;
+                }
+                
+                return true;
+            });
+        });
+    </script>
+} 
