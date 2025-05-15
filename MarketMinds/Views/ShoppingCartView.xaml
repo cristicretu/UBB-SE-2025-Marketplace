@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="MarketPlace924.View.ShoppingCartView"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModel="using:MarketPlace924.ViewModel"
+    xmlns:domain="using:MarketPlace924.Domain">
+
+    <StackPanel>
+        <TextBlock Text="My Shopping Cart" FontSize="24" FontWeight="Bold" Margin="10" />
+        <ListView ItemsSource="{x:Bind ViewModel.CartItems, Mode=OneWay}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewModel:CartItemViewModel">
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <!-- Product Name -->
+                        <TextBlock Text="{x:Bind Product.Name}" Width="200" />
+                        
+                        <!-- Product Price -->
+                        <TextBlock Text="{x:Bind Product.Price, Mode=OneWay}" Width="100" />
+                        
+                        <!-- Quantity -->
+                        <TextBox Text="{x:Bind Quantity, Mode=TwoWay}" Width="50" />
+                        
+                        <!-- Remove Button -->
+                        <Button Content="Remove"
+                                Command="{Binding DataContext.RemoveFromCartCommand, ElementName=Root}"
+                                CommandParameter="{x:Bind Product}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </StackPanel>
+</UserControl>

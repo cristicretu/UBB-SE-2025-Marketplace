@@ -1,0 +1,65 @@
+﻿<UserControl
+    x:Class="MarketPlace924.View.BuyerFamilySyncItemControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Width="Auto" Height="Auto">
+
+    <Border BorderThickness="2" BorderBrush="#1976D2" Padding="10"
+            Margin="5" CornerRadius="8" Background="White"
+            Height="Auto">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock FontSize="16"
+                       FontWeight="Bold"
+                       Foreground="#0D47A1" Text="{x:Bind ViewModel.DisplayName, Mode=OneWay}" 
+                       VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Width="50" Height="50" 
+                        ToolTipService.ToolTip="Request sync"
+                        Visibility="{x:Bind ViewModel.RequestSyncVsbl,Mode=OneWay}"
+                        Click="{x:Bind ViewModel.RequestSync}">
+                    <Image Width="25" Height="25">
+                        <Image.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/request-sync.svg" />
+                        </Image.Source>
+                    </Image>
+                </Button>
+                <Button Width="50" Height="50" 
+                        ToolTipService.ToolTip="Unsync" Visibility="{x:Bind ViewModel.UnsyncVsbl,Mode=OneWay}"
+                        Click="{x:Bind ViewModel.Unsync}">
+                    <Image Width="25" Height="25">
+                        <Image.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/unsync.svg" />
+                        </Image.Source>
+                    </Image>
+                </Button>
+                <Button Width="50" Height="50" 
+                        FontSize="11"
+                        ToolTipService.ToolTip="Accept" Visibility="{x:Bind ViewModel.AcceptVsbl,Mode=OneWay}"
+                        Click="{x:Bind ViewModel.Accept}">
+                    <Image Width="25" Height="25">
+                        <Image.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/accept.svg" />
+                        </Image.Source>
+                    </Image>
+                </Button>
+                <Button Width="50" Height="50" 
+                        ToolTipService.ToolTip="Decline" Visibility="{x:Bind ViewModel.DeclineVsbl,Mode=OneWay}"
+                        Click="{x:Bind ViewModel.Decline}">
+                    <Image Width="25" Height="25">
+                        <Image.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/decline.svg" />
+                        </Image.Source>
+                    </Image>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

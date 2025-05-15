@@ -1,0 +1,21 @@
+﻿<UserControl
+    x:Class="MarketPlace924.View.LabeledTextFieldControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:MarketPlace924.Converters"
+    mc:Ignorable="d"
+    Width="Auto" Height="Auto">
+    <UserControl.Resources>
+        <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter" />
+    </UserControl.Resources>
+    <StackPanel>
+        <TextBlock Text="{x:Bind Label, Mode=OneWay}" Style="{StaticResource PrimaryLabel}" />
+        <TextBox Text="{x:Bind TextValue, Mode=TwoWay}"
+                 IsReadOnly="{x:Bind IsReadOnly, Mode=TwoWay}"
+                 Style="{StaticResource PrimaryTextBox}" />
+        <TextBlock Text="{x:Bind ErrorMessage, Mode=OneWay}" Foreground="Red"
+                   Visibility="{x:Bind ErrorMessageVisible,Mode=OneWay,Converter={StaticResource BoolVisibilityConverter}}" />
+    </StackPanel>
+</UserControl>

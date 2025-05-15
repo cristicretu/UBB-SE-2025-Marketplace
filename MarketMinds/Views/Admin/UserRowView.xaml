@@ -1,0 +1,42 @@
+<UserControl
+    x:Class="MarketPlace924.View.Admin.UserRowView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketPlace924.View.Admin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+	<Grid Padding="10">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="150"/>
+			<ColumnDefinition Width="50"/>
+			<ColumnDefinition Width="150"/>
+			<ColumnDefinition Width="200"/>
+			<ColumnDefinition Width="150"/>
+			<ColumnDefinition Width="150"/>
+			<ColumnDefinition Width="150"/>
+			<ColumnDefinition Width="50"/>
+			<ColumnDefinition Width="50"/>
+			<ColumnDefinition Width="Auto"/>
+		</Grid.ColumnDefinitions>
+		
+		<TextBlock Text="{Binding ViewModel.UserId, Mode=OneWay}" VerticalAlignment="Center"/>
+		<TextBlock Text="{Binding ViewModel.Role, Mode=OneWay}" VerticalAlignment="Center"/>
+		<TextBlock Text="{Binding ViewModel.Username, Mode=OneWay}" VerticalAlignment="Center"/>
+		<TextBlock Text="{Binding ViewModel.Email, Mode=OneWay}" VerticalAlignment="Center"/>
+		<TextBlock Text="{Binding ViewModel.Password, Mode=OneWay}" VerticalAlignment="Center"/>
+		<TextBlock Text="{Binding ViewModel.PhoneNumber, Mode=OneWay}" VerticalAlignment="Center"/>
+		<TextBlock Text="{Binding ViewModel.FailedLogins, Mode=OneWay}" VerticalAlignment="Center"/>
+		<TextBlock Text="{Binding ViewModel.BannedUntil, Mode=OneWay}" VerticalAlignment="Center"/>
+		<TextBlock Text="{Binding ViewModel.IsBanned, Mode=OneWay}" VerticalAlignment="Center"/>
+		<Button Content="Ban" 
+			Command="{Binding BanUserCommand}" 
+			Grid.Column="2" VerticalAlignment="Center"/>
+
+		<Button Content="Ban" 
+			Command="{Binding SetAdminCommand}" 
+			Grid.Column="2" VerticalAlignment="Center"/>
+
+	</Grid>
+</UserControl>

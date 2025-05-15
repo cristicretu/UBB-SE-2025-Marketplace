@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketPlace924.View.SignUpPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketPlace924.View"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+	<Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+		<Border Background="White" Padding="50" CornerRadius="12" BorderBrush="#1565C0" BorderThickness="2" Width="550">
+			<StackPanel Spacing="20">
+
+				<!-- Title -->
+				<TextBlock Text="Signup Page" FontSize="36" FontWeight="Bold" TextAlignment="Center" Foreground="#0D47A1"/>
+				<TextBlock Text="Join MarketPlace924 today!" FontSize="20" TextAlignment="Center" Foreground="#1976D2"/>
+				<TextBlock x:Name="ErrorMessage" Text="" FontSize="16" Foreground="Red" TextAlignment="Center"/>
+
+				<!-- Username -->
+				<StackPanel>
+					<TextBlock Text="Username" FontSize="16" FontWeight="Bold" Foreground="#0D47A1"/>
+					<TextBox Text="{Binding Username, Mode=TwoWay}" Width="Auto" Height="40" Padding="8" BorderBrush="#1976D2" BorderThickness="2" CornerRadius="8"/>
+				</StackPanel>
+
+				<!-- Email -->
+				<StackPanel>
+					<TextBlock Text="Email" FontSize="16" FontWeight="Bold" Foreground="#0D47A1"/>
+					<TextBox Text="{Binding Email, Mode=TwoWay}" Width="Auto" Height="40" Padding="8" BorderBrush="#1976D2" BorderThickness="2" CornerRadius="8"/>
+				</StackPanel>
+
+				<!-- Phone Number -->
+				<StackPanel>
+					<TextBlock Text="Phone Number" FontSize="16" FontWeight="Bold" Foreground="#0D47A1"/>
+					<TextBox Text="{Binding PhoneNumber, Mode=TwoWay}" Width="Auto" Height="40" Padding="8" BorderBrush="#1976D2" BorderThickness="2" CornerRadius="8"/>
+				</StackPanel>
+
+				<!-- Password -->
+				<StackPanel>
+					<TextBlock Text="Password" FontSize="16" FontWeight="Bold" Foreground="#0D47A1"/>
+					<PasswordBox Password="{Binding Password, Mode=TwoWay}" Width="Auto" Height="40" Padding="8" BorderBrush="#1976D2" BorderThickness="2" CornerRadius="8"/>
+				</StackPanel>
+
+				<!-- Account Type -->
+				<StackPanel>
+					<TextBlock Text="Account Type" FontSize="16" FontWeight="Bold" Foreground="#0D47A1"/>
+                    <ComboBox SelectedValue="{Binding Role, Mode=TwoWay}" SelectedValuePath="Tag" SelectedIndex="0" Width="Auto" Height="40" Padding="8" BorderBrush="#1976D2" BorderThickness="2" CornerRadius="8">
+						<ComboBoxItem Content="Buyer" Tag="2"/>
+						<ComboBoxItem Content="Seller" Tag="3"/>
+					</ComboBox>
+				</StackPanel>
+
+				<!-- Signup Button -->
+				<Button Content="Sign Up"
+                        Background="#1565C0"
+                        Foreground="White"
+                        Width="200"
+                        Height="50"
+                        CornerRadius="8"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Command="{Binding SignupCommand}"
+                        HorizontalAlignment="Center"/>
+			</StackPanel>
+		</Border>
+	</Grid>
+</Page>

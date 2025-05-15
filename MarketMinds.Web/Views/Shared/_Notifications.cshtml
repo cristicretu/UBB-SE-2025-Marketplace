@@ -1,0 +1,43 @@
+@model List<SharedClassLibrary.Service.NotificationModel>
+<script src="https://cdn.tailwindcss.com"></script>
+<div class="w-full max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+    <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
+        <h3 class="text-lg font-semibold">Notifications</h3>
+        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+            @Model.Count(n => !n.IsRead) unread
+        </span>
+    </div>
+    
+    <div class="max-h-80 overflow-y-auto">
+        @if (Model.Any())
+        {
+            <ul class="divide-y divide-gray-200">
+                @foreach (var notification in Model)
+                {
+                    <li class="p-4 hover:bg-gray-50 transition @(notification.IsRead ? "" : "bg-blue-50")">
+                        <div class="flex justify-between">
+                            <p class="text-sm text-gray-700 @(notification.IsRead ? "" : "font-semibold")">
+                                @notification.Message
+                            </p>
+                            <span class="text-xs text-gray-500">
+                                @notification.Date.ToString("MMM dd, HH:mm")
+                            </span>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="p-6 text-center text-gray-500">
+                <p>No notifications to display</p>
+            </div>
+        }
+    </div>
+    
+    <div class="p-3 bg-gray-100 border-t border-gray-200">
+        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md text-sm transition">
+            Mark all as read
+        </button>
+    </div>
+</div> 

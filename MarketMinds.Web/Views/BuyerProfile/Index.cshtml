@@ -1,0 +1,174 @@
+﻿@model WebMarketplace.Models.BuyerProfileViewModel
+@{
+    ViewData["Title"] = "Buyer Profile";
+    var UserId = UserSession.CurrentUserId;
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="text-primary">Buyer Profile</h1>
+            <p class="text-secondary">View and edit your profile details below</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="badge bg-@(Model.Badge.ToLower()) p-2">
+                <h5 class="mb-0">@Model.Badge</h5>
+                <small>@(Model.Discount * 100)% Discount</small>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Update" method="post">
+        <input type="hidden" asp-for="BuyerId" />
+
+        <div class="row">
+            <!-- Personal Information -->
+            <div class="col-md-4">
+                <h4 class="mb-3">Personal Information</h4>
+                <div class="mb-3">
+                    <label asp-for="FirstName" class="form-label">First Name</label>
+                    <input asp-for="FirstName" class="form-control" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="LastName" class="form-label">Last Name</label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" readonly />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Billing Address -->
+            <div class="col-md-4">
+                <h4 class="mb-3">Billing Address</h4>
+                <div class="mb-3">
+                    <label asp-for="BillingStreet" class="form-label">Street</label>
+                    <input asp-for="BillingStreet" class="form-control" />
+                    <span asp-validation-for="BillingStreet" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="BillingCity" class="form-label">City</label>
+                    <input asp-for="BillingCity" class="form-control" />
+                    <span asp-validation-for="BillingCity" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="BillingCountry" class="form-label">Country</label>
+                    <input asp-for="BillingCountry" class="form-control" />
+                    <span asp-validation-for="BillingCountry" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="BillingPostalCode" class="form-label">Postal Code</label>
+                    <input asp-for="BillingPostalCode" class="form-control" />
+                    <span asp-validation-for="BillingPostalCode" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="col-md-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Shipping Address</h4>
+                    <div class="form-check">
+                        <input asp-for="UseSameAddress" class="form-check-input" id="useSameAddress" />
+                        <label class="form-check-label" for="useSameAddress">Same as Billing</label>
+                    </div>
+                </div>
+                <div id="shippingAddressFields">
+                    <div class="mb-3">
+                        <label asp-for="ShippingStreet" class="form-label">Street</label>
+                        <input asp-for="ShippingStreet" class="form-control" />
+                        <span asp-validation-for="ShippingStreet" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ShippingCity" class="form-label">City</label>
+                        <input asp-for="ShippingCity" class="form-control" />
+                        <span asp-validation-for="ShippingCity" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ShippingCountry" class="form-label">Country</label>
+                        <input asp-for="ShippingCountry" class="form-control" />
+                        <span asp-validation-for="ShippingCountry" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ShippingPostalCode" class="form-label">Postal Code</label>
+                        <input asp-for="ShippingPostalCode" class="form-control" />
+                        <span asp-validation-for="ShippingPostalCode" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="row mt-3">
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary btn-lg px-5">
+                    <i class="bi bi-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Quick Actions -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-center mb-3">Quick Actions</h3>
+            <div class="d-flex justify-content-center flex-wrap">
+                <a href="@Url.Action("Index", "BidProduct")" class="btn btn-outline-primary m-2">Bid Product</a>
+                <a href="@Url.Action("Index", "WalletRefill")" class="btn btn-outline-primary m-2">Refill Wallet</a>
+            </div>
+            <div class="d-flex justify-content-center flex-wrap mt-2">
+                <a asp-area="" asp-controller="Order" asp-action="OrderHistory" asp-route-userId="@UserId" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Order History</a>
+                <a href="@Url.Action("Index", "RenewContract")" class="btn btn-outline-primary m-2">Renew Contract</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Generate Contract Modal -->
+<div class="modal fade" id="generateContractModal" tabindex="-1" aria-labelledby="generateContractModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Contract" asp-action="GenerateContract" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="contractId" class="form-label">Contract ID</label>
+                        <input type="number" class="form-control" id="contractId" name="contractId" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Generate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Function to toggle shipping address fields based on checkbox
+            function toggleShippingFields() {
+                if ($("#useSameAddress").is(":checked")) {
+                    $("#shippingAddressFields").hide();
+                } else {
+                    $("#shippingAddressFields").show();
+                }
+            }
+
+            // Initial state
+            toggleShippingFields();
+
+            // Event handler
+            $("#useSameAddress").change(toggleShippingFields);
+        });
+    </script>
+}

@@ -1,0 +1,65 @@
+﻿<UserControl
+    x:Class="MarketPlace924.View.BuyerWishlistItemControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:view="using:MarketPlace924.View"
+    xmlns:converters="using:MarketPlace924.Converters"
+    mc:Ignorable="d"
+    Width="Auto" Height="Auto">
+
+    <UserControl.Resources>
+        <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Border BorderThickness="2" BorderBrush="#1976D2" Padding="10"
+            Margin="5" CornerRadius="8" Background="White"
+            Width="260" Height="260">
+        <StackPanel HorizontalAlignment="Center">
+            <!-- Mock Image -->
+            <Image Source="{x:Bind ViewModel.ImageSource}" Width="80" Height="80"
+                   Stretch="Uniform" Margin="0,5,0,5" />
+
+            <!-- Item Name -->
+            <TextBlock Text="{x:Bind ViewModel.Title}" FontSize="16" FontWeight="Bold"
+                       Foreground="#0D47A1" TextAlignment="Center" />
+
+            <!-- Item Description -->
+            <TextBlock Text="{x:Bind ViewModel.Description}" FontSize="14" Foreground="Gray" TextWrapping="Wrap"
+                       Margin="0,5,0,0" />
+
+            <!-- Price -->
+            <TextBlock Text="{x:Bind ViewModel.Price}" FontSize="14" Foreground="Gray"
+                       TextAlignment="Center" Margin="0,3,0,0" />
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
+                <!-- Remove Button -->
+                <Button Width="35" Height="35"
+                        ToolTipService.ToolTip="Remove" Padding="0"
+                        Click="{x:Bind ViewModel.Remove}"
+                        Visibility="{x:Bind ViewModel.OwnItem, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                    <Image Width="17" Height="17">
+                        <Image.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/trash.svg" />
+                        </Image.Source>
+                    </Image>
+                </Button>
+
+                <!-- Add to Cart Button -->
+                <Button Width="35" Height="35"
+                        ToolTipService.ToolTip="Add To Cart" Padding="0"
+                        Command="{x:Bind ViewModel.AddToCartCommand}"
+                        CommandParameter="{x:Bind ViewModel.Product}"
+                        Visibility="{x:Bind ViewModel.OwnItem, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                    <Image Width="17" Height="17">
+                                        <Image.Source>
+                                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/cart-add.svg" />
+                                        </Image.Source>
+                                    </Image>
+                                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -1,0 +1,28 @@
+@model WebMarketplace.Models.MyMarketViewModel
+
+<div class="space-y-3">
+    @if (Model.AllSellersList.Any())
+    {
+        foreach (var seller in Model.AllSellersList)
+        {
+            <a href="@Url.Action("Profile", "MyMarket", new { sellerId = seller.Id })"
+               class="block bg-white border rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
+                            @(!string.IsNullOrEmpty(seller.StoreName) ? seller.StoreName.Substring(0, 1) : "?")
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900">@seller.StoreName</p>
+                        <p class="text-xs text-gray-500">@seller.TrustScore.ToString("F1") Trust Score</p>
+                    </div>
+                </div>
+            </a>
+        }
+    }
+    else
+    {
+        <p class="text-gray-500 text-sm py-2">No sellers found.</p>
+    }
+</div>

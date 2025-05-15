@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Track Order";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Track Your Order</h2>
+        
+        <form id="trackOrderForm" class="space-y-6">
+            <div>
+                <label for="orderId" class="block text-sm font-medium text-gray-700">Enter Order ID</label>
+                <input type="number" id="orderId" name="orderId" required
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Enter your order ID">
+            </div>
+            <div>
+                <button type="submit" 
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Track Order
+                </button>
+            </div>
+        </form>
+        <script>
+            function getQueryParam(name) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name);
+            }
+            document.getElementById('trackOrderForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var orderId = document.getElementById('orderId').value;
+                var hasControl = getQueryParam('hasControl') || 'false';
+                if(orderId) {
+                    window.location.href = `/Order/TrackOrder/${orderId}?hasControl=${hasControl}`;
+                }
+            });
+        </script>
+    </div>
+</div> 

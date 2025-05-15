@@ -1,0 +1,27 @@
+﻿<UserControl
+    x:Class="MarketPlace924.View.BuyerAddressFormControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:view="using:MarketPlace924.View"
+    mc:Ignorable="d"
+    Width="Auto" Height="Auto">
+
+    <Grid>
+        <StackPanel Spacing="25">
+            <view:LabeledTextFieldControl
+                Label="Street Name"
+                TextValue="{x:Bind ViewModel.Address.StreetLine, Mode=TwoWay}" />
+            <view:LabeledTextFieldControl
+                Label="Postal Code"
+                TextValue="{x:Bind ViewModel.Address.PostalCode, Mode=TwoWay}" />
+            <view:LabeledTextFieldControl
+                Label="City"
+                TextValue="{x:Bind ViewModel.Address.City, Mode=TwoWay}" />
+            <view:LabeledTextFieldControl
+                Label="Country"
+                TextValue="{x:Bind ViewModel.Address.Country, Mode=TwoWay}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

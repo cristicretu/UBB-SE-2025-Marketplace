@@ -1,0 +1,97 @@
+@using SharedClassLibrary.Service
+@{
+    // In a real app, you would get this from a cart service or session
+    var _shoppingCartService = new ShoppingCartService();
+    var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+    var cartTotal = 0.00m;
+	var cartItemCount = cartItems.Count;
+}
+
+<div class="relative inline-block mr-4">
+    <button id="cartButton" class="relative bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        @if (cartItemCount > 0)
+        {
+            <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                @(cartItemCount > 9 ? "9+" : cartItemCount.ToString())
+            </span>
+        }
+    </button>
+    
+    <!-- Mini Cart Dropdown -->
+    <div id="miniCartDropdown" class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-20 hidden">
+        <div class="p-4 bg-gray-800 text-white flex justify-between items-center">
+            <h3 class="text-lg font-semibold">Your Cart (@cartItemCount)</h3>
+            <button id="closeCartDropdown" class="text-white hover:text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        @if (cartItemCount > 0)
+        {
+            <div class="max-h-64 overflow-y-auto">
+                @foreach (var item in cartItems)
+                {
+                    <div class="p-3 border-b border-gray-200 flex justify-between items-center">
+                        <div>
+                            <p class="font-medium text-gray-800">@item.Name</p>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="p-3 bg-gray-50">
+                <div class="flex justify-between items-center font-semibold mb-3">
+                    <span>Total:</span>
+                    <span>$@cartTotal.ToString("0.00")</span>
+                </div>
+                <div class="flex space-x-2">
+                    <a href="/ShoppingCart/Index" class="flex-1 py-2 px-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded text-center text-sm transition">
+                        View Cart
+                    </a>
+                    <a href="/Checkout/BillingInfo" class="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded text-center text-sm transition">
+                        Checkout
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="p-4 text-center text-gray-600">
+                <p>Your cart is empty</p>
+                <a href="/MyMarket/Index" class="mt-2 inline-block text-blue-600 hover:underline">Browse Products</a>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cartButton = document.getElementById('cartButton');
+        const miniCartDropdown = document.getElementById('miniCartDropdown');
+        const closeCartDropdown = document.getElementById('closeCartDropdown');
+        
+        // Toggle dropdown visibility when clicking the cart button
+        cartButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            miniCartDropdown.classList.toggle('hidden');
+        });
+        
+        // Close dropdown when clicking the close button
+        closeCartDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+            miniCartDropdown.classList.add('hidden');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!miniCartDropdown.contains(e.target) && e.target !== cartButton) {
+                miniCartDropdown.classList.add('hidden');
+            }
+        });
+    });
+</script> 

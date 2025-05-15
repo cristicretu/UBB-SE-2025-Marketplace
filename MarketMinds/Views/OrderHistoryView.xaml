@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="MarketPlace924.OrderHistoryView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Order History">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Filter Controls -->
+        <StackPanel Orientation="Horizontal" Padding="10" Spacing="10">
+            
+            <TextBox x:Name="SearchTextBox" 
+             PlaceholderText="Search products..."
+             Width="200"
+             Margin="0,0,10,0"
+             TextChanged="SearchTextBox_TextChanged"/>
+            <ComboBox x:Name="TimePeriodComboBox" Width="200" SelectedIndex="0">
+                <ComboBoxItem Content="Last 3 Months"/>
+                <ComboBoxItem Content="Last 6 Months"/>
+                <ComboBoxItem Content="This Year"/>
+                <ComboBoxItem Content="All Orders"/>
+            </ComboBox>
+
+            <Button Content="Refresh" Click="RefreshButton_Click"/>
+        </StackPanel>
+
+        <!-- Orders ListView -->
+        <ListView x:Name="OrdersListView" 
+        Grid.Row="1"
+        Margin="0,10,0,0"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch" >
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="20" Padding="10">
+                        <TextBlock Text="{Binding OrderID}" Width="80" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding ProductName}" Width="200"/>
+                        <TextBlock Text="{Binding ProductTypeName}" Width="200"/>
+
+                        <TextBlock Text="{Binding OrderDate}" />
+
+
+                        <TextBlock Text="{Binding PaymentMethod}" Width="150"/>
+                        <Button Content="See Details" Click="OrderDetails_Click" Tag="{Binding OrderSummaryID}" Margin="5" Padding="10,5"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+            <ListView.Header>
+                <StackPanel Orientation="Horizontal" Spacing="20" Padding="10" Background="LightGray">
+                    <TextBlock Text="Order ID" Width="80" FontWeight="Bold"/>
+                    <TextBlock Text="Product" Width="200" FontWeight="Bold"/>
+                    <TextBlock Text="Type" Width="200" FontWeight="Bold"/>
+                    <TextBlock Text="Date" Width="120" FontWeight="Bold"/>
+                    <TextBlock Text="Payment" Width="150" FontWeight="Bold"/>
+                </StackPanel>
+            </ListView.Header>
+        </ListView>
+        <TextBlock x:Name="NoResultsText" 
+                  Grid.Row="1"
+                  Text="No orders found matching your criteria"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  FontSize="16"
+                  Foreground="Gray"
+                  Visibility="Collapsed"/>
+        <ContentDialog x:Name="OrderDetailsDialog"
+               Title="Order Details"
+               CloseButtonText="Close"
+               PrimaryButtonText="OK"
+               DefaultButton="Close"
+               xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+            <ScrollViewer VerticalScrollMode="Auto"
+                  VerticalScrollBarVisibility="Auto"
+                  MaxHeight="400">
+                <StackPanel x:Name="OrderDetailsContent"
+                   Spacing="8"
+                   Padding="12">
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+    </Grid>
+</Window>
+    
+    

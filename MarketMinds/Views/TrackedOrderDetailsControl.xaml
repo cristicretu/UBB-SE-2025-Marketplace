@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    TrackedOrderDetailsControl.xaml
+    Purpose: Displays detailed information about a tracked order and its checkpoints
+    Associated ViewModel: TrackedOrderViewModel
+    
+    This control is responsible for:
+    - Displaying basic information about a tracked order (ID, status, delivery date, etc.)
+    - Showing a chronological timeline of all checkpoints for package tracking
+    - Formatting checkpoint information in a consistent, readable format
+    
+    Usage: Include this control in order detail pages or shipping status views
+-->
+<UserControl
+    x:Class="MarketPlace924.View.TrackedOrderDetailsControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketPlace924.View"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <!-- Header section for order details -->
+            <RowDefinition Height="Auto"/>
+            <!-- Expandable section for checkpoints timeline -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Order Details Section: Displays basic information about the tracked order -->
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,10">
+            <TextBlock Text="Tracked Order Details" FontSize="18" FontWeight="Bold"/>
+            <!-- Order identifier information -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Tracked Order ID: " FontWeight="Bold"/>
+                <TextBlock Text="{Binding TrackedOrderID}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Attached to Order ID: " FontWeight="Bold"/>
+                <TextBlock Text="{Binding OrderID}" />
+            </StackPanel>
+
+            <!-- Current order status - reflects the most recent checkpoint status -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Current Status: " FontWeight="Bold"/>
+                <TextBlock Text="{Binding CurrentStatus}"/>
+            </StackPanel>
+
+            <!-- Delivery information -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Estimated Delivery Date: " FontWeight="Bold"/>
+                <!-- Displays DateOnly object from the ViewModel -->
+                <TextBlock Text="{Binding EstimatedDeliveryDate}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Delivery Address: " FontWeight="Bold"/>
+                <TextBlock Text="{Binding DeliveryAddress}" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Checkpoint Timeline Section: Displays chronological history of order status updates -->
+        <!-- ListView is bound to the Checkpoints collection from the ViewModel -->
+        <ListView Grid.Row="1" ItemsSource="{Binding Checkpoints}" VerticalAlignment="Bottom">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <!-- Each checkpoint is displayed as a card with border -->
+                    <Border Padding="10" BorderThickness="1" BorderBrush="Gray" Margin="5">
+                        <StackPanel>
+                            <!-- Status is displayed prominently at the top -->
+                            <TextBlock Text="{Binding Status}" FontWeight="Bold"/>
+                            <!-- Additional checkpoint information -->
+                            <TextBlock Text="{Binding Description}" />
+                            <!-- Timestamp shows when this status was recorded -->
+                            <TextBlock Text="{Binding Timestamp}" FontWeight="Bold"/>
+                            <!-- Location indicates where the package was at this checkpoint -->
+                            <TextBlock Text="{Binding Location}" Foreground="Gray"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</UserControl>

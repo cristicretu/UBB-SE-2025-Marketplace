@@ -127,6 +127,8 @@ namespace MarketMinds
 
                 // Initialize HttpClient
                 httpClient = new HttpClient();
+                Debug.WriteLine("");
+                Debug.WriteLine(AppContext.BaseDirectory);
                 string baseAddress = Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/";
                 httpClient.BaseAddress = new Uri(baseAddress);
                 Debug.WriteLine($"Initialized HTTP client with base address: {baseAddress}");

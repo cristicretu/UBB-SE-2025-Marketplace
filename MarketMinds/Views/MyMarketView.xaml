@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketPlace924.View.MyMarketView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketPlace924.View"
+    xmlns:models="using:SharedClassLibrary.Domain"
+    xmlns:viewModels="using:MarketPlace924.ViewModel"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="4*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- All Sellers -->
+        <Grid Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#FFF0F0F0" BorderBrush="#0D47A1" BorderThickness="2">
+            <Grid x:Name="AllSellersList" Background="#FFF0F0F0" Margin="0,15,0,0" Visibility="Visible" VerticalAlignment="Top">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBox Style="{StaticResource PrimaryTextBox}" PlaceholderText="Search" TextChanged="OnSearchAnySellerTextChanged" HorizontalAlignment="Center" Width="160" Height="44" Margin="8" Grid.Row="0"/>
+                <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" Grid.Row="1">
+                    <ListView ItemsSource="{Binding AllSellersList}">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <!-- Fix the height of each ListViewItem for consistent appearance -->
+                                <Setter Property="MinHeight" Value="60"/>
+                                <Setter Property="MinWidth" Value="180"/>
+                                <Setter Property="Width" Value="180"/>
+                                <Setter Property="Padding" Value="2"/>
+                                <Setter Property="Margin" Value="5"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Seller">
+                                <Grid Margin="5" Style="{StaticResource SellerItemGrid}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- PersonPicture -->
+                                    <PersonPicture x:Name="ProfilePicture" Style="{StaticResource PersonPictureStyle}" DisplayName="{Binding StoreName}" Tapped="OnPersonPictureTapped" Grid.Column="0"/>
+                                    <!-- Seller Name -->
+                                    <TextBlock Style="{StaticResource SellerNameTextBlock}" Text="{Binding StoreName}" Grid.Column="1"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!-- Main Content -->
+        <Grid Grid.Column="1" Background="#FFF0F0F0" BorderBrush="#0D47A1" BorderThickness="2" Padding="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Style="{StaticResource PrimaryLabel}" Text="My Market" FontSize="40" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="1"/>
+            </Grid>
+
+            <!-- Search -->
+            <Grid Grid.Row="1" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Style="{StaticResource PrimaryTextBox}" PlaceholderText="Search" TextChanged="OnSearchProductTextChanged" Grid.Column="0" Margin="0,0,10,0" Height="45" HorizontalAlignment="Stretch"/>
+            </Grid>
+
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,10,0,0">
+                <ListView ItemsSource="{Binding MyMarketProducts}" SelectionMode="None"
+                  ScrollViewer.VerticalScrollMode="Enabled"
+                  ScrollViewer.HorizontalScrollMode="Disabled"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <!-- Grid layout for horizontal alignment but vertical scrolling -->
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="10" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Product">
+                            <Border Style="{StaticResource ProductBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" Style="{StaticResource PrimaryLabel}" />
+                                    <TextBlock Text="{Binding Description}" FontSize="14"/>
+                                    <TextBlock Text="{Binding Price}" FontSize="16" Foreground="Green"/>
+
+                                    <!-- Add to Cart Button -->
+                                    <!--
+                                    <Button Width="35" Height="35"
+                        ToolTipService.ToolTip="Add To Cart" Padding="0"
+                        Command="{Binding AddToCartCommand}"
+                        CommandParameter="{Binding}"
+                        Visibility="Visible">
+                                        <Image Width="17" Height="17">
+                                            <Image.Source>
+                                                <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/cart-add.svg" />
+                                            </Image.Source>
+                                        </Image>
+                                    </Button>-->
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Overlapping Layer: Button + Following List -->
+        <Grid Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#FFF0F0F0" BorderBrush="#0D47A1" BorderThickness="2">
+            <Grid x:Name="FollowingList" Background="#FFF0F0F0" Visibility="{Binding FollowingListVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Button Style="{StaticResource PrimaryButton}" x:Name="HideFollowing" Content="X" Command="{Binding ShowFollowingCommand}" Width="35" Height="35" VerticalContentAlignment="Top" HorizontalContentAlignment="Right" FontSize="15" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,4,0" Grid.Row="0"/>
+                <TextBox Style="{StaticResource PrimaryTextBox}" PlaceholderText="Search" TextChanged="OnSearchFollowedSellerTextChanged" HorizontalAlignment="Center" Width="160" Height="44" Margin="8" Grid.Row="1"/>
+                <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" Grid.Row="2">
+                    <ListView ItemsSource="{Binding MyMarketFollowing}">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <!-- Fix the height of each ListViewItem for consistent appearance -->
+                                <Setter Property="MinHeight" Value="60"/>
+                                <Setter Property="Width" Value="190"/>
+                                <Setter Property="Padding" Value="2"/>
+                                <Setter Property="Margin" Value="5"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Seller">
+                                <Grid Margin="5" Style="{StaticResource SellerItemGrid}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- PersonPicture -->
+                                    <PersonPicture x:Name="ProfilePicture" Style="{StaticResource PersonPictureStyle}" DisplayName="{Binding StoreName}" Tapped="OnPersonPictureTapped" Grid.Column="0"/>
+                                    <!-- Seller Name -->
+                                    <TextBlock Style="{StaticResource SellerNameTextBlock}" Text="{Binding StoreName}" Grid.Column="1"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- The Button behind -->
+            <Button Style="{StaticResource PrimaryButton}" x:Name="ShowFollowing" Command="{Binding ShowFollowingCommand}" Visibility="{Binding ShowFollowingVisibility}" Width="120" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,15,0,0">
+                <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Background="Transparent">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="2*" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding FollowedSellersCount}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Text="Following" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" FontWeight="Bold" />
+                </Grid>
+            </Button>
+        </Grid>
+    </Grid>
+</Page>
+
+    

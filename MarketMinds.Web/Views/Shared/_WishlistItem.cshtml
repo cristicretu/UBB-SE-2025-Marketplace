@@ -1,0 +1,46 @@
+﻿@model SharedClassLibrary.Domain.Product
+
+<div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <div class="relative">
+        <div class="bg-gray-200 h-48 flex items-center justify-center">
+            <span class="text-gray-500">Product Image</span>
+        </div>
+        @if (Model.ProductType == "borrowed")
+        {
+            <div class="absolute top-2 right-2">
+                <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-md">Borrowable</span>
+            </div>
+        }
+    </div>
+    <div class="p-4">
+        <h5 class="text-lg font-bold text-gray-800">@Model.Name</h5>
+        <div class="flex justify-between items-center mt-2 mb-3">
+            <span class="text-green-600 font-semibold">$@Model.Price.ToString("F2")</span>
+            @if (Model.Stock > 0)
+            {
+                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">In Stock</span>
+            }
+            else
+            {
+                <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Out of Stock</span>
+            }
+        </div>
+        <p class="text-gray-600 text-sm mb-4">@(Model.Description?.Length > 100 ? Model.Description.Substring(0, 100) + "..." : Model.Description)</p>
+        <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+            <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post">
+                <input type="hidden" name="productId" value="@Model.ProductId" />
+                <input type="hidden" name="quantity" value="1" />
+                <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Add to Cart
+                </button>
+            </form>
+            <form asp-controller="BuyerWishlist" asp-action="RemoveFromWishlist" method="post">
+                <input type="hidden" name="productId" value="@Model.ProductId" />
+                <button type="submit" class="px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Remove
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+    

@@ -1,0 +1,98 @@
+@model WebMarketplace.Models.FinalizePurchaseViewModel
+
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Left Column - Thank You and Contact Info -->
+        <div class="space-y-6">
+            <h2 class="text-2xl font-semibold text-green-600">Thank you for your purchase!</h2>
+            
+            <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                <div class="space-y-3">
+                    <div class="flex">
+                        <span class="font-semibold w-36 text-gray-700">Full Name:</span>
+                        <span class="text-gray-800">@Model.FullName</span>
+                    </div>
+                    <div class="flex">
+                        <span class="font-semibold w-36 text-gray-700">Phone Number:</span>
+                        <span class="text-gray-800">@Model.PhoneNumber</span>
+                    </div>
+                    <div class="flex">
+                        <span class="font-semibold w-36 text-gray-700">Email:</span>
+                        <span class="text-gray-800">@Model.Email</span>
+                    </div>
+                    <div class="flex">
+                        <span class="font-semibold w-36 text-gray-700">Payment Method:</span>
+                        <span class="text-gray-800">@(string.IsNullOrEmpty(Model.PaymentMethod) ? "Not specified" : Model.PaymentMethod)</span>
+                    </div>
+                    <div class="flex">
+                        <span class="font-semibold w-36 text-gray-700">Order Status:</span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            @Model.OrderStatus
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8">
+                <a asp-controller="Home" asp-action="Index" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Continue Shopping
+                </a>
+            </div>
+        </div>
+        
+        <!-- Right Column - Order Summary -->
+        <div class="space-y-6">
+            <h2 class="text-2xl font-semibold text-gray-800">Order Summary</h2>
+            
+            <!-- Product List -->
+            <div class="bg-gray-100 rounded-lg p-4 space-y-4">
+                @if (Model.ProductList != null && Model.ProductList.Any())
+                {
+                    foreach (var product in Model.ProductList)
+                    {
+                        <div class="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
+                            <p class="font-semibold text-gray-800">Product name: <span class="font-normal">@product.Name</span></p>
+                            <p class="font-semibold text-gray-800">Price: <span class="font-normal">@product.Price.ToString("C")</span></p>
+                            
+                            @if (product.SellerId > 0)
+                            {
+                                <p class="font-semibold text-gray-800">Seller ID: <span class="font-normal">@product.SellerId</span></p>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-gray-600">No products in order</p>
+                }
+            </div>
+            
+            <!-- Order Totals -->
+            <div class="space-y-2 bg-gray-50 p-4 rounded-lg">
+                <div class="flex justify-between">
+                    <span class="text-gray-700">Subtotal:</span>
+                    <span class="text-gray-800">@Model.Subtotal.ToString("C")</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-700">Delivery fee:</span>
+                    <span class="text-gray-800">@Model.DeliveryFee.ToString("C")</span>
+                </div>
+                <div class="flex justify-between font-semibold">
+                    <span class="text-gray-800">Total:</span>
+                    <span class="text-gray-800">@Model.Total.ToString("C")</span>
+                </div>
+            </div>
+            
+            <!-- Order Number -->
+            <div class="text-center mt-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <p class="text-gray-600">Your order number is:</p>
+                <p class="text-2xl font-bold text-blue-700">@Model.OrderHistoryID</p>
+                <p class="text-sm text-gray-500 mt-2">Please save this number for order tracking purposes.</p>
+            </div>
+        </div>
+    </div>
+</div> 

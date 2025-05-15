@@ -1,0 +1,66 @@
+﻿<UserControl
+    x:Class="MarketPlace924.View.BuyerWishlistControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:MarketPlace924.View"
+    xmlns:viewModel="using:MarketPlace924.ViewModel"
+    mc:Ignorable="d"
+    Width="Auto" Height="Auto">
+
+
+    <!-- Wishlist Panel -->
+    <StackPanel>
+        <TextBlock Text="Manage Your Wishlist" Style="{StaticResource PrimaryLabel}" FontSize="24" />
+        <TextBlock
+            Text="Easily add, remove, or move items to your cart. Enable 'Family-Synced' mode to share with family members."
+            FontSize="14" Foreground="Gray" TextWrapping="Wrap" Margin="0,5,0,0" />
+
+        <!-- TODO Wishlist Controls (Inline Buttons + Sync Switch) -->
+        <Grid ColumnSpacing="10" RowSpacing="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+
+            <TextBox Grid.Column="0" Width="200" Height="40" PlaceholderText="Search products..."
+                     Style="{StaticResource PrimaryTextBox}"
+                     Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+
+            <ComboBox Grid.Column="1" Width="170" Height="50"
+                      SelectedIndex="0 " ItemsSource="{x:Bind ViewModel.SortOptions, Mode=OneWay}"
+                      SelectedItem="{x:Bind ViewModel.SelectedSort, Mode=TwoWay}">
+
+            </ComboBox>
+
+            <!-- Family Sync Toggle -->
+            <ToggleSwitch Grid.Column="2" Header="Family-Synced"
+                          OffContent="Off" OnContent="On" IsOn="{x:Bind ViewModel.FamilySyncActive, Mode=TwoWay}"/>
+        </Grid>
+
+        <!-- TODO Wishlist Items -->
+        <Border Background="White" Padding="15" CornerRadius="10" BorderBrush="#1565C0"
+                BorderThickness="2" Margin="0,15,0,0" MinHeight="600" >
+            <ScrollViewer Height="600" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapGrid Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewModel:IBuyerWishlistItemViewModel">
+                            <local:BuyerWishlistItemControl ViewModel="{x:Bind }" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+    </StackPanel>
+</UserControl>

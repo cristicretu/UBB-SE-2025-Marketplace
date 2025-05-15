@@ -1,0 +1,141 @@
+@model SharedClassLibrary.Domain.TrackedOrder
+@inject SharedClassLibrary.Service.ITrackedOrderService TrackedOrderService
+@{
+    ViewData["Title"] = "Track Order";
+    var checkpoints = Model != null ? await TrackedOrderService.GetAllOrderCheckpointsAsync(Model.TrackedOrderID) : null;
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Track Order</h2>
+
+        @if (Model == null)
+        {
+            <div class="max-w-md mx-auto">
+                <form asp-action="TrackOrder" method="get" class="space-y-4">
+                    <div>
+                        <label for="trackedOrderId" class="block text-sm font-medium text-gray-700">Enter Tracked Order ID</label>
+                        <input type="text" id="trackedOrderId" name="trackedOrderId" required
+                               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter tracked order ID">
+                    </div>
+                    <div>
+                        <button type="submit" 
+                                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Track Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Order Details -->
+                <div class="bg-white rounded-lg border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-900">Order Details</h4>
+                    </div>
+                    <div class="p-6">
+                        <dl class="grid grid-cols-1 gap-4">
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Order ID:</dt>
+                                <dd class="text-sm text-gray-900">@Model.OrderID</dd>
+                            </div>
+
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Current Status:</dt>
+                                <dd class="text-sm text-gray-900">@Model.CurrentStatus</dd>
+                            </div>
+
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Estimated Delivery:</dt>
+                                <dd class="text-sm text-gray-900">@Model.EstimatedDeliveryDate.ToString("dd/MM/yyyy")</dd>
+                            </div>
+
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Delivery Address:</dt>
+                                <dd class="text-sm text-gray-900">@Model.DeliveryAddress</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Checkpoints Timeline -->
+                <div class="bg-white rounded-lg border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-900">Tracking History</h4>
+                    </div>
+                    <div class="p-6">
+                        <div class="timeline">
+                            @foreach (var checkpoint in checkpoints.OrderByDescending(c => c.Timestamp))
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5 class="text-sm font-semibold text-gray-900 mb-1">@checkpoint.Status</h5>
+                                        <p class="text-sm text-gray-600 mb-1">@checkpoint.Description</p>
+                                        <div class="text-xs text-gray-500">
+                                            @checkpoint.Timestamp.ToString("dd/MM/yyyy HH:mm")
+                                            @if (!string.IsNullOrEmpty(checkpoint.Location))
+                                            {
+                                                <span> - @checkpoint.Location</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 30px;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        background-color: #3b82f6;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #3b82f6;
+    }
+
+    .timeline-content {
+        background-color: #f9fafb;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 3px solid #3b82f6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-item:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 12px;
+        height: calc(100% + 8px);
+        width: 2px;
+        background-color: #e5e7eb;
+    }
+</style> 

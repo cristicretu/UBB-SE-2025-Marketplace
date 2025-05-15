@@ -1,0 +1,136 @@
+@model WebMarketplace.Models.MyMarketViewModel
+@{
+    ViewData["Title"] = "My Market";
+}
+
+<div class="bg-white shadow rounded-lg p-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">My Market</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Products -->
+        <div class="col-span-2 space-y-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Products</h2>
+                <div class="relative">
+                    <input id="productSearchInput"
+                           type="text"
+                           placeholder="Search products..."
+                           class="border rounded-lg px-4 py-2 w-64"
+                           value="@Model.ProductSearchTerm">
+                </div>
+            </div>
+
+            <div id="productsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @await Html.PartialAsync("_ProductsListPartial", Model)
+            </div>
+        </div>
+
+        <!-- Right Column: Sellers -->
+        <div class="space-y-6">
+            <!-- Followed Sellers Section -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold">Following (@Model.FollowedSellersCount)</h2>
+                    <button id="toggleFollowingBtn" class="text-blue-600 hover:text-blue-800">
+                        @(Model.IsFollowingListVisible ? "Hide" : "Show")
+                    </button>
+                </div>
+
+                <div id="followingContainer" class="@(Model.IsFollowingListVisible ? "" : "hidden")">
+                    <div class="mb-4">
+                        <input id="followedSellerSearchInput"
+                               type="text"
+                               placeholder="Search followed sellers..."
+                               class="border rounded-lg px-4 py-2 w-full"
+                               value="@Model.FollowedSellerSearchTerm">
+                    </div>
+
+                    <div id="followingList">
+                        @await Html.PartialAsync("_FollowingListPartial", Model)
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Sellers Section -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold">All Sellers</h2>
+                </div>
+
+                <div class="mb-4">
+                    <input id="allSellerSearchInput"
+                           type="text"
+                           placeholder="Search all sellers..."
+                           class="border rounded-lg px-4 py-2 w-full"
+                           value="@Model.AllSellerSearchTerm">
+                </div>
+
+                <div id="allSellersList">
+                    @await Html.PartialAsync("_AllSellersListPartial", Model)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle products search
+            $('#productSearchInput').on('keyup', function() {
+                const searchTerm = $(this).val();
+                $.ajax({
+                    url: '@Url.Action("FilterProducts", "MyMarket")',
+                    type: 'POST',
+                    data: { searchTerm: searchTerm },
+                    success: function(result) {
+                        $('#productsContainer').html(result);
+                    }
+                });
+            });
+
+            // Handle followed sellers search
+            $('#followedSellerSearchInput').on('keyup', function() {
+                const searchTerm = $(this).val();
+                $.ajax({
+                    url: '@Url.Action("FilterFollowing", "MyMarket")',
+                    type: 'POST',
+                    data: { searchTerm: searchTerm },
+                    success: function(result) {
+                        $('#followingList').html(result);
+                    }
+                });
+            });
+
+            // Handle all sellers search
+            $('#allSellerSearchInput').on('keyup', function() {
+                const searchTerm = $(this).val();
+                $.ajax({
+                    url: '@Url.Action("FilterAllSellers", "MyMarket")',
+                    type: 'POST',
+                    data: { searchTerm: searchTerm },
+                    success: function(result) {
+                        $('#allSellersList').html(result);
+                    }
+                });
+            });
+
+            // Toggle following list visibility
+            $('#toggleFollowingBtn').on('click', function() {
+                const isVisible = !$('#followingContainer').hasClass('hidden');
+                if (isVisible) {
+                    $('#followingContainer').addClass('hidden');
+                    $(this).text('Show');
+                } else {
+                    $('#followingContainer').removeClass('hidden');
+                    $(this).text('Hide');
+                }
+
+                $.ajax({
+                    url: '@Url.Action("ToggleFollowingList", "MyMarket")',
+                    type: 'POST'
+                });
+            });
+        });
+    </script>
+}

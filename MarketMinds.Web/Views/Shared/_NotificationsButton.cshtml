@@ -1,0 +1,93 @@
+@using SharedClassLibrary.Service
+@inject INotificationService NotificationService
+
+@{
+    var currentUserId = 1; // In a real app, get from authentication
+    var unreadCount = await NotificationService.GetUnreadNotificationsCountAsync(currentUserId);
+    var debugEnabled = false; // Set to true for debugging
+}
+
+<div class="relative inline-block">
+    <button id="notificationsButton" class="relative bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        @if (unreadCount > 0)
+        {
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                @(unreadCount > 9 ? "9+" : unreadCount.ToString())
+            </span>
+        }
+    </button>
+</div>
+
+<!-- Notifications Modal -->
+<div id="notificationsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="notificationsContainer" class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] overflow-hidden">
+        <!-- Notifications content will be loaded here via AJAX -->
+        <div class="p-4 bg-gray-800 text-white flex justify-between items-center">
+            <h3 class="text-lg font-semibold">Notifications</h3>
+            <button id="closeNotificationsModal" class="text-white hover:text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div id="notificationsContent" class="p-4">
+            <div class="flex justify-center items-center h-16">
+                <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="ml-2 text-gray-500">Loading notifications...</span>
+            </div>
+        </div>
+        @if (debugEnabled)
+        {
+            <div class="bg-gray-100 p-2 text-xs text-gray-600">
+                <div>Using: @NotificationService.GetType().FullName</div>
+                <div>Unread count: @unreadCount</div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationsButton = document.getElementById('notificationsButton');
+        const notificationsModal = document.getElementById('notificationsModal');
+        const closeNotificationsModal = document.getElementById('closeNotificationsModal');
+        const notificationsContent = document.getElementById('notificationsContent');
+
+        notificationsButton.addEventListener('click', function() {
+            notificationsModal.classList.remove('hidden');
+            
+            // Load notifications content via AJAX
+            fetch('/BorrowProduct/Notifications')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    notificationsContent.innerHTML = html;
+                })
+                .catch(error => {
+                    notificationsContent.innerHTML = '<div class="p-4 text-red-600">Error loading notifications: ' + error.message + '</div>';
+                    console.error('Error loading notifications:', error);
+                });
+        });
+
+        closeNotificationsModal.addEventListener('click', function() {
+            notificationsModal.classList.add('hidden');
+        });
+
+        // Close the modal when clicking outside the container
+        notificationsModal.addEventListener('click', function(e) {
+            if (e.target === notificationsModal) {
+                notificationsModal.classList.add('hidden');
+            }
+        });
+    });
+</script> 

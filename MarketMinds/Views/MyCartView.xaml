@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketPlace924.View.MyCartView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModel="using:MarketPlace924.ViewModel"
+    x:Name="Root"
+    Background="#FFF0F0F0">
+
+    <Page.Resources>
+        <!-- Custom Button Style for blue buttons with darker blue on hover and rounded corners -->
+        <Style x:Key="BlueButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#0D47A1"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                            <ContentPresenter x:Name="ContentPresenter"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Margin="{TemplateBinding Padding}"
+                                          CornerRadius="{TemplateBinding CornerRadius}"/>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="#083983"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="#062C65"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title with blue text and underline -->
+        <TextBlock 
+            Text="My Cart" 
+            FontSize="40" 
+            FontWeight="Bold" 
+            Foreground="#0D47A1" 
+            HorizontalAlignment="Center"
+            Margin="0,20,0,5"
+            Grid.Row="0"/>
+
+        <!-- Blue line separator -->
+        <Rectangle 
+            Height="2" 
+            Fill="#0D47A1" 
+            Grid.Row="1" 
+            Margin="50,0,50,15"/>
+
+        <!-- Purchase Button with custom style with rounded corners -->
+        <Button 
+        Content="Purchase" 
+        Style="{StaticResource BlueButtonStyle}"
+        FontWeight="SemiBold"
+        Padding="15,8"
+        Grid.Row="2"
+        Margin="50,10,0,20" 
+        HorizontalAlignment="Left"
+        Click="PurchaseButton_Click"/>
+
+        <!-- Cart Items ListView with styled elements -->
+        <ListView 
+            ItemsSource="{x:Bind ViewModel.CartItems, Mode=OneWay}" 
+            Grid.Row="3"
+            Margin="50,0,50,20"
+            SelectionMode="None">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0,5"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewModel:CartItemViewModel">
+                    <Grid Margin="5" Padding="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Product Name - Bold and Blue -->
+                        <TextBlock 
+                            Text="{x:Bind Product.Name}" 
+                            FontWeight="Bold" 
+                            Foreground="#0D47A1"
+                            VerticalAlignment="Center"
+                            Grid.Column="0"/>
+
+                        <!-- Price - Black -->
+                        <TextBlock 
+                            Text="{x:Bind Product.Price, Mode=OneWay}" 
+                            Foreground="Black"
+                            VerticalAlignment="Center"
+                            Grid.Column="1"/>
+
+                        <!-- Quantity TextBox - Simple -->
+                        <TextBox 
+                            Text="{x:Bind Quantity, Mode=TwoWay}" 
+                            Width="60" 
+                            Foreground="Black"
+                            VerticalAlignment="Center"
+                            Grid.Column="2"
+                            CornerRadius="4"/>
+                        <!-- Added rounded corners to TextBox -->
+
+                        <!-- Total Price - Black -->
+                        <TextBlock 
+                            Text="{x:Bind TotalPrice, Mode=OneWay}" 
+                            Foreground="Black"
+                            VerticalAlignment="Center"
+                            Grid.Column="3"/>
+
+                        <!-- Remove Button with custom style and rounded corners -->
+                        <Button 
+                            Content="Remove" 
+                            Command="{x:Bind RemoveFromCartCommand}"
+                            CommandParameter="{x:Bind Product}"
+                            Grid.Column="4"
+                            Style="{StaticResource BlueButtonStyle}"
+                            Padding="10,5"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>
+
