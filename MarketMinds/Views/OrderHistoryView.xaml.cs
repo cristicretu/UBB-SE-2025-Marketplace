@@ -1,6 +1,5 @@
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -9,9 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
 using MarketPlace924.ViewModel;
 using Microsoft.UI.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using SharedClassLibrary.Service; // Add this using directive if not present
- // Add this using directive for Configuration
+// Add this using directive for Configuration
 
 namespace MarketPlace924
 {

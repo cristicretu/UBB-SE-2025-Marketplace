@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SharedClassLibrary.Service;
-using MarketMinds.Shared.Models;
-using System.Threading.Tasks;
-using System.Security.Claims;
-using System;
-using Microsoft.AspNetCore.Authorization;
 
 namespace WebMarketplace.Controllers
 {

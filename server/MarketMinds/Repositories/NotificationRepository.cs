@@ -8,25 +8,24 @@ namespace Server.Repository
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Represents a repository for managing notifications in the database.
     /// </summary>
     public class NotificationRepository : INotificationRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         [ExcludeFromCodeCoverage]
-        public NotificationRepository(MarketPlaceDbContext dbContext)
+        public NotificationRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

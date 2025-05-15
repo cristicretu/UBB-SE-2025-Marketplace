@@ -1,10 +1,7 @@
-﻿using System.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace MarketMinds.Repositories.BasketRepository
 {

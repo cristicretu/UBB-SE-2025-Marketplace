@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketPlace924.ViewModel;
 
 namespace MarketPlace924.ViewModel
 {

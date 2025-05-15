@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MarketMinds.Shared.Models
+﻿namespace MarketMinds.Shared.Models
 {
     public enum OrderStatus
     {

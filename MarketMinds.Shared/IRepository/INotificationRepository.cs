@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Data;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Shared.IRepository

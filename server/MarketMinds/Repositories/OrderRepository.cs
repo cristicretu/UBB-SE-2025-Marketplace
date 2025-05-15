@@ -8,12 +8,9 @@ namespace Server.Repository
     using System.Collections.Generic;
     using System.Data;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
-    using Server.DataModels;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Represents a repository for managing orders in the database.
@@ -22,13 +19,13 @@ namespace Server.Repository
     {
         // private readonly string connectionString;
         // private readonly IDatabaseProvider databaseProvider;
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public OrderRepository(MarketPlaceDbContext dbContext)
+        public OrderRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
@@ -334,8 +331,8 @@ namespace Server.Repository
 
             return new OrderDisplayInfo
             {
-                OrderID = order.OrderID,
-                ProductName = product.Name,
+                OrderID = order.Id,
+                ProductName = product.Title,
                 ProductTypeName = product.ProductType,
                 OrderDate = order.OrderDate.ToString("yyyy-MM-dd"),
                 PaymentMethod = order.PaymentMethod,

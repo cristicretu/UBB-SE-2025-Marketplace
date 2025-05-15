@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using MarketMinds.Shared;
-using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
-using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Shared.Services.BorrowProductsService;
 using MarketMinds.Shared.Services.BuyProductsService;
 using MarketMinds.Shared.Services.ProductCategoryService;

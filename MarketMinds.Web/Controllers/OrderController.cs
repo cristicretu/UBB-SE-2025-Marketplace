@@ -1,10 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using System.Linq;
-using System;
 
 namespace WebMarketplace.Controllers
 {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using System.Runtime.CompilerServices;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using Marketplace_SE.Utilities;
-using MarketMinds.Shared.Models;
 
 namespace MarketMinds.ViewModels
 {

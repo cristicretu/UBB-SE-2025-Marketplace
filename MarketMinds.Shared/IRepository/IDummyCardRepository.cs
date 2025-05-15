@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace MarketMinds.Shared.IRepository
+﻿namespace MarketMinds.Shared.IRepository
 {
     public interface IDummyCardRepository
     {

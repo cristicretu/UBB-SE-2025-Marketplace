@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 
 namespace SharedClassLibrary.Service

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SharedClassLibrary.Service
+﻿namespace SharedClassLibrary.Service
 {
     public interface IAuthorizationService
     {

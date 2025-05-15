@@ -1,5 +1,3 @@
-using System;
-
 namespace WebMarketplace.Models
 {
     /// <summary>

@@ -1,6 +1,4 @@
 ﻿// File: ../WebMarketplace/Models/HomeViewModel.cs
-using System.Collections.Generic;
-
 namespace WebMarketplace.Models
 {
     public class HomeViewModel

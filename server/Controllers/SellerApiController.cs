@@ -4,10 +4,10 @@
 
 namespace Server.Controllers
 {
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// API controller for managing seller data.
@@ -207,7 +207,7 @@ namespace Server.Controllers
             try
             {
                 var user = new User();
-                user.UserId = userId;
+                user.Id = userId;
                 var seller = await this.sellerRepository.GetSellerInfo(user);
                 return this.Ok(seller);
             }

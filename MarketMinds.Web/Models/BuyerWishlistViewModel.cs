@@ -1,6 +1,5 @@
 ﻿// BuyerWishlistViewModel.cs
 using MarketMinds.Shared.Models;
-using System.Collections.Generic;
 
 namespace WebMarketplace.Models
 {

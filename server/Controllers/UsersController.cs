@@ -1,11 +1,7 @@
-using System;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace Server.Controllers
 {
@@ -53,7 +49,12 @@ namespace Server.Controllers
                 var user = await _userRepository.RegisterUserAsync(
                     request.Username, 
                     request.Email, 
-                    HashPassword(request.Password)
+                    HashPassword(request.Password),
+                    request.PhoneNumber,
+                    request.UserType,
+                    null,
+                    false,
+                    0
                 );
 
                 var userResponse = new
@@ -168,6 +169,8 @@ namespace Server.Controllers
     {
         public string Username { get; set; }
         public string Email { get; set; }
+        public string PhoneNumber { get; set; }
         public string Password { get; set; }
+        public int UserType { get; set; }    
     }
 }

@@ -4,10 +4,10 @@
 
 namespace Server.Controllers
 {
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// API controller for managing user data.
@@ -127,7 +127,7 @@ namespace Server.Controllers
         {
             try
             {
-                User user = new User { UserId = userId };
+                User user = new User { Id = userId };
                 await this.userRepository.LoadUserPhoneNumberAndEmailById(user);
 
                 return this.Ok(user);

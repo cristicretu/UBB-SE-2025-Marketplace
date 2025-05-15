@@ -1,8 +1,4 @@
-﻿using System.Net.Http;
-using System.Net.Http.Json;
-using System;
-using System.Linq;
-using System.Text.Json.Serialization;
+﻿using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Shared.ProxyRepository

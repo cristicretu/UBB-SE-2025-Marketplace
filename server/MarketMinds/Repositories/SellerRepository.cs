@@ -8,26 +8,25 @@ namespace Server.Repository
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
+    using Server.DataAccessLayer;
     using Server.DataModels;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Repository for managing seller-related data operations.
     /// </summary>
     public class SellerRepository : ISellerRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SellerRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context to be used.</param>
-        public SellerRepository(MarketPlaceDbContext dbContext)
+        public SellerRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
@@ -40,9 +39,9 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the seller is not found.</exception>
         public async Task<Seller> GetSellerInfo(User user)
         {
-            User userDb = await this.dbContext.Users.FindAsync(user.UserId)
+            User userDb = await this.dbContext.Users.FindAsync(user.Id)
                                     ?? throw new Exception("GetSellerInfo: User not found");
-            Seller sellerDb = await this.dbContext.Sellers.FindAsync(userDb.UserId)
+            Seller sellerDb = await this.dbContext.Sellers.FindAsync(userDb.Id)
                                     ?? throw new Exception("GetSellerInfo: Seller not found");
 
             sellerDb.User = userDb;

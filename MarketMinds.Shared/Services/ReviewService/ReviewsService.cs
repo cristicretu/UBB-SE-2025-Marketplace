@@ -1,10 +1,6 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
+﻿using System.Diagnostics;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Services.UserService;

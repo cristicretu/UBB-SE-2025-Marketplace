@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SharedClassLibrary.Service;
 using System.Diagnostics;
-using WebMarketplace.Models;
 
 namespace WebMarketplace.Controllers
 {

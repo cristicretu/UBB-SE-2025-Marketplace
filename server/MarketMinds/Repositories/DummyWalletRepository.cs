@@ -6,23 +6,22 @@ namespace Server.Repository
 {
     using System;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
-    using Server.DBConnection;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Provides database operations for wallet management.
     /// </summary>
     public class DummyWalletRepository : IDummyWalletRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DummyWalletRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public DummyWalletRepository(MarketPlaceDbContext dbContext)
+        public DummyWalletRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

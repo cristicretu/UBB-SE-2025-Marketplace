@@ -9,23 +9,23 @@ namespace Server.Repository
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
+    using Server.DataAccessLayer;
 
     /// <summary>
     /// Provides methods for interacting with the Users table in the database.
     /// </summary>
     public class UserRepository : IUserRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context to be used by the repository.</param>
-        public UserRepository(MarketPlaceDbContext dbContext)
+        public UserRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
@@ -40,16 +40,16 @@ namespace Server.Repository
             this.dbContext.Users.Add(user);
             await this.dbContext.SaveChangesAsync();
 
-            switch (user.Role)
+            switch (user.UserType)
             {
-                case UserRole.Buyer:
+                case (int)UserRole.Buyer:
                     Buyer buyer = new Buyer
                     {
                         User = user,
                     };
                     this.dbContext.Buyers.Add(buyer);
                     break;
-                case UserRole.Seller:
+                case (int)UserRole.Seller:
                     Seller seller = new Seller(user);
                     this.dbContext.Sellers.Add(seller);
                     break;
@@ -88,11 +88,11 @@ namespace Server.Repository
         public async Task UpdateUserFailedLoginsCount(User user, int newValueOfFailedLogIns)
         {
             // Find the user by their primary key (UserId)
-            User userToUpdate = await this.dbContext.Users.FindAsync(user.UserId)
+            User userToUpdate = await this.dbContext.Users.FindAsync(user.Id)
                                     ?? throw new Exception("UpdateUserFailedLoginsCount: User not found");
 
             // Update the property on the tracked entity
-            userToUpdate.FailedLogins = newValueOfFailedLogIns;
+            userToUpdate.FailedLogIns = newValueOfFailedLogIns;
 
             // EF Core automatically tracks the change, just save it
             await this.dbContext.SaveChangesAsync();
@@ -171,7 +171,7 @@ namespace Server.Repository
         /// </returns>
         public async Task UpdateUserPhoneNumber(User user)
         {
-            User? foundUser = await this.dbContext.Users.FirstOrDefaultAsync(foundUser => foundUser.UserId == user.UserId);
+            User? foundUser = await this.dbContext.Users.FirstOrDefaultAsync(foundUser => foundUser.UserId == user.Id);
             if (foundUser != null)
             {
                 foundUser.PhoneNumber = user.PhoneNumber;
@@ -188,7 +188,7 @@ namespace Server.Repository
         /// </returns>
         public async Task LoadUserPhoneNumberAndEmailById(User user)
         {
-            User? foundUser = await this.dbContext.Users.FirstOrDefaultAsync(foundUser => foundUser.UserId == user.UserId);
+            User? foundUser = await this.dbContext.Users.FirstOrDefaultAsync(foundUser => foundUser.UserId == user.Id);
             if (foundUser != null)
             {
                 user.PhoneNumber = foundUser.PhoneNumber;

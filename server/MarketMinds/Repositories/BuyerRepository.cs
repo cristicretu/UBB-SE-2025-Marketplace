@@ -7,11 +7,11 @@ namespace Server.Repository
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
+    using Server.DataAccessLayer;
     using Server.DataModels;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Repository class for managing buyer-related database operations.
@@ -19,13 +19,13 @@ namespace Server.Repository
     /// <param name="dbContext">The database context instance.</param>
     public class BuyerRepository : IBuyerRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BuyerRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context instance.</param>
-        public BuyerRepository(MarketPlaceDbContext dbContext)
+        public BuyerRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
@@ -346,7 +346,7 @@ namespace Server.Repository
             {
                 Buyer = new Buyer
                 {
-                    User = new User { UserId = linkedBuyerId },
+                    User = new User { Id = linkedBuyerId },
                 },
                 Status = buyerLinkageStatus,
             };

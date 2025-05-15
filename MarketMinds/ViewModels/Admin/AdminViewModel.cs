@@ -7,15 +7,11 @@ namespace MarketPlace924.ViewModel.Admin
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
-    using System.Windows.Input;
-    using LiveChartsCore;
-    using LiveChartsCore.SkiaSharpView;
-    using LiveChartsCore.SkiaSharpView.Painting;
     using MarketMinds.Shared.Models;
-    using SharedClassLibrary.Helper;
     using SharedClassLibrary.Service;
     using Microsoft.UI.Xaml.Controls;
-    using SkiaSharp;
+    using OxyPlot.Series;
+    using OxyPlot.Wpf;
 
     /// <summary>
     /// The admin view model.

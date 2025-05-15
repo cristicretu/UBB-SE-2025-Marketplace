@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace MarketMinds.Shared.Models.DTOs
 {
     public class AuctionProductDTO

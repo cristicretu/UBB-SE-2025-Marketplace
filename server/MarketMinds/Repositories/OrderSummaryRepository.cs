@@ -4,23 +4,23 @@
 
 namespace Server.Repository
 {
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
+    using Server.DataAccessLayer;
     using System.Threading.Tasks;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Provides database operations for order summary management.
     /// </summary>
     public class OrderSummaryRepository : IOrderSummaryRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderSummaryRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public OrderSummaryRepository(MarketPlaceDbContext dbContext)
+        public OrderSummaryRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

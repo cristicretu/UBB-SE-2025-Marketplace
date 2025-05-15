@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Shared.IRepository
@@ -7,7 +6,8 @@ namespace MarketMinds.Shared.IRepository
     {
         Task<bool> UsernameExistsAsync(string username);
         Task<bool> EmailExistsAsync(string email);
-        Task<User> RegisterUserAsync(string username, string email, string passwordHash);
+        Task<User> RegisterUserAsync(string username, string email, string passwordHash, string phoneNumber, int userType, DateTime? bannedUntil, bool isBanned, int failedLogins);
+        //Task<User> RegisterUserAsync(string username, string email, string passwordHash);
         Task<User> FindUserByUsernameAsync(string username);
         
         // merge-nicusor

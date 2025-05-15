@@ -1,10 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 using WebMarketplace.Models;
 using SharedClassLibrary.Service;
-using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace WebMarketplace.Controllers
 {

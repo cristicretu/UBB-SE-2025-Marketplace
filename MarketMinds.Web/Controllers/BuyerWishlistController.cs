@@ -1,10 +1,6 @@
 ﻿// BuyerWishlistController.cs
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using SharedClassLibrary.Service;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using WebMarketplace.Models;
 using MarketMinds.Shared.Models;
 using System.Diagnostics;
@@ -100,8 +96,8 @@ namespace WebMarketplace.Controllers
                 try
                 {
                     user = new MarketMinds.Shared.Models.User(userId);
-                _logger.LogInformation("Created user object with ID: {UserId}", user.UserId);
-                    debugInfo.AppendLine($"User object created: {user.UserId}");
+                _logger.LogInformation("Created user object with ID: {UserId}", user.Id);
+                    debugInfo.AppendLine($"User object created: {user.Id}");
                 }
                 catch (Exception ex)
                 {

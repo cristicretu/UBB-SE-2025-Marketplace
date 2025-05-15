@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
-using System;
-using System.Threading.Tasks;
 using WebMarketplace.Models;
 
 namespace WebMarketplace.Controllers
@@ -55,7 +53,7 @@ namespace WebMarketplace.Controllers
             // This would need to be implemented in your UserService
             // Placeholder for now
             var users = await _userService.GetAllUsers();
-            return users.FirstOrDefault(u => u.UserId == userId) ?? new User(userId);
+            return users.FirstOrDefault(u => u.Id == userId) ?? new User(userId);
         }
 
         /// <summary>

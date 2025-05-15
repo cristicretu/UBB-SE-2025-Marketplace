@@ -1,14 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
-using SharedClassLibrary.Helper;
 using SharedClassLibrary.Service;
-using System;
-using System.Threading.Tasks;
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
-using System.IO;
-using NuGet.Packaging;
 
 namespace WebMarketplace.Controllers
 {

@@ -1,12 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;
-using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.ProductPaginationService;
 using MarketMinds.Shared.Services.BuyProductsService;
 

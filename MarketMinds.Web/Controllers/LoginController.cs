@@ -1,12 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using WebMarketplace.Models;
 using SharedClassLibrary.Service;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
-using MarketMinds.Shared.Models;
 
 namespace WebMarketplace.Controllers
 {
@@ -82,8 +76,8 @@ namespace WebMarketplace.Controllers
             await this._userService.AuthorizationLogin();
 
             await _userService.ResetFailedLogins(model.Email);
-            UserSession.CurrentUserId = user.UserId;
-            if((int)user.Role==2)
+            UserSession.CurrentUserId = user.Id;
+            if((int)user.UserType==2)
             {
                 UserSession.CurrentUserRole = "Buyer";
                 return RedirectToAction("Index", "BuyerProfile");

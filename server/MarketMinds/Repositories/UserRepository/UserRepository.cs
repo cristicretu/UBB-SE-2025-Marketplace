@@ -1,9 +1,4 @@
-using System;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using Server.DataAccessLayer;
@@ -35,15 +30,14 @@ namespace Server.MarketMinds.Repositories.UserRepository
             return await _context.Users.AnyAsync(user => user.Email == email);
         }
 
-        public async Task<User> RegisterUserAsync(string username, string email, string passwordHash)
+        public async Task<User> RegisterUserAsync(string username, string email, string passwordHash, string phoneNumber, int userType, DateTime bannedUntil, bool isBanned, int failedLogins)
         {
             try
             {
-                var user = new User(username, email, passwordHash)
+                var user = new User(username, email, phoneNumber, userType, bannedUntil, isBanned, failedLogins, passwordHash)
                 {
                     Balance = BaseBalance,
                     Rating = BaseRating,
-                    UserType = BuyerTypeValue
                 };
 
                 _context.Users.Add(user);

@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using MarketMinds.Shared.ProxyRepository;
 
 using MarketMinds.Shared.IRepository;

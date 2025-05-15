@@ -3,11 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.ProxyRepository;
 using SharedClassLibrary.Service; // Add this using directive
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
 using Windows.Storage;
 using Windows.System;
 

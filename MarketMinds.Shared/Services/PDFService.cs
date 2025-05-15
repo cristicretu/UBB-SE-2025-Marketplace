@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MarketMinds.Shared.ProxyRepository;
+﻿using MarketMinds.Shared.ProxyRepository;
 
 using MarketMinds.Shared.IRepository;
 using SharedClassLibrary.Helper;
-using MarketMinds.Shared.ProxyRepository;
 
 namespace SharedClassLibrary.Service
 {

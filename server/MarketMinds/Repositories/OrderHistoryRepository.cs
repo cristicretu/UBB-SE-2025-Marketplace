@@ -4,14 +4,10 @@
 
 namespace Server.Repository
 {
-    using System;
     using System.Collections.Generic;
     using System.Data;
     using System.Threading.Tasks;
     using Microsoft.EntityFrameworkCore;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Provides database operations for order history management.
@@ -20,13 +16,13 @@ namespace Server.Repository
     {
         // private readonly string connectionString;
         // private readonly IDatabaseProvider databaseProvider;
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderHistoryRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public OrderHistoryRepository(MarketPlaceDbContext dbContext)
+        public OrderHistoryRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

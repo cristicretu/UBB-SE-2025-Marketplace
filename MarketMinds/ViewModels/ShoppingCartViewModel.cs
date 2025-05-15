@@ -4,10 +4,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System;
 using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
 using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
-using MarketPlace924.ViewModel;
 namespace MarketPlace924.ViewModel
 {
     public class ShoppingCartViewModel : IShoppingCartViewModel

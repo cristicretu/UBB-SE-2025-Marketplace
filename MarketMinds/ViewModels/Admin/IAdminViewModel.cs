@@ -6,8 +6,6 @@ namespace MarketPlace924.ViewModel.Admin
 {
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Windows.Input;
-    using LiveChartsCore;
     using MarketMinds.Shared.Models;
 
     /// <summary>

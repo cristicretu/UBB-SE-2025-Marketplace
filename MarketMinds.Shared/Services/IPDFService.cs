@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace SharedClassLibrary.Service
+﻿namespace SharedClassLibrary.Service
 {
     public interface IPDFService
     {

@@ -1,16 +1,12 @@
-using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.UserService;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using MarketMinds.Web.Models;
 using MarketMinds.Shared.IRepository;
-using System.Collections.Generic;
 
 namespace MarketMinds.Web.Controllers
 {

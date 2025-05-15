@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
-
-using Microsoft.UI.Xaml.Controls;
 
 namespace MarketPlace924.ViewModel
 {

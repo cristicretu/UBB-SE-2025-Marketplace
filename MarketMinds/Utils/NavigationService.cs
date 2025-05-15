@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.UI.Xaml.Controls;
-
-namespace MarketPlace924.Utils
+﻿namespace MarketPlace924.Utils
 {
     /*
     [ExcludeFromCodeCoverage]

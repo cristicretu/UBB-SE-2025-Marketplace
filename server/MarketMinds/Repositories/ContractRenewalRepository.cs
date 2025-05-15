@@ -4,28 +4,26 @@
 
 namespace Server.Repository
 {
-    using System;
     using System.Collections.Generic;
     using System.Data;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Represents a repository for contract renewal operations.
     /// </summary>
     public class ContractRenewalRepository : IContractRenewalRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the ContractRenewalRepository class.
         /// </summary>
         /// <param name="dbContext">The database context instance.</param>
-        public ContractRenewalRepository(MarketPlaceDbContext dbContext)
+        public ContractRenewalRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

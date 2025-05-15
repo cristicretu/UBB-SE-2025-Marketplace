@@ -4,12 +4,6 @@
 
 namespace MarketMinds.Shared.Models
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Provides configuration settings and calculations for buyer-related features.
     /// This class contains constants and methods for managing buyer badges and discounts.

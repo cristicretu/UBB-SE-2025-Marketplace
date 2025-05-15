@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Shared.Services.UserService
 {

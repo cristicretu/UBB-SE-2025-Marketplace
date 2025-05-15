@@ -5,20 +5,16 @@
 namespace MarketPlace924.ViewModel
 {
     using System;
-    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Linq;
     using System.Runtime.CompilerServices;
-    using System.Text;
     using System.Threading.Tasks;
     using System.Windows.Input;
     using MarketMinds.Shared.Models;
     using SharedClassLibrary.Helper;
     using SharedClassLibrary.Service;
     using Microsoft.UI.Xaml.Controls;
-    using Windows.System;
-    using Windows.UI.Notifications;
 
     /// <summary>
     /// ViewModel for managing and displaying the market profile of a seller, including products and follow status.

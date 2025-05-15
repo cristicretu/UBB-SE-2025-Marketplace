@@ -8,23 +8,22 @@ namespace Server.Repository
     using System.Collections.Generic;
     using System.Data;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Represents a repository for contract operations.
     /// </summary>
     public class ContractRepository : IContractRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContractRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public ContractRepository(MarketPlaceDbContext dbContext)
+        public ContractRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
@@ -206,8 +205,8 @@ namespace Server.Repository
 
             // Get the buyer for the order
             Buyer? buyer = await this.dbContext.Buyers
-                .Where(buyer => buyer.Id == order.BuyerID)
-                .FirstOrDefaultAsync() ?? throw new Exception("GetContractBuyerAsync: Buyer not found for buyer ID: " + order.BuyerID);
+                .Where(buyer => buyer.Id == order.BuyerId)
+                .FirstOrDefaultAsync() ?? throw new Exception("GetContractBuyerAsync: Buyer not found for buyer ID: " + order.BuyerId);
 
             // return buyer; // this could be done in the future, I did not do it now because I don't want to change the function signature / repo interface -Alex
             return (buyer.Id, buyer.FirstName + " " + buyer.LastName);
@@ -236,7 +235,7 @@ namespace Server.Repository
             // Get the OrderSummary for the order
             OrderSummary? orderSummaryDb = await this.dbContext.OrderSummary
                 .Where(orderSummary => orderSummary.ID == order.OrderSummaryID)
-                .FirstOrDefaultAsync() ?? throw new Exception("GetOrderSummaryInformationAsync: Order summary not found for order ID: " + order.OrderID);
+                .FirstOrDefaultAsync() ?? throw new Exception("GetOrderSummaryInformationAsync: Order summary not found for order ID: " + order.Id);
 
             // Populate the order summary dictionary
             // Optional fields can be null, so we need to check for null and return the default value
@@ -280,7 +279,7 @@ namespace Server.Repository
                 .FirstOrDefaultAsync() ?? throw new Exception("GetProductDetailsByContractIdAsync: Product not found for product ID: " + order.ProductID);
 
             // Return the product details
-            return (product.StartDate?.DateTime, product.EndDate?.DateTime, product.Price, product.Name);
+            return (product.StartDate?.DateTime, product.EndDate?.DateTime, product.Price, product.Title);
         }
 
         /// <summary>
@@ -302,7 +301,7 @@ namespace Server.Repository
             foreach (Order order in orders)
             {
                 List<Contract> contracts = await this.dbContext.Contracts
-                    .Where(contract => contract.OrderID == order.OrderID)
+                    .Where(contract => contract.OrderID == order.Id)
                     .ToListAsync();
 
                 allContracts.AddRange(contracts); // Add the contracts to the list of all contracts

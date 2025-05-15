@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace MarketMinds.Shared.IRepository
 {
     /// <summary>

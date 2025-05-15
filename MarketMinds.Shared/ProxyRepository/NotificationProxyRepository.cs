@@ -6,15 +6,13 @@ namespace MarketMinds.Shared.ProxyRepository
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using System.Net.Http;
     using System.Net.Http.Json;
-    using System.Text;
     using System.Text.Json;
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Proxy repository class for managing notification operations via REST API.

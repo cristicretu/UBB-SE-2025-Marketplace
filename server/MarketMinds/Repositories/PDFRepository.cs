@@ -4,23 +4,23 @@
 
 namespace Server.Repository
 {
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
+    using Server.DataAccessLayer;
     using System.Threading.Tasks;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Represents a repository for PDF operations.
     /// </summary>
     public class PDFRepository : IPDFRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PDFRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public PDFRepository(MarketPlaceDbContext dbContext)
+        public PDFRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

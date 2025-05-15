@@ -2,14 +2,12 @@
 {
     using System;
     using System.Threading.Tasks;
-    using MarketMinds.Shared.Models;
-    
+
     using MarketPlace924.ViewModel;
     using MarketPlace924;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Navigation;
-    using MarketPlace924.ViewModel;
 
     public sealed partial class BuyerProfileView : Page
     {

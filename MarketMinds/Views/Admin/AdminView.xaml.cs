@@ -6,9 +6,7 @@ namespace MarketPlace924.View.Admin
 {
     using System.Collections.ObjectModel;
     using MarketMinds.Shared.Models;
-    using MarketPlace924.ViewModel;
     using MarketPlace924.ViewModel.Admin;
-    using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Navigation;
 

@@ -9,12 +9,10 @@ namespace Server.Repository
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
-    using Server.DBConnection;
-    using MarketMinds.Shared.IRepository;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Repository for managing shopping cart operations in the database.
@@ -22,13 +20,13 @@ namespace Server.Repository
     public class ShoppingCartRepository : IShoppingCartRepository
     {
         // private DatabaseConnection databaseConnection;
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShoppingCartRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context to be used by the repository.</param>
-        public ShoppingCartRepository(MarketPlaceDbContext dbContext)
+        public ShoppingCartRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

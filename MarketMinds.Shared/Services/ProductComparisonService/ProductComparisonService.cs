@@ -1,4 +1,3 @@
-using System;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Shared.Services.ProductComparisonService

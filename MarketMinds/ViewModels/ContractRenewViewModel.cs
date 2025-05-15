@@ -3,16 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.ProxyRepository;
     using SharedClassLibrary.Service;
-    
-    using QuestPDF.Fluent;
-    using QuestPDF.Helpers;
     using SharedClassLibrary.Helper;
 
     public class ContractRenewViewModel : IContractRenewViewModel

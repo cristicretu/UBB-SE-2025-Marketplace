@@ -6,10 +6,9 @@ namespace Server.Repository
 {
     using System;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
-    using Server.DBConnection;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// A repository for the DummyCardEntity class.
@@ -18,13 +17,13 @@ namespace Server.Repository
     {
         // private readonly string connectionString;
         // private readonly IDatabaseProvider databaseProvider;
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DummyCardRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public DummyCardRepository(MarketPlaceDbContext dbContext)
+        public DummyCardRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

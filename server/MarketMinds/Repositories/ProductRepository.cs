@@ -4,14 +4,13 @@
 
 namespace Server.Repository
 {
-using System;
-using System.Data;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Server.DBConnection;
-using MarketMinds.Shared.Models;
-using MarketMinds.Shared.IRepository;
+    using System;
+    using System.Data;
+    using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
+    using Microsoft.EntityFrameworkCore;
+    using Server.DataAccessLayer;
 
 
     /// <summary>
@@ -19,13 +18,13 @@ using MarketMinds.Shared.IRepository;
     /// </summary>
     public class ProductRepository : IProductRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProductRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public ProductRepository(MarketPlaceDbContext dbContext)
+        public ProductRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

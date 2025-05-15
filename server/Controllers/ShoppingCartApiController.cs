@@ -4,11 +4,10 @@
 
 namespace Server.Controllers
 {
-    using System.Diagnostics;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// API controller for managing shopping cart data.

@@ -8,23 +8,23 @@ namespace Server.Repository
     using System.Collections.Generic;
     using System.Data;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
-    using Server.DBConnection;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.IRepository;
+    using Server.DataAccessLayer;
 
     /// <summary>
     /// Provides data access functionality for tracking orders and their checkpoints.
     /// </summary>
     public class TrackedOrderRepository : ITrackedOrderRepository
     {
-        private readonly MarketPlaceDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TrackedOrderRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public TrackedOrderRepository(MarketPlaceDbContext dbContext)
+        public TrackedOrderRepository(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 
 /// <summary>
 /// Interface for managing products in the service layer.

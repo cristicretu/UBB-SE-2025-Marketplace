@@ -1,12 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using WebMarketplace.Models;
 using SharedClassLibrary.Service;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
-using MarketMinds.Shared.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace WebMarketplace.Controllers
@@ -77,7 +71,7 @@ namespace WebMarketplace.Controllers
 
                 // Automatically log the user in
                 var user = await _userService.GetUserByEmail(model.Email);
-                UserSession.CurrentUserId = user.UserId;
+                UserSession.CurrentUserId = user.Id;
                 TempData["SuccessMessage"] = "Registration successful! Welcome!";
                 return RedirectToAction("Index", "Home"); // Redirect to Home after successful login
             }

@@ -4,7 +4,6 @@
 
 namespace MarketPlace924.View
 {
-    using MarketMinds.Shared.Models;
     using MarketPlace924.ViewModel;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;

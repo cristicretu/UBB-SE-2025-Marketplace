@@ -1,21 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json; // Requires System.Net.Http.Json nuget package
-using System.Text;
+﻿using System.Diagnostics;
 using System.Text.Json;
-using System.Diagnostics;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System.Diagnostics;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration; // For IConfiguration
 using MarketMinds.Shared.Services;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using MarketMinds.Shared.Models;
 
 namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Shared.Services namespace
 {
@@ -270,8 +258,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
                 return null;
             }
 
-            var copy = new User(source.Id, source.Username, source.Email, source.Token);
-            copy.UserType = source.UserType;
+            var copy = new User(source.Id, source.Username, source.Email, source.PhoneNumber, source.UserType, source.Token);
             copy.Balance = source.Balance;
             copy.Rating = source.Rating;
 

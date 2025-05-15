@@ -6,9 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.ProxyRepository;
-
-using MarketMinds.Shared.ProxyRepository;
 using SharedClassLibrary.Service;
 
 namespace MarketPlace924.ViewModel

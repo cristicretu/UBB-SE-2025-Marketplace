@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
 
-using MarketPlace924.Utils;
-
 namespace MarketPlace924.ViewModel
 {
     /// <summary>

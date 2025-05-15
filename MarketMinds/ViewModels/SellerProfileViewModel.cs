@@ -12,13 +12,9 @@ namespace MarketPlace924.ViewModel
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
-    using System.Windows.Input;
     using MarketMinds.Shared.Models;
     using SharedClassLibrary.Service;
-    using Microsoft.Identity.Client;
-    using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
-    using Windows.Networking.NetworkOperators;
 
     /// <summary>
     /// View model for the seller profile page.

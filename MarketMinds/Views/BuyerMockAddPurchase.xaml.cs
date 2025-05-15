@@ -4,8 +4,6 @@
 
 namespace MarketPlace924.View
 {
-    using System;
-    using System.Diagnostics;
     using System.Threading.Tasks;
     using MarketPlace924.ViewModel;
     using Microsoft.UI.Xaml.Controls;

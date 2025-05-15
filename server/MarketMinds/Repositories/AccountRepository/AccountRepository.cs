@@ -1,10 +1,4 @@
-using System;
-using System.Linq;
-using System.Transactions;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using DataAccessLayer;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 

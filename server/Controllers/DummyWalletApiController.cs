@@ -6,10 +6,10 @@ namespace Server.Controllers
 {
     using System;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// API controller for managing dummy wallet data.

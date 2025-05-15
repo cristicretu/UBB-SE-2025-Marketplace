@@ -1,9 +1,5 @@
-using System;
 using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
