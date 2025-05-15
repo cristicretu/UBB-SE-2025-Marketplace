@@ -69,7 +69,7 @@ namespace MarketMinds.Shared.Models
         /// Gets the unique identifier of the buyer.
         /// This property is derived from the associated User's ID.
         /// </summary>
-        public int Id { get => this.User.UserId; set => this.User.UserId = value; }
+        public int Id { get => this.User.Id; set => this.User.Id = value; }
 
         /// <summary>
         /// Gets or sets the buyer's first name.

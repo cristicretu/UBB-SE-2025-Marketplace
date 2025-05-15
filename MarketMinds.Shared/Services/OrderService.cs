@@ -133,7 +133,7 @@ namespace SharedClassLibrary.Service
             var borrowedOrders = await orderRepository.GetBorrowedOrderHistoryAsync(0);
             foreach (var order in borrowedOrders)
             {
-                if (order.OrderID == orderId)
+                if (order.Id == orderId)
                 {
                     return order;
                 }
@@ -142,7 +142,7 @@ namespace SharedClassLibrary.Service
             var newUsedOrders = await orderRepository.GetNewOrUsedOrderHistoryAsync(0);
             foreach (var order in newUsedOrders)
             {
-                if (order.OrderID == orderId)
+                if (order.Id == orderId)
                 {
                     return order;
                 }

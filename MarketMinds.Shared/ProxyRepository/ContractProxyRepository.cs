@@ -24,9 +24,9 @@
         /// <param name="baseApiUrl">The base url of the API.</param>
         public ContractProxyRepository(string baseApiUrl)
         {
-            var _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            this.httpClient = new HttpClient(_httpClient);
+            this.httpClient = new HttpClient();
+            this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
+            
         }
 
         /// <inheritdoc />

@@ -193,7 +193,7 @@ namespace SharedClassLibrary.Service
                 throw new ArgumentNullException($"{email} is not a user");
             }
 
-            int userId = user.UserId;
+            int userId = user.Id;
             return await this.userRepository.GetFailedLoginsCountByUserId(userId);
         }
 

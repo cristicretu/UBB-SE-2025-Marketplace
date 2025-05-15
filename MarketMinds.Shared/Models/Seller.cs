@@ -54,7 +54,7 @@ namespace MarketMinds.Shared.Models
         /// <summary>
         /// Gets the unique identifier of the seller, which is the same as the user's ID.
         /// </summary>
-        public int Id { get => this.User.UserId; set => this.User.UserId = value; }
+        public int Id { get => this.User.Id; set => this.User.Id = value; }
 
         /// <summary>
         /// Gets the email address of the seller.

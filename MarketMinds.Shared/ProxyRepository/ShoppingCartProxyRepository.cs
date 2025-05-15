@@ -18,9 +18,8 @@ namespace MarketMinds.Shared.ProxyRepository
 
         public ShoppingCartProxyRepository(string baseApiUrl)
         {
-            var _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            this.httpClient = new HttpClient(_httpClient);
+            this.httpClient = new HttpClient();
+            this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
         }
 
         public async Task AddProductToCartAsync(int buyerId, int productId, int quantity)

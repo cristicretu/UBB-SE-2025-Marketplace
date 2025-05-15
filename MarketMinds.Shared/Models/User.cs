@@ -19,7 +19,7 @@ namespace MarketMinds.Shared.Models
         public string Email { get; set; }
 
         [Column("phoneNumber")]
-        public int PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
 
         [Column("passwordHash")]
         public string? PasswordHash { get; set; }
@@ -41,10 +41,10 @@ namespace MarketMinds.Shared.Models
         public int FailedLogIns { get; set; }
 
         [Column("bannedUntil")]
-        public int BannedUntil { get; set; }
+        public DateTime? BannedUntil { get; set; }
 
         [Column("isBanned")]
-        public int IsBanned { get; set; }
+        public bool IsBanned { get; set; }
 
         [NotMapped]
         public string Token { get; set; } = string.Empty;

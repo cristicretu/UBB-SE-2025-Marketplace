@@ -31,9 +31,8 @@ namespace MarketMinds.Shared.ProxyRepository
         /// <param name="baseApiUrl">The base URL of the API (e.g., "http://localhost:5000/").</param>
         public SellerProxyRepository(string baseApiUrl)
         {
-            var _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            this.httpClient = new HttpClient(_httpClient);
+            this.httpClient = new HttpClient();
+            this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
         }
 
         /// <inheritdoc />
@@ -97,7 +96,7 @@ namespace MarketMinds.Shared.ProxyRepository
         /// <inheritdoc />
         public async Task<Seller> GetSellerInfo(User user)
         {
-            int userId = user.UserId;
+            int userId = user.Id;
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{userId}/info");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)

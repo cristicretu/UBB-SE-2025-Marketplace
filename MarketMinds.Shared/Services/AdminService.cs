@@ -53,7 +53,7 @@ namespace SharedClassLibrary.Service
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         public async Task SetUserAdmin(User user)
         {
-            user.Role = UserRole.Admin;
+            user.UserType = (int)UserRole.Admin;
             await this.userRepository.UpdateUser(user);
         }
     }

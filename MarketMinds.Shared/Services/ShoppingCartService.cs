@@ -216,7 +216,7 @@ namespace SharedClassLibrary.Service
 
             // Try to find the product in cart items first (if it's already in someone's cart)
             var products = await this.shoppingCartRepository.GetCartItemsAsync(buyerId);
-            var product = products.FirstOrDefault(p => p.ProductId == productId);
+            var product = products.FirstOrDefault(p => p.Id == productId);
 
             if (product == null)
             {
