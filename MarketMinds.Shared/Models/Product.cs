@@ -28,6 +28,13 @@ namespace MarketMinds.Shared.Models // Adjusted namespace to server.Models
         [Column("category_id")]
         public int CategoryId { get; set; }
 
+        // merge-nicusor
+        [Column("price")]
+        public int Price { get; set; }
+
+        [Column("stock")]
+        public int Stock { get; set; }
+
         // Navigation properties
         [ForeignKey("SellerId")]
         public User? Seller { get; set; }

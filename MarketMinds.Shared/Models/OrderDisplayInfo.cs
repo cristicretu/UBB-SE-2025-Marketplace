@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SharedClassLibrary.Domain
+namespace MarketMinds.Shared.Models
 {
     /// <summary>
     /// Represents order details along with product information.

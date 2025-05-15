@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Data.SqlClient;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using MarketPlace924.Services;
 using MarketPlace924.ViewModel;
 

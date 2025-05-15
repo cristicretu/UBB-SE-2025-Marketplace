@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketPlace924.Services
 {

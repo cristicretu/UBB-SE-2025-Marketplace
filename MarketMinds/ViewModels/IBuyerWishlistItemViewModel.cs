@@ -4,7 +4,7 @@
 
 namespace MarketPlace924.ViewModel
 {
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq;

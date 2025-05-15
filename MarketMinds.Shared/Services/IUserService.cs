@@ -6,7 +6,7 @@ namespace SharedClassLibrary.Service
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Provides operations related to user management.

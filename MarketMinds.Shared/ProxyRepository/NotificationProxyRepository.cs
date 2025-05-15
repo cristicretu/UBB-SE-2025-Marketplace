@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SharedClassLibrary.ProxyRepository
+namespace MarketMinds.Shared.ProxyRepository
 {
     using System;
     using System.Collections.Generic;
@@ -12,9 +12,9 @@ namespace SharedClassLibrary.ProxyRepository
     using System.Text;
     using System.Text.Json;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
-    using SharedClassLibrary.Shared;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
+    
 
     /// <summary>
     /// Proxy repository class for managing notification operations via REST API.
@@ -22,7 +22,7 @@ namespace SharedClassLibrary.ProxyRepository
     public class NotificationProxyRepository : INotificationRepository
     {
         private const string ApiBaseRoute = "api/notifications";
-        private readonly CustomHttpClient httpClient;
+        private readonly HttpClient httpClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationProxyRepository"/> class.
@@ -32,7 +32,7 @@ namespace SharedClassLibrary.ProxyRepository
         {
             var _httpClient = new HttpClient();
             _httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            this.httpClient = new CustomHttpClient(_httpClient);
+            this.httpClient = new HttpClient(_httpClient);
         }
 
         /// <inheritdoc />

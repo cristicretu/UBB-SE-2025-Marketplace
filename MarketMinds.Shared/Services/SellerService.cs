@@ -11,8 +11,8 @@ namespace SharedClassLibrary.Service
     using System.Linq;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Provides services related to seller operations.

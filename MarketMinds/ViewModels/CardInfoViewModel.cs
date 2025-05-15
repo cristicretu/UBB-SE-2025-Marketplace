@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using SharedClassLibrary.Domain;
-using SharedClassLibrary.ProxyRepository;
-using SharedClassLibrary.Shared;
-using SharedClassLibrary.IRepository;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.ProxyRepository;
+
+using MarketMinds.Shared.IRepository;
 using SharedClassLibrary.Helper;
 
 namespace MarketPlace924.ViewModel

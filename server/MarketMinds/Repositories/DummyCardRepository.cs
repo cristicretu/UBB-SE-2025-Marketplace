@@ -9,7 +9,7 @@ namespace Server.Repository
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
     using Server.DBConnection;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// A repository for the DummyCardEntity class.

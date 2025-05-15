@@ -31,6 +31,9 @@ namespace MarketMinds.Shared.Models
         [Column("reviewer_id")]
         public int BuyerId { get; set; }
 
+        [Column("score")]
+        public int Score { get; set; }
+
         [NotMapped]
         public string SellerUsername { get; set; } = string.Empty;
 

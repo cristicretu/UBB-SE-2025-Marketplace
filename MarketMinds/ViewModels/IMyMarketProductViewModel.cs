@@ -5,7 +5,7 @@
 namespace MarketPlace924.ViewModel
 {
     using System.Windows.Input;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Interface representing a single product in the "My Market" view.

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using SharedClassLibrary.Domain;
-using SharedClassLibrary.IRepository;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 using Microsoft.Data.SqlClient;
-using SharedClassLibrary.ProxyRepository;
+using MarketMinds.Shared.ProxyRepository;
 using SharedClassLibrary.Helper;
 
 namespace MarketPlace924.Services

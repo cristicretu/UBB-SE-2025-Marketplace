@@ -6,7 +6,7 @@ using WebMarketplace.Models;
 using SharedClassLibrary.Service;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace WebMarketplace.Controllers

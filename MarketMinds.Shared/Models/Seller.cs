@@ -3,7 +3,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-namespace SharedClassLibrary.Domain
+namespace MarketMinds.Shared.Models
 {
     using System;
     using System.Collections.Generic;

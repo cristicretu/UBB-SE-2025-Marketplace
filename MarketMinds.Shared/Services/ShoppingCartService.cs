@@ -10,9 +10,9 @@ namespace SharedClassLibrary.Service
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
-    using SharedClassLibrary.ProxyRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
+    using MarketMinds.Shared.ProxyRepository;
     using SharedClassLibrary.Helper;
 
 

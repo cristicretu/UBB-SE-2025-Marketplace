@@ -6,7 +6,7 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SharedClassLibrary.Domain;
+namespace MarketMinds.Shared.Models;
 
 /// <summary>
 /// Represents a physical address.

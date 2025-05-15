@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
 using System;
 using System.Diagnostics;

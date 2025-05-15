@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SharedClassLibrary.Domain;
-using SharedClassLibrary.ProxyRepository; // Added using for Repository namespace
-using SharedClassLibrary.IRepository;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.ProxyRepository; // Added using for Repository namespace
+using MarketMinds.Shared.IRepository;
 
 namespace SharedClassLibrary.Service
 {

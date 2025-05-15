@@ -27,6 +27,12 @@ namespace MarketMinds.Shared.Models
         [ForeignKey("SellerId")]
         public virtual User Seller { get; set; } = null!; // Navigation property for the seller
 
+        public int ProductID { get; set; }
+        public string ProductType { get; set; } // will be populated from Products table based on ProductID
+        public string PaymentMethod { get; set; } // constraint {'card', 'wallet', 'cash'}
+        public int OrderSummaryID { get; set; }
+        public DateTimeOffset OrderDate { get; set; }
+        public int OrderHistoryID { get; set; }
         // Cannot map Buyer directly as FK if BuyerId can be -1
         // We can still query by BuyerId, just not use a direct navigation property easily.
 

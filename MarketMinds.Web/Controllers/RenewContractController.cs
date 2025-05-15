@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
 using System;
 using System.Collections.Generic;

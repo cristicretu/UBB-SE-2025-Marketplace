@@ -4,11 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SharedClassLibrary.IRepository
+namespace MarketMinds.Shared.IRepository
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Defines the interface for managing seller-related data operations.

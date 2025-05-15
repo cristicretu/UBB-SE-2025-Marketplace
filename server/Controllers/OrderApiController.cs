@@ -11,8 +11,8 @@ namespace Server.Controllers
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using SharedClassLibrary.DataTransferObjects;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// API controller for managing order data.

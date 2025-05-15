@@ -6,12 +6,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using MarketPlace924.ViewModel;
 using Microsoft.UI.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using SharedClassLibrary.Service; // Add this using directive if not present
-using SharedClassLibrary.Shared; // Add this using directive for Configuration
+ // Add this using directive for Configuration
 
 namespace MarketPlace924
 {

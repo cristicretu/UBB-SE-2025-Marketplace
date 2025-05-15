@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using SharedClassLibrary.Helper;
-using SharedClassLibrary.IRepository;
+using MarketMinds.Shared.IRepository;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

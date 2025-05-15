@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SharedClassLibrary.Service;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using System.Threading.Tasks;
 using System.Security.Claims;
 using System;

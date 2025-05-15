@@ -8,7 +8,7 @@ namespace SharedClassLibrary.Service
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Interface for service operations related to shopping cart functionality.

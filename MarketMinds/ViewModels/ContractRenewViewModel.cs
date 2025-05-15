@@ -7,10 +7,10 @@
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.ProxyRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.ProxyRepository;
     using SharedClassLibrary.Service;
-    using SharedClassLibrary.Shared;
+    
     using QuestPDF.Fluent;
     using QuestPDF.Helpers;
     using SharedClassLibrary.Helper;

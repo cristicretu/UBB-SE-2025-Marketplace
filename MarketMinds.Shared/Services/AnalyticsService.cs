@@ -5,7 +5,7 @@
 namespace SharedClassLibrary.Service
 {
     using System.Threading.Tasks;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Provides services related to users and buyers.

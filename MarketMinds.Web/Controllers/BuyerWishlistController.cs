@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WebMarketplace.Models;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using System.Diagnostics;
 using System.Text;
 
@@ -99,7 +99,7 @@ namespace WebMarketplace.Controllers
                 User user;
                 try
                 {
-                    user = new SharedClassLibrary.Domain.User(userId);
+                    user = new MarketMinds.Shared.Models.User(userId);
                 _logger.LogInformation("Created user object with ID: {UserId}", user.UserId);
                     debugInfo.AppendLine($"User object created: {user.UserId}");
                 }
@@ -242,7 +242,7 @@ namespace WebMarketplace.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                var user = new SharedClassLibrary.Domain.User(userId);
+                var user = new MarketMinds.Shared.Models.User(userId);
                 var buyer = await _buyerService.GetBuyerByUser(user);
 
                 if (buyer == null)
@@ -292,7 +292,7 @@ namespace WebMarketplace.Controllers
                 int userId = GetCurrentUserId();
 
                 // Create a basic User object instead of fetching all users
-                var user = new SharedClassLibrary.Domain.User(userId);
+                var user = new MarketMinds.Shared.Models.User(userId);
 
                 var buyer = await _buyerService.GetBuyerByUser(user);
 
@@ -331,7 +331,7 @@ namespace WebMarketplace.Controllers
                 int userId = GetCurrentUserId();
 
                 // Create a basic User object instead of fetching all users
-                var user = new SharedClassLibrary.Domain.User(userId);
+                var user = new MarketMinds.Shared.Models.User(userId);
 
                 var buyer = await _buyerService.GetBuyerByUser(user);
 

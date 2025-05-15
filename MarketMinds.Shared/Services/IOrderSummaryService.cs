@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 
 namespace SharedClassLibrary.Service
 {

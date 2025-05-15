@@ -18,6 +18,9 @@ namespace MarketMinds.Shared.Models
         [Column("email")]
         public string Email { get; set; }
 
+        [Column("phoneNumber")]
+        public int PhoneNumber { get; set; }
+
         [Column("passwordHash")]
         public string? PasswordHash { get; set; }
 
@@ -32,6 +35,16 @@ namespace MarketMinds.Shared.Models
 
         [Column("rating")]
         public double Rating { get; set; }
+
+
+        [Column("failedLogIns")]
+        public int FailedLogIns { get; set; }
+
+        [Column("bannedUntil")]
+        public int BannedUntil { get; set; }
+
+        [Column("isBanned")]
+        public int IsBanned { get; set; }
 
         [NotMapped]
         public string Token { get; set; } = string.Empty;

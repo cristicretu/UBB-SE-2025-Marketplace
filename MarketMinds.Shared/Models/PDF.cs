@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace SharedClassLibrary.Domain
+namespace MarketMinds.Shared.Models
 {
     // this class has 0 references in code!!! - Alex (delete when merging if needed)
     [ExcludeFromCodeCoverage]

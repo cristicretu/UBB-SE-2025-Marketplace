@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace WebMarketplace.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                var user = new SharedClassLibrary.Domain.User(userId);
+                var user = new MarketMinds.Shared.Models.User(userId);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -83,7 +83,7 @@ namespace WebMarketplace.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                var user = new SharedClassLibrary.Domain.User(userId);
+                var user = new MarketMinds.Shared.Models.User(userId);
 
                 if (user == null)
                 {

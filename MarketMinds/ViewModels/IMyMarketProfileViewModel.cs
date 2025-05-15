@@ -7,7 +7,7 @@ namespace MarketPlace924.ViewModel
     using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Windows.Input;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
 /// <summary>
     /// Interface for MyMarketProfileViewModel.

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SharedClassLibrary.Domain;
-using SharedClassLibrary.ProxyRepository;
-using SharedClassLibrary.Shared;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.ProxyRepository;
+
 using Microsoft.Data.SqlClient; // Assuming Configuration and SqlDatabaseProvider are here
-using SharedClassLibrary.IRepository;
+using MarketMinds.Shared.IRepository;
 using SharedClassLibrary.Helper;
 
 namespace SharedClassLibrary.Service

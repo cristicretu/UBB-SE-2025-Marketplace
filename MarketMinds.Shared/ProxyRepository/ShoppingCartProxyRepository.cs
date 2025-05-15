@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SharedClassLibrary.Domain;
-using SharedClassLibrary.IRepository;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 using System.Net.Http;
 using System.Net.Http.Json;
-using SharedClassLibrary.Shared;
 
-namespace SharedClassLibrary.ProxyRepository
+
+namespace MarketMinds.Shared.ProxyRepository
 {
     public class ShoppingCartProxyRepository : IShoppingCartRepository
     {
         private const string ApiBaseRoute = "api/shoppingcart";
-        private readonly CustomHttpClient httpClient;
+        private readonly HttpClient httpClient;
 
         public ShoppingCartProxyRepository(string baseApiUrl)
         {
             var _httpClient = new HttpClient();
             _httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            this.httpClient = new CustomHttpClient(_httpClient);
+            this.httpClient = new HttpClient(_httpClient);
         }
 
         public async Task AddProductToCartAsync(int buyerId, int productId, int quantity)

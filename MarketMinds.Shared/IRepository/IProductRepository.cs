@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using System.Collections.Generic;
 
-namespace SharedClassLibrary.IRepository
+namespace MarketMinds.Shared.IRepository
 {
     /// <summary>
     /// Defines database operations for dummy products.

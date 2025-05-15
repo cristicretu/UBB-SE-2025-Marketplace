@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
-using SharedClassLibrary.Shared;
+
 
 namespace MarketPlace924.ViewModel
 {

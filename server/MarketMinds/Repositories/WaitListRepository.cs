@@ -11,8 +11,8 @@ namespace Server.Repository
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
     using Server.DBConnection;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Provides data access functionality for managing waitlists and user waitlist entries.

@@ -6,7 +6,7 @@
     xmlns:local="using:MarketPlace924"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:Domain="using:SharedClassLibrary.Domain"
+    xmlns:Domain="using:MarketMinds.Shared.Models"
     xmlns:viewmodel="using:MarketPlace924.ViewModel"
     mc:Ignorable="d">
 

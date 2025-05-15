@@ -5,7 +5,7 @@
 namespace MarketPlace924.ViewModel
 {
     using System.ComponentModel;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// View model class for managing buyer address data and notifications.

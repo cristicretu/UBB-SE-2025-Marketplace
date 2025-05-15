@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics;
-using SharedClassLibrary.IRepository;
+using MarketMinds.Shared.IRepository;
 using SharedClassLibrary.Service;
 using System.Net;
 using SharedClassLibrary.Helper;

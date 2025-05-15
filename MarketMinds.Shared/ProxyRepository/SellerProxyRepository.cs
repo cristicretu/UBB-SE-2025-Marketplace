@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SharedClassLibrary.ProxyRepository
+namespace MarketMinds.Shared.ProxyRepository
 {
     using System;
     using System.Collections.Generic;
@@ -12,9 +12,9 @@ namespace SharedClassLibrary.ProxyRepository
     using System.Net.Http.Json;
     using System.Threading.Tasks;
     using System.Web;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
-    using SharedClassLibrary.Shared;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
+    
 
     /// <summary>
     /// A repository implementation that acts as a proxy for seller-related operations
@@ -23,7 +23,7 @@ namespace SharedClassLibrary.ProxyRepository
     public class SellerProxyRepository : ISellerRepository
     {
         private const string ApiBaseRoute = "api/sellers";
-        private readonly CustomHttpClient httpClient;
+        private readonly HttpClient httpClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SellerProxyRepository"/> class.
@@ -33,7 +33,7 @@ namespace SharedClassLibrary.ProxyRepository
         {
             var _httpClient = new HttpClient();
             _httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            this.httpClient = new CustomHttpClient(_httpClient);
+            this.httpClient = new HttpClient(_httpClient);
         }
 
         /// <inheritdoc />

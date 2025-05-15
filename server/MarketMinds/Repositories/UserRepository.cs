@@ -11,8 +11,8 @@ namespace Server.Repository
     using System.Threading.Tasks;
     using Microsoft.EntityFrameworkCore;
     using Server.DBConnection;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Provides methods for interacting with the Users table in the database.

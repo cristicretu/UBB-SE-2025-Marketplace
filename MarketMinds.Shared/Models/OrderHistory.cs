@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace SharedClassLibrary.Domain
+namespace MarketMinds.Shared.Models
 {
     [ExcludeFromCodeCoverage]
     public class OrderHistory

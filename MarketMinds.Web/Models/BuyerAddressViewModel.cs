@@ -25,7 +25,7 @@ namespace WebMarketplace.Models
 }
 
 
-//using SharedClassLibrary.Domain;
+//using MarketMinds.Shared.Models;
 
 //namespace WebMarketplace.Models
 //{

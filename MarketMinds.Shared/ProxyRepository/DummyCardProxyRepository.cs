@@ -2,14 +2,14 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SharedClassLibrary.ProxyRepository
+namespace MarketMinds.Shared.ProxyRepository
 {
     using System;
     using System.Net.Http;
     using System.Net.Http.Json;
     using System.Threading.Tasks;
-    using SharedClassLibrary.IRepository;
-    using SharedClassLibrary.Shared;
+    using MarketMinds.Shared.IRepository;
+    
 
     /// <summary>
     /// Proxy repository class for managing dummy card operations via REST API.
@@ -17,7 +17,7 @@ namespace SharedClassLibrary.ProxyRepository
     public class DummyCardProxyRepository : IDummyCardRepository
     {
         private const string ApiBaseRoute = "api/dummycards";
-        private readonly CustomHttpClient httpClient;
+        private readonly HttpClient httpClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DummyCardProxyRepository"/> class.
@@ -27,7 +27,7 @@ namespace SharedClassLibrary.ProxyRepository
         {
             var _httpClient = new HttpClient();
             _httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            this.httpClient = new CustomHttpClient(_httpClient);
+            this.httpClient = new HttpClient(_httpClient);
         }
 
         /// <inheritdoc />

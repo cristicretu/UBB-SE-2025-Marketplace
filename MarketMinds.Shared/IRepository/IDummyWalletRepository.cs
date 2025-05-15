@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace SharedClassLibrary.IRepository
+namespace MarketMinds.Shared.IRepository
 {
     /// <summary>
     /// Defines database operations for wallet management.

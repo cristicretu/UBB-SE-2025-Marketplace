@@ -10,9 +10,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Server.DBConnection;
-using SharedClassLibrary.Domain;
-using SharedClassLibrary.IRepository;
-using SharedClassLibrary.Shared;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
+
 
     /// <summary>
     /// Represents a repository for managing products in the database.

@@ -1,4 +1,4 @@
-﻿namespace SharedClassLibrary.Domain
+﻿namespace MarketMinds.Shared.Models
 {
     public interface IContract
     {

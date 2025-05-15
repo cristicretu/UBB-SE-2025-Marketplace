@@ -8,7 +8,7 @@ namespace SharedClassLibrary.Service
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Defines the interface for seller-related operations.

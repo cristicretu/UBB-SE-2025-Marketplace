@@ -1,4 +1,4 @@
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

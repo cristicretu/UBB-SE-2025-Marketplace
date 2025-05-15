@@ -9,8 +9,8 @@ namespace MarketPlace924.ViewModel
     using System.Windows.Input;
     using SharedClassLibrary.Service;
     using CommunityToolkit.Mvvm.Input;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.ProxyRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.ProxyRepository;
     /// <summary>
     /// View model class for managing buyer wishlist item data and operations.
     /// </summary>

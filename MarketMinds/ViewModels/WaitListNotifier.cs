@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using SharedClassLibrary.ProxyRepository;
+using MarketMinds.Shared.ProxyRepository;
 using Microsoft.Data.SqlClient;
-using SharedClassLibrary.Domain;
-using SharedClassLibrary.IRepository;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 using SharedClassLibrary.Helper;
 
 [ExcludeFromCodeCoverage]

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Data;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 
-namespace SharedClassLibrary.IRepository
+namespace MarketMinds.Shared.IRepository
 {
     public interface INotificationRepository
     {

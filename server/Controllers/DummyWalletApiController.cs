@@ -9,7 +9,7 @@ namespace Server.Controllers
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// API controller for managing dummy wallet data.

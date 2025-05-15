@@ -10,8 +10,8 @@ namespace Server.Repository
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
     using Server.DBConnection;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Repository class for managing buyer-related database operations.

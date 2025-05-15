@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml;
 using MarketPlace924.Services;
 using SharedClassLibrary.Service;

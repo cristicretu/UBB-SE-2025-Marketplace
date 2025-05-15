@@ -2,8 +2,8 @@
 {
     using System;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.Shared;
+    using MarketMinds.Shared.Models;
+    
     using MarketPlace924.ViewModel;
     using MarketPlace924;
     using Microsoft.UI.Xaml;

@@ -2,14 +2,15 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SharedClassLibrary.IRepository
+namespace MarketMinds.Shared.IRepository
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Interface for managing buyer-related database operations.

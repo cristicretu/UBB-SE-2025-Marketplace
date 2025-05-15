@@ -13,7 +13,7 @@ namespace MarketPlace924.ViewModel
     using System.Text;
     using System.Threading.Tasks;
     using System.Windows.Input;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Interface defining the contract for the seller profile view model.

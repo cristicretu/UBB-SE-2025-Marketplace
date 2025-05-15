@@ -10,7 +10,7 @@ namespace MarketPlace924.ViewModel
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Interface for managing buyer badge view model operations.

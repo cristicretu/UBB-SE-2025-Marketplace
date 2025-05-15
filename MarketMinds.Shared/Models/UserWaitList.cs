@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SharedClassLibrary.Domain
+namespace MarketMinds.Shared.Models
 {
     public class UserWaitList
     {

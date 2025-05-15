@@ -1,6 +1,6 @@
 ﻿namespace SharedClassLibrary.DataTransferObjects
 {
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Represents the data needed to add a new contract, including the PDF file.

@@ -11,8 +11,8 @@ namespace SharedClassLibrary.Service
     using System.Text;
     using System.Threading.Tasks;
     using SharedClassLibrary.Helper;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Provides operations related to user management.

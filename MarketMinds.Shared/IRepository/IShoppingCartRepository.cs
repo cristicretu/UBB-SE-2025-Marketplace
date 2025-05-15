@@ -4,9 +4,9 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 
-namespace SharedClassLibrary.IRepository
+namespace MarketMinds.Shared.IRepository
 {
     public interface IShoppingCartRepository
     {

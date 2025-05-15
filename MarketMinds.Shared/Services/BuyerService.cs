@@ -9,8 +9,8 @@ namespace SharedClassLibrary.Service
     using System.Linq;
     using System.Threading.Tasks;
     using SharedClassLibrary.Helper;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Represents the different segments of buyer data that can be loaded.

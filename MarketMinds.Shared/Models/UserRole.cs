@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SharedClassLibrary.Domain;
+namespace MarketMinds.Shared.Models;
 
 /// <summary>
 /// Defines the roles a user can have within the system.

@@ -1,6 +1,6 @@
 namespace SharedClassLibrary.Service
 {
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
     using System.Threading.Tasks;
 
     /// <summary>

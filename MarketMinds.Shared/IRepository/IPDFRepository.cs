@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SharedClassLibrary.IRepository
+namespace MarketMinds.Shared.IRepository
 {
     public interface IPDFRepository
     {

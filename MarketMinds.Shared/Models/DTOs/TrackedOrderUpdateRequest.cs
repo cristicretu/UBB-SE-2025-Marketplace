@@ -1,6 +1,6 @@
 ﻿namespace SharedClassLibrary.DataTransferObjects
 {
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Data Transfer Object for updating a TrackedOrder.

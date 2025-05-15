@@ -9,7 +9,7 @@ namespace MarketPlace924.ViewModel
     using System.ComponentModel;
     using System.Linq;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
     using SharedClassLibrary.Service;
 
     /// <summary>

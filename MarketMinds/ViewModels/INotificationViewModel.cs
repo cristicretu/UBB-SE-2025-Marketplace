@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketPlace924.ViewModel
 {

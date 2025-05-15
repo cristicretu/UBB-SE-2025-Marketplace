@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SharedClassLibrary.Domain
+namespace MarketMinds.Shared.Models
 {
     /// <summary>
     /// Represents a linkage between buyers in the marketplace.

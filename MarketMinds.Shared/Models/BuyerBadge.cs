@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SharedClassLibrary.Domain
+namespace MarketMinds.Shared.Models
 {
     /// <summary>
     /// Represents the different badge levels that a buyer can achieve.

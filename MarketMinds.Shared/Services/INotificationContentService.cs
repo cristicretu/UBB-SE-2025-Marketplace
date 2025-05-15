@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using SharedClassLibrary.Domain;
+using MarketMinds.Shared.Models;
 
 namespace SharedClassLibrary.Service
 {

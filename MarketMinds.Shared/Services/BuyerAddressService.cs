@@ -1,5 +1,5 @@
-﻿using SharedClassLibrary.Domain;
-using SharedClassLibrary.IRepository;
+﻿using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 using SharedClassLibrary.Service;
 
 public class BuyerAddressService : IBuyerAddressService

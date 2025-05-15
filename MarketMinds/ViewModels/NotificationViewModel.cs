@@ -5,10 +5,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using SharedClassLibrary.Domain;
-using SharedClassLibrary.ProxyRepository;
-using SharedClassLibrary.Shared;
-using SharedClassLibrary.ProxyRepository;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.ProxyRepository;
+
+using MarketMinds.Shared.ProxyRepository;
 using SharedClassLibrary.Service;
 
 namespace MarketPlace924.ViewModel

@@ -1,4 +1,4 @@
-﻿namespace SharedClassLibrary.ProxyRepository
+﻿namespace MarketMinds.Shared.ProxyRepository
 {
     using System;
     using System.Collections.Generic;
@@ -7,9 +7,8 @@
     using System.Text.Json;
     using System.Threading.Tasks;
     using SharedClassLibrary.DataTransferObjects;
-    using SharedClassLibrary.Domain;
-    using SharedClassLibrary.IRepository;
-    using SharedClassLibrary.Shared;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Proxy repository class for managing contract operations via REST API.
@@ -17,7 +16,7 @@
     public class ContractProxyRepository : IContractRepository
     {
         private const string ApiBaseRoute = "api/contracts";
-        private readonly CustomHttpClient httpClient;
+        private readonly HttpClient httpClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContractProxyRepository"/> class.
@@ -27,7 +26,7 @@
         {
             var _httpClient = new HttpClient();
             _httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            this.httpClient = new CustomHttpClient(_httpClient);
+            this.httpClient = new HttpClient(_httpClient);
         }
 
         /// <inheritdoc />

@@ -6,7 +6,7 @@ namespace MarketPlace924.ViewModel.Admin
 {
     using System;
     using System.Windows.Input;
-    using SharedClassLibrary.Domain;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// The user row view model interface.

@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SharedClassLibrary.Domain
+namespace MarketMinds.Shared.Models
 {
     /// <summary>
     /// Represents an item in a buyer's wishlist.
