@@ -1,13 +1,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using MarketPlace924.ViewModel;
+using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
-namespace MarketPlace924.View
+namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
     /// <summary>

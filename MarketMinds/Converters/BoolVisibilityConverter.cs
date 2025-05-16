@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace MarketPlace924.Converters
+namespace MarketMinds.Converters
 {
     using System;
     using Microsoft.UI.Xaml;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     /// <summary>
     /// Defines operations for managing orders including adding, deleting, and retrieval of orders and their summaries.

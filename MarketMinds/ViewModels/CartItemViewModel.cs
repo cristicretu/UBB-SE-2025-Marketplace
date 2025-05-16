@@ -1,7 +1,7 @@
 ﻿using System.Windows.Input;
 using MarketMinds.Shared.Models;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class CartItemViewModel
     {

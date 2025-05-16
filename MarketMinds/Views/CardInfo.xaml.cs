@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using MarketPlace924.ViewModel;
+using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace MarketPlace924
+namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class CardInfo : Page

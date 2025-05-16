@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="MarketPlace924.View.SignUpPage"
+    x:Class="MarketMinds.Views.SignUpPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:MarketPlace924.View"
+    xmlns:local="using:MarketMinds.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -15,7 +15,7 @@
 
 				<!-- Title -->
 				<TextBlock Text="Signup Page" FontSize="36" FontWeight="Bold" TextAlignment="Center" Foreground="#0D47A1"/>
-				<TextBlock Text="Join MarketPlace924 today!" FontSize="20" TextAlignment="Center" Foreground="#1976D2"/>
+				<TextBlock Text="Join MarketMinds today!" FontSize="20" TextAlignment="Center" Foreground="#1976D2"/>
 				<TextBlock x:Name="ErrorMessage" Text="" FontSize="16" Foreground="Red" TextAlignment="Center"/>
 
 				<!-- Username -->

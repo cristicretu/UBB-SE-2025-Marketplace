@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-namespace MarketPlace924.Services
+namespace MarketMinds.ViewModels
 {
     /// <summary>
     /// Defines operations for managing waitlist functionality for users and products.

@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml;
 
-namespace MarketPlace924
+namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class SecondaryNotificationWindow : Window

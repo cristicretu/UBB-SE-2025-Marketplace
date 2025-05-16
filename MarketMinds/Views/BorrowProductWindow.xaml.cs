@@ -5,10 +5,9 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
-using MarketPlace924.Services;
-using MarketPlace924.ViewModel;
+using MarketMinds.ViewModels;
 
-namespace MarketPlace924
+namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class BorrowProductWindow : Window

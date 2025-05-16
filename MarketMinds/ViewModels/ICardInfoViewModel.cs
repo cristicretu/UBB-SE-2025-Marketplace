@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     /// <summary>
     /// Defines operations for managing card information and processing card payments.

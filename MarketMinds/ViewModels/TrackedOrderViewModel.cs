@@ -6,7 +6,7 @@ using MarketMinds.Shared.Models;
 
 using SharedClassLibrary.Service;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     /// <summary>
     /// Interface for sending notifications about order shipping progress

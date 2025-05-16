@@ -2,11 +2,11 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace MarketPlace924.View.Admin
+namespace MarketMinds.Views.Admin
 {
     using System.Collections.ObjectModel;
     using MarketMinds.Shared.Models;
-    using MarketPlace924.ViewModel.Admin;
+    using MarketMinds.ViewModels.Admin;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Navigation;
 

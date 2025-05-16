@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     /// <summary>
     /// Defines operations for finalizing the purchase process.

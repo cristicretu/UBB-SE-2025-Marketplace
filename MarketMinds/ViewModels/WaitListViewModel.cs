@@ -6,7 +6,7 @@ using Microsoft.Data.SqlClient;
 using MarketMinds.Shared.ProxyRepository;
 using SharedClassLibrary.Helper;
 
-namespace MarketPlace924.Services
+namespace MarketMinds.ViewModels
 {
     public class WaitListViewModel : IWaitListViewModel
     {

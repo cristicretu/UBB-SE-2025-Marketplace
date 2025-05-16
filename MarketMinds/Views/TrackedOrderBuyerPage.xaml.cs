@@ -1,10 +1,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using MarketPlace924.ViewModel;
+using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 
-namespace MarketPlace924.View
+namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class TrackedOrderBuyerPage : Page

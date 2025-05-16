@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     /// <summary>
     /// Represents the view model for finalizing a purchase and updating order history and notifications.

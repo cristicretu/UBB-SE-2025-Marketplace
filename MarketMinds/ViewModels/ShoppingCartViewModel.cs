@@ -6,7 +6,7 @@ using System;
 using System.Windows.Input;
 using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class ShoppingCartViewModel : IShoppingCartViewModel
     {

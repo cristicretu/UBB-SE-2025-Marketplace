@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
-namespace MarketPlace924.Utils
+namespace MarketMinds.Utils
 {
     [ExcludeFromCodeCoverage]
     partial class BorrowedToVisibilityConverter : IValueConverter

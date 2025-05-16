@@ -2,10 +2,10 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using MarketPlace924.ViewModel;
+using MarketMinds.ViewModels;
 using SharedClassLibrary.Service;
 
-namespace MarketPlace924.View
+namespace MarketMinds.Views
 {
     /// <summary>
     /// A page that displays the shopping cart.

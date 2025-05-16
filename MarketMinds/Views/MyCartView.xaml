@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="MarketPlace924.View.MyCartView"
+    x:Class="MarketMinds.Views.MyCartView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:viewModel="using:MarketPlace924.ViewModel"
+    xmlns:viewModel="using:MarketMinds.ViewModels"
     x:Name="Root"
     Background="#FFF0F0F0">
 

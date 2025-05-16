@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     using System.Windows.Input;
     using MarketMinds.Shared.Models;

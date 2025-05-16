@@ -7,7 +7,7 @@ using SharedClassLibrary.Service; // Add this using directive
 using Windows.Storage;
 using Windows.System;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class ContractViewModel : IContractViewModel
     {

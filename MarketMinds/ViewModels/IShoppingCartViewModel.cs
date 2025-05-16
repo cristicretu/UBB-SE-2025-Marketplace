@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     public interface IShoppingCartViewModel
 

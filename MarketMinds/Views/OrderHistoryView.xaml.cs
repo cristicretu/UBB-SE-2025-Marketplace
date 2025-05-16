@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
-using MarketPlace924.ViewModel;
+using MarketMinds.ViewModels;
 using Microsoft.UI.Text;
 // Add this using directive for Configuration
 
-namespace MarketPlace924
+namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class OrderHistoryView : Window

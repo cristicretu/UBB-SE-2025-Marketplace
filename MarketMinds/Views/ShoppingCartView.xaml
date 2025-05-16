@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <UserControl
-    x:Class="MarketPlace924.View.ShoppingCartView"
+    x:Class="MarketMinds.Views.ShoppingCartView"
     x:Name="Root"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:viewModel="using:MarketPlace924.ViewModel"
-    xmlns:domain="using:MarketPlace924.Domain">
+    xmlns:viewModel="using:MarketMinds.ViewModels"
+    xmlns:domain="using:MarketMinds.Domain">
 
     <StackPanel>
         <TextBlock Text="My Shopping Cart" FontSize="24" FontWeight="Bold" Margin="10" />

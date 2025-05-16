@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace MarketPlace924.View
+namespace MarketMinds.Views
 {
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;

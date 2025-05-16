@@ -3,11 +3,11 @@ using System;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-using MarketPlace924.ViewModel;
+using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace MarketPlace924
+namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
     /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace MarketPlace924.Utils
+﻿namespace MarketMinds.Utils
 {
     /*
     [ExcludeFromCodeCoverage]
@@ -15,7 +15,7 @@
         {
             if (mainFrame != null)
             {
-                Type pageType = Type.GetType($"MarketPlace924.Views.{pageName}");
+                Type pageType = Type.GetType($"MarketMinds.Viewss.{pageName}");
 
                 if (pageType != null)
                 {

@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace MarketPlace924.ViewModel.Admin
+namespace MarketMinds.ViewModels.Admin
 {
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -21,7 +21,7 @@ namespace MarketPlace924.ViewModel.Admin
         /// <summary>
         /// Gets or sets the pie series.
         /// </summary>
-        List<ISeries>? PieSeries { get; set; }
+        //List<ISeries>? PieSeries { get; set; }
 
         /// <summary>
         /// Ban a user.

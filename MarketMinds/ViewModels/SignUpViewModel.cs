@@ -1,7 +1,7 @@
 ﻿// <copyright file="SignUpViewModel.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     using System;
     using System.ComponentModel;

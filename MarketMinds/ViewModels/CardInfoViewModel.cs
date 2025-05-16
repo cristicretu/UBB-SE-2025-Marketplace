@@ -10,7 +10,7 @@ using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
 using SharedClassLibrary.Helper;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     /// <summary>
     /// Represents the view model for card payment information and handles card payment processing.

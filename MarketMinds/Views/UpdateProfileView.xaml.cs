@@ -2,13 +2,13 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace MarketPlace924.View
+namespace MarketMinds.Views
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using MarketPlace924.ViewModel;
+    using MarketMinds.ViewModels;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Navigation;

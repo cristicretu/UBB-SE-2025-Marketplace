@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using SharedClassLibrary.Service;
 
-namespace MarketPlace924.ViewModel
+namespace MarketMinds.ViewModels
 {
     /// <summary>
     /// Represents the view model for orders and facilitates order management operations.

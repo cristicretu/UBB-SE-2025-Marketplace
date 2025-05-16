@@ -1,9 +1,9 @@
 <Page
-    x:Class="MarketPlace924.View.Admin.AdminView"
+    x:Class="MarketMinds.Views.Admin.AdminView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:MarketPlace924.View.Admin"
-    xmlns:local2="using:MarketPlace924.ViewModel.Admin"
+    xmlns:local="using:MarketMinds.Views.Admin"
+    xmlns:local2="using:MarketMinds.ViewModels.Admin"
 	xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 

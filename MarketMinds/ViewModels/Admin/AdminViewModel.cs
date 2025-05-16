@@ -2,13 +2,13 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace MarketPlace924.ViewModel.Admin
+namespace MarketMinds.ViewModels.Admin
 {
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using MarketMinds.Shared.Models;
-    using SharedClassLibrary.Service;
+    using MarketMinds.Shared.Services;
     using Microsoft.UI.Xaml.Controls;
     using OxyPlot.Series;
     using OxyPlot.Wpf;
@@ -65,7 +65,7 @@ namespace MarketPlace924.ViewModel.Admin
             this.adminService = adminService;
             this.analyticsService = analyticsService;
 
-            this.SetupPieChart();
+            // this.SetupPieChart();
             this.userService = userService;
         }
 
@@ -86,7 +86,7 @@ namespace MarketPlace924.ViewModel.Admin
         /// <summary>
         /// Gets or sets the pie series.
         /// </summary>
-        public List<ISeries>? PieSeries { get; set; }
+        // public List<ISeries>? PieSeries { get; set; }
 
         /// <summary>
         /// Ban a user.
@@ -133,26 +133,26 @@ namespace MarketPlace924.ViewModel.Admin
         /// <summary>
         /// Setup the pie chart.
         /// </summary>
-        private void SetupPieChart()
-        {
-            this.totalUsersCount = this.analyticsService.GetTotalNumberOfUsers().Result;
-            var buyersCount = this.analyticsService.GetTotalNumberOfBuyers().Result;
+        // private void SetupPieChart()
+        // {
+        //     this.totalUsersCount = this.analyticsService.GetTotalNumberOfUsers().Result;
+        //     var buyersCount = this.analyticsService.GetTotalNumberOfBuyers().Result;
 
-            this.PieSeries =
-            [
-                new PieSeries<double>
-                {
-                    Values = new List<double> { buyersCount },
-                    Name = "Buyers",
-                    Fill = new SolidColorPaint(new SKColor(25, 118, 210)),
-                },
-                new PieSeries<double>
-                {
-                    Values = new List<double> { this.totalUsersCount - buyersCount },
-                    Name = "Sellers",
-                    Fill = new SolidColorPaint(new SKColor(10, 56, 113)),
-                },
-            ];
-        }
+        //     this.PieSeries =
+        //     [
+        //         new PieSeries<double>
+        //         {
+        //             Values = new List<double> { buyersCount },
+        //             Name = "Buyers",
+        //             Fill = new SolidColorPaint(new SKColor(25, 118, 210)),
+        //         },
+        //         new PieSeries<double>
+        //         {
+        //             Values = new List<double> { this.totalUsersCount - buyersCount },
+        //             Name = "Sellers",
+        //             Fill = new SolidColorPaint(new SKColor(10, 56, 113)),
+        //         },
+        //     ];
+        // }
     }
 }
