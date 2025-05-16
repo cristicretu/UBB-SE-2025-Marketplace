@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     using System.Collections.Generic;
     using System.Linq;

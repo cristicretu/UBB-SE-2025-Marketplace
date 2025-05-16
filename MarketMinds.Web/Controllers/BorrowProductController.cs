@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WebMarketplace.Models;
-using SharedClassLibrary.Service;
+using MarketMinds.Shared.Services;
 
 namespace WebMarketplace.Controllers
 {
@@ -228,7 +228,7 @@ namespace WebMarketplace.Controllers
             try
             {
                 int currentUserId = GetCurrentUserId();
-                var notificationService = HttpContext.RequestServices.GetRequiredService<SharedClassLibrary.Service.INotificationService>();
+                var notificationService = HttpContext.RequestServices.GetRequiredService<MarketMinds.Shared.Services.INotificationService>();
                 var notifications = await notificationService.GetUserNotificationsAsync(currentUserId);
                 
                 return PartialView("_Notifications", notifications);
@@ -250,7 +250,7 @@ namespace WebMarketplace.Controllers
             try
             {
                 int currentUserId = GetCurrentUserId();
-                var notificationService = HttpContext.RequestServices.GetRequiredService<SharedClassLibrary.Service.INotificationService>();
+                var notificationService = HttpContext.RequestServices.GetRequiredService<MarketMinds.Shared.Services.INotificationService>();
                 var notifications = await notificationService.GetUserNotificationsAsync(currentUserId);
                 
                 return Json(notifications);

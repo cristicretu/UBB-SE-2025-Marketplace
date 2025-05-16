@@ -1,4 +1,4 @@
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     /// <summary>
     /// Service for managing product waitlists

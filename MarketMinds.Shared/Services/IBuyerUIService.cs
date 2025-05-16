@@ -1,4 +1,4 @@
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     using MarketMinds.Shared.Models;
     using System.Threading.Tasks;

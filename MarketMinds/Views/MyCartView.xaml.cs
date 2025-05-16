@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using MarketMinds.ViewModels;
-using SharedClassLibrary.Service;
+using MarketMinds.Shared.Services;
 
 namespace MarketMinds.Views
 {

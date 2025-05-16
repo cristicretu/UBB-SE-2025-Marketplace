@@ -1,10 +1,10 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using SharedClassLibrary.Helper;
+using MarketMinds.Shared.Helper;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     public class AuthorizationService : IAuthorizationService
     {

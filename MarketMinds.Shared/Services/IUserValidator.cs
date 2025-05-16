@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     /// <summary>
     /// Defines validation methods for user-related data such as username, email, phone number, and password.

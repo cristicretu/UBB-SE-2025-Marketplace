@@ -8,8 +8,8 @@
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.ProxyRepository;
-    using SharedClassLibrary.Service;
-    using SharedClassLibrary.Helper;
+    using MarketMinds.Shared.Services;
+    using MarketMinds.Shared.Helper;
 
     public class ContractRenewViewModel : IContractRenewViewModel
     {

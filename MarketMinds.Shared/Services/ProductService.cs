@@ -2,9 +2,9 @@
 
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.ProxyRepository;
-using SharedClassLibrary.Helper;
+using MarketMinds.Shared.Helper;
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     /// <summary>
     /// Service for managing dummy product operations.
@@ -77,6 +77,11 @@ namespace SharedClassLibrary.Service
         {
             // Use the repository to fetch borrowable products from the database
             return await productRepository.GetBorrowableProductsAsync();
+        }
+
+        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
+        {
+            throw new NotImplementedException();
         }
     }
 }

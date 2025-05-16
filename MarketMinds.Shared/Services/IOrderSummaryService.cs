@@ -1,6 +1,6 @@
 using MarketMinds.Shared.Models;
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     /// <summary>
     /// Defines operations for managing order summaries.

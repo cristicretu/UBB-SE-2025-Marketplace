@@ -3,8 +3,9 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
-using MarketMinds.Shared.Services.UserService;
 using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.UserService;
 
 namespace MarketMinds.Shared.Services.ReviewService
 {
@@ -25,7 +26,7 @@ namespace MarketMinds.Shared.Services.ReviewService
             // If userService is null, create a new instance with the configuration
             if (this.userService == null)
             {
-                this.userService = new UserService.UserService(configuration);
+                this.userService = new MarketMinds.Shared.Services.UserService.UserService(configuration);
             }
 
             jsonOptions = new JsonSerializerOptions

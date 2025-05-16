@@ -10,8 +10,6 @@ namespace MarketMinds.ViewModels.Admin
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
     using Microsoft.UI.Xaml.Controls;
-    using OxyPlot.Series;
-    using OxyPlot.Wpf;
 
     /// <summary>
     /// The admin view model.

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using MarketMinds.Shared.Models;
-using SharedClassLibrary.Service;
-using SharedIProductService = SharedClassLibrary.Service.IProductService;
+using MarketMinds.Shared.Services;
+using SharedIProductService = MarketMinds.Shared.Services.IProductService;
 
 namespace WebMarketplace.Models
 {
@@ -50,7 +50,7 @@ namespace WebMarketplace.Models
         public CardInfoViewModel()
         {
             _orderHistoryService = new OrderHistoryService();
-            _productService = new SharedClassLibrary.Service.ProductService();
+            _productService = new MarketMinds.Shared.Services.ProductService();
             
             ProductList = new List<Product>();
         }

@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml.Controls;
 
 using MarketMinds.ViewModels; // For ShoppingCartViewModel
-using SharedClassLibrary.Service; // For ShoppingCartRepository
+using MarketMinds.Shared.Services; // For ShoppingCartRepository
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 

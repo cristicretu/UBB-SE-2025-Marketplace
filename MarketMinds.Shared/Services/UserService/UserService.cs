@@ -4,8 +4,7 @@ using System.Text.Json.Serialization.Metadata;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 using Microsoft.Extensions.Configuration;
-using SharedClassLibrary.Service;
-using SharedClassLibrary.Helper;
+using MarketMinds.Shared.Helper;
 using System.Text;
 using System.Security.Cryptography;
 
@@ -28,6 +27,54 @@ namespace MarketMinds.Shared.Services.UserService
                 PropertyNameCaseInsensitive = true,
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver()
             };
+        }
+
+        // merge-nicusor
+        public async Task<bool> RegisterUser(string username, string password, string email, string phoneNumber, int role)
+        {
+            if (!this.userValidator.IsValidUsername(username))
+            {
+                throw new Exception("Username must be at least 4 characters long.");
+            }
+
+            if (!this.userValidator.IsValidEmail(email))
+            {
+                throw new Exception("Invalid email address format.");
+            }
+
+            if (!this.userValidator.IsValidPassword(password))
+            {
+                throw new Exception("The password must be at least 8 characters long, have at least 1 uppercase letter, at least 1 digit and at least 1 special character.");
+            }
+
+            if (!this.userValidator.IsValidPhoneNumber(phoneNumber))
+            {
+                throw new Exception("The phone number should start with +40 area code followed by 9 digits.");
+            }
+
+            if (role != (int)UserRole.Buyer && role != (int)UserRole.Seller)
+            {
+                throw new Exception("Please select an account type (Buyer or Seller).");
+            }
+
+            if (await this.repository.UsernameExists(username))
+            {
+                throw new Exception("Username already exists.");
+            }
+
+            if (await this.repository.EmailExists(email))
+            {
+                throw new Exception("Email is already in use.");
+            }
+
+            var hashedPassword = this.HashPassword(password);
+
+            var userRole = (UserRole)role;
+            var newUser = new User(username, email, phoneNumber, role, DateTime.MinValue, false, 0, hashedPassword);
+
+            await this.repository.AddUser(newUser);
+
+            return true;
         }
 
         public async Task<bool> AuthenticateUserAsync(string username, string password)

@@ -1,6 +1,6 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
-using SharedClassLibrary.Service;
+using MarketMinds.Shared.Services;
 
 public class BuyerAddressService : IBuyerAddressService
 {

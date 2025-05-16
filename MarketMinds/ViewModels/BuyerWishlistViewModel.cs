@@ -10,7 +10,7 @@ namespace MarketMinds.ViewModels
     using System.Linq;
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
-    using SharedClassLibrary.Service;
+    using MarketMinds.Shared.Services;
 
     /// <summary>
     /// View model class for managing buyer wishlist data and operations.

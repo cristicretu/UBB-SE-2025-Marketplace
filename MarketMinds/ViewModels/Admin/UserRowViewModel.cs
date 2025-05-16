@@ -7,8 +7,8 @@ namespace MarketMinds.ViewModels.Admin
     using System.Threading.Tasks;
     using System.Windows.Input;
     using MarketMinds.Shared.Models;
-    using SharedClassLibrary.Helper;
-    using SharedClassLibrary.Service;
+    using MarketMinds.Shared.Helper;
+    using MarketMinds.Shared.Services;
 
     /// <summary>
     /// The user row view model.

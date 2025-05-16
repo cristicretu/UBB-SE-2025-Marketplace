@@ -1,6 +1,6 @@
 ﻿// BuyerWishlistController.cs
 using Microsoft.AspNetCore.Mvc;
-using SharedClassLibrary.Service;
+using MarketMinds.Shared.Services;
 using WebMarketplace.Models;
 using MarketMinds.Shared.Models;
 using System.Diagnostics;
@@ -128,7 +128,7 @@ namespace WebMarketplace.Controllers
                 try
                 {
                     debugInfo.AppendLine("About to load buyer wishlist...");
-                await _buyerService.LoadBuyer(buyer, SharedClassLibrary.Service.BuyerDataSegments.Wishlist);
+                await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.Wishlist);
                     debugInfo.AppendLine("LoadBuyer completed");
 
                     var itemCount = buyer.Wishlist?.Items?.Count ?? 0;
@@ -246,7 +246,7 @@ namespace WebMarketplace.Controllers
                     return Content("Buyer not found");
                 }
 
-                await _buyerService.LoadBuyer(buyer, SharedClassLibrary.Service.BuyerDataSegments.Wishlist);
+                await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.Wishlist);
 
                 var sb = new StringBuilder();
                 sb.AppendLine("<h1>Basic Wishlist View</h1>");

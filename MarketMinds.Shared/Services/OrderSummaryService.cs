@@ -2,9 +2,9 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 
 using MarketMinds.Shared.IRepository;
-using SharedClassLibrary.Helper;
+using MarketMinds.Shared.Helper;
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     /// <summary>
     /// Service for managing order summary operations.

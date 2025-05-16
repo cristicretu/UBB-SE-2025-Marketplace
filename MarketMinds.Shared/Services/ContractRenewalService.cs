@@ -1,7 +1,7 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     public class ContractRenewalService : IContractRenewalService
     {

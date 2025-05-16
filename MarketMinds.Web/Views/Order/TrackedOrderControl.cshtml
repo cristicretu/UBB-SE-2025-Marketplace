@@ -1,5 +1,5 @@
 @model MarketMinds.Shared.Models.TrackedOrder
-@inject SharedClassLibrary.Service.ITrackedOrderService TrackedOrderService
+@inject MarketMinds.Shared.Services.ITrackedOrderService TrackedOrderService
 @{
     ViewData["Title"] = "Track Order Control";
     var checkpoints = await TrackedOrderService.GetAllOrderCheckpointsAsync(Model.TrackedOrderID);

@@ -1,4 +1,4 @@
-﻿namespace SharedClassLibrary.DataTransferObjects
+﻿namespace MarketMinds.Shared.Models.DTOs
 {
     /// <summary>
     /// Data transfer object for dummy product requests.

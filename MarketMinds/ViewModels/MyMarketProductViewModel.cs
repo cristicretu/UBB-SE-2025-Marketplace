@@ -2,7 +2,7 @@
 {
     using System.Windows.Input;
     using MarketMinds.Shared.Models;
-    using SharedClassLibrary.Service;
+    using MarketMinds.Shared.Services;
 
     public class MyMarketProductViewModel : IMyMarketProductViewModel
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using SharedClassLibrary.Service; // Add this using directive
+using MarketMinds.Shared.Services; // Add this using directive
 using Windows.Storage;
 using Windows.System;
 

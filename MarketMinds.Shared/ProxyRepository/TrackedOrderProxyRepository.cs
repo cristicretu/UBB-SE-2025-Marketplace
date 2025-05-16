@@ -9,7 +9,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using System.Net.Http;
     using System.Net.Http.Json;
     using System.Threading.Tasks;
-    using SharedClassLibrary.DataTransferObjects;
+    using MarketMinds.Shared.Models.DTOs;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
     

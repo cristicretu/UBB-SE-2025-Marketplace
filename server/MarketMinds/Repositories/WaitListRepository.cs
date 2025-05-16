@@ -11,7 +11,6 @@ namespace Server.Repository
     using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
     using Server.DataAccessLayer;
-    using Server.DataModels;
 
     /// <summary>
     /// Provides data access functionality for managing waitlists and user waitlist entries.

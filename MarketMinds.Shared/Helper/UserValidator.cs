@@ -1,10 +1,10 @@
 ﻿// <copyright file="UserValidator.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
-namespace SharedClassLibrary.Helper
+namespace MarketMinds.Shared.Helper
 {
     using System.Text.RegularExpressions;
-    using SharedClassLibrary.Service;
+    using MarketMinds.Shared.Services;
 
     /// <summary>
     /// Provides validation methods for user-related data such as username, email, phone number and password.

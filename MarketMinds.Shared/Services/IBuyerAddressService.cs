@@ -1,6 +1,6 @@
 ﻿using MarketMinds.Shared.Models;
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     /// <summary>
     /// Interface for managing buyer address-related operations.

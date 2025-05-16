@@ -4,7 +4,6 @@
 
 namespace MarketMinds.ViewModels.Admin
 {
-    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using MarketMinds.Shared.Models;
 

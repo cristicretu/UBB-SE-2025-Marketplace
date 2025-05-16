@@ -13,7 +13,7 @@ namespace MarketMinds.ViewModels
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
-    using SharedClassLibrary.Service;
+    using MarketMinds.Shared.Services;
     using Microsoft.UI.Xaml.Controls;
 
     /// <summary>

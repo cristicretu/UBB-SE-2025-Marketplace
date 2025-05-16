@@ -1,4 +1,4 @@
-﻿namespace SharedClassLibrary.DataTransferObjects
+﻿namespace MarketMinds.Shared.Models.DTOs
 {
     using MarketMinds.Shared.Models;
 

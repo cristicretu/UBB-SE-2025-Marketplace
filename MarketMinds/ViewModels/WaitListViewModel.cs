@@ -4,7 +4,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using Microsoft.Data.SqlClient;
 using MarketMinds.Shared.ProxyRepository;
-using SharedClassLibrary.Helper;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.ViewModels
 {

@@ -2,7 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;

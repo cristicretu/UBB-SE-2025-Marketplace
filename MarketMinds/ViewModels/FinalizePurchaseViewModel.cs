@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using SharedClassLibrary.Service;
+using MarketMinds.Shared.Services;
 
 namespace MarketMinds.ViewModels
 {

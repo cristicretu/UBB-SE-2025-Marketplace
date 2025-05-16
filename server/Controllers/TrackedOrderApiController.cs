@@ -12,7 +12,6 @@ namespace Server.Controllers // Assuming the controller is in the Server project
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using SharedClassLibrary.DataTransferObjects;
 
     /// <summary>
     /// API controller for managing tracked order data.

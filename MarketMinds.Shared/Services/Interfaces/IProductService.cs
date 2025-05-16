@@ -7,4 +7,3 @@ public interface IProductService
 {
     List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery);
 }
-

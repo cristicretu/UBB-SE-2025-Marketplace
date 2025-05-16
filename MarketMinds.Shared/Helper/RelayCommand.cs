@@ -1,7 +1,7 @@
 ﻿// <copyright file="RelayCommand.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
-namespace SharedClassLibrary.Helper
+namespace MarketMinds.Shared.Helper
 {
     using System;
     using System.Threading.Tasks;

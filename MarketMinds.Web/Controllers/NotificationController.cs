@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SharedClassLibrary.Service;
+using MarketMinds.Shared.Services;
 using System.Diagnostics;
 
 namespace WebMarketplace.Controllers

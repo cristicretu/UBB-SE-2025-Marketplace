@@ -6,7 +6,7 @@ using MarketMinds.Shared.ProxyRepository;
 using Microsoft.Data.SqlClient;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
-using SharedClassLibrary.Helper;
+using MarketMinds.Shared.Helper;
 
 [ExcludeFromCodeCoverage]
 public class WaitListNotifier

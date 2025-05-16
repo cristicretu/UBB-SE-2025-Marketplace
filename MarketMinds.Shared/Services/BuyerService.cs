@@ -2,12 +2,12 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using SharedClassLibrary.Helper;
+    using MarketMinds.Shared.Helper;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
 

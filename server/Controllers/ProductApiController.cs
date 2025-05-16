@@ -8,7 +8,6 @@ namespace Server.Controllers
     using global::MarketMinds.Shared.Models;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using SharedClassLibrary.DataTransferObjects;
 
     /// <summary>
     /// API controller for managing dummy product data.

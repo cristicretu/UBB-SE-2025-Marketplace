@@ -1,4 +1,4 @@
-﻿namespace SharedClassLibrary.Service
+﻿namespace MarketMinds.Shared.Services
 {
     public interface IAuthorizationService
     {

@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using MarketMinds.Shared.Models;
-using SharedClassLibrary.Service;
+using MarketMinds.Shared.Services;
 
 namespace WebMarketplace.Models
 {

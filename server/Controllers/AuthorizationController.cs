@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using MarketMinds.Shared.IRepository;
-using SharedClassLibrary.Helper;
+using MarketMinds.Shared.Helper;
 
 namespace Server.Controllers
 {
@@ -10,9 +10,9 @@ namespace Server.Controllers
     public class AuthorizationController : ControllerBase
     {
         private readonly IUserRepository userRepository;
-        private readonly SharedClassLibrary.Service.IAuthorizationService authorizationService; // Fully qualified name to avoid conflicts
+        private readonly MarketMinds.Shared.Services.IAuthorizationService authorizationService; // Fully qualified name to avoid conflicts
 
-        public AuthorizationController(IUserRepository userRepository, SharedClassLibrary.Service.IAuthorizationService authorizationService)
+        public AuthorizationController(IUserRepository userRepository, MarketMinds.Shared.Services.IAuthorizationService authorizationService)
         {
             this.userRepository = userRepository;
             this.authorizationService = authorizationService;

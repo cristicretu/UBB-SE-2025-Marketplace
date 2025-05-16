@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SharedClassLibrary.Service
+namespace MarketMinds.Shared.Services
 {
     using System;
     using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace SharedClassLibrary.Service
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
     using MarketMinds.Shared.ProxyRepository;
-    using SharedClassLibrary.Helper;
+    using MarketMinds.Shared.Helper;
 
 
     /// <summary>

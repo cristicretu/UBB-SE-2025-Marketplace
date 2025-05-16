@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using MarketMinds.Shared.Models;
-using SharedClassLibrary.Service;
+using MarketMinds.Shared.Services;
 
 namespace WebMarketplace.Models
 {

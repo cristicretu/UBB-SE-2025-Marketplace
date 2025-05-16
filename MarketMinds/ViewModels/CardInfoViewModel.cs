@@ -8,7 +8,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 
 using MarketMinds.Shared.IRepository;
-using SharedClassLibrary.Helper;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.ViewModels
 {

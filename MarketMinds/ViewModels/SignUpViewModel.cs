@@ -7,8 +7,7 @@ namespace MarketMinds.ViewModels
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Windows.Input;
-    using SharedClassLibrary.Helper;
-    using SharedClassLibrary.Service;
+    using MarketMinds.Shared.Services;
     using Microsoft.UI.Xaml.Controls;
 
     /// <summary>
