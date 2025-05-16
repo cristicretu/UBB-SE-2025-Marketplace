@@ -65,7 +65,7 @@ namespace Server.Repository
         /// <returns>A <see cref="Task{User?}"/> representing the result of the asynchronous operation, with a result of the user if found, or null if not found.</returns>
         public async Task<User?> GetUserById(int id)
         {
-            return await this.dbContext.Users.FirstOrDefaultAsync(user => user.UserId == id);
+            return await this.dbContext.Users.FirstOrDefaultAsync(user => user.Id == id);
         }
 
         /// <summary>
@@ -157,8 +157,8 @@ namespace Server.Repository
         public async Task<int> GetFailedLoginsCountByUserId(int userId)
         {
             return await this.dbContext.Users
-                .Where(user => user.UserId == userId)
-                .Select(user => user.FailedLogins)
+                .Where(user => user.Id == userId)
+                .Select(user => user.FailedLogIns)
                 .FirstOrDefaultAsync();
         }
 
@@ -171,7 +171,7 @@ namespace Server.Repository
         /// </returns>
         public async Task UpdateUserPhoneNumber(User user)
         {
-            User? foundUser = await this.dbContext.Users.FirstOrDefaultAsync(foundUser => foundUser.UserId == user.Id);
+            User? foundUser = await this.dbContext.Users.FirstOrDefaultAsync(foundUser => foundUser.Id == user.Id);
             if (foundUser != null)
             {
                 foundUser.PhoneNumber = user.PhoneNumber;
@@ -188,7 +188,7 @@ namespace Server.Repository
         /// </returns>
         public async Task LoadUserPhoneNumberAndEmailById(User user)
         {
-            User? foundUser = await this.dbContext.Users.FirstOrDefaultAsync(foundUser => foundUser.UserId == user.Id);
+            User? foundUser = await this.dbContext.Users.FirstOrDefaultAsync(foundUser => foundUser.Id == user.Id);
             if (foundUser != null)
             {
                 user.PhoneNumber = foundUser.PhoneNumber;
@@ -221,6 +221,27 @@ namespace Server.Repository
         }
 
         public Task<string> AuthorizationLogin()
+        {
+            throw new NotImplementedException();
+        }
+
+        // merge-nicusor
+        Task<bool> IUserRepository.UsernameExistsAsync(string username)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<bool> IUserRepository.EmailExistsAsync(string email)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<User> IUserRepository.RegisterUserAsync(string username, string email, string passwordHash, string phoneNumber, int userType, DateTime? bannedUntil, bool isBanned, int failedLogins)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<User> IUserRepository.FindUserByUsernameAsync(string username)
         {
             throw new NotImplementedException();
         }

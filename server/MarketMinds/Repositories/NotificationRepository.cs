@@ -12,6 +12,7 @@ namespace Server.Repository
     using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
+    using Server.DataAccessLayer;
 
     /// <summary>
     /// Represents a repository for managing notifications in the database.

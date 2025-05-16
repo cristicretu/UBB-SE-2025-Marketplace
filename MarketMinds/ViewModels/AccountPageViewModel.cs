@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using Marketplace_SE.Utilities;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.ViewModels
 {
@@ -227,29 +228,6 @@ namespace MarketMinds.ViewModels
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    // Simple implementation of RelayCommand for MVVM pattern
-    public class RelayCommand
-    {
-        private readonly Action<object> execute;
-        private readonly Predicate<object> canExecute;
-
-        public RelayCommand(Action<object> execute, Predicate<object> canExecute = null)
-        {
-            this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            this.canExecute = canExecute;
-        }
-
-        public bool CanExecute(object parameter)
-        {
-            return canExecute == null || canExecute(parameter);
-        }
-
-        public void Execute(object parameter)
-        {
-            execute(parameter);
         }
     }
 }

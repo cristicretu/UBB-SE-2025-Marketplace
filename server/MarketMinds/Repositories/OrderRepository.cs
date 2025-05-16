@@ -8,9 +8,10 @@ namespace Server.Repository
     using System.Collections.Generic;
     using System.Data;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
     using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
-
+    using Server.DataAccessLayer;
 
     /// <summary>
     /// Represents a repository for managing orders in the database.

@@ -253,5 +253,10 @@ namespace Server.MarketMinds.Repositories.UserRepository
         {
             throw new NotImplementedException();
         }
+
+        Task<User> IUserRepository.RegisterUserAsync(string username, string email, string passwordHash, string phoneNumber, int userType, DateTime? bannedUntil, bool isBanned, int failedLogins)
+        {
+            throw new NotImplementedException();
+        }
     }
 } 

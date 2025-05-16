@@ -11,6 +11,7 @@ namespace Server.Repository
     using global::MarketMinds.Shared.IRepository;
     using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
+    using Server.DataAccessLayer;
 
     /// <summary>
     /// Represents a repository for contract operations.
@@ -165,12 +166,12 @@ namespace Server.Repository
 
             // Get the order for the contract
             Order? order = await this.dbContext.Orders
-                .Where(order => order.OrderID == contract.OrderID)
+                .Where(order => order.Id == contract.OrderID)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetContractSellerAsync: Order not found for order ID: " + contract.OrderID);
 
             // Get the product for the order
-            Product? product = await this.dbContext.Products
-                .Where(product => product.ProductId == order.ProductID)
+            Product? product = await this.dbContext.BuyProducts
+                .Where(product => product.Id == order.ProductID)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetContractSellerAsync: Product not found for product ID: " + order.ProductID);
 
             // Get the seller for the product
@@ -200,7 +201,7 @@ namespace Server.Repository
 
             // Get the order for the contract
             Order? order = await this.dbContext.Orders
-                .Where(order => order.OrderID == contract.OrderID)
+                .Where(order => order.Id == contract.OrderID)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetContractBuyerAsync: Order not found for order ID: " + contract.OrderID);
 
             // Get the buyer for the order
@@ -229,7 +230,7 @@ namespace Server.Repository
 
             // Get the order for the contract
             Order? order = await this.dbContext.Orders
-                .Where(order => order.OrderID == contract.OrderID)
+                .Where(order => order.Id == contract.OrderID)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetOrderSummaryInformationAsync: Order not found for order ID: " + contract.OrderID);
 
             // Get the OrderSummary for the order
@@ -270,16 +271,16 @@ namespace Server.Repository
 
             // Get the order of the contract
             Order? order = await this.dbContext.Orders
-                .Where(order => order.OrderID == contract.OrderID)
+                .Where(order => order.Id == contract.OrderID)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetProductDetailsByContractIdAsync: Order not found for order ID: " + contract.OrderID);
 
             // Get the product of the order
-            Product? product = await this.dbContext.Products
-                .Where(product => product.ProductId == order.ProductID)
+            BorrowProduct product = await this.dbContext.BorrowProducts
+                .Where(product => product.Id == order.ProductID)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetProductDetailsByContractIdAsync: Product not found for product ID: " + order.ProductID);
 
             // Return the product details
-            return (product.StartDate?.DateTime, product.EndDate?.DateTime, product.Price, product.Title);
+            return (product.StartDate, product.EndDate, product.Price, product.Title);
         }
 
         /// <summary>
@@ -293,7 +294,7 @@ namespace Server.Repository
 
             // Get all orders for the buyer
             List<Order> orders = await this.dbContext.Orders
-                .Where(order => order.BuyerID == buyerId)
+                .Where(order => order.BuyerId == buyerId)
                 .ToListAsync();
 
             // For each order get all of its contracts
@@ -323,7 +324,7 @@ namespace Server.Repository
                 .FirstOrDefaultAsync() ?? throw new Exception("GetOrderDetailsAsync: Contract not found for contract ID: " + contractId);
 
             Order? order = await this.dbContext.Orders
-                .Where(order => order.OrderID == contract.OrderID)
+                .Where(order => order.Id == contract.OrderID)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetOrderDetailsAsync: Order not found for order ID: " + contract.OrderID);
 
             return (order.PaymentMethod, order.OrderDate.DateTime);

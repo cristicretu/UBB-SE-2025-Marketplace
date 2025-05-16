@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.Services;
 
 namespace Server.Controllers
 {
@@ -10,9 +11,9 @@ namespace Server.Controllers
     public class AuthorizationController : ControllerBase
     {
         private readonly IUserRepository userRepository;
-        private readonly MarketMinds.Shared.Services.IAuthorizationService authorizationService; // Fully qualified name to avoid conflicts
+        private readonly IAuthorizationService authorizationService; // Fully qualified name to avoid conflicts
 
-        public AuthorizationController(IUserRepository userRepository, MarketMinds.Shared.Services.IAuthorizationService authorizationService)
+        public AuthorizationController(IUserRepository userRepository, IAuthorizationService authorizationService)
         {
             this.userRepository = userRepository;
             this.authorizationService = authorizationService;

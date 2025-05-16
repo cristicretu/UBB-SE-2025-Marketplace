@@ -10,6 +10,7 @@ namespace MarketMinds.ViewModels.Admin
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
     using Microsoft.UI.Xaml.Controls;
+    using MarketMinds.Shared.Services.UserService;
 
     /// <summary>
     /// The admin view model.

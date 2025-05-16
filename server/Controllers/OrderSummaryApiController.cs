@@ -6,6 +6,7 @@ namespace Server.Controllers
 {
     using global::MarketMinds.Shared.IRepository;
     using global::MarketMinds.Shared.Models;
+    using global::MarketMinds.Shared.Models.DTOs;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 

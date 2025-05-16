@@ -13,6 +13,7 @@ namespace Server.Repository
     using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
+    using Server.DataAccessLayer;
 
     /// <summary>
     /// Repository for managing shopping cart operations in the database.
@@ -47,7 +48,7 @@ namespace Server.Repository
                 throw new Exception($"AddProductToCartAsync: Buyer not found for the buyer id: {buyerId}");
             }
 
-            bool productExists = await this.dbContext.Products.AnyAsync(product => product.ProductId == productId);
+            bool productExists = await this.dbContext.BuyProducts.AnyAsync(product => product.Id == productId);
             if (!productExists)
             {
                 throw new Exception($"AddProductToCartAsync: Product not found for the product id: {productId}");
@@ -159,18 +160,22 @@ namespace Server.Repository
             List<Product> products = new List<Product>();
             foreach (BuyerCartItemEntity buyerCartItem in buyerCartItems)
             {
-                Product product = await this.dbContext.Products.FindAsync(buyerCartItem.ProductId)
+                Product product = await this.dbContext.BuyProducts.FindAsync(buyerCartItem.ProductId)
                     ?? throw new Exception($"GetCartItemsAsync: Product not found for the product id: {buyerCartItem.ProductId}");
 
                 // Create a new product with the quantity from the cart instead of the actual stock
-                Product productWithCartQuantity = new Product(
-                    product.ProductId,
-                    product.Name,
+                Product productWithCartQuantity = new BuyProduct(
+                    product.Title,
                     product.Description,
-                    product.Price,
-                    buyerCartItem.Quantity,  // Use the cart quantity instead of actual stock
-                    product.SellerId
+                    product.SellerId,
+                    product.ConditionId,
+                    product.CategoryId,
+                    product.Price
                 );
+
+                // Set the ID and quantity manually
+                productWithCartQuantity.Id = product.Id;
+                productWithCartQuantity.Quantity = buyerCartItem.Quantity;
 
                 // Copy any additional properties that might be needed
                 productWithCartQuantity.ProductType = product.ProductType;

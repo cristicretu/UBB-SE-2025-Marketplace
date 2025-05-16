@@ -6,7 +6,7 @@ namespace MarketMinds.ViewModels
     using System;
     using System.ComponentModel;
     using System.Windows.Input;
-    using MarketMinds.Shared.Services;
+    using MarketMinds.Shared.Services.UserService;
 
     /// <summary>
     /// Interface for the login view model.

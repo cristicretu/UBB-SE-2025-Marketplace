@@ -4,10 +4,14 @@
 
 namespace Server.Repository
 {
+    using System;
     using System.Collections.Generic;
     using System.Data;
     using System.Threading.Tasks;
+    using global::MarketMinds.Shared.IRepository;
+    using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
+    using Server.DataAccessLayer;
 
     /// <summary>
     /// Provides database operations for order history management.
@@ -36,7 +40,7 @@ namespace Server.Repository
 
             foreach (Order order in orders)
             {
-                Product? product = await this.dbContext.Products.FindAsync(order.ProductID);
+                Product? product = await this.dbContext.BuyProducts.FindAsync(order.ProductID);
 
                 // here if for example a product is deleted but the order is still in the database, the product will be null
                 // and it will not be added to the list
@@ -48,6 +52,15 @@ namespace Server.Repository
             }
 
             return products;
+        }
+
+        /// <summary>
+        /// Creates a new order history record in the database.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation that returns the ID of the newly created order history.</returns>
+        public async Task<int> CreateOrderHistoryAsync()
+        {
+            throw new NotImplementedException("The CreateOrderHistoryAsync method is not implemented.");
         }
     }
 }

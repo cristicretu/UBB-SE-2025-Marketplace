@@ -42,6 +42,12 @@ namespace MarketMinds.Shared.ProxyRepository
             return products ?? new List<Product>();
         }
 
+        /// <inheritdoc />
+        public async Task<int> CreateOrderHistoryAsync()
+        {
+            throw new NotImplementedException("The CreateOrderHistoryAsync method is not implemented.");
+        }
+
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)

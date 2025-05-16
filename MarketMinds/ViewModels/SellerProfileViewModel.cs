@@ -14,6 +14,7 @@ namespace MarketMinds.ViewModels
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
+    using MarketMinds.Shared.Services.UserService;
     using Microsoft.UI.Xaml.Controls;
 
     /// <summary>
@@ -21,7 +22,7 @@ namespace MarketMinds.ViewModels
     /// </summary>
     public class SellerProfileViewModel : ISellerProfileViewModel
     {
-        private const int maxNotifications = 6;
+        private const int MaxNotifications = 6;
         private const int HighestInvalidSellerId = 0;
         private const double MultiplierForTrustScoreFromAverageReview = 100.0 / 5.0;
 
@@ -189,7 +190,7 @@ namespace MarketMinds.ViewModels
             }
             else
             {
-                var filtered = this.allProducts.Where(product => product.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+                var filtered = this.allProducts.Where(product => product.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
                 this.FilteredProducts = new ObservableCollection<Product>(filtered);
             }
 
@@ -280,7 +281,7 @@ namespace MarketMinds.ViewModels
         public async Task LoadNotifications()
         {
             await this.sellerService.GenerateFollowersChangedNotification(this.seller.Id, this.seller.FollowersCount);
-            var notifications = await this.sellerService.GetNotifications(this.seller.Id, maxNotifications);
+            var notifications = await this.sellerService.GetNotifications(this.seller.Id, MaxNotifications);
             this.notifications.Clear();
             foreach (var notification in notifications)
             {

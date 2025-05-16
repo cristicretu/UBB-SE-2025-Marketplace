@@ -10,6 +10,7 @@ namespace Server.Repository
     using global::MarketMinds.Shared.IRepository;
     using global::MarketMinds.Shared.Models;
     using Microsoft.EntityFrameworkCore;
+    using Server.DataAccessLayer;
 
 
     /// <summary>

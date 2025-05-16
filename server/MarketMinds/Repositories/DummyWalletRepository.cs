@@ -9,6 +9,7 @@ namespace Server.Repository
     using global::MarketMinds.Shared.IRepository;
     using Microsoft.EntityFrameworkCore;
     using Server.DataModels;
+    using Server.DataAccessLayer;
 
     /// <summary>
     /// Provides database operations for wallet management.

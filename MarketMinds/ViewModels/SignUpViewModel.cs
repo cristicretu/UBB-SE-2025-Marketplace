@@ -8,7 +8,9 @@ namespace MarketMinds.ViewModels
     using System.Runtime.CompilerServices;
     using System.Windows.Input;
     using MarketMinds.Shared.Services;
+    using MarketMinds.Shared.Services.UserService;
     using Microsoft.UI.Xaml.Controls;
+    using global::MarketMinds.Shared.Helper;
 
     /// <summary>
     /// SignUpViewModel class.
@@ -52,7 +54,7 @@ namespace MarketMinds.ViewModels
         public SignUpViewModel(IUserService userService)
         {
             this.userService = userService;
-            this.SignupCommand = new RelayCommand(this.ExecuteSignup);
+            this.SignupCommand = new RelayCommand(ExecuteSignup);
             this.username = string.Empty;
             this.email = string.Empty;
             this.phoneNumber = string.Empty;

@@ -47,8 +47,8 @@ namespace Server.DataAccessLayer
         public DbSet<Buyer> Buyers { get; set; }
         public DbSet<BuyerLinkageEntity> BuyerLinkages { get; set; }
         public DbSet<Seller> Sellers { get; set; }
-        public DbSet<OrderSummary> OrderSummaries { get; set; }
-        public DbSet<OrderHistory> OrderHistories { get; set; }
+        public DbSet<OrderSummary> OrderSummary { get; set; }
+        public DbSet<OrderHistory> OrderHistory { get; set; }
         public DbSet<OrderCheckpoint> OrderCheckpoints { get; set; }
         public DbSet<TrackedOrder> TrackedOrders { get; set; }
         public DbSet<UserWaitList> UserWaitLists { get; set; }

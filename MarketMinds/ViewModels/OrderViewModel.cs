@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace MarketMinds.ViewModels
 {
@@ -14,30 +15,12 @@ namespace MarketMinds.ViewModels
         private readonly IOrderService orderService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OrderViewModel"/> class using the specified connection string and default SQL database provider.
-        /// </summary>
-        /// <param name="connectionString">The connection string used for database operations.</param>
-        public OrderViewModel(string connectionString)
-            : this(connectionString, new SqlDatabaseProvider())
-        {
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="OrderViewModel"/> class using the specified connection string and database provider.
         /// </summary>
         /// <param name="connectionString">The connection string used for database operations.</param>
         /// <param name="databaseProvider">The database provider used for creating database connections.</param>
-        public OrderViewModel(string connectionString, IDatabaseProvider databaseProvider)
+        public OrderViewModel()
         {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-            if (databaseProvider == null)
-            {
-                throw new ArgumentNullException(nameof(databaseProvider));
-            }
-
             orderService = new OrderService();
         }
 
@@ -211,7 +194,6 @@ namespace MarketMinds.ViewModels
         {
             return await orderService.GetOrdersWithProductInfoAsync(userId, searchText, timePeriod);
         }
-
 
         /// <summary>
         /// Asynchronously retrieves product category types (new/borrowed) for each order summary ID for a specific user.

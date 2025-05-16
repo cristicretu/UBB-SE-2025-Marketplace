@@ -8,6 +8,7 @@ namespace Server.Controllers
     using global::MarketMinds.Shared.Models;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using global::MarketMinds.Shared.Models.DTOs;
 
     /// <summary>
     /// API controller for managing contract data.
