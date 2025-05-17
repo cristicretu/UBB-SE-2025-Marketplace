@@ -271,16 +271,16 @@ namespace Server.DataAccessLayer
             // --- Order Configuration --- merge-nicusor
             modelBuilder.Entity<Order>(entity =>
             {
-                entity.HasKey(o => o.OrderID);
+                entity.HasKey(o => o.Id);
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasForeignKey(o => o.Id)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne<Buyer>()
                     .WithMany()
-                    .HasForeignKey(o => o.BuyerID)
+                    .HasPrincipalKey(b => b.Id)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne<OrderSummary>()
@@ -294,6 +294,8 @@ namespace Server.DataAccessLayer
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.ToTable(t => t.HasCheckConstraint("PaymentMethodConstraint", "[PaymentMethod] IN ('card', 'wallet', 'cash')"));
+                
+                entity.Property(o => o.BuyerId).HasColumnName("BuyerID");
             });
 
             // --- Order Summary Configuration --- merge-nicusor
@@ -497,12 +499,13 @@ namespace Server.DataAccessLayer
                 entity.HasOne<Buyer>()
                     .WithMany()
                     .HasForeignKey(bci => bci.BuyerId)
+                    .HasPrincipalKey(b => b.Id)
                     .OnDelete(DeleteBehavior.Restrict) // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
                     .IsRequired();
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasForeignKey(bci => bci.Id)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict) // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
                     .IsRequired();
             });
@@ -515,11 +518,12 @@ namespace Server.DataAccessLayer
                 entity.HasOne<Buyer>()
                     .WithMany()
                     .HasForeignKey(bwi => bwi.BuyerId)
+                    .HasPrincipalKey(b => b.Id)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasForeignKey(bwi => bwi.Id)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
