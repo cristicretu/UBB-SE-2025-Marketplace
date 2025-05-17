@@ -7,7 +7,7 @@ using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Shared.Services.BuyProductsService
 {
-    public class BuyProductsService : IBuyProductsService, IProductService
+    public class BuyProductsService : IBuyProductsService
     {
         private readonly BuyProductsProxyRepository buyProductsRepository;
         private readonly JsonSerializerOptions jsonOptions;
