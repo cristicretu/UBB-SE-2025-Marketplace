@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Dispatching;
 using BusinessLogicLayer.ViewModel;
@@ -26,6 +27,8 @@ using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services;
 
 namespace MarketMinds
 {
@@ -95,6 +98,21 @@ namespace MarketMinds
         public static Window LoginWindow = null!;
         public static Window MainWindow = null!;
         private static HttpClient httpClient;
+
+        // Implementation of IOnLoginSuccessCallback
+        private class LoginSuccessHandler : IOnLoginSuccessCallback
+        {
+            public async Task OnLoginSuccess(User user)
+            {
+                // Set the current user
+                CurrentUser = user;
+
+                // Show the main window
+                ShowMainWindow();
+
+                return;
+            }
+        }
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -277,7 +295,8 @@ namespace MarketMinds
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
-            LoginViewModel = new LoginViewModel(UserService);
+            // Initialize login and register view models with proper callbacks
+            LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
             RegisterViewModel = new RegisterViewModel(UserService);
             ReviewCreateViewModel = null;
             SeeSellerReviewsViewModel = null;
