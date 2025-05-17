@@ -348,5 +348,16 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         }
 
         #endregion
+
+        // merge-nicusor
+        Task<Product> IProductService.GetProductByIdAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
