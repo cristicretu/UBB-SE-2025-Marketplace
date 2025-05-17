@@ -81,9 +81,9 @@ namespace Server.Repository
         /// </summary>
         /// <param name="sellerID">The ID of the seller whose products are to be retrieved.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of products.</returns>
-        public async Task<List<BuyProduct>> GetProducts(int sellerID)
+        public async Task<List<Product>> GetProducts(int sellerID)
         {
-            return await this.dbContext.BuyProducts.Where(product => product.SellerId == sellerID).ToListAsync();
+            return await this.dbContext.Products.Where(product => product.SellerId == sellerID).ToListAsync();
         }
 
         /// <summary>

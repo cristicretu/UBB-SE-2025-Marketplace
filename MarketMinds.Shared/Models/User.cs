@@ -31,8 +31,14 @@ namespace MarketMinds.Shared.Models
         [Column("balance")]
         public double Balance { get; set; }
 
-        [Column("rating")]
-        public double Rating { get; set; }
+        [Column("failedLogIns")]
+        public int FailedLogIns { get; set; }
+
+        [Column("bannedUntil")]
+        public DateTime? BannedUntil { get; set; }
+
+        [Column("isBanned")]
+        public bool IsBanned { get; set; }
 
 
         [Column("failedLogIns")]
@@ -47,24 +53,21 @@ namespace MarketMinds.Shared.Models
         [NotMapped]
         public string Token { get; set; } = string.Empty;
 
+        [NotMapped]
+        public double Rating { get; set; }
+
         private const double MAX_BALANCE = 999999;
 
         // Navigation properties
         public ICollection<AuctionProduct> SellingItems { get; set; }
         public ICollection<Bid> Bids { get; set; }
 
+        // Default constructor for EF Core
         public User()
         {
-            Username = string.Empty;
-            Email = string.Empty;
-            PhoneNumber = string.Empty;
-            Token = string.Empty;
-            Password = string.Empty;
-            SellingItems = new List<AuctionProduct>();
-            Bids = new List<Bid>();
         }
 
-        public User(string username, string email, string phoneNumber, int userType, DateTime bannedUntil, bool isBanned, int failedLogins, string passwordHash)
+        public User(int id = 0, string username = "", string email = "", string phoneNumber = "", int userType = (int)UserRole.Unassigned, double balance = 0, DateTime? bannedUntil = null, bool isBanned = false, int failedLogins = 0, string passwordHash = "", string token = "")
         {
             Username = username;
             Email = email;
@@ -75,19 +78,6 @@ namespace MarketMinds.Shared.Models
             IsBanned = isBanned;
             FailedLogIns = failedLogins;
             Token = string.Empty;
-            Password = string.Empty;
-            SellingItems = new List<AuctionProduct>();
-            Bids = new List<Bid>();
-        }
-
-        public User(int id, string username, string email, string phoneNumber, int userType, string token)
-        {
-            Id = id;
-            Username = username;
-            Email = email;
-            PhoneNumber = phoneNumber;
-            UserType = userType;
-            Token = token;
             Password = string.Empty;
             SellingItems = new List<AuctionProduct>();
             Bids = new List<Bid>();

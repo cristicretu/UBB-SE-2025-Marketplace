@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.UserService;
 
 namespace WebMarketplace.Models
 {
@@ -122,7 +123,7 @@ namespace WebMarketplace.Models
             Products = string.IsNullOrEmpty(searchText)
                 ? _allProducts.ToList()
                 : _allProducts
-                    .Where(p => p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    .Where(p => p.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                p.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase))
                     .ToList();
         }
@@ -147,7 +148,7 @@ namespace WebMarketplace.Models
         {
             try
             {
-                if (User != null && User.Role == UserRole.Seller)
+                if (User != null && User.UserType == (int)UserRole.Seller)
                 {
                     Seller = await _sellerService.GetSellerByUser(User);
 

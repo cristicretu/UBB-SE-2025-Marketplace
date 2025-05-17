@@ -38,6 +38,12 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         /// <param name="productId">The product ID</param>
         /// <returns>The product, or null if not found</returns>
         Task<Product> GetProductByIdAsync(int productId);
+    /// <summary>
+    /// Gets a product by ID
+    /// </summary>
+    /// <param name="productId">The product ID</param>
+    /// <returns>The product, or null if not found</returns>
+    BuyProduct GetProductById(int productId);
 
         /// <summary>
         /// Gets a seller's name by ID

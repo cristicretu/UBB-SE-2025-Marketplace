@@ -92,13 +92,34 @@ namespace WebMarketplace.Models
             double subtotalProducts = 0;
             foreach (var product in ProductList)
             {
-                subtotalProducts += product.Price;
+                // Check product type for proper price access
+                if (product is BuyProduct buyProduct)
+                {
+                    subtotalProducts += buyProduct.Price;
+                }
+                else if (product is BorrowProduct borrowProduct)
+                {
+                    // Handle borrow product pricing if different
+                    subtotalProducts += product.Price; // Use base price as fallback
+                }
+                else
+                {
+                    subtotalProducts += product.Price;
+                }
             }
 
             Subtotal = subtotalProducts;
 
-            string productType = ProductList[0].ProductType;
-            if (subtotalProducts >= 200 || productType == "refill" || productType == "bid")
+            // Determine product type for delivery fee calculation
+            string productType = "standard";
+            
+            // Try to determine if any product is a special type
+            bool hasSpecialType = ProductList.Any(p => 
+                (p is BorrowProduct) || // For borrowed products
+                (p.GetType().Name.Contains("Refill")) || // For refill products
+                (p.GetType().Name.Contains("Auction"))); // For auction/bid products
+            
+            if (subtotalProducts >= 200 || hasSpecialType)
             {
                 Total = subtotalProducts;
                 DeliveryFee = 0;

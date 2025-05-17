@@ -358,7 +358,20 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
 
         Task<string> IProductService.GetSellerNameAsync(int? sellerId)
         {
-            throw new NotImplementedException();
+            // Not implemented in borrow products service
+            return Task.FromResult<string>(null);
+        }
+        
+        /// <summary>
+        /// Gets a list of products that can be borrowed.
+        /// Implementation for IProductService interface.
+        /// </summary>
+        /// <returns>A list of borrowable products.</returns>
+        public async Task<List<Product>> GetBorrowableProductsAsync()
+        {
+            // Since this is BorrowProductsService, we can return all our products as they are borrowable
+            var borrowProducts = await GetAllBorrowProductsAsync();
+            return borrowProducts.Cast<Product>().ToList();
         }
     }
 }

@@ -33,5 +33,11 @@ namespace MarketMinds.Shared.Services
         /// <param name="sellerId">The ID of the seller.</param>
         /// <returns>The name of the seller.</returns>
         Task<string> GetSellerNameAsync(int? sellerId);
+        
+        /// <summary>
+        /// Gets a list of products that can be borrowed.
+        /// </summary>
+        /// <returns>A list of borrowable products.</returns>
+        Task<List<Product>> GetBorrowableProductsAsync();
     }
 }

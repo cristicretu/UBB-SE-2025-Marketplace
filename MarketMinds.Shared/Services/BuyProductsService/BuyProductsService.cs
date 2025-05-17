@@ -3,10 +3,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Shared.Services.BuyProductsService
 {
-    public class BuyProductsService : IBuyProductsService, IProductService
+    public class BuyProductsService : IBuyProductsService
     {
         private readonly BuyProductsProxyRepository buyProductsRepository;
         private readonly JsonSerializerOptions jsonOptions;
@@ -25,7 +26,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             jsonOptions.Converters.Add(new UserJsonConverter());
         }
 
-        public List<Product> GetProducts()
+        public List<BuyProduct> GetProducts()
         {
             try
             {
@@ -34,7 +35,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 
                 var products = JsonSerializer.Deserialize<List<BuyProduct>>(json, jsonOptions);
-                return products?.Cast<Product>().ToList() ?? new List<Product>();
+                return products ?? new List<BuyProduct>();
             }
             catch (Exception ex)
             {
@@ -43,7 +44,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 {
                     Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
                 }
-                return new List<Product>();
+                return new List<BuyProduct>();
             }
         }
 
@@ -160,9 +161,9 @@ namespace MarketMinds.Shared.Services.BuyProductsService
 
         public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
         {
-            List<Product> products = GetProducts();
+            List<BuyProduct> buyProducts = GetProducts();
             List<Product> productResultSet = new List<Product>();
-            foreach (Product product in products)
+            foreach (BuyProduct product in buyProducts)
             {
                 bool matchesConditions = selectedConditions == null || selectedConditions.Count == NOCOUNT || selectedConditions.Any(c => c.Id == product.Condition.Id);
                 bool matchesCategories = selectedCategories == null || selectedCategories.Count == NOCOUNT || selectedCategories.Any(c => c.Id == product.Category.Id);
@@ -206,19 +207,35 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             throw new NotImplementedException("UpdateProductAsync is not implemented.");
         }
 
-        public Task<Product> GetProductByIdAsync(int productId)
+        public async Task<BuyProduct> GetProductByIdAsync(int productId)
         {
-            throw new NotImplementedException("GetProductByIdAsync is not implemented.");
+            try
+            {
+                return GetProductById(productId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting product by ID {productId}: {ex.Message}");
+                return null;
+            }
         }
-
+        
+        // Explicit implementation for IProductService's GetSellerNameAsync
         public Task<string> GetSellerNameAsync(int sellerId)
         {
-            throw new NotImplementedException("GetSellerNameAsync is not implemented.");
+            return this.buyProductsRepository.GetSellerNameAsync(sellerId);
         }
-
-        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        
+        /// <summary>
+        /// Gets a list of products that can be borrowed.
+        /// Implementation for IProductService interface.
+        /// </summary>
+        /// <returns>A list of borrowable products.</returns>
+        public async Task<List<Product>> GetBorrowableProductsAsync()
         {
-            throw new NotImplementedException();
+            // Since this is BuyProductsService, we don't have borrowable products
+            // Return an empty list when this method is called on this service
+            return new List<Product>();
         }
     }
 }
