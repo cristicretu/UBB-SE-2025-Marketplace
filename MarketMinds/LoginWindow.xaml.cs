@@ -17,17 +17,17 @@ namespace MarketMinds
         public LoginWindow()
         {
             this.InitializeComponent();
-            this.Title = "Market Messi - Login";
-            // Navigate to the login page first
-            ContentFrame.Navigate(typeof(Marketplace_SE.LoginPage));
+            this.Title = "MarketMinds";
+            // Navigate to the login view first
+            ContentFrame.Navigate(typeof(MarketMinds.Views.LoginView), App.LoginViewModel);
             // Subscribe to the navigation events
             ContentFrame.Navigated += ContentFrame_Navigated;
         }
 
         private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
         {
-            // Check if we've navigated back to LoginPage with a successful login
-            if (e.SourcePageType == typeof(Marketplace_SE.LoginPage) && App.CurrentUser != null)
+            // Check if we've navigated back to LoginView with a successful login
+            if (e.SourcePageType == typeof(MarketMinds.Views.LoginView) && App.CurrentUser != null)
             {
                 // User has successfully logged in, show main application
                 App.ShowMainWindow();
