@@ -85,12 +85,12 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
-        public async Task<List<Product>> GetBorrowableProductsAsync()
+        public async Task<List<BorrowProduct>> GetBorrowableProductsAsync()
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/borrowable");
             await this.ThrowOnError(nameof(GetBorrowableProductsAsync), response);
-            var products = await response.Content.ReadFromJsonAsync<List<Product>>();
-            return products ?? new List<Product>();
+            var products = await response.Content.ReadFromJsonAsync<List<BorrowProduct>>();
+            return products ?? new List<BorrowProduct>();
         }
 
         /// <inheritdoc />

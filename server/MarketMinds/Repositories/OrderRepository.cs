@@ -265,7 +265,7 @@ namespace Server.Repository
                                         ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Product with ID {order.ProductID} not found");
 
                 // This boolean is used to check if the product name corresponds to the search text, if the search text is present.
-                bool shouldIncludeProductBySearchText = searchText == null || (searchText != null && product.Name.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0);
+                bool shouldIncludeProductBySearchText = searchText == null || (searchText != null && product.Title.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0);
 
                 if (shouldIncludeProductBySearchText) // if searching by text corresponds, then we can check the time period
                 {

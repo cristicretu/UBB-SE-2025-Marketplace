@@ -73,7 +73,7 @@ namespace MarketMinds.Shared.Services
         }
 
         /// <inheritdoc/>
-        public async Task<List<Product>> GetBorrowableProductsAsync()
+        public async Task<List<BorrowProduct>> GetBorrowableProductsAsync()
         {
             // Use the repository to fetch borrowable products from the database
             return await productRepository.GetBorrowableProductsAsync();

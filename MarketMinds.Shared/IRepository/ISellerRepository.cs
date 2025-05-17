@@ -51,7 +51,7 @@ namespace MarketMinds.Shared.IRepository
         /// </summary>
         /// <param name="sellerID">The ID of the seller whose products are to be retrieved.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of products.</returns>
-        Task<List<Product>> GetProducts(int sellerID);
+        Task<List<BuyProduct>> GetProducts(int sellerID);
 
         /// <summary>
         /// Gets the reviews for a given seller.

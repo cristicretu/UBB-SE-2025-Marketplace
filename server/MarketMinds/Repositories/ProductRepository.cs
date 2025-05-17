@@ -41,15 +41,14 @@ namespace Server.Repository
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task AddProductAsync(string name, double price, int sellerId, string productType, DateTime startDate, DateTime endDate)
         {
-            Product product = new Product
+            BuyProduct product = new BuyProduct
             {
                 Id = 0,
                 Title = name,
                 Description = string.Empty,
                 Price = (int)price,
                 SellerId = sellerId,
-                Stock = 0,
-                ProductType = productType
+                Stock = 0
             };
 
             await this.dbContext.BuyProducts.AddAsync(product);
@@ -70,15 +69,12 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the product is not found.</exception>
         public async Task UpdateProductAsync(int id, string name, double price, int sellerId, string productType, DateTime startDate, DateTime endDate)
         {
-            Product? productToUpdate = await this.dbContext.BuyProducts.FindAsync(id)
+            BuyProduct? productToUpdate = await this.dbContext.BuyProducts.FindAsync(id)
                     ?? throw new Exception($"UpdateProductAsync:Product not found for the product id: {id}");
 
             productToUpdate.Title = name;
             productToUpdate.Price = (int)price;
             productToUpdate.SellerId = sellerId;
-            productToUpdate.ProductType = "merge-nicusor";
-            productToUpdate.StartDate = startDate;
-            productToUpdate.EndDate = endDate;
 
             await this.dbContext.SaveChangesAsync();
         }
@@ -91,7 +87,7 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the product is not found.</exception>
         public async Task DeleteProduct(int id)
         {
-            Product? productToDelete = await this.dbContext.BuyProducts.FindAsync(id)
+            BuyProduct? productToDelete = await this.dbContext.BuyProducts.FindAsync(id)
                     ?? throw new Exception($"DeleteProduct: Product not found for the product id: {id}");
 
             this.dbContext.BuyProducts.Remove(productToDelete);
@@ -135,7 +131,7 @@ namespace Server.Repository
         /// Gets all borrowable products from the waitlist
         /// </summary>
         /// <returns>A list of products that are available for borrowing</returns>
-        public async Task<List<Product>> GetBorrowableProductsAsync()
+        public async Task<List<BorrowProduct>> GetBorrowableProductsAsync()
         {
             // Get the products with these IDs
             var products = await this.dbContext.BorrowProducts

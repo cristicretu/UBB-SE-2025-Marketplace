@@ -179,7 +179,7 @@ namespace Server.Repository
         public async Task<int> GetUserWaitlistPosition(int userId, int productId)
         {
             // Check if the WaitlistProduct exists and get the WaitListProductID
-            int waitListProductID = await this.dbContext.BorrowProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
+            int waitListProductID = await this.dbContext.BorrowProducts.Where(waitlistProduct => waitlistProduct.Id == productId).Select(waitlistProduct => waitlistProduct.Id).FirstOrDefaultAsync();
             if (waitListProductID == 0)
             {
                 throw new Exception($"GetUserWaitlistPosition: No ProductWaitList with id: {productId}");

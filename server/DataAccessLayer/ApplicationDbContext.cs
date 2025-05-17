@@ -55,6 +55,7 @@ namespace Server.DataAccessLayer
         public DbSet<DummyCardEntity> DummyCards { get; set; } // TODO change to Cards
         public DbSet<DummyWalletEntity> DummyWallets { get; set; } // TODO change to Wallets
         public DbSet<BuyerCartItemEntity> BuyerCartItems { get; set; }
+        public DbSet<BuyerWishlistItemsEntity> BuyersWishlistItems { get; set; }
         public DbSet<PDF> PDFs { get; set; }
         public DbSet<PredefinedContract> PredefinedContracts { get; set; }
         public DbSet<Contract> Contracts { get; set; }
@@ -424,7 +425,8 @@ namespace Server.DataAccessLayer
 
                 entity.HasOne<BorrowProduct>()
                     .WithMany()
-                    .HasForeignKey(borrowProduct => borrowProduct.Id)
+                    .HasForeignKey(uw => uw.ProductID)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired(); // to respect Maria's DB design
 
@@ -597,7 +599,7 @@ namespace Server.DataAccessLayer
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasForeignKey(on => on.Id)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired(false); // to respect Maria's DB design
 
