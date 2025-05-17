@@ -61,6 +61,7 @@ namespace Server.DataAccessLayer
         public DbSet<SellerNotificationEntity> SellerNotifications { get; set; }
         public DbSet<FollowingEntity> Followings { get; set; }
         public DbSet<OrderNotificationEntity> OrderNotifications { get; set; }
+        public DbSet<Address> Addresses { get; set; }
         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

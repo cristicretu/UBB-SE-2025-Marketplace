@@ -46,7 +46,7 @@ namespace Server.Repository
                 Id = 0,
                 Title = name,
                 Description = string.Empty,
-                Price = price,
+                Price = (int)price,
                 SellerId = sellerId,
                 Stock = 0,
                 ProductType = productType
@@ -73,10 +73,10 @@ namespace Server.Repository
             Product? productToUpdate = await this.dbContext.BuyProducts.FindAsync(id)
                     ?? throw new Exception($"UpdateProductAsync:Product not found for the product id: {id}");
 
-            productToUpdate.Name = name;
-            productToUpdate.Price = price;
+            productToUpdate.Title = name;
+            productToUpdate.Price = (int)price;
             productToUpdate.SellerId = sellerId;
-            productToUpdate.ProductType = productType;
+            productToUpdate.ProductType = "merge-nicusor";
             productToUpdate.StartDate = startDate;
             productToUpdate.EndDate = endDate;
 

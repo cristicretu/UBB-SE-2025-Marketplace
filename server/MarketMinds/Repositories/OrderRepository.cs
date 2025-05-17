@@ -334,7 +334,7 @@ namespace Server.Repository
             {
                 OrderID = order.Id,
                 ProductName = product.Title,
-                ProductTypeName = product.ProductType,
+                ProductTypeName =  "merge-nicusor",
                 OrderDate = order.OrderDate.ToString("yyyy-MM-dd"),
                 PaymentMethod = order.PaymentMethod,
                 OrderSummaryID = order.OrderSummaryID,
