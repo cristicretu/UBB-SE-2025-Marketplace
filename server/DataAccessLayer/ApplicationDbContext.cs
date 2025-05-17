@@ -51,7 +51,7 @@ namespace Server.DataAccessLayer
         public DbSet<OrderHistory> OrderHistory { get; set; }
         public DbSet<OrderCheckpoint> OrderCheckpoints { get; set; }
         public DbSet<TrackedOrder> TrackedOrders { get; set; }
-        public DbSet<UserWaitList> UserWaitLists { get; set; }
+        public DbSet<UserWaitList> UserWaitList { get; set; }
         public DbSet<DummyCardEntity> DummyCards { get; set; } // TODO change to Cards
         public DbSet<DummyWalletEntity> DummyWallets { get; set; } // TODO change to Wallets
         public DbSet<BuyerCartItemEntity> BuyerCartItems { get; set; }
