@@ -1,72 +1,35 @@
-﻿using MarketMinds.Shared.Models;
-
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
-using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.Shared.Services
 {
     /// <summary>
-    /// Service for managing dummy product operations.
+    /// Service implementation for managing products
     /// </summary>
     public class ProductService : IProductService
     {
-        private readonly IProductRepository productRepository;
+        private readonly IProductRepository _productRepository;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProductService"/> class with a specified database provider.
+        /// Initializes a new instance of the <see cref="ProductService"/> class.
         /// </summary>
-        public ProductService()
+        /// <param name="productRepository">The product repository.</param>
+        public ProductService(IProductRepository productRepository)
         {
-            this.productRepository = new ProductProxyRepository(AppConfig.GetBaseApiUrl());
-        }
-
-        /// <inheritdoc/>
-        public async Task UpdateProductAsync(int id, string name, double price, int sellerId, string productType, DateTime startDate, DateTime endDate)
-        {
-            // Validate inputs
-            if (id <= 0)
-            {
-                throw new ArgumentException("Product ID must be positive", nameof(id));
-            }
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Product name cannot be empty", nameof(name));
-            }
-            if (price < 0)
-            {
-                throw new ArgumentException("Price cannot be negative", nameof(price));
-            }
-
-            if (sellerId < 0)
-            {
-                throw new ArgumentException("Seller ID cannot be negative", nameof(sellerId));
-            }
-            if (string.IsNullOrWhiteSpace(productType))
-            {
-                throw new ArgumentException("Product type cannot be empty", nameof(productType));
-            }
-
-            // Only validate start and end dates for borrowed products
-            if (productType == "borrowed")
-            {
-                if (startDate > endDate)
-                {
-                    throw new ArgumentException("Start date cannot be after end date", nameof(startDate));
-                }
-            }
-            await productRepository.UpdateProductAsync(id, name, price, sellerId, productType, startDate, endDate);
+            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
         }
 
         /// <inheritdoc/>
         public async Task<Product> GetProductByIdAsync(int productId)
         {
-            // Use the repository to fetch the product from the database
-            return await productRepository.GetProductByIdAsync(productId);
+            return await _productRepository.GetProductByIdAsync(productId);
         }
 
         /// <inheritdoc/>
-        public async Task<string> GetSellerNameAsync(int sellerId)
+        public async Task<string> GetSellerNameAsync(int? sellerId)
         {
             // Use the repository to fetch the seller name from the database
             return await productRepository.GetSellerNameAsync(sellerId);
@@ -82,6 +45,7 @@ namespace MarketMinds.Shared.Services
         public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
         {
             throw new NotImplementedException();
+            return await _productRepository.GetSellerNameAsync(sellerId);
         }
     }
 }

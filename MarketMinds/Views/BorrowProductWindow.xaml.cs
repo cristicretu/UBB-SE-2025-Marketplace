@@ -86,12 +86,12 @@ namespace MarketMinds.Views
         /// </summary>
         /// <param name="product">The product for which we want to display the details</param>
         /// <param name="sellerName">The name of the seller of that specific product</param>
-        private void DisplayProduct(Product product, string sellerName)
+        private void DisplayProduct(BorrowProduct product, string sellerName)
         {
-            this.txtProductName.Text = product.Name;
+            this.txtProductName.Text = product.Title;
             this.txtPrice.Text = $"Price: ${product.Price}";
             this.txtSeller.Text = $"Seller: {sellerName}";
-            this.txtType.Text = $"Type: {product.ProductType}";
+            this.txtType.Text = $"Type: {product.Category?.Name}"; // merge-niscusor -> ensure the Category object is populated here, it might be null!!!!
 
             bool isAvailable = product.EndDate == DateTime.MinValue;
 
