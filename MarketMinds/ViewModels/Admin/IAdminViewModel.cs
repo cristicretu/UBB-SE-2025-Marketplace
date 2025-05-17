@@ -20,7 +20,7 @@ namespace MarketMinds.ViewModels.Admin
         /// <summary>
         /// Gets or sets the pie series.
         /// </summary>
-        //List<ISeries>? PieSeries { get; set; }
+        // List<ISeries>? PieSeries { get; set; }
 
         /// <summary>
         /// Ban a user.

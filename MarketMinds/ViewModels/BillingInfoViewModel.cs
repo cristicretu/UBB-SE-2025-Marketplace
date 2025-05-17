@@ -6,6 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using MarketMinds.Views;
+using Microsoft.UI.Xaml;
 
 namespace MarketMinds.ViewModels
 {
@@ -58,7 +60,6 @@ namespace MarketMinds.ViewModels
         {
             // Initialize services with dependency injection support
             // In a real-world application, these would ideally be injected through constructor
-
             this.orderHistoryService = new OrderHistoryService();
             this.orderService = new OrderService();
             this.orderSummaryService = new OrderSummaryService();
@@ -141,8 +142,7 @@ namespace MarketMinds.ViewModels
             // (this is only for orders of new, used or borrowed products)
             this.Subtotal = subtotalProducts;
 
-            string productType = this.Products[0].ProductType;
-            if (subtotalProducts >= 200 || productType == "refill" || productType == "bid")
+            if (subtotalProducts >= 200)
             {
                 this.Total = subtotalProducts;
                 this.DeliveryFee = 0;
@@ -153,22 +153,6 @@ namespace MarketMinds.ViewModels
                 this.Total = subtotalProducts + this.DeliveryFee;
             }
         }
-
-        /// <summary>
-        /// Asynchronously initializes the view model by loading dummy products, setting up the product list, and calculating order totals.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        //public async Task InitializeViewModelAsync()
-        //{
-        //    Products = await GetProductsFromOrderHistoryAsync(orderHistoryID);
-        //    ProductList = new ObservableCollection<Product>(Products);
-
-        //    OnPropertyChanged(nameof(ProductList));
-
-        //    SetVisibilityRadioButtons();
-
-        //    CalculateOrderTotal(orderHistoryID);
-        //}
 
         public async Task InitializeViewModelAsync()
         {
@@ -205,8 +189,6 @@ namespace MarketMinds.ViewModels
             this.CalculateOrderTotal();
         }
 
-
-
         /// <summary>
         /// Sets the visibility of payment method radio buttons based on the first product's type.
         /// </summary>
@@ -214,26 +196,9 @@ namespace MarketMinds.ViewModels
         {
             if (this.ProductList.Count > 0)
             {
-                string firstProductType = this.ProductList[0].ProductType;
-
-                if (firstProductType == "new" || firstProductType == "used" || firstProductType == "borrowed")
-                {
-                    this.IsCardEnabled = true;
-                    this.IsCashEnabled = true;
-                    this.IsWalletEnabled = false;
-                }
-                else if (firstProductType == "bid")
-                {
-                    this.IsCardEnabled = false;
-                    this.IsCashEnabled = false;
-                    this.IsWalletEnabled = true;
-                }
-                else if (firstProductType == "refill")
-                {
-                    this.IsCardEnabled = true;
-                    this.IsCashEnabled = false;
-                    this.IsWalletEnabled = false;
-                }
+                this.IsCardEnabled = true;
+                this.IsCashEnabled = true;
+                this.IsWalletEnabled = true;
             }
         }
         [ExcludeFromCodeCoverage]
@@ -241,24 +206,24 @@ namespace MarketMinds.ViewModels
         /// Handles the finalization button click event, updating orders and order summary, then opens the next window.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
-        //public async Task OnFinalizeButtonClickedAsync()
-        //{
+        // public async Task OnFinalizeButtonClickedAsync()
+        // {
         //    string paymentMethod = SelectedPaymentMethod;
 
-        //    // Get orders from order history using the service
+        // // Get orders from order history using the service
         //    List<Order> orderList = await orderService.GetOrdersFromOrderHistoryAsync(orderHistoryID);
 
-        //    // Update each order with the selected payment method
+        // // Update each order with the selected payment method
         //    foreach (var order in orderList)
         //    {
         //        await orderService.UpdateOrderAsync(order.OrderID, order.ProductType, SelectedPaymentMethod, DateTime.Now);
         //    }
 
-        //    // Update the order summary using the service
+        // // Update the order summary using the service
         //    await orderSummaryService.UpdateOrderSummaryAsync(orderHistoryID, Subtotal, warrantyTax, DeliveryFee, Total, FullName, Email, PhoneNumber, Address, ZipCode, AdditionalInfo, null);
 
-        //    await OpenNextWindowAsync(SelectedPaymentMethod);
-        //}
+        // await OpenNextWindowAsync(SelectedPaymentMethod);
+        // }
 
         /// <summary>
         /// Handles the finalization button click event, updating orders and order summary, then opens the next window.
@@ -297,19 +262,19 @@ namespace MarketMinds.ViewModels
                     try
                     {
                         // Create a new order history record - handling possible connection issues
-                        //try
-                        //{
+                        // try
+                        // {
                         //    orderHistoryID = await orderHistoryService.CreateOrderHistoryAsync();
                         //    continueToNextWindow = true;
-                        //}
-                        //catch (Exception ex)
-                        //{
+                        // }
+                        // catch (Exception ex)
+                        // {
                         //    System.Diagnostics.Debug.WriteLine($"Database connection error: {ex.Message}");
                         // Use the fallback ID since we couldn't get a real one
                         this.orderHistoryID = fallbackOrderHistoryId;
                         usesFallbackData = true;
                         continueToNextWindow = true; // Continue despite the error
-                        //}
+                        // }
 
                         // Create order summary with error handling
                         try
@@ -350,38 +315,15 @@ namespace MarketMinds.ViewModels
                                 var product = item;
                                 var quantity = item.Stock;
 
-                                string productTypeStr = product.ProductType ?? "new"; // Default to "new" if not specified
-                                int productTypeInt;
-
-                                // Convert string product type to integer - this depends on your specific mapping
-                                switch (productTypeStr.ToLower())
-                                {
-                                    case "used":
-                                        productTypeInt = 2;
-                                        break;
-                                    case "borrowed":
-                                        productTypeInt = 3;
-                                        break;
-                                    case "bid":
-                                        productTypeInt = 4;
-                                        break;
-                                    case "refill":
-                                        productTypeInt = 5;
-                                        break;
-                                    default: // "new"
-                                        productTypeInt = 1;
-                                        break;
-                                }
-
                                 for (int i = 0; i < quantity; i++)
                                 {
                                     try
                                     {
                                         // Add each product to the order
                                         await this.orderService.AddOrderAsync(
-                                            product.ProductId,
+                                            product.Id,
                                             this.buyerId,
-                                            productTypeInt.ToString(),
+                                            "merge-nicusor-product-type",
                                             paymentMethod,
                                             this.orderHistoryID,
                                             DateTime.Now);
@@ -490,24 +432,23 @@ namespace MarketMinds.ViewModels
             }
         }
 
-
         [ExcludeFromCodeCoverage]
         /// <summary>
         /// Opens the next window based on the selected payment method.
         /// </summary>
         /// <param name="selectedPaymentMethod">The selected payment method (e.g. "card", "wallet").</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        //public async Task OpenNextWindowAsync(string selectedPaymentMethod)
-        //{
+        // public async Task OpenNextWindowAsync(string selectedPaymentMethod)
+        // {
         //    if (selectedPaymentMethod == "card")
         //    {
         //        var billingInfoWindow = new BillingInfoWindow();
         //        var cardInfoPage = new CardInfo(orderHistoryID);
         //        billingInfoWindow.Content = cardInfoPage;
 
-        //        billingInfoWindow.Activate();
+        // billingInfoWindow.Activate();
 
-        //        // This is just a workaround until I figure out how to switch between pages
+        // // This is just a workaround until I figure out how to switch between pages
         //    }
         //    else
         //    {
@@ -519,9 +460,9 @@ namespace MarketMinds.ViewModels
         //        var finalisePurchasePage = new FinalisePurchase(orderHistoryID);
         //        billingInfoWindow.Content = finalisePurchasePage;
 
-        //        billingInfoWindow.Activate();
+        // billingInfoWindow.Activate();
         //    }
-        //}
+        // }
 
         /// <summary>
         /// Opens the next window based on the selected payment method.
@@ -607,7 +548,6 @@ namespace MarketMinds.ViewModels
             }
         }
 
-
         /// <summary>
         /// Processes the wallet refill by deducting the order total from the current wallet balance.
         /// </summary>
@@ -639,8 +579,8 @@ namespace MarketMinds.ViewModels
         /// Calculates the total order amount including applicable delivery fees.
         /// </summary>
         /// <param name="orderHistoryID">The order history identifier used for calculation.</param>
-        //public void CalculateOrderTotal(int orderHistoryID)
-        //{
+        // public void CalculateOrderTotal(int orderHistoryID)
+        // {
         //    double subtotalProducts = 0;
         //    if (Products.Count == 0)
         //    {
@@ -651,7 +591,7 @@ namespace MarketMinds.ViewModels
         //        subtotalProducts += product.Price;
         //    }
 
-        //    // For orders over 200 RON, a fixed delivery fee of 13.99 will be added
+        // // For orders over 200 RON, a fixed delivery fee of 13.99 will be added
         //    // (this is only for orders of new, used or borrowed products)
         //    Subtotal = subtotalProducts;
         //    if (subtotalProducts >= 200 || Products[0].ProductType == "refill" || Products[0].ProductType == "bid")
@@ -663,8 +603,7 @@ namespace MarketMinds.ViewModels
         //        Total = subtotalProducts + 13.99f;
         //        DeliveryFee = 13.99f;
         //    }
-        //}
-
+        // }
         public void CalculateOrderTotal(int orderHistoryID)
         {
             // Call the parameter-less version

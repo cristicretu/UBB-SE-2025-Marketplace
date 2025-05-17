@@ -137,7 +137,7 @@ namespace MarketMinds.ViewModels.Admin
         //     this.totalUsersCount = this.analyticsService.GetTotalNumberOfUsers().Result;
         //     var buyersCount = this.analyticsService.GetTotalNumberOfBuyers().Result;
 
-        //     this.PieSeries =
+        // this.PieSeries =
         //     [
         //         new PieSeries<double>
         //         {

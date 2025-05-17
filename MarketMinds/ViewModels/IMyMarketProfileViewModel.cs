@@ -69,7 +69,6 @@ namespace MarketMinds.ViewModels
         /// </summary>
         ICommand AddToCartCommand { get; }
 
-
         /// <summary>
         /// Gets or sets the phone number.
         /// </summary>

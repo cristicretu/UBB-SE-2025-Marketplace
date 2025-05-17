@@ -6,9 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
-
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Helper;
+using MarketMinds.Views;
+using Microsoft.UI.Xaml;
 
 namespace MarketMinds.ViewModels
 {

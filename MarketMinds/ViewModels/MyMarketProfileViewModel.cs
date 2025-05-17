@@ -65,7 +65,6 @@ namespace MarketMinds.ViewModels
             _ = this.LoadMyMarketProfileData(); // Load initial data
         }
 
-
         /// <summary>
         /// Occurs when a property value changes.
         /// </summary>
@@ -100,7 +99,6 @@ namespace MarketMinds.ViewModels
                 await this.ShowDialog("Error", "There was a problem adding the product to your cart.");
             }
         }
-
 
         /// <summary>
         /// Gets or sets a value indicating whether the seller is followed by the buyer.

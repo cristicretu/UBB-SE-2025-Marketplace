@@ -161,7 +161,6 @@
             await dialog.ShowAsync();
         }
 
-
         private async void GenerateContractButton_Clicked(object sender, RoutedEventArgs e)
         {
                 await contractViewModel.GenerateAndSaveContractAsync();

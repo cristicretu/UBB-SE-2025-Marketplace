@@ -175,12 +175,13 @@ namespace Server.Repository
 
                 // Set the ID and quantity manually
                 productWithCartQuantity.Id = product.Id;
-                productWithCartQuantity.Quantity = buyerCartItem.Quantity;
+                productWithCartQuantity.Stock = buyerCartItem.Quantity;
 
                 // Copy any additional properties that might be needed
-                productWithCartQuantity.ProductType = product.ProductType;
-                productWithCartQuantity.StartDate = product.StartDate;
-                productWithCartQuantity.EndDate = product.EndDate;
+                productWithCartQuantity.CategoryId = product.CategoryId;
+                // theoretically not needed -> merge-nicusor
+                //productWithCartQuantity.StartDate = product.StartDate;
+                //productWithCartQuantity.EndDate = product.EndDate;
 
                 products.Add(productWithCartQuantity);
             }

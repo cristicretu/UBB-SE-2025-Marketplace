@@ -9,7 +9,6 @@ using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
 using Microsoft.UI.Text;
 // Add this using directive for Configuration
-
 namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
