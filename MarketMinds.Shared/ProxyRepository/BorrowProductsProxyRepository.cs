@@ -10,14 +10,14 @@ namespace MarketMinds.Shared.ProxyRepository
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
 
-        public BorrowProductsProxyRepository(IConfiguration configuration)
+        public BorrowProductsProxyRepository(string baseUrl)
         {
-            if (configuration == null)
+            if (baseUrl == null)
             {
-                throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null");
+                throw new ArgumentNullException(nameof(baseUrl), "Base URL cannot be null");
             }
             httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            apiBaseUrl = baseUrl;
             if (string.IsNullOrEmpty(apiBaseUrl))
             {
                 throw new InvalidOperationException("API base URL is null or empty");

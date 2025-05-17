@@ -24,6 +24,7 @@ using MarketMinds.Shared.Services.ConversationService;
 using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds
 {
@@ -241,7 +242,7 @@ namespace MarketMinds
             ReviewRepository = new ReviewProxyRepository(Configuration);
             ProductTagRepository = new ProductTagProxyRepository(Configuration);
             AuctionProductsRepository = new AuctionProductsProxyRepository(Configuration);
-            BorrowProductsRepository = new BorrowProductsProxyRepository(Configuration);
+            BorrowProductsRepository = new BorrowProductsProxyRepository(AppConfig.GetBaseApiUrl());
             BasketRepository = new BasketProxyRepository(Configuration);
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
 
@@ -249,7 +250,7 @@ namespace MarketMinds
             UserService = new UserService(Configuration);
             ReviewsService = new ReviewsService(Configuration, UserService, CurrentUser);
             BuyProductsService = new BuyProductsService(BuyProductsRepository);
-            BorrowProductsService = new BorrowProductsService(BorrowProductsRepository);
+            BorrowProductsService = new BorrowProductsService();
             AuctionProductsService = new AuctionProductsService(AuctionProductsRepository);
             CategoryService = new ProductCategoryService(ProductCategoryRepository);
             TagService = new ProductTagService(Configuration);

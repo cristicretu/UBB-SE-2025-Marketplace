@@ -68,7 +68,7 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="productId">The unique identifier of the product.</param>
         /// <returns>A task that returns the <see cref="Product"/> object.</returns>
-        Task<Product> GetProductByIdAsync(int productId);
+        Task<BorrowProduct> GetProductByIdAsync(int productId);
 
         /// <summary>
         /// Retrieves the waitlist position of a user for a specific product.

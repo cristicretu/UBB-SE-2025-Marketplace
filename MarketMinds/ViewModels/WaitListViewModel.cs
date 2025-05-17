@@ -2,12 +2,14 @@
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.BorrowProductsService;
 
 namespace MarketMinds.ViewModels
 {
     public class WaitListViewModel : IWaitListViewModel
     {
         private readonly IWaitlistService waitlistService;
+        private readonly IBorrowProductsService borrowProductService;
         private readonly IProductService productService;
 
         /// <summary>
@@ -22,6 +24,7 @@ namespace MarketMinds.ViewModels
         public WaitListViewModel()
         {
             this.waitlistService = new WaitlistService();
+            this.borrowProductService = new BorrowProductsService();
             this.productService = new ProductService();
         }
 
@@ -112,9 +115,9 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="productId">The ID of the product. Must be a positive integer.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the Product object.</returns>
-        public async Task<Product> GetProductByIdAsync(int productId)
+        public async Task<BorrowProduct> GetProductByIdAsync(int productId)
         {
-            return await productService.GetProductByIdAsync(productId);
+            return await borrowProductService.GetBorrowProductByIdAsync(productId);
         }
     }
 }
