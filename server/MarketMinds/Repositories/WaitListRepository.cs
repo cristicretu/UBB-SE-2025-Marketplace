@@ -48,7 +48,7 @@ namespace Server.Repository
             }
 
             // Check if the Product exists
-            bool productExists = await this.dbContext.BuyProducts.AnyAsync(product => product.Id == productId);
+            bool productExists = await this.dbContext.BorrowProducts.AnyAsync(product => product.Id == productId);
             if (!productExists)
             {
                 throw new Exception($"AddUserToWaitlist: No Product with id: {productId}");
