@@ -32,7 +32,7 @@ namespace MarketMinds.Views.Admin
         /// <summary>
         /// Gets the user's ID.
         /// </summary>
-        public int UserId => this.User.UserId;
+        public int UserId => this.User.Id;
 
         /// <summary>
         /// Gets the user's username.
@@ -52,12 +52,12 @@ namespace MarketMinds.Views.Admin
         /// <summary>
         /// Gets the user's role as a string.
         /// </summary>
-        public string Role => this.User.Role.ToString();
+        public string Role => this.User.UserType.ToString();
 
         /// <summary>
         /// Gets the count of failed login attempts.
         /// </summary>
-        public int FailedLogins => this.User.FailedLogins;
+        public int FailedLogins => this.User.FailedLogIns;
 
         /// <summary>
         /// Gets the date until which the user is banned, if any.

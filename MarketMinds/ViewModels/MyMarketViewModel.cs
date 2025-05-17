@@ -10,6 +10,7 @@ namespace MarketMinds.ViewModels
     using System.Linq;
     using System.Threading.Tasks;
     using System.Windows.Input;
+    using MarketMinds.Shared.Helper;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
     using Microsoft.UI.Xaml;
@@ -164,7 +165,7 @@ namespace MarketMinds.ViewModels
             this.filteredProducts.Clear();
             var filteredProducts = string.IsNullOrEmpty(searchText)
                 ? this.allProducts
-                : this.allProducts.Where(p => p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                : this.allProducts.Where(p => p.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase));
 
             foreach (var product in filteredProducts)
             {
@@ -222,7 +223,7 @@ namespace MarketMinds.ViewModels
             {
                 var products = await this.buyerService.GetProductsFromFollowedSellers(this.buyer.FollowingUsersIds);
 
-                var sortedProducts = products.OrderByDescending(p => p.ProductId).ToList();
+                var sortedProducts = products.OrderByDescending(p => p.Id).ToList();
 
                 this.allProducts.Clear();
                 foreach (var product in sortedProducts)

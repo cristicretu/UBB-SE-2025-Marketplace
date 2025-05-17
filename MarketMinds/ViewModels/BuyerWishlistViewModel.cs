@@ -150,19 +150,19 @@ namespace MarketMinds.ViewModels
         /// <returns>A wishlist item view model with loaded details.</returns>
         private IBuyerWishlistItemViewModel GetWishlistItemDetails(BuyerWishlistItem wishlistItem, bool canDelete = false)
         {
+            // merge-nicusor, fetch the product from the wishlistItem.productId
             var item = this.ItemDetailsProvider.LoadWishlistItemDetails(new BuyerWishlistItemViewModel
             {
                 ProductId = wishlistItem.ProductId,
                 OwnItem = canDelete,
                 RemoveCallback = this,
                 Product = new BuyProduct(
-                    wishlistItem.ProductId,
                     "Sample Product Name", // Replace with actual product name
                     "Sample Product Description", // Replace with actual product description
-                    10.0, // Replace with actual product price
-                    100, // Replace with actual stock
-                    1 // Replace with actual seller ID
-                )
+                    1, // Replace with actual seller ID
+                    null, // conditionId (null for default)
+                    null, // categoryId (null for default)
+                    10.0), // Replace with actual product
             });
             return item;
         }

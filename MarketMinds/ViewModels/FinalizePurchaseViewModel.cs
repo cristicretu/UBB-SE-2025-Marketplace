@@ -115,7 +115,7 @@ namespace MarketMinds.ViewModels
         {
             foreach (var order in Orders)
             {
-                await notificationViewModel.AddNotificationAsync(new PaymentConfirmationNotification(1, System.DateTime.Now, order.ProductID, order.OrderID));
+                await notificationViewModel.AddNotificationAsync(new PaymentConfirmationNotification(1, System.DateTime.Now, order.ProductID, order.Id));
             }
         }
 
