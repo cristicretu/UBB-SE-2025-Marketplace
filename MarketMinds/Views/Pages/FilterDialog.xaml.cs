@@ -8,7 +8,7 @@ using ViewModelLayer.ViewModel;
 using ProductCategory = MarketMinds.Shared.Models.Category;
 using ProductCondition = MarketMinds.Shared.Models.Condition;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     public partial class FilterDialog : ContentDialog
     {

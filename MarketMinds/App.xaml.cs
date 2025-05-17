@@ -25,6 +25,7 @@ using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds
 {
@@ -72,9 +73,9 @@ namespace MarketMinds
         public static ProductCategoryViewModel ProductCategoryViewModel { get; private set; }
         public static ProductConditionViewModel ProductConditionViewModel { get; private set; }
         public static ProductTagViewModel ProductTagViewModel { get; private set; }
-        public static SortAndFilterViewModel<AuctionProductsService> AuctionProductSortAndFilterViewModel { get; private set; }
-        public static SortAndFilterViewModel<BorrowProductsService> BorrowProductSortAndFilterViewModel { get; private set; }
-        public static SortAndFilterViewModel<BuyProductsService> BuyProductSortAndFilterViewModel { get; private set; }
+        public static SortAndFilterViewModel<IProductService> AuctionProductSortAndFilterViewModel { get; private set; }
+        public static SortAndFilterViewModel<IProductService> BorrowProductSortAndFilterViewModel { get; private set; }
+        public static SortAndFilterViewModel<IProductService> BuyProductSortAndFilterViewModel { get; private set; }
         public static ReviewCreateViewModel ReviewCreateViewModel { get; private set; }
         public static SeeBuyerReviewsViewModel SeeBuyerReviewsViewModel { get; private set; }
         public static SeeSellerReviewsViewModel SeeSellerReviewsViewModel { get; private set; }
@@ -231,7 +232,7 @@ namespace MarketMinds
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             // Create but don't show the main window yet
-            MainWindow = new UiLayer.MainWindow();
+            MainWindow = new MarketMinds.MainWindow();
             ProductCategoryRepository = new ProductCategoryProxyRepository(Configuration);
             MessageRepository = new MessageProxyRepository(Configuration);
             ProductConditionRepository = new ProductConditionProxyRepository(Configuration);
@@ -269,9 +270,9 @@ namespace MarketMinds
             ProductTagViewModel = new ProductTagViewModel(TagService);
             ProductConditionViewModel = new ProductConditionViewModel(ConditionService);
             BorrowProductsViewModel = new BorrowProductsViewModel(BorrowProductsService);
-            AuctionProductSortAndFilterViewModel = new SortAndFilterViewModel<AuctionProductsService>(AuctionProductsService);
-            BorrowProductSortAndFilterViewModel = new SortAndFilterViewModel<BorrowProductsService>(BorrowProductsService);
-            BuyProductSortAndFilterViewModel = new SortAndFilterViewModel<BuyProductsService>(BuyProductsService);
+            AuctionProductSortAndFilterViewModel = new SortAndFilterViewModel<IProductService>(AuctionProductsService);
+            BorrowProductSortAndFilterViewModel = new SortAndFilterViewModel<IProductService>(BorrowProductsService);
+            BuyProductSortAndFilterViewModel = new SortAndFilterViewModel<IProductService>(BuyProductsService);
             CompareProductsViewModel = new CompareProductsViewModel();
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);

@@ -2,6 +2,11 @@
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Models.DTOs;
 using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Shared.Services.BorrowProductsService
 {
@@ -179,7 +184,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             }
         }
 
-        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
+        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType? sortCondition, string searchQuery)
         {
             List<Product> products = GetProducts();
             List<Product> productResultSet = new List<Product>();
@@ -217,6 +222,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                         }).ToList();
                 }
             }
+
             return productResultSet;
         }
 

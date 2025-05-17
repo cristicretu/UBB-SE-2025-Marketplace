@@ -1,37 +1,37 @@
-using UiLayer;
-
 namespace MarketMinds.Helpers
 {
+    using MarketMinds.Views;
+
     public static class ViewFactory
     {
-        public static AuctionProductListView CreateAuctionProductListView()
+        public static MarketMinds.Views.AuctionProductListView CreateAuctionProductListView()
         {
-            return new AuctionProductListView(MarketMinds.App.AuctionProductSortAndFilterViewModel);
+            return new MarketMinds.Views.AuctionProductListView(MarketMinds.App.AuctionProductSortAndFilterViewModel);
         }
 
-        public static BorrowProductListView CreateBorrowProductListView()
+        public static MarketMinds.Views.BorrowProductListView CreateBorrowProductListView()
         {
-            return new BorrowProductListView(MarketMinds.App.BorrowProductSortAndFilterViewModel);
+            return new MarketMinds.Views.BorrowProductListView(MarketMinds.App.BorrowProductSortAndFilterViewModel);
         }
 
-        public static BuyProductListView CreateBuyProductListView()
+        public static MarketMinds.Views.BuyProductListView CreateBuyProductListView()
         {
-            return new BuyProductListView(MarketMinds.App.BuyProductSortAndFilterViewModel);
+            return new MarketMinds.Views.BuyProductListView(MarketMinds.App.BuyProductSortAndFilterViewModel);
         }
 
-        public static FilterDialog CreateAuctionFilterDialog()
+        public static MarketMinds.Views.FilterDialog CreateAuctionFilterDialog()
         {
-            return new FilterDialog(MarketMinds.App.AuctionProductSortAndFilterViewModel);
+            return new MarketMinds.Views.FilterDialog(MarketMinds.App.AuctionProductSortAndFilterViewModel);
         }
 
-        public static FilterDialog CreateBorrowFilterDialog()
+        public static MarketMinds.Views.FilterDialog CreateBorrowFilterDialog()
         {
-            return new FilterDialog(MarketMinds.App.BorrowProductSortAndFilterViewModel);
+            return new MarketMinds.Views.FilterDialog(MarketMinds.App.BorrowProductSortAndFilterViewModel);
         }
 
-        public static FilterDialog CreateBuyFilterDialog()
+        public static MarketMinds.Views.FilterDialog CreateBuyFilterDialog()
         {
-            return new FilterDialog(MarketMinds.App.BuyProductSortAndFilterViewModel);
+            return new MarketMinds.Views.FilterDialog(MarketMinds.App.BuyProductSortAndFilterViewModel);
         }
     }
 }

@@ -1,6 +1,10 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Shared.Services.AuctionProductsService
 {
@@ -248,9 +252,9 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             }
         }
 
-        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
+        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType? sortCondition, string searchQuery)
         {
-            List<AuctionProduct> products = GetProducts();
+            List<Product> products = GetProducts().Cast<Product>().ToList();
             List<Product> productResultSet = new List<Product>();
             foreach (Product product in products)
             {
@@ -286,6 +290,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                         }).ToList();
                 }
             }
+
             return productResultSet;
         }
 

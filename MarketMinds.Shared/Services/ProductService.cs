@@ -7,6 +7,7 @@ using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Helper;
 using System.Text.Json;
 using System.Linq;
+using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Shared.Services
 {

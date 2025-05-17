@@ -12,7 +12,7 @@ using MarketMinds.Views.Pages;
 using MarketMinds.Shared.Services.BorrowSortTypeConverterService;
 using MarketMinds.Shared.Services.BorrowProductsService;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     public sealed partial class BorrowProductListView : Window
     {

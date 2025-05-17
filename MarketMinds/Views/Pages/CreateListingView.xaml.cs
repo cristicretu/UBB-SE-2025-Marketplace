@@ -22,7 +22,7 @@ using ProductCondition = MarketMinds.Shared.Models.Condition;
 using MarketMinds.ViewModels;
 using WinRT.Interop;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     public sealed partial class CreateListingView : Page
     {

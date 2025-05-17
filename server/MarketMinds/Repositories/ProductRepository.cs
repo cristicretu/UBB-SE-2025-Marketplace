@@ -103,9 +103,9 @@ namespace Server.Repository
         public async Task<string> GetSellerNameAsync(int? sellerId)
         {
             if (sellerId == null)
-                    {
+            {
                 throw new Exception($"GetSellerNameAsync: Seller ID is null");
-                    }
+            }
 
             Seller? seller = await this.dbContext.Sellers.FindAsync(sellerId)
                     ?? throw new Exception($"GetSellerNameAsync: Seller not found for the seller id: {sellerId}");
@@ -138,6 +138,31 @@ namespace Server.Repository
                 .ToListAsync();
 
             return products;
+        }
+
+        List<Product> GetProducts()
+        {
+            throw new NotImplementedException();
+        }
+
+        Product GetProductByID(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AddProduct(Product product)
+        {
+            throw new NotImplementedException();
+        }
+
+        void UpdateProduct(Product product)
+        {
+            throw new NotImplementedException();
+        }
+
+        void DeleteProduct(Product product)
+        {
+            throw new NotImplementedException();
         }
     }
 }

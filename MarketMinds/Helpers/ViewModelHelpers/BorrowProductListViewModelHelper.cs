@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.Interfaces;
 using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
 
@@ -11,10 +12,10 @@ namespace MarketMinds.Helpers.ViewModelHelpers
     public class BorrowProductListViewModelHelper
     {
         private const int ItemsPerPage = 20;
-        private readonly SortAndFilterViewModel<BorrowProductsService> sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<IProductService> sortAndFilterViewModel;
         private readonly BorrowProductsViewModel borrowProductsViewModel;
 
-        public BorrowProductListViewModelHelper(SortAndFilterViewModel<BorrowProductsService> sortAndFilterViewModel, BorrowProductsViewModel borrowProductsViewModel)
+        public BorrowProductListViewModelHelper(SortAndFilterViewModel<IProductService> sortAndFilterViewModel, BorrowProductsViewModel borrowProductsViewModel)
         {
             this.sortAndFilterViewModel = sortAndFilterViewModel;
             this.borrowProductsViewModel = borrowProductsViewModel;
@@ -22,7 +23,7 @@ namespace MarketMinds.Helpers.ViewModelHelpers
 
         public (List<BorrowProduct> pageItems, int totalPages, List<BorrowProduct> fullList) GetBorrowProductsPage(
             BorrowProductsViewModel borrowProductsViewModel,
-            SortAndFilterViewModel<BorrowProductsService> sortAndFilterViewModel,
+            SortAndFilterViewModel<IProductService> sortAndFilterViewModel,
             int currentPage)
         {
             // Retrieve filtered and sorted products

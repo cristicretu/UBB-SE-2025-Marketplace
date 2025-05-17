@@ -2,38 +2,43 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MarketMinds.Shared.Services
+namespace MarketMinds.Shared.Services.Interfaces
 {
     /// <summary>
-    /// Interface for managing products in the service layer.
+    /// Common interface for all product services
     /// </summary>
     public interface IProductService
     {
         /// <summary>
-        /// Gets sorted and filtered products based on various criteria.
+        /// Gets a product by ID
         /// </summary>
-        /// <param name="selectedConditions">The conditions to filter by.</param>
-        /// <param name="selectedCategories">The categories to filter by.</param>
-        /// <param name="selectedTags">The tags to filter by.</param>
-        /// <param name="sortCondition">How to sort the products.</param>
-        /// <param name="searchQuery">Optional search term to filter by.</param>
-        /// <returns>A filtered and sorted list of products.</returns>
-        List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery);
-
-        /// <summary>
-        /// Gets a product by its ID.
-        /// </summary>
-        /// <param name="productId">The ID of the product.</param>
-        /// <returns>The product with the specified ID.</returns>
+        /// <param name="productId">The product ID</param>
+        /// <returns>The product, or null if not found</returns>
         Task<Product> GetProductByIdAsync(int productId);
 
         /// <summary>
-        /// Gets the name of a seller based on their ID.
+        /// Gets a seller's name by ID
         /// </summary>
-        /// <param name="sellerId">The ID of the seller.</param>
-        /// <returns>The name of the seller.</returns>
+        /// <param name="sellerId">The seller ID</param>
+        /// <returns>The seller name</returns>
         Task<string> GetSellerNameAsync(int? sellerId);
         
+        /// <summary>
+        /// Get products with sorting and filtering
+        /// </summary>
+        /// <param name="selectedConditions">Conditions to filter by</param>
+        /// <param name="selectedCategories">Categories to filter by</param>
+        /// <param name="selectedTags">Tags to filter by</param>
+        /// <param name="sortCondition">How to sort results</param>
+        /// <param name="searchQuery">Search term</param>
+        /// <returns>List of matching products</returns>
+        List<Product> GetSortedFilteredProducts(
+            List<Condition> selectedConditions,
+            List<Category> selectedCategories,
+            List<ProductTag> selectedTags,
+            ProductSortType? sortCondition,
+            string searchQuery);
+
         /// <summary>
         /// Gets a list of products that can be borrowed.
         /// </summary>

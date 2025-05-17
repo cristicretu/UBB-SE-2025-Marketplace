@@ -5,15 +5,17 @@ using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds.Shared.Services.ProductPaginationService;
 using MarketMinds.Shared.Services.BuyProductsService;
+using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Helpers.ViewModelHelpers
 {
     public class BuyProductListViewModelHelper
     {
-        private readonly SortAndFilterViewModel<BuyProductsService> sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<IProductService> sortAndFilterViewModel;
         private readonly BuyProductsViewModel buyProductsViewModel;
 
-        public BuyProductListViewModelHelper(SortAndFilterViewModel<BuyProductsService> sortAndFilterViewModel, BuyProductsViewModel buyProductsViewModel)
+        public BuyProductListViewModelHelper(SortAndFilterViewModel<IProductService> sortAndFilterViewModel, BuyProductsViewModel buyProductsViewModel)
         {
             this.sortAndFilterViewModel = sortAndFilterViewModel;
             this.buyProductsViewModel = buyProductsViewModel;
@@ -71,7 +73,7 @@ namespace MarketMinds.Helpers.ViewModelHelpers
 
         public (IEnumerable<BuyProduct> currentPageProducts, int totalPages, List<BuyProduct> fullList) GetBuyProductsPage(
             BuyProductsViewModel buyProductsViewModel,
-            SortAndFilterViewModel<BuyProductsService> sortAndFilterViewModel,
+            SortAndFilterViewModel<IProductService> sortAndFilterViewModel,
             int currentPage)
         {
             var filteredProducts = sortAndFilterViewModel.HandleSearch();

@@ -7,7 +7,7 @@ using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Shared.Services.BuyProductsService
 {
-    public class BuyProductsService : IBuyProductsService
+    public class BuyProductsService : IBuyProductsService, IProductService
     {
         private readonly BuyProductsProxyRepository buyProductsRepository;
         private readonly JsonSerializerOptions jsonOptions;
@@ -238,6 +238,11 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             // Since this is BuyProductsService, we don't have borrowable products
             // Return an empty list when this method is called on this service
             return new List<Product>();
+        }
+
+        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.ProxyRepository;
 
 namespace MarketMinds.ViewModels
 {
@@ -25,7 +28,7 @@ namespace MarketMinds.ViewModels
         {
             this.waitlistService = new WaitlistService();
             this.borrowProductService = new BorrowProductsService();
-            this.productService = new ProductService();
+            this.productService = new ProductService(new BuyProductsProxyRepository(AppConfig.Configuration));
         }
 
         /// <summary>

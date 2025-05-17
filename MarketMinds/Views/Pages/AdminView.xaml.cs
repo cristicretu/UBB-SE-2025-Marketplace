@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using ViewModelLayer.ViewModel;
 using MarketMinds.Shared.Models;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     /// <summary>
     /// Interaction logic for AdminView.xaml

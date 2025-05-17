@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Views;
 using Microsoft.UI.Xaml;
+using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.ViewModels
 {
@@ -66,7 +69,7 @@ namespace MarketMinds.ViewModels
             this.orderService = new OrderService();
             this.orderSummaryService = new OrderSummaryService();
             this.dummyWalletService = new DummyWalletService();
-            this.productService = new ProductService();
+            this.productService = new ProductService(new BuyProductsProxyRepository(AppConfig.Configuration));
 
             this.Products = new List<Product>();
             this.orderHistoryID = orderHistoryID;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.Interfaces;
 using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
 
@@ -11,10 +12,10 @@ namespace MarketMinds.Helpers.ViewModelHelpers
     public class AuctionProductListViewModelHelper
     {
         private const int NO_ITEMS = 0;
-        private readonly SortAndFilterViewModel<AuctionProductsService> sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<IProductService> sortAndFilterViewModel;
         private readonly AuctionProductsViewModel auctionProductsViewModel;
 
-        public AuctionProductListViewModelHelper(SortAndFilterViewModel<AuctionProductsService> sortAndFilterViewModel, AuctionProductsViewModel auctionProductsViewModel)
+        public AuctionProductListViewModelHelper(SortAndFilterViewModel<IProductService> sortAndFilterViewModel, AuctionProductsViewModel auctionProductsViewModel)
         {
             this.sortAndFilterViewModel = sortAndFilterViewModel;
             this.auctionProductsViewModel = auctionProductsViewModel;
@@ -72,7 +73,7 @@ namespace MarketMinds.Helpers.ViewModelHelpers
 
         public (List<AuctionProduct> pageItems, int totalPages, List<AuctionProduct> fullList) GetAuctionProductsPage(
             AuctionProductsViewModel auctionProductsViewModel,
-            SortAndFilterViewModel<AuctionProductsService> sortAndFilterViewModel,
+            SortAndFilterViewModel<IProductService> sortAndFilterViewModel,
             int currentPage,
             int itemsPerPage)
         {

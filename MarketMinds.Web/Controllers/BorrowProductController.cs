@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WebMarketplace.Models;
 using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.Interfaces;
 
 namespace WebMarketplace.Controllers
 {

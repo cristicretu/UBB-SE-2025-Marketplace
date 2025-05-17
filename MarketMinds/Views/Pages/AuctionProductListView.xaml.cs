@@ -12,7 +12,7 @@ using MarketMinds.Helpers.ViewModelHelpers;
 using MarketMinds.Shared.Services.AuctionSortTypeConverterService;
 using MarketMinds.Shared.Services.AuctionProductsService;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     public sealed partial class AuctionProductListView : Window
     {

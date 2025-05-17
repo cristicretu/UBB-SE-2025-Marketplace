@@ -4,8 +4,9 @@ using MarketMinds.Views.Pages;
 using MarketMinds.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using MarketMinds.Views;
 
-namespace UiLayer
+namespace MarketMinds
 {
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
