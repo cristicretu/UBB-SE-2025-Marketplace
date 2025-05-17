@@ -252,7 +252,7 @@ namespace Server.Repository
         /// <inheritdoc/>
         public async Task<List<Product>> GetProductsFromSeller(int sellerId)
         {
-            return await this.dbContext.Products.Where(product => product.SellerId == sellerId).ToListAsync();
+            return await this.dbContext.BuyProducts.Where(product => product.SellerId == sellerId).ToListAsync();
         }
 
         /// <inheritdoc/>

@@ -48,14 +48,14 @@ namespace Server.Repository
             }
 
             // Check if the Product exists
-            bool productExists = await this.dbContext.Products.AnyAsync(product => product.ProductId == productId);
+            bool productExists = await this.dbContext.BuyProducts.AnyAsync(product => product.Id == productId);
             if (!productExists)
             {
                 throw new Exception($"AddUserToWaitlist: No Product with id: {productId}");
             }
 
             // Fetch the WaitlistProductEntity with the given productId
-            WaitlistProductEntity waitlistProduct = await this.dbContext.WaitlistProducts.FirstOrDefaultAsync(waitlistProduct => waitlistProduct.ProductID == productId)
+            WaitlistProductEntity waitlistProduct = await this.dbContext.BorrowProducts.FirstOrDefaultAsync(waitlistProduct => waitlistProduct.ProductID == productId)
                                                         ?? throw new Exception($"AddUserToWaitlist: No ProductWaitList with id: {productId}");
 
             // Get the next position in the queue for the new user
@@ -85,7 +85,7 @@ namespace Server.Repository
         public async Task RemoveUserFromWaitlist(int userId, int productId)
         {
             // Check if the WaitlistProduct exists and get the WaitListProductID
-            int waitListProductID = await this.dbContext.WaitlistProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
+            int waitListProductID = await this.dbContext.BorrowProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
             if (waitListProductID == 0)
             {
                 throw new Exception($"RemoveUserFromWaitlist: No ProductWaitList with id: {productId}");
@@ -107,7 +107,7 @@ namespace Server.Repository
         public async Task<List<UserWaitList>> GetUsersInWaitlist(int productId)
         {
             // Check if the WaitlistProduct exists and get the WaitListProductID
-            int waitListProductID = await this.dbContext.WaitlistProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
+            int waitListProductID = await this.dbContext.BorrowProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
             if (waitListProductID == 0)
             {
                 throw new Exception($"GetUsersInWaitlist: No ProductWaitList with id: {productId}");
@@ -137,7 +137,7 @@ namespace Server.Repository
         public async Task<int> GetWaitlistSize(int productId)
         {
             // Check if the WaitlistProduct exists and get the WaitListProductID
-            int waitListProductID = await this.dbContext.WaitlistProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
+            int waitListProductID = await this.dbContext.BorrowProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
             if (waitListProductID == 0)
             {
                 throw new Exception($"GetWaitlistSize: No ProductWaitList with id: {productId}");
@@ -158,7 +158,7 @@ namespace Server.Repository
         public async Task<bool> IsUserInWaitlist(int userId, int productId)
         {
             // Check if the WaitlistProduct exists and get the WaitListProductID
-            int waitListProductID = await this.dbContext.WaitlistProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
+            int waitListProductID = await this.dbContext.BorrowProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
             if (waitListProductID == 0)
             {
                 throw new Exception($"IsUserInWaitlist: No ProductWaitList with id: {productId}");
@@ -179,7 +179,7 @@ namespace Server.Repository
         public async Task<int> GetUserWaitlistPosition(int userId, int productId)
         {
             // Check if the WaitlistProduct exists and get the WaitListProductID
-            int waitListProductID = await this.dbContext.WaitlistProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
+            int waitListProductID = await this.dbContext.BorrowProducts.Where(waitlistProduct => waitlistProduct.ProductID == productId).Select(waitlistProduct => waitlistProduct.WaitlistProductID).FirstOrDefaultAsync();
             if (waitListProductID == 0)
             {
                 throw new Exception($"GetUserWaitlistPosition: No ProductWaitList with id: {productId}");

@@ -152,9 +152,9 @@ namespace Server.Repository
             // Then, take the product from each order in the buyerOrders and filter them by name like in the stored procedure get_orders_by_name
             foreach (Order order in buyerOrders)
             {
-                Product product = await this.dbContext.Products.FindAsync(order.ProductID)
+                Product product = await this.dbContext.BuyProducts.FindAsync(order.ProductID)
                                         ?? throw new KeyNotFoundException($"GetOrdersByNameAsync: Product with ID {order.ProductID} not found");
-                if (product.Name.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0) // This is exactly like the sql server <LIKE '%@'+@text+'%'> (case insensitive)
+                if (product.Title.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0) // This is exactly like the sql server <LIKE '%@'+@text+'%'> (case insensitive)
                 {
                     ordersFilteredByName.Add(order);
                 }
@@ -261,7 +261,7 @@ namespace Server.Repository
 
             foreach (Order order in ordersDb)
             {
-                Product product = await this.dbContext.Products.FindAsync(order.ProductID)
+                Product product = await this.dbContext.BuyProducts.FindAsync(order.ProductID)
                                         ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Product with ID {order.ProductID} not found");
 
                 // This boolean is used to check if the product name corresponds to the search text, if the search text is present.
