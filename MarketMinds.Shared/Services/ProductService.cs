@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.Shared.Services
 {
@@ -12,6 +14,14 @@ namespace MarketMinds.Shared.Services
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProductService"/> class with a default ProductProxyRepository.
+        /// </summary>
+        public ProductService()
+        {
+            _productRepository = new ProductProxyRepository(AppConfig.GetBaseApiUrl());
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProductService"/> class.

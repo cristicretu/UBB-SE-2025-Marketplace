@@ -9,13 +9,11 @@ namespace MarketMinds.ViewModels
         public int Quantity { get; set; }
         public double TotalPrice => Product.Price * Quantity;
 
-        public ICommand RemoveFromCartCommand { get; }
 
-        public CartItemViewModel(Product product, int quantity, ICommand removeFromCartCommand)
+        public CartItemViewModel(Product product, int quantity)
         {
             Product = product;
             Quantity = quantity;
-            RemoveFromCartCommand = removeFromCartCommand;
         }
     }
 }

@@ -38,8 +38,6 @@ namespace MarketMinds.ViewModels
         /// <param name="orderHistoryID">The unique identifier for the order history.</param>
         public FinalizePurchaseViewModel(int orderHistoryID)
         {
-            string connectionString = Configuration.CONNECTION_STRING;
-            IDatabaseProvider databaseProvider = new SqlDatabaseProvider();
 
             orderHistoryService = new OrderHistoryService();
             orderService = new OrderService();

@@ -15,17 +15,15 @@ namespace MarketMinds.Views
         /// <summary>
         /// The borrow product window view
         /// </summary>
-        private readonly string connectionString;
         private readonly int currentProductId;
         private readonly IWaitListViewModel waitListViewModel;
         private readonly NotificationViewModel notificationVM;
 
-        public BorrowProductWindow(string connectionString, int productId)
+        public BorrowProductWindow(int productId)
         {
             this.InitializeComponent();
-            this.connectionString = connectionString;
             this.currentProductId = productId;
-            this.waitListViewModel = new WaitListViewModel(connectionString);
+            this.waitListViewModel = new WaitListViewModel();
             this.notificationVM = new NotificationViewModel(this.GetCurrentUserId());
             this.Activated += this.Window_Activated;
         }

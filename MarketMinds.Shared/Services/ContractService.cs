@@ -11,13 +11,9 @@ namespace MarketMinds.Shared.Services
         private readonly IContractRepository contractRpository;
 
         // Add constructor injection for the repository
-        public ContractService(string connectionString)
+        public ContractService()
         {
-            contractRpository = new ContractProxyRepository(AppConfig.GetBaseApiUrl()) ?? throw new ArgumentNullException(nameof(connectionString));
-        }
-        public ContractService(IContractRepository contractRepository)
-        {
-            contractRpository = contractRepository ?? throw new ArgumentNullException(nameof(contractRepository));
+            contractRpository = new ContractProxyRepository(AppConfig.GetBaseApiUrl());
         }
 
         // Implement the interface methods by calling the repository

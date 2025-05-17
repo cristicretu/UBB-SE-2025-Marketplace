@@ -1,5 +1,7 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.ProxyRepository;
 
 namespace MarketMinds.Shared.Services
 {
@@ -8,9 +10,9 @@ namespace MarketMinds.Shared.Services
         private readonly IContractRenewalRepository contractRenewalRepository; // Added repository field
 
         // Added constructor for dependency injection
-        public ContractRenewalService(IContractRenewalRepository contractRenewalRepository)
+        public ContractRenewalService()
         {
-            this.contractRenewalRepository = contractRenewalRepository ?? throw new ArgumentNullException(nameof(contractRenewalRepository));
+            this.contractRenewalRepository = new ContractRenewalProxyRepository(AppConfig.GetBaseApiUrl());
         }
 
         // Implemented interface methods by calling repository methods

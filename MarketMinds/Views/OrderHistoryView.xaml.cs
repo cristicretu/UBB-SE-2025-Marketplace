@@ -25,16 +25,14 @@ namespace MarketMinds.Views
         /// <summary>
         /// Initializes a new instance of the OrderHistoryUI window.
         /// </summary>
-        /// <param name="connectionString">The database connection string. Must not be null or empty.</param>
         /// <param name="userId">The ID of the user whose order history to display. Must be a positive integer.</param>
-        /// <exception cref="ArgumentNullException">Thrown when connectionString is null.</exception>
         /// <exception cref="ArgumentException">Thrown when userId is less than or equal to zero.</exception>
-        public OrderHistoryView(string connectionString, int userId)
+        public OrderHistoryView(int userId)
         {
             InitializeComponent();
             this.userId = userId;
-            orderViewModel = new OrderViewModel(connectionString);
-            contractViewModel = new ContractViewModel(connectionString);
+            orderViewModel = new OrderViewModel();
+            contractViewModel = new ContractViewModel();
 
             this.Activated += Window_Activated;
         }

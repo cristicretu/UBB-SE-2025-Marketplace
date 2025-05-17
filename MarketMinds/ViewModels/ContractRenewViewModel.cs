@@ -26,12 +26,12 @@
         public IContract SelectedContract { get; private set; } = null!;
 
         // Constructor with dependency injection for testing - updated parameter types
-        public ContractRenewViewModel(string connectionString)
+        public ContractRenewViewModel()
         {
             // Assign injected services to fields
-            this.contractService = new ContractService(new ContractProxyRepository(AppConfig.GetBaseApiUrl()));
+            this.contractService = new ContractService();
             this.pdfService = new PDFService();
-            this.renewalService = new ContractRenewalService(new ContractRenewalProxyRepository(AppConfig.GetBaseApiUrl()));
+            this.renewalService = new ContractRenewalService();
             this.notificationContentService = new NotificationContentService();
             this.fileSystem = new FileSystemWrapper();
             this.dateTimeProvider = new DateTimeProvider();

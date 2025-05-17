@@ -25,7 +25,7 @@ namespace Marketplace_SE
             this.InitializeComponent();
             ViewModel = MarketMinds.App.RegisterViewModel;
             this.DataContext = ViewModel;
-            NewUser = new User(0, string.Empty, string.Empty, string.Empty);
+            NewUser = new User();
         }
 
         private async void OnCreateUserClick(object sender, RoutedEventArgs routedEventArgs)

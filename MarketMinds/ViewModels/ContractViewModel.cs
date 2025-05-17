@@ -4,6 +4,9 @@ using System.IO;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services; // Add this using directive
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using Windows.Storage;
 using Windows.System;
 
@@ -19,10 +22,10 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="contractService" type="IContractService">The contract service instance</param>
         // Update the constructor to accept IContractService
-        public ContractViewModel(string connectionString)
+        public ContractViewModel()
         {
             // Assign the injected service instance
-            this.contractService = new ContractService(connectionString);
+            this.contractService = new ContractService();
         }
 
         /// <summary>
@@ -233,10 +236,10 @@ namespace MarketMinds.ViewModels
                             {
                                 // The Column itself is the single child of the header container.
                                 column.Item()
+                                      .AlignCenter()
                                       .Text("Contract Document")
                                       .SemiBold()
-                                      .FontSize(20)
-                                      .AlignCenter();
+                                      .FontSize(20);
                             });
                     });
 

@@ -11,6 +11,7 @@ namespace MarketMinds.ViewModels
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using System.Windows.Input;
+    using MarketMinds.Shared.Helper;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
     using Microsoft.UI.Xaml.Controls;
@@ -90,7 +91,7 @@ namespace MarketMinds.ViewModels
                 await shoppingCartViewModel.AddToCartAsync(product, 1);
 
                 // Optionally show a confirmation dialog
-                await this.ShowDialog("Success", $"Added {product.Name} to your cart!");
+                await this.ShowDialog("Success", $"Added {product.Title} to your cart!");
             }
             catch (Exception ex)
             {
@@ -218,7 +219,7 @@ namespace MarketMinds.ViewModels
             }
             else
             {
-                var filteredProducts = this.allProducts.Where(p => p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+                var filteredProducts = this.allProducts.Where(p => p.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
                 foreach (var product in filteredProducts)
                 {
                     this.filteredProducts.Add(product);

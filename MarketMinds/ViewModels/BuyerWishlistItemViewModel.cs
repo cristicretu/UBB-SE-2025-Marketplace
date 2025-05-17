@@ -7,6 +7,8 @@ namespace MarketMinds.ViewModels
     using System.Windows.Input;
     using MarketMinds.Shared.Services;
     using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.Helper;
+
     /// <summary>
     /// View model class for managing buyer wishlist item data and operations.
     /// </summary>
@@ -21,7 +23,8 @@ namespace MarketMinds.ViewModels
         public IOnBuyerWishlistItemRemoveCallback RemoveCallback { get; set; } = null!;
         public ICommand AddToCartCommand { get; }
 
-        public Product Product { get; set; }
+        public BuyProduct Product { get; set; }
+        Product IBuyerWishlistItemViewModel.Product { get => Product; set => throw new System.NotImplementedException(); }
 
         public BuyerWishlistItemViewModel()
         {

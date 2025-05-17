@@ -48,7 +48,7 @@ namespace MarketMinds.ViewModels.Admin
         /// <summary>
         /// Gets the user id.
         /// </summary>
-        public int UserId => this.User.UserId;
+        public int UserId => this.User.Id;
 
         /// <summary>
         /// Gets the username.
@@ -63,12 +63,12 @@ namespace MarketMinds.ViewModels.Admin
         /// <summary>
         /// Gets the role.
         /// </summary>
-        public string Role => this.User.Role.ToString();
+        public string Role => this.User.UserType.ToString();
 
         /// <summary>
         /// Gets the failed logins.
         /// </summary>
-        public int FailedLogins => this.User.FailedLogins;
+        public int FailedLogins => this.User.FailedLogIns;
 
         /// <summary>
         /// Gets the banned until.

@@ -28,7 +28,7 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="product">The product on which to apply the borrowed tax.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task ApplyBorrowedTax(Product product);
+        Task ApplyBorrowedTax(BorrowProduct product);
 
         /// <summary>
         /// Updates the start date for the product's rental period.

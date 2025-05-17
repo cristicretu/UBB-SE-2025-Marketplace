@@ -29,8 +29,7 @@ namespace MarketMinds.Views
             this.InitializeComponent();
             ContractDetailsPanel.Visibility = Visibility.Collapsed;
 
-            string connectionString = Configuration.CONNECTION_STRING;
-            viewModel = new ContractRenewViewModel(connectionString);
+            viewModel = new ContractRenewViewModel();
 
             _ = LoadContractsAsync();
         }

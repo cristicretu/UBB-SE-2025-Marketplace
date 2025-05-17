@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.BorrowProductsService;
 using MarketMinds.Views;
 using Microsoft.UI.Xaml;
 
@@ -20,6 +21,7 @@ namespace MarketMinds.ViewModels
         private readonly IOrderSummaryService orderSummaryService;
         private readonly IOrderService orderService;
         private readonly IProductService productService;
+        private readonly IBorrowProductsService borrowProductService;
         private readonly IDummyWalletService dummyWalletService;
 
         private int orderHistoryID;
@@ -476,7 +478,7 @@ namespace MarketMinds.ViewModels
                 if (selectedPaymentMethod == "card")
                 {
                     var billingInfoWindow = new BillingInfoWindow();
-                    var cardInfoPage = new CardInfo(this.orderHistoryID);
+                    var cardInfoPage = new Views.CardInfo(this.orderHistoryID);
                     billingInfoWindow.Content = cardInfoPage;
 
                     try
@@ -508,7 +510,7 @@ namespace MarketMinds.ViewModels
                     try
                     {
                         var billingInfoWindow = new BillingInfoWindow();
-                        var finalisePurchasePage = new FinalisePurchase(this.orderHistoryID);
+                        var finalisePurchasePage = new Views.FinalisePurchase(this.orderHistoryID);
                         billingInfoWindow.Content = finalisePurchasePage;
 
                         billingInfoWindow.Activate();
@@ -575,10 +577,10 @@ namespace MarketMinds.ViewModels
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        /// <summary>
-        /// Calculates the total order amount including applicable delivery fees.
-        /// </summary>
-        /// <param name="orderHistoryID">The order history identifier used for calculation.</param>
+        // <summary>
+        // Calculates the total order amount including applicable delivery fees.
+        // </summary>
+        // <param name="orderHistoryID">The order history identifier used for calculation.</param>
         // public void CalculateOrderTotal(int orderHistoryID)
         // {
         //    double subtotalProducts = 0;
@@ -623,11 +625,11 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Applies the borrowed tax to the specified dummy product if applicable.
         /// </summary>
-        /// <param name="product">The dummy product on which to apply the borrowed tax.</param>
+        /// <param name="borrowProduct">The dummy product on which to apply the borrowed tax.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task ApplyBorrowedTax(Product product)
+        public async Task ApplyBorrowedTax(BorrowProduct borrowProduct)
         {
-            if (product == null || product.ProductType != "borrowed")
+            if (borrowProduct == null)
             {
                 return;
             }
@@ -643,23 +645,23 @@ namespace MarketMinds.ViewModels
 
             double warrantyTaxAmount = 0.2;
 
-            double finalPrice = product.Price * monthsBorrowed;
+            double finalPrice = borrowProduct.Price * monthsBorrowed;
 
             this.warrantyTax += finalPrice * warrantyTaxAmount;
 
             this.WarrantyTax = (double)this.warrantyTax;
 
-            product.Price = finalPrice + this.WarrantyTax;
+            borrowProduct.Price = (int)(finalPrice + this.WarrantyTax);
 
             this.CalculateOrderTotal(this.orderHistoryID);
 
             DateTime newStartDate = this.startDate.Date;
             DateTime newEndDate = this.endDate.Date;
 
-            product.StartDate = newStartDate;
-            product.EndDate = newEndDate;
+            borrowProduct.StartDate = newStartDate;
+            borrowProduct.EndDate = newEndDate;
 
-            await this.productService.UpdateProductAsync(product.ProductId, product.Name, product.Price, (int)product.SellerId, product.ProductType, newStartDate, newEndDate);
+            await this.borrowProductService.UpdateBorrowProductAsync(borrowProduct);
         }
 
         [ExcludeFromCodeCoverage]

@@ -78,12 +78,10 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Initializes a new instance of the TrackedOrderViewModel with default implementations
         /// </summary>
-        /// <param name="connectionString">Database connection string</param>
-        public TrackedOrderViewModel(string connectionString)
+        public TrackedOrderViewModel()
         {
-            IDatabaseProvider databaseProvider = new SqlDatabaseProvider();
             trackedOrderService = new TrackedOrderService();
-            orderViewModel = new OrderViewModel(connectionString);
+            orderViewModel = new OrderViewModel();
             notificationService = new DefaultNotificationService();
             Checkpoints = new List<OrderCheckpoint>();
         }
@@ -210,7 +208,7 @@ namespace MarketMinds.ViewModels
                     if (order != null)
                     {
                         await notificationService.SendShippingProgressNotificationAsync(
-                            order.BuyerID,
+                            order.BuyerId,
                             trackedOrder.TrackedOrderID,
                             trackedOrder.CurrentStatus.ToString(),
                             trackedOrder.EstimatedDeliveryDate.ToDateTime(TimeOnly.FromDateTime(DateTime.Now)));
@@ -251,7 +249,7 @@ namespace MarketMinds.ViewModels
                         if (order != null)
                         {
                             await notificationService.SendShippingProgressNotificationAsync(
-                                order.BuyerID,
+                                order.BuyerId,
                                 trackedOrder.TrackedOrderID,
                                 trackedOrder.CurrentStatus.ToString(),
                                 trackedOrder.EstimatedDeliveryDate.ToDateTime(TimeOnly.FromDateTime(DateTime.Now)));
@@ -359,7 +357,7 @@ namespace MarketMinds.ViewModels
                         if (order != null)
                         {
                             await notificationService.SendShippingProgressNotificationAsync(
-                                order.BuyerID,
+                                order.BuyerId,
                                 updatedTrackedOrder.TrackedOrderID,
                                 updatedTrackedOrder.CurrentStatus.ToString(),
                                 updatedTrackedOrder.EstimatedDeliveryDate.ToDateTime(TimeOnly.FromDateTime(DateTime.Now)));
@@ -411,7 +409,7 @@ namespace MarketMinds.ViewModels
                         if (order != null)
                         {
                             await notificationService.SendShippingProgressNotificationAsync(
-                                order.BuyerID,
+                                order.BuyerId,
                                 trackedOrderID,
                                 currentStatus.ToString(),
                                 estimatedDeliveryDate.ToDateTime(TimeOnly.FromDateTime(DateTime.Now)));
@@ -545,7 +543,6 @@ namespace MarketMinds.ViewModels
                 EstimatedDeliveryDate = trackedOrder.EstimatedDeliveryDate;
                 DeliveryAddress = trackedOrder.DeliveryAddress;
                 Checkpoints = await GetAllOrderCheckpointsAsync(trackedOrderID);
-
             }
         }
 

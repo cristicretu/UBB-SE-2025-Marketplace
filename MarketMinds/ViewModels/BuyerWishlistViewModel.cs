@@ -155,7 +155,7 @@ namespace MarketMinds.ViewModels
                 ProductId = wishlistItem.ProductId,
                 OwnItem = canDelete,
                 RemoveCallback = this,
-                Product = new Product(
+                Product = new BuyProduct(
                     wishlistItem.ProductId,
                     "Sample Product Name", // Replace with actual product name
                     "Sample Product Description", // Replace with actual product description

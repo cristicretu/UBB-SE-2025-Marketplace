@@ -1,6 +1,7 @@
 ﻿namespace MarketMinds.Views
 {
     using System;
+    using System.Configuration;
     using System.Threading.Tasks;
 
     using MarketMinds.ViewModels;
@@ -18,10 +19,10 @@
             this.InitializeComponent();
 
             // Initialize contract and contractViewModel
-            contractViewModel = new ContractViewModel(Configuration.CONNECTION_STRING);
+            contractViewModel = new ContractViewModel();
 
             // Initialize trackedOrderViewModel
-            trackedOrderViewModel = new TrackedOrderViewModel(Configuration.CONNECTION_STRING);
+            trackedOrderViewModel = new TrackedOrderViewModel();
         }
 
         public IBuyerProfileViewModel? ViewModel { get; set; }
@@ -182,7 +183,7 @@
             {
                 int productId = Constants.ProductID;
 
-                var borrowWindow = new BorrowProductWindow(Configuration.CONNECTION_STRING, productId);
+                var borrowWindow = new BorrowProductWindow(productId);
                 borrowWindow.Activate();
             }
             catch (Exception ex)
@@ -200,7 +201,7 @@
         private void OrderHistoryButton_Clicked(object sender, RoutedEventArgs e)
         {
             int user_id = Constants.CurrentUserID;
-            var orderhistorywindow = new OrderHistoryView(Configuration.CONNECTION_STRING, user_id);
+            var orderhistorywindow = new OrderHistoryView(user_id);
             orderhistorywindow.Activate();
         }
 

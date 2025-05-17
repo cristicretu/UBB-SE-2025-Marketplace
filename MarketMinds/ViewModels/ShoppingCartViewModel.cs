@@ -15,14 +15,10 @@ namespace MarketMinds.ViewModels
 
         public ObservableCollection<CartItemViewModel> CartItems { get; private set; } = new ObservableCollection<CartItemViewModel>();
 
-        public ICommand RemoveFromCartCommand { get; }
-
         public ShoppingCartViewModel(IShoppingCartService shoppingCartService, int buyerId)
         {
             this.shoppingCartService = shoppingCartService;
             this.buyerId = buyerId;
-
-            RemoveFromCartCommand = new RelayCommand<Product>(async (product) => await DecreaseQuantityAsync(product));
         }
 
         /// <summary>
@@ -69,8 +65,7 @@ namespace MarketMinds.ViewModels
             {
                 this.CartItems.Add(new CartItemViewModel(
                     item,
-                    item.Stock,
-                    RemoveFromCartCommand));
+                    item.Stock));
             }
         }
 
@@ -81,19 +76,19 @@ namespace MarketMinds.ViewModels
                 throw new ArgumentNullException(nameof(product), "Product cannot be null.");
             }
 
-            await this.shoppingCartService.AddProductToCartAsync(this.buyerId, product.ProductId, quantity);
+            await this.shoppingCartService.AddProductToCartAsync(this.buyerId, product.Id, quantity);
             await this.LoadCartItemsAsync();
         }
 
         public async Task RemoveFromCartAsync(Product product)
         {
-            await this.shoppingCartService.RemoveProductFromCartAsync(this.buyerId, product.ProductId);
+            await this.shoppingCartService.RemoveProductFromCartAsync(this.buyerId, product.Id);
             await this.LoadCartItemsAsync();
         }
 
         public async Task UpdateQuantityAsync(Product product, int quantity)
         {
-            await this.shoppingCartService.UpdateProductQuantityAsync(this.buyerId, product.ProductId, quantity);
+            await this.shoppingCartService.UpdateProductQuantityAsync(this.buyerId, product.Id, quantity);
             await this.LoadCartItemsAsync();
         }
 
@@ -105,7 +100,7 @@ namespace MarketMinds.ViewModels
             }
 
             // Find the cart item in the collection
-            var cartItem = this.CartItems.FirstOrDefault(item => item.Product.ProductId == product.ProductId);
+            var cartItem = this.CartItems.FirstOrDefault(item => item.Product.Id == product.Id);
             if (cartItem != null)
             {
                 if (cartItem.Quantity > 1)
@@ -114,12 +109,12 @@ namespace MarketMinds.ViewModels
                     cartItem.Quantity--;
 
                     // updating the quantity in the database
-                    await this.shoppingCartService.UpdateProductQuantityAsync(this.buyerId, product.ProductId, cartItem.Quantity);
+                    await this.shoppingCartService.UpdateProductQuantityAsync(this.buyerId, product.Id, cartItem.Quantity);
                 }
                 else
                 {
                     // if quantity is 1, remove the item from the cart
-                    await this.shoppingCartService.RemoveProductFromCartAsync(this.buyerId, product.ProductId);
+                    await this.shoppingCartService.RemoveProductFromCartAsync(this.buyerId, product.Id);
                 }
 
                 // Reload the cart items to reflect changes

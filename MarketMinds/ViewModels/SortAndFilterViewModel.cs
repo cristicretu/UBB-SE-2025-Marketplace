@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services;
 
 namespace BusinessLogicLayer.ViewModel
 {
