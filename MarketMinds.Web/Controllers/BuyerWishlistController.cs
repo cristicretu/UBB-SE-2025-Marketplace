@@ -5,6 +5,8 @@ using WebMarketplace.Models;
 using MarketMinds.Shared.Models;
 using System.Diagnostics;
 using System.Text;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace WebMarketplace.Controllers
 {
@@ -14,7 +16,7 @@ namespace WebMarketplace.Controllers
     public class BuyerWishlistController : Controller
     {
         private readonly IBuyerService _buyerService;
-        private readonly IProductService _productService;
+        private readonly IBuyProductsService _productService;
         private readonly ILogger<BuyerWishlistController> _logger;
 
         /// <summary>
@@ -25,7 +27,7 @@ namespace WebMarketplace.Controllers
         /// <param name="logger">The logger</param>
         public BuyerWishlistController(
             IBuyerService buyerService,
-            IProductService productService,
+            IBuyProductsService productService,
             ILogger<BuyerWishlistController> logger)
         {
             _buyerService = buyerService ?? throw new ArgumentNullException(nameof(buyerService));
@@ -153,7 +155,7 @@ namespace WebMarketplace.Controllers
                 }
 
                 // STEP 5: Convert BuyerWishlistItem objects to Product objects
-                var products = new List<Product>();
+                var products = new List<BuyProduct>();
                 try
                 {
                     debugInfo.AppendLine("Starting conversion of wishlist items to products...");
@@ -168,7 +170,7 @@ namespace WebMarketplace.Controllers
 
                         if (product != null)
                         {
-                                    debugInfo.AppendLine($"Product found: {product.Name}, Adding to list");
+                                    debugInfo.AppendLine($"Product found: {product.Title}, Adding to list");
                             products.Add(product);
                         }
                                 else

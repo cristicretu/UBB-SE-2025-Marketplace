@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Shared.Services.BuyProductsService
 {

@@ -1,14 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
-using SharedIProductService = MarketMinds.Shared.Services.IProductService;
+using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace WebMarketplace.Models
 {
     public class CardInfoViewModel
     {
         private readonly IOrderHistoryService _orderHistoryService;
-        private readonly SharedIProductService _productService;
+        private readonly IBuyProductsService _productService;
 
         public int OrderHistoryID { get; set; }
         
@@ -50,8 +50,8 @@ namespace WebMarketplace.Models
         public CardInfoViewModel()
         {
             _orderHistoryService = new OrderHistoryService();
-            _productService = new MarketMinds.Shared.Services.ProductService();
-            
+            _productService = new BuyProductsService();
+
             ProductList = new List<Product>();
         }
         
@@ -93,8 +93,7 @@ namespace WebMarketplace.Models
 
             Subtotal = subtotalProducts;
 
-            string productType = ProductList[0].ProductType;
-            if (subtotalProducts >= 200 || productType == "refill" || productType == "bid")
+            if (subtotalProducts >= 200)
             {
                 Total = subtotalProducts;
                 DeliveryFee = 0;

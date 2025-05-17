@@ -3,6 +3,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using System.Diagnostics;
 using WebMarketplace.Models;
+using MarketMinds.Shared.Services.UserService;
 
 namespace WebMarketplace.Controllers
 {
@@ -65,7 +66,7 @@ namespace WebMarketplace.Controllers
                 // Create a basic User object instead of fetching all users
                 // This avoids the expensive GetAllUsers() call that might be causing issues
                 var user = new User(userId);
-                _logger.LogInformation("Created user object with ID: {UserId}", user.UserId);
+                _logger.LogInformation("Created user object with ID: {UserId}", user.Id);
 
                 // Add timeout to prevent hanging
                 Buyer buyer =  await _buyerService.GetBuyerByUser(user);
@@ -76,7 +77,7 @@ namespace WebMarketplace.Controllers
                 // Create the view model safely with null checks
                 var viewModel = new BuyerProfileViewModel
                 {
-                    BuyerId = buyer.User?.UserId ?? 0,
+                    BuyerId = buyer.User?.Id ?? 0,
                     FirstName = buyer.FirstName ?? string.Empty,
                     LastName = buyer.LastName ?? string.Empty,
                     Email = buyer.User?.Email ?? string.Empty,

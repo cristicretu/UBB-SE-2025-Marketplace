@@ -16,7 +16,7 @@ namespace WebMarketplace.Models
         /// <summary>
         /// Gets or sets the list of wishlist items
         /// </summary>
-        public List<Product> WishlistItems { get; set; }
+        public List<BuyProduct> WishlistItems { get; set; }
 
         /// <summary>
         /// Gets or sets the count of items in the wishlist
