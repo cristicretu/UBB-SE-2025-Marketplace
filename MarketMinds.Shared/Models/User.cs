@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,6 +16,9 @@ namespace MarketMinds.Shared.Models
         [Column("email")]
         public string Email { get; set; }
 
+        [Column("phoneNumber")]
+        public string PhoneNumber { get; set; }
+
         [Column("passwordHash")]
         public string? PasswordHash { get; set; }
 
@@ -33,6 +34,16 @@ namespace MarketMinds.Shared.Models
         [Column("rating")]
         public double Rating { get; set; }
 
+
+        [Column("failedLogIns")]
+        public int FailedLogIns { get; set; }
+
+        [Column("bannedUntil")]
+        public DateTime? BannedUntil { get; set; }
+
+        [Column("isBanned")]
+        public bool IsBanned { get; set; }
+
         [NotMapped]
         public string Token { get; set; } = string.Empty;
 
@@ -46,28 +57,36 @@ namespace MarketMinds.Shared.Models
         {
             Username = string.Empty;
             Email = string.Empty;
+            PhoneNumber = string.Empty;
             Token = string.Empty;
             Password = string.Empty;
             SellingItems = new List<AuctionProduct>();
             Bids = new List<Bid>();
         }
 
-        public User(string username, string email, string passwordHash)
+        public User(string username, string email, string phoneNumber, int userType, DateTime bannedUntil, bool isBanned, int failedLogins, string passwordHash)
         {
             Username = username;
             Email = email;
+            PhoneNumber = phoneNumber;
             PasswordHash = passwordHash;
+            UserType = userType;
+            BannedUntil = bannedUntil;
+            IsBanned = isBanned;
+            FailedLogIns = failedLogins;
             Token = string.Empty;
             Password = string.Empty;
             SellingItems = new List<AuctionProduct>();
             Bids = new List<Bid>();
         }
 
-        public User(int id, string username, string email, string token)
+        public User(int id, string username, string email, string phoneNumber, int userType, string token)
         {
             Id = id;
             Username = username;
             Email = email;
+            PhoneNumber = phoneNumber;
+            UserType = userType;
             Token = token;
             Password = string.Empty;
             SellingItems = new List<AuctionProduct>();

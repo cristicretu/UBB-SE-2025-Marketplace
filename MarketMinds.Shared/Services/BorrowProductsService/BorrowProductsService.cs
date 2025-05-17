@@ -1,11 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.Shared.Services.BorrowProductsService
 {
@@ -16,9 +12,9 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         private const int DEFAULT_PRODUCT_COUNT = 0;
         private const int NULL_PRODUCT_ID = 0;
 
-        public BorrowProductsService(BorrowProductsProxyRepository borrowProductsRepository)
+        public BorrowProductsService()
         {
-            this.borrowProductsRepository = borrowProductsRepository;
+            this.borrowProductsRepository = new BorrowProductsProxyRepository(AppConfig.Configuration);
         }
 
         public void CreateListing(Product product)
@@ -353,5 +349,16 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         }
 
         #endregion
+
+        // merge-nicusor
+        Task<Product> IProductService.GetProductByIdAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

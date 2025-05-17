@@ -1,0 +1,126 @@
+@model WebMarketplace.Models.BorrowProductViewModel
+
+@{
+    ViewData["Title"] = Model.ProductName;
+}
+
+<div class="max-w-4xl mx-auto p-6">
+    <div class="flex justify-between mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">@Model.ProductName</h1>
+    </div>
+
+    <!-- Display success or error messages from TempData -->
+    @if (TempData.ContainsKey("SuccessMessage"))
+    {
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">
+            <p>@TempData["SuccessMessage"]</p>
+        </div>
+    }
+    
+    @if (TempData.ContainsKey("ErrorMessage"))
+    {
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
+            <p>@TempData["ErrorMessage"]</p>
+        </div>
+    }
+
+    <!-- Product Details Card -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Product Image (placeholder) -->
+                <div class="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
+                    <svg class="w-24 h-24 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                
+                <!-- Product Info -->
+                <div>
+                    <p class="text-2xl font-bold text-gray-800 mb-2">$@Model.Price.ToString("F2")</p>
+                    <p class="text-gray-600 mb-2">Seller: @Model.SellerName</p>
+                    <p class="text-gray-600 mb-2">Type: @Model.ProductType</p>
+                    <p class="text-gray-600 mb-4">@Model.AvailabilityMessage</p>
+                    
+                    <!-- Action Buttons -->
+                    <div class="space-y-3">
+                        @if (Model.IsAvailable)
+                        {
+                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors">
+                                Borrow Now
+                            </button>
+                        }
+                        else
+                        {
+                            @if (!Model.IsOnWaitlist)
+                            {
+                                <form asp-action="JoinWaitlist" asp-route-id="@Model.ProductId" method="post">
+                                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition-colors">
+                                        Join Waitlist
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <div class="flex flex-col space-y-3">
+                                    <div class="flex space-x-3">
+                                        <form asp-action="LeaveWaitlist" asp-route-id="@Model.ProductId" method="post" class="flex-1">
+                                            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors">
+                                                Leave Waitlist
+                                            </button>
+                                        </form>
+                                        <button id="viewPositionBtn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md transition-colors">
+                                            View Position
+                                        </button>
+                                    </div>
+                                    <div id="positionInfo" class="text-indigo-600 font-medium text-center hidden">
+                                        Your position: #<span id="positionNumber">@Model.WaitlistPosition</span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Description -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Product Description</h2>
+            <p class="text-gray-600">
+                This @Model.ProductName is available for borrowing. Please check the availability dates and join 
+                the waitlist if the item is currently unavailable.
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle position information visibility
+        document.getElementById('viewPositionBtn')?.addEventListener('click', function() {
+            const positionInfo = document.getElementById('positionInfo');
+            if (positionInfo.classList.contains('hidden')) {
+                // If it's hidden, show it and fetch the current position
+                fetch('/BorrowProduct/GetWaitlistPosition/@Model.ProductId')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.position) {
+                            document.getElementById('positionNumber').textContent = data.position;
+                            positionInfo.classList.remove('hidden');
+                        } else if (data.error) {
+                            alert(data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching position:', error);
+                    });
+            } else {
+                // If it's visible, hide it
+                positionInfo.classList.add('hidden');
+            }
+        });
+    </script>
+} 

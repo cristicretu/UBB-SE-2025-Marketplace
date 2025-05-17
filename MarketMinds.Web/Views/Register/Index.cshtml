@@ -1,0 +1,83 @@
+﻿@model WebMarketplace.Models.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="flex justify-center items-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+        <h2 class="text-2xl font-semibold text-center text-blue-600 mb-6">Create a New Account</h2>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+                <div class="text-red-600 text-sm text-center mb-4 font-medium">@TempData["ErrorMessage"]</div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+                <div class="text-green-600 text-sm text-center mb-4 font-medium">@TempData["SuccessMessage"]</div>
+        }
+
+        <!-- Registration Form -->
+        <form asp-action="Register" asp-controller="Register" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+
+            <!-- Username -->
+            <div>
+                <label asp-for="Username" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Username" class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <span asp-validation-for="Username" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label asp-for="Email" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Email" class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <span asp-validation-for="Email" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label asp-for="Password" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Password" type="password" class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <span asp-validation-for="Password" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Phone Number -->
+            <div>
+                <label asp-for="Telephone" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="Telephone" class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <span asp-validation-for="Telephone" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Role Dropdown -->
+            <div>
+                <label for="Role" class="block text-sm font-medium text-gray-700">Select Role</label>
+                <select asp-for="Role" class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @foreach (var role in ViewBag.Roles as List<SelectListItem>)
+                    {
+                            <option value="@role.Value">@role.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="Role" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Register
+                </button>
+            </div>
+        </form>
+
+        <!-- Login Link -->
+        <div class="mt-4 text-center">
+            <span class="text-sm text-gray-600">Already have an account?</span>
+            <a href="/login" class="text-blue-600 hover:text-blue-700 font-semibold">Login here</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

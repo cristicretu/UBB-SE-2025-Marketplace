@@ -1,6 +1,6 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using MarketMinds.Shared.Models;
+using Server.DataModels;
 
 namespace Server.DataAccessLayer
 {
@@ -36,12 +36,34 @@ namespace Server.DataAccessLayer
         public DbSet<BorrowProductImage> BorrowProductImages { get; set; }
         public DbSet<BorrowProductProductTag> BorrowProductProductTags { get; set; }
 
-        public DbSet<Basket> Baskets { get; set; }
-        public DbSet<BasketItem> BasketItems { get; set; }
+        // public DbSet<Basket> Baskets { get; set; }
+        // public DbSet<BasketItem> BasketItems { get; set; }
 
         public DbSet<Order> Orders { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
+
+        // merge-nicusor
+        public DbSet<Buyer> Buyers { get; set; }
+        public DbSet<BuyerLinkageEntity> BuyerLinkages { get; set; }
+        public DbSet<Seller> Sellers { get; set; }
+        public DbSet<OrderSummary> OrderSummary { get; set; }
+        public DbSet<OrderHistory> OrderHistory { get; set; }
+        public DbSet<OrderCheckpoint> OrderCheckpoints { get; set; }
+        public DbSet<TrackedOrder> TrackedOrders { get; set; }
+        public DbSet<UserWaitList> UserWaitList { get; set; }
+        public DbSet<DummyCardEntity> DummyCards { get; set; } // TODO change to Cards
+        public DbSet<DummyWalletEntity> DummyWallets { get; set; } // TODO change to Wallets
+        public DbSet<BuyerCartItemEntity> BuyerCartItems { get; set; }
+        public DbSet<BuyerWishlistItemsEntity> BuyersWishlistItems { get; set; }
+        public DbSet<PDF> PDFs { get; set; }
+        public DbSet<PredefinedContract> PredefinedContracts { get; set; }
+        public DbSet<Contract> Contracts { get; set; }
+        public DbSet<SellerNotificationEntity> SellerNotifications { get; set; }
+        public DbSet<FollowingEntity> Followings { get; set; }
+        public DbSet<OrderNotificationEntity> OrderNotifications { get; set; }
+        public DbSet<Address> Addresses { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,6 +77,50 @@ namespace Server.DataAccessLayer
             modelBuilder.Entity<User>().Property(user => user.Username).IsRequired();
             modelBuilder.Entity<User>().HasIndex(user => user.Email).IsUnique();
             modelBuilder.Entity<User>().HasIndex(user => user.Username).IsUnique();
+
+            // --- Buyer Configuration --- merge-nicusor
+            modelBuilder.Entity<Buyer>(entity =>
+            {
+                entity.HasKey(b => b.Id);
+
+                entity.HasOne(b => b.User)
+                    .WithOne()
+                    .HasForeignKey<Buyer>(b => b.Id);
+
+                entity.Property(b => b.Discount)
+                    .HasPrecision(18, 2);
+
+                entity.Property(b => b.TotalSpending)
+                    .HasPrecision(18, 2);
+
+                entity.HasOne(b => b.BillingAddress)
+                    .WithMany()
+                    .HasForeignKey("BillingAddressId")
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(b => b.ShippingAddress)
+                    .WithMany()
+                    .HasForeignKey("ShippingAddressId")
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Ignore(b => b.SyncedBuyerIds) // it creates a foreign key from Buyer to Buyer in the database (not needed)
+                    .Ignore(b => b.FollowingUsersIds) // this should be a table of its own (see the FollowingEntity class)
+                    .Ignore(b => b.Email) // not needed, it is in User
+                    .Ignore(b => b.PhoneNumber); // not needed, it is in User
+            });
+
+            // --- Seller Configuration --- merge-nicusor
+            modelBuilder.Entity<Seller>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+
+                entity.HasOne(s => s.User)
+                    .WithOne()
+                    .HasForeignKey<Seller>(s => s.Id);
+
+                entity.Ignore(s => s.Email) // not needed, it is in User
+                    .Ignore(s => s.PhoneNumber); // not needed, it is in User
+            });
 
             // Reviews
             modelBuilder.Entity<Review>().ToTable("Reviews");
@@ -95,10 +161,10 @@ namespace Server.DataAccessLayer
             modelBuilder.Entity<Bid>().HasKey(bid => bid.Id);
 
             modelBuilder.Entity<Bid>()
-                .HasOne(b => b.Bidder)
-                .WithMany(u => u.Bids)
-                .HasForeignKey(b => b.BidderId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(b => b.Bidder)
+                .WithMany(u => u.Bids)
+                .HasForeignKey(b => b.BidderId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Buy products
             modelBuilder.Entity<BuyProduct>().ToTable("BuyProducts");
@@ -175,33 +241,75 @@ namespace Server.DataAccessLayer
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Basket
-            modelBuilder.Entity<Basket>().ToTable("Baskets");
-            modelBuilder.Entity<Basket>().HasKey(basket => basket.Id);
+            // modelBuilder.Entity<Basket>().ToTable("Baskets");
+            // modelBuilder.Entity<Basket>().HasKey(basket => basket.Id);
 
             // Explicitly ignore the Items collection
-            modelBuilder.Entity<Basket>()
-                .Ignore(basket => basket.Items);
+            // modelBuilder.Entity<Basket>()
+            //     .Ignore(basket => basket.Items);
 
-            modelBuilder.Entity<BasketItem>().ToTable("BasketItemsBuyProducts");
-            modelBuilder.Entity<BasketItem>().HasKey(basketItem => basketItem.Id);
-            modelBuilder.Entity<BasketItem>()
-                .HasOne<BuyProduct>()
-                .WithMany()
-                .HasForeignKey(basketItem => basketItem.ProductId);
+            // modelBuilder.Entity<BasketItem>().ToTable("BasketItemsBuyProducts");
+            // modelBuilder.Entity<BasketItem>().HasKey(basketItem => basketItem.Id);
+            // modelBuilder.Entity<BasketItem>()
+            //     .HasOne<BuyProduct>()
+            //     .WithMany()
+            //     .HasForeignKey(basketItem => basketItem.ProductId);
 
-            modelBuilder.Entity<Order>().ToTable("Orders");
-            modelBuilder.Entity<Order>().HasKey(order => order.Id);
-            modelBuilder.Entity<Order>().Property(order => order.Name).IsRequired().HasMaxLength(100);
-            modelBuilder.Entity<Order>().Property(order => order.Description).IsRequired(false);
-            modelBuilder.Entity<Order>().Property(order => order.Cost).IsRequired();
-            modelBuilder.Entity<Order>().Property(order => order.SellerId).IsRequired();
-            modelBuilder.Entity<Order>().Property(order => order.BuyerId).IsRequired();
+            // modelBuilder.Entity<Order>().ToTable("Orders");
+            // modelBuilder.Entity<Order>().HasKey(order => order.Id);
+            // modelBuilder.Entity<Order>().Property(order => order.Name).IsRequired().HasMaxLength(100);
+            // modelBuilder.Entity<Order>().Property(order => order.Description).IsRequired(false);
+            // modelBuilder.Entity<Order>().Property(order => order.Cost).IsRequired();
+            // modelBuilder.Entity<Order>().Property(order => order.SellerId).IsRequired();
+            // modelBuilder.Entity<Order>().Property(order => order.BuyerId).IsRequired();
 
-            modelBuilder.Entity<Order>()
-                .HasOne(order => order.Seller)
-                .WithMany()
-                .HasForeignKey(order => order.SellerId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // modelBuilder.Entity<Order>()
+            //     .HasOne(order => order.Seller)
+            //     .WithMany()
+            //     .HasForeignKey(order => order.SellerId)
+            //     .OnDelete(DeleteBehavior.Restrict);
+
+            // --- Order Configuration --- merge-nicusor
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasKey(o => o.Id);
+
+                entity.HasOne<BuyProduct>()
+                    .WithMany()
+                    .HasPrincipalKey(bp => bp.Id)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Buyer>()
+                    .WithMany()
+                    .HasPrincipalKey(b => b.Id)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<OrderSummary>()
+                    .WithMany()
+                    .HasForeignKey(o => o.OrderSummaryID)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<OrderHistory>()
+                    .WithMany()
+                    .HasForeignKey(o => o.OrderHistoryID)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.ToTable(t => t.HasCheckConstraint("PaymentMethodConstraint", "[PaymentMethod] IN ('card', 'wallet', 'cash')"));
+                
+                entity.Property(o => o.BuyerId).HasColumnName("BuyerID");
+            });
+
+            // --- Order Summary Configuration --- merge-nicusor
+            modelBuilder.Entity<OrderSummary>(entity =>
+            {
+                entity.HasKey(os => os.ID);
+            });
+
+            // --- Order History Configuration --- merge-nicusor
+            modelBuilder.Entity<OrderHistory>(entity =>
+            {
+                entity.HasKey(oh => oh.OrderID);
+            });
 
             // modelBuilder.Entity<Order>()
             //     .HasOne(order => order.Buyer)
@@ -218,10 +326,308 @@ namespace Server.DataAccessLayer
             modelBuilder.Entity<Message>().HasKey(message => message.Id);
 
             modelBuilder.Entity<Message>()
-                .HasOne(message => message.User)
-                .WithMany()
-                .HasForeignKey(message => message.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(message => message.User)
+                .WithMany()
+                .HasForeignKey(message => message.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // --- PDF Configuration --- merge-nicusor
+            modelBuilder.Entity<PDF>(entity =>
+            {
+                entity.HasKey(p => p.PdfID);
+                entity.Ignore(p => p.ContractID); // ignored to respect Maria's DB design (but not deleted to avoid breaking changes)
+            });
+
+            // --- Predefined Contract Configuration --- merge-nicusor
+            modelBuilder.Entity<PredefinedContract>(entity =>
+            {
+                entity.HasKey(pc => pc.ContractID);
+                entity.Ignore(pc => pc.ID); // ignored to respect Maria's DB design (but not deleted to avoid breaking changes)
+            });
+
+            // --- Contract Configuration --- merge-nicusor
+            modelBuilder.Entity<Contract>(entity =>
+            {
+                entity.HasKey(c => c.ContractID);
+
+                entity.HasOne<Order>()
+                    .WithMany()
+                    .HasForeignKey(c => c.OrderID)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<PredefinedContract>()
+                    .WithMany()
+                    .HasForeignKey(pc => pc.PredefinedContractID)
+                    .IsRequired(false) // nullable to respect Maria's DB design
+                    .OnDelete(DeleteBehavior.SetNull); // SetNull because it is Nullable
+
+                entity.HasOne<PDF>()
+                    .WithMany()
+                    .HasForeignKey(p => p.PDFID)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.ToTable(t => t.HasCheckConstraint("ContractStatusConstraint", "[ContractStatus] IN ('ACTIVE', 'RENEWED', 'EXPIRED')"));
+            });
+
+            // --- Tracked Order Configuration --- merge-nicusor
+            modelBuilder.Entity<TrackedOrder>(entity =>
+            {
+                entity.HasKey(to => to.TrackedOrderID);
+
+                entity.HasIndex(to => to.OrderID)
+                    .IsUnique(); // to respect Maria's DB design
+
+                entity.HasOne<Order>()
+                    .WithMany()
+                    .HasForeignKey(to => to.OrderID)
+                    .OnDelete(DeleteBehavior.Restrict) // set to on delete cascade by Maria, I put restrict to avoid breaking changes (can be changed later)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(to => to.EstimatedDeliveryDate)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(to => to.DeliveryAddress)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(to => to.CurrentStatus)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.ToTable(t => t.HasCheckConstraint("TrackedOrderConstraint", "[CurrentStatus] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')")); // to respect Maria's DB design
+            });
+
+            // --- Order Checkpoint Configuration --- merge-nicusor
+            modelBuilder.Entity<OrderCheckpoint>(entity =>
+            {
+                entity.HasKey(oc => oc.CheckpointID);
+
+                entity.HasOne<TrackedOrder>()
+                    .WithMany()
+                    .HasForeignKey(oc => oc.TrackedOrderID)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(oc => oc.Timestamp)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(oc => oc.Description)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(oc => oc.Status)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.ToTable(oc => oc.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')")); // to respect Maria's DB design
+            });
+
+            // --- User Waitlist Configuration --- merge-nicusor
+            modelBuilder.Entity<UserWaitList>(entity =>
+            {
+                entity.HasKey(uw => uw.UserWaitListID);
+
+                entity.HasOne<BorrowProduct>()
+                    .WithMany()
+                    .HasForeignKey(uw => uw.ProductWaitListID)
+                    .HasPrincipalKey(bp => bp.Id)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.HasOne<Buyer>()
+                    .WithMany()
+                    .HasForeignKey(uw => uw.UserID)
+                    .OnDelete(DeleteBehavior.Restrict) // set to on delete cascade by Maria, I put restrict to avoid breaking changes (can be changed later)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(uw => uw.JoinedTime)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(uw => uw.PositionInQueue)
+                    .IsRequired(); // to respect Maria's DB design
+            });
+
+            // --- Dummy Card Configuration --- merge-nicusor
+            // Please do check the DummyCardEntity class for more information about this abomination of a table :))
+            // TODO: Change DummyCardEntity to CardEntity
+            modelBuilder.Entity<DummyCardEntity>(entity =>
+            {
+                entity.HasKey(dc => dc.ID);
+
+                entity.HasOne<Buyer>() // not in Maria's DB design, I added it to have code maintainability
+                    .WithMany()
+                    .HasForeignKey(dc => dc.BuyerId)
+                    .OnDelete(DeleteBehavior.Restrict) // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
+                    .IsRequired();
+
+                entity.HasIndex(dc => dc.CardNumber); // because Golubiro Spioniro is stealing our cards :))
+
+                entity.Property(dc => dc.CardholderName)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(dc => dc.CardNumber)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(dc => dc.CVC)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(dc => dc.Month)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(dc => dc.Year)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(dc => dc.Country)
+                    .IsRequired(); // to respect Maria's DB design
+            });
+
+            // --- Dummy Wallet Configuration --- merge-nicusor
+            // Please do check the DummyWalletEntity class for more information about this abomination of a table :))
+            // TODO: Change DummyWalletEntity to WalletEntity
+            modelBuilder.Entity<DummyWalletEntity>(entity =>
+            {
+                entity.HasOne<Buyer>()
+                    .WithOne()
+                    .HasForeignKey<DummyWalletEntity>(dw => dw.BuyerId)
+                    .OnDelete(DeleteBehavior.Restrict); // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
+
+                entity.HasKey(dw => dw.ID);
+            });
+
+            // --- Buyer Cart Item Configuration --- merge-nicusor
+            modelBuilder.Entity<BuyerCartItemEntity>(entity =>
+            {
+                entity.HasKey(bci => new { bci.BuyerId, bci.ProductId });
+
+                entity.Property(bci => bci.Quantity)
+                    .HasDefaultValue(1); // to respect Maria's DB design
+
+                entity.HasOne<Buyer>()
+                    .WithMany()
+                    .HasForeignKey(bci => bci.BuyerId)
+                    .HasPrincipalKey(b => b.Id)
+                    .OnDelete(DeleteBehavior.Restrict) // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
+                    .IsRequired();
+
+                entity.HasOne<BuyProduct>()
+                    .WithMany()
+                    .HasPrincipalKey(bp => bp.Id)
+                    .OnDelete(DeleteBehavior.Restrict) // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
+                    .IsRequired();
+            });
+
+            // --- Buyer Wishlist Items Configuration --- merge-nicusor
+            modelBuilder.Entity<BuyerWishlistItemsEntity>(entity =>
+            {
+                entity.HasKey(bwi => new { bwi.BuyerId, bwi.ProductId });
+
+                entity.HasOne<Buyer>()
+                    .WithMany()
+                    .HasForeignKey(bwi => bwi.BuyerId)
+                    .HasPrincipalKey(b => b.Id)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<BuyProduct>()
+                    .WithMany()
+                    .HasPrincipalKey(bp => bp.Id)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // --- Buyer Linkage Entity Configuration --- merge-nicusor
+            modelBuilder.Entity<BuyerLinkageEntity>(entity =>
+            {
+                entity.HasKey(bl => new { bl.RequestingBuyerId, bl.ReceivingBuyerId });
+
+                entity.HasOne<Buyer>()
+                    .WithMany()
+                    .HasForeignKey(bl => bl.RequestingBuyerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Buyer>()
+                    .WithMany()
+                    .HasForeignKey(bl => bl.ReceivingBuyerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.ToTable(t => t.HasCheckConstraint("CK_BuyerLinkage_DifferentBuyers", "[RequestingBuyerId] <> [ReceivingBuyerId]"));
+            });
+
+            // --- Following Entity Configuration --- merge-nicusor
+            modelBuilder.Entity<FollowingEntity>(entity =>
+            {
+                entity.HasKey(f => new { f.BuyerId, f.SellerId });
+
+                entity.HasOne<Buyer>()
+                .WithMany()
+                .HasForeignKey(f => f.BuyerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Seller>()
+                .WithMany()
+                .HasForeignKey(f => f.SellerId)
+                .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // --- Seller Notification Entity Configuration --- merge-nicusor
+             modelBuilder.Entity<SellerNotificationEntity>(entity =>
+            {
+                entity.HasKey(sn => sn.NotificationID);
+
+                entity.HasOne<Seller>()
+                .WithMany()
+                .HasForeignKey(sn => sn.SellerID)
+                .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // --- Order Notification Entity Configuration ---
+            modelBuilder.Entity<OrderNotificationEntity>(entity =>
+            {
+                entity.HasKey(on => on.NotificationID);
+
+                entity.Property(on => on.Category)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.Property(on => on.Timestamp)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.HasOne<Buyer>()
+                    .WithMany()
+                    .HasForeignKey(on => on.RecipientID)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(); // to respect Maria's DB design
+
+                entity.HasOne<Order>()
+                    .WithMany()
+                    .HasForeignKey(on => on.OrderID)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(false); // to respect Maria's DB design
+
+                entity.HasOne<BuyProduct>()
+                    .WithMany()
+                    .HasForeignKey(on => on.ProductID)
+                    .HasPrincipalKey(bp => bp.Id)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(false); // to respect Maria's DB design
+
+                entity.HasOne<Contract>()
+                    .WithMany()
+                    .HasForeignKey(on => on.ContractID)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(false); // to respect Maria's DB design
+
+                entity.ToTable(t => t.HasCheckConstraint("NotificationCategoryConstraint", "[Category] IN ('CONTRACT_EXPIRATION', 'OUTBIDDED', 'ORDER_SHIPPING_PROGRESS', 'PRODUCT_AVAILABLE', 'PAYMENT_CONFIRMATION', 'PRODUCT_REMOVED', 'CONTRACT_RENEWAL_REQ', 'CONTRACT_RENEWAL_ANS', 'CONTRACT_RENEWAL_WAITLIST')"));
+            });
+
+            // IGNORING SHIT - merge-nicusor
+            modelBuilder.Ignore<BuyerWishlist>();
+            modelBuilder.Ignore<BuyerWishlistItem>();
+            modelBuilder.Ignore<BuyerLinkage>();
+            modelBuilder.Ignore<Notification>();
+            modelBuilder.Ignore<ContractRenewalAnswerNotification>();
+            modelBuilder.Ignore<ContractRenewalWaitlistNotification>();
+            modelBuilder.Ignore<OutbiddedNotification>();
+            modelBuilder.Ignore<OrderShippingProgressNotification>();
+            modelBuilder.Ignore<PaymentConfirmationNotification>();
+            modelBuilder.Ignore<ProductRemovedNotification>();
+            modelBuilder.Ignore<ProductAvailableNotification>();
+            modelBuilder.Ignore<ContractRenewalRequestNotification>();
+            modelBuilder.Ignore<ContractExpirationNotification>();
+
         }
     }
 }

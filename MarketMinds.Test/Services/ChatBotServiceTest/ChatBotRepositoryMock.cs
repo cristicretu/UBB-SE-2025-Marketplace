@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using NUnit.Framework;
+﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
 using MarketMinds.Shared.IRepository;
 using System.Threading.Tasks;
 

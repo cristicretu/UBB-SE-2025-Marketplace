@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MarketMinds.Shared.Models;
@@ -199,6 +197,28 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 }
             }
             return productResultSet;
+        }
+
+        // merge-nicusor
+
+        public Task UpdateProductAsync(int id, string name, double price, int sellerId, string productType, DateTime startDate, DateTime endDate)
+        {
+            throw new NotImplementedException("UpdateProductAsync is not implemented.");
+        }
+
+        public Task<Product> GetProductByIdAsync(int productId)
+        {
+            throw new NotImplementedException("GetProductByIdAsync is not implemented.");
+        }
+
+        public Task<string> GetSellerNameAsync(int sellerId)
+        {
+            throw new NotImplementedException("GetSellerNameAsync is not implemented.");
+        }
+
+        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

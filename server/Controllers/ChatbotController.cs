@@ -1,17 +1,4 @@
-using System;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-using Server.DataAccessLayer;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Collections.Generic;
-using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 
 namespace Server.Controllers

@@ -1,6 +1,4 @@
 using System.Net;
-using System.Linq;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Models.DTOs;

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Shared.Services.AuctionProductsService
@@ -464,7 +459,17 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                 }
             }
         }
-
         #endregion
+
+        // merge-nicusor
+        Task<Product> IProductService.GetProductByIdAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

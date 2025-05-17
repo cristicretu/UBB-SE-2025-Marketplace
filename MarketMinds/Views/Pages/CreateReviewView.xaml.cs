@@ -1,19 +1,12 @@
 using System.Diagnostics;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.IO;
 using System;
-using System.Collections.Generic;
 using ViewModelLayer.ViewModel;
 using Windows.Storage.Pickers;
 using Windows.Storage;
-using Windows.Storage.Streams;
-using Newtonsoft.Json;
 using MarketMinds.Shared.Models;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
-using MarketMinds.Shared.Services;
 using WinRT.Interop;
 
 namespace MarketMinds

@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using MarketMinds.Shared.Models;
-using Microsoft.Extensions.Configuration;
-using MarketMinds.Shared.Services.UserService;
 
 namespace MarketMinds.Shared.Services.ReviewService
 {

@@ -1,0 +1,28 @@
+﻿@model WebMarketplace.Models.BuyerAddressViewModel
+
+@{
+    ViewData["Title"] = "Buyer Address Details";
+}
+
+<h1 class="text-2xl font-bold mb-4">Buyer Address Details</h1>
+
+<div class="space-y-4">
+    <div>
+        <h4 class="text-lg font-semibold">Buyer Address</h4>
+        <hr class="my-2" />
+        <dl class="grid grid-cols-2 gap-4">
+            <dt class="font-medium text-gray-700">Street Line</dt>
+            <dd class="text-gray-900">@Html.DisplayFor(model => model.StreetLine)</dd>
+            <dt class="font-medium text-gray-700">City</dt>
+            <dd class="text-gray-900">@Html.DisplayFor(model => model.City)</dd>
+            <dt class="font-medium text-gray-700">Country</dt>
+            <dd class="text-gray-900">@Html.DisplayFor(model => model.Country)</dd>
+            <dt class="font-medium text-gray-700">Postal Code</dt>
+            <dd class="text-gray-900">@Html.DisplayFor(model => model.PostalCode)</dd>
+        </dl>
+    </div>
+    <div class="flex space-x-4">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Edit</a>
+        <a asp-action="Index" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Back to List</a>
+    </div>
+</div>

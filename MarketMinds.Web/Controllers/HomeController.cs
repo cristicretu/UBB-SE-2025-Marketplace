@@ -7,15 +7,8 @@ using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.ProductCategoryService;
 using MarketMinds.Shared.Services.ProductConditionService;
 using MarketMinds.Shared.Services.ImagineUploadService;
-using System.Threading.Tasks;
-using System;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System.Collections.Generic;
 using MarketMinds.Shared.Services.BorrowProductsService;
-using MarketMinds.Shared.Services.BuyProductsService;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace MarketMinds.Web.Controllers
 {

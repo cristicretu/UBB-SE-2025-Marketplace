@@ -1,0 +1,20 @@
+﻿@model string
+@{
+    ViewData["Title"] = "User Not Found";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold text-red-600 mb-4">User Not Found</h1>
+        <p class="text-gray-700 mb-4">
+            We could not find a user with the email address: <span class="font-medium">@Model</span>
+        </p>
+
+        <div class="mt-6">
+            <a href="@Url.Action("Index", "Home")"
+               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition duration-150 ease-in-out">
+                Return to Home
+            </a>
+        </div>
+    </div>
+</div>

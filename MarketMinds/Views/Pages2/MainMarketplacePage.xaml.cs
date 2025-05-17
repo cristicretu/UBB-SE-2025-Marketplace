@@ -1,12 +1,9 @@
 using System.Threading.Tasks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using MarketMinds.Shared.Models;
-using Marketplace_SE.Utilities; // For Notification, FrameNavigation
 using MarketMinds.ViewModels; // For MarketplaceViewModel
 using MarketMinds;
 using MarketMinds.Views.Pages2;
@@ -77,7 +74,7 @@ namespace Marketplace_SE
 
         private async Task ShowNotification(string title, string message)
         {
-            Notification notification = new Notification(title, message);
+            Marketplace_SE.Utilities.Notification notification = new Marketplace_SE.Utilities.Notification(title, message);
             var window = notification.GetWindow();
 
             if (window != null)

@@ -1,17 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using MarketMinds.Web.Models;
-using MarketMinds.Shared.Services.DreamTeam.ChatService;
 using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
 using MarketMinds.Shared.Services.ConversationService;
 using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.Models;
-using System;
-using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace MarketMinds.Web.Controllers
 {

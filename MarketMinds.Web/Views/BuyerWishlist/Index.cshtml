@@ -1,0 +1,41 @@
+﻿@model WebMarketplace.Models.BuyerWishlistViewModel
+@{
+    ViewData["Title"] = "Your Wishlist";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Your Wishlist</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (Model.IsEmpty)
+    {
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6">
+            Your wishlist is currently empty. Browse our products and add items to your wishlist!
+        </div>
+        <a asp-controller="Home" asp-action="Index" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Browse Products
+        </a>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var item in Model.WishlistItems)
+            {
+                <partial name="_WishlistItem" model="item" />
+            }
+        </div>
+    }
+</div>

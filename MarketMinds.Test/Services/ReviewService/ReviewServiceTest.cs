@@ -3,11 +3,8 @@ using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.Services.UserService;
 using Moq;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Test.Services.ReviewService
