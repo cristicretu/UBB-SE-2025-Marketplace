@@ -1,0 +1,115 @@
+
+
+flow 1: team 921
+- login (w/ captcha) 
+- cleanup account page from messi team
+    - will be replaced by loanshark seller + buyer
+- seller page, buyer page
+    - with update
+    - buyer follows a seller
+- de la messi, admin page (care paote adauga categorii si conditii)
+- borrow product 
+    - see products, actually borrow them
+    - get waitlitst and so on
+- contract pdf generate
+- family sharing thingy
+- notifications
+- renew contract
+
+
+flow 2: team 923
+- chatbot
+- create borrow
+- buy product
+    - and make it dissapear lol
+- see cart
+- checkout
+- finalize purchase (checkout cart)
+- see orders (order history)
+- track order
+- review seller + figure out wtf is happening with trust score
+- auction product
+- my wishlist
+
+
+deadline
+miercuri 21 mai 23:59 pentru FLOW 1
+	vineri 23 mai 23:59 pentru FLOW 2
+
+teste: de joi incolo, deadline: sambata 24 mai 23:59
+
+If you want to run the MAIN APP (marketplace) , follow the guide from below, from team messi (this sets up the config)
+
+
+If you want to run the old projects (as reference), look at this:Messi: https://github.com/cristicretu/UBB-SE-2025-MarketMessi
+
+Desktop: MarketMinds
+Server: serverShared: MarketMinds.Shared
+Web: MarketMinds.Web
+
+You need an appsettings.json inside MarketMinds, MarketMinds.Web, server
+
+Desktop and web appsettings.json:
+{
+  "ImgurSettings": {
+    "ClientId": “yourkey”
+  },
+  "ApiSettings": {
+    "BaseUrl": "http://localhost:5001"
+  },
+  "GeminiAPI": {
+    "Key": “yourkey”
+  }
+}
+
+
+server: INSIDEE LOCAL DATA SOURCE YOU NEED TO PUT JUST THE SERVER NAME, INITIAL CATALOG MEANS the DB NAME
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ApiSettings": {
+    "BaseUrl": "http://localhost:5001"
+  },
+  "LocalDataSource": "np:\\\\.\\pipe\\LOCALDB#B6153E8E\\tsql\\query",
+  "InitialCatalog": "MarketEF",
+  "GeminiAPI": {
+    "Key": “yourkey”
+  }
+}
+
+to run the DB run ‘dotnet ef database update’ from inside the server directory. (it will use the database name that is specified inside the appsettings.json on the server)
+
+
+Loanshark: https://github.com/UBB-SE-921/UBB-SE-2025-921-1
+
+Desktop: MarketPlace924
+Server: Server
+Shared: SharedClassLibrary
+
+you need an appsettings.json inside desktop, web and server
+desktop and web:{
+  "BaseApiUrl": "https://localhost:7194/"
+}
+
+server:
+{
+  "ConnectionStrings": {
+    "MyLocalDb": "Data Source=ANDRADA\SQLEXPRESS01;Initial Catalog=MarketPlaceDBCodeFirst;Integrated Security=True;TrustServerCertificate=True"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Jwt": {
+    "Key": "cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==",
+    "Issuer": "https://localhost:7194/“
+  }
+}

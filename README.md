@@ -1,5 +1,161 @@
 # UBB-SE-2025-Marketplace
 
+# 🚀  Project Setup and Deadlines
+
+
+## 🔄 Project Flows
+
+### Flow 1 (Team 921)
+- Login system with captcha 
+- Account page cleanup (replacing Messi team implementation)
+- Seller and buyer pages with update functionality
+- Admin page for managing categories and conditions
+- Borrowing functionality
+- Contract PDF generation
+- Family sharing feature
+- Notifications system
+- Contract renewal
+
+### Flow 2 (Team 923)
+- Chatbot implementation
+- Borrowing creation
+- Product purchase functionality
+- Shopping cart management
+- Checkout process
+- Order history
+- Order tracking
+- Seller review system and trust score
+- Auction functionality
+- Wishlist management
+
+## ⏰ **DEADLINES** ⏰
+
+| Component | Deadline |
+|-----------|----------|
+| **FLOW 1** | **Wednesday, May 21, 2025, 23:59** |
+| **FLOW 2** | **Friday, May 23, 2025, 23:59** |
+| **TESTS** | **Saturday, May 24, 2025, 23:59** (testing begins Thursday) |
+
+## 💻 Setup Instructions
+
+### Main Application (Marketplace)
+
+Follow the configuration guide below to set up the main marketplace application. This uses the configuration from the Messi team.
+
+### Reference Projects
+
+#### Messi Project (Reference)
+Repository: https://github.com/cristicretu/UBB-SE-2025-MarketMessi
+
+Project structure:
+- Desktop: MarketMinds
+- Server: server
+- Shared: MarketMinds.Shared
+- Web: MarketMinds.Web
+
+#### Loanshark Project (Reference)
+Repository: https://github.com/UBB-SE-921/UBB-SE-2025-921-1
+
+Project structure:
+- Desktop: MarketPlace924
+- Server: Server
+- Shared: SharedClassLibrary
+
+## ⚙️ Configuration
+
+### Required Configuration Files
+
+You need to create `appsettings.json` files in multiple locations:
+
+#### For Messi Project:
+- `MarketMinds/appsettings.json`
+- `MarketMinds.Web/appsettings.json`
+- `server/appsettings.json`
+
+#### For Loanshark Project:
+- `Desktop/appsettings.json`
+- `Web/appsettings.json`
+- `Server/appsettings.json`
+
+### Configuration Content
+
+#### Desktop and Web Configuration (Messi):
+```json
+{
+  "ImgurSettings": {
+    "ClientId": "yourkey"
+  },
+  "ApiSettings": {
+    "BaseUrl": "http://localhost:5001"
+  },
+  "GeminiAPI": {
+    "Key": "yourkey"
+  }
+}
+```
+
+#### Server Configuration (Messi):
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ApiSettings": {
+    "BaseUrl": "http://localhost:5001"
+  },
+  "LocalDataSource": "np:\\\\.\\pipe\\LOCALDB#B6153E8E\\tsql\\query",
+  "InitialCatalog": "MarketEF",
+  "GeminiAPI": {
+    "Key": "yourkey"
+  }
+}
+```
+
+> **Note:** For the LocalDataSource, you need to put just your server name. InitialCatalog specifies the database name.
+
+#### Desktop and Web Configuration (Loanshark):
+```json
+{
+  "BaseApiUrl": "https://localhost:7194/"
+}
+```
+
+#### Server Configuration (Loanshark):
+```json
+{
+  "ConnectionStrings": {
+    "MyLocalDb": "Data Source=YOURSERVER;Initial Catalog=MarketPlaceDBCodeFirst;Integrated Security=True;TrustServerCertificate=True"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Jwt": {
+    "Key": "cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==cgXJiEqfVU2j7MyNXf16gy2g34g34g4w53r23dqjwcbiu23gduisy2fg8723ud2yuv3fVUWG&YBF3813r8g4732fh348f3qVI7A==",
+    "Issuer": "https://localhost:7194/"
+  }
+}
+```
+
+## 🗃️ Database Setup
+
+To set up the database for the Messi project:
+1. Navigate to the server directory
+2. Run the command: `dotnet ef database update`
+
+This will create a database with the name specified in the `InitialCatalog` field of your server's `appsettings.json` file.
+
+For the 921 project, make sure to update the connection string in the server's `appsettings.json` with your own SQL Server instance name.
+
+---
+
 # Coding Style Rules
 
 ## Naming Conventions
