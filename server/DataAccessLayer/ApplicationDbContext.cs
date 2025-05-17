@@ -161,10 +161,10 @@ namespace Server.DataAccessLayer
             modelBuilder.Entity<Bid>().HasKey(bid => bid.Id);
 
             modelBuilder.Entity<Bid>()
-                .HasOne(b => b.Bidder)
-                .WithMany(u => u.Bids)
-                .HasForeignKey(b => b.BidderId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(b => b.Bidder)
+                .WithMany(u => u.Bids)
+                .HasForeignKey(b => b.BidderId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Buy products
             modelBuilder.Entity<BuyProduct>().ToTable("BuyProducts");
@@ -326,10 +326,10 @@ namespace Server.DataAccessLayer
             modelBuilder.Entity<Message>().HasKey(message => message.Id);
 
             modelBuilder.Entity<Message>()
-                .HasOne(message => message.User)
-                .WithMany()
-                .HasForeignKey(message => message.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(message => message.User)
+                .WithMany()
+                .HasForeignKey(message => message.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // --- PDF Configuration --- merge-nicusor
             modelBuilder.Entity<PDF>(entity =>
@@ -425,7 +425,7 @@ namespace Server.DataAccessLayer
 
                 entity.HasOne<BorrowProduct>()
                     .WithMany()
-                    .HasForeignKey(uw => uw.ProductID)
+                    .HasForeignKey(uw => uw.ProductWaitListID)
                     .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired(); // to respect Maria's DB design
