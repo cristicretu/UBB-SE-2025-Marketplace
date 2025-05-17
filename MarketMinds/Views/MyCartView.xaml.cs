@@ -53,7 +53,8 @@ namespace MarketMinds.Views
                 int buyerId = this.ViewModel.BuyerId;
 
                 // Create an order history record (this might require additional code in your application)
-                int orderHistoryId = Constants.OrderHistoryID; // Default value for now
+                // merge-nicusor FIX :)
+                int orderHistoryId = 1; // Default value for now
 
                 // Create a new instance of the BillingInfoWindow
                 var billingInfoWindow = new BillingInfoWindow();

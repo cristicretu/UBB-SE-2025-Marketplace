@@ -101,7 +101,7 @@ namespace MarketMinds.Views
         /// <returns></returns>
         private async Task UpdateBorrowedProductTax(DatePicker sender)
         {
-            if (DataContext is BillingInfoViewModel viewModel && sender.DataContext is Product product)
+            if (DataContext is BillingInfoViewModel viewModel && sender.DataContext is BorrowProduct product)
             {
                 await viewModel.ApplyBorrowedTax(product);
             }

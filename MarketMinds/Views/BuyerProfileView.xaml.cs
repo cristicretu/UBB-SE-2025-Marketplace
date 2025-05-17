@@ -123,7 +123,8 @@
         private void BidProductButton_Clicked(object sender, RoutedEventArgs e)
         {
             BillingInfoWindow billingInfoWindow = new BillingInfoWindow();
-            var bp = new BillingInfo(Constants.OrderHistoryIDBid);
+            // merge-nicusor FIX :)
+            var bp = new BillingInfo(1);
             billingInfoWindow.Content = bp;
             billingInfoWindow.Activate();
         }
@@ -131,7 +132,8 @@
         private void WalletRefillButton_Clicked(object sender, RoutedEventArgs e)
         {
             BillingInfoWindow billingInfoWindow = new BillingInfoWindow();
-            var bp = new BillingInfo(Constants.OrderHistoryIDWalletRefill);
+            // merge-nicusor FIX :)
+            var bp = new BillingInfo(1);
             billingInfoWindow.Content = bp;
             billingInfoWindow.Activate();
         }
@@ -174,14 +176,14 @@
                     XamlRoot = this.Content.XamlRoot
                 };
                 await successDialog.ShowAsync();
-
         }
 
         private async void BorrowButton_Clicked(object sender, RoutedEventArgs e)
         {
             try
             {
-                int productId = Constants.ProductID;
+                // merge-nicusor FIX :)
+                int productId = 1;
 
                 var borrowWindow = new BorrowProductWindow(productId);
                 borrowWindow.Activate();
@@ -200,7 +202,8 @@
 
         private void OrderHistoryButton_Clicked(object sender, RoutedEventArgs e)
         {
-            int user_id = Constants.CurrentUserID;
+            // merge-nicusor FIX :)
+            int user_id = 1;
             var orderhistorywindow = new OrderHistoryView(user_id);
             orderhistorywindow.Activate();
         }
@@ -217,6 +220,5 @@
                 await ShowErrorDialogAsync("Error opening Renew Contract", ex.Message);
             }
         }
-
     }
 }

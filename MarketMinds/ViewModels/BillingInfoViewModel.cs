@@ -87,7 +87,7 @@ namespace MarketMinds.ViewModels
             // Convert the cart items to Products for display
             this.Products = new List<Product>();
 
-            foreach (var item in cartItems)
+            foreach (var item in this.cartItems)
             {
                 this.Products.Add(item);
             }
