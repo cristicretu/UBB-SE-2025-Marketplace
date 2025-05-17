@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.ProxyRepository;

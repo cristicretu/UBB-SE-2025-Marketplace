@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Web.Models

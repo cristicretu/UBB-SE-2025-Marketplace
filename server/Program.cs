@@ -12,7 +12,6 @@ using MarketMinds.Repositories.MessageRepository;
 using MarketMinds.Repositories.ChatbotRepository;
 using MarketMinds.Shared.IRepository;
 using Microsoft.EntityFrameworkCore;
-using Server.DataAccessLayer;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
 using Server.MarketMinds.Repositories.AccountRepository;
 using Server.MarketMinds.Repositories.UserRepository;

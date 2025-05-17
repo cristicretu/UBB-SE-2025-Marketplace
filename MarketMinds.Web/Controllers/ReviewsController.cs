@@ -3,14 +3,8 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.Services.UserService;
 using MarketMinds.Shared.Services.ImagineUploadService;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 
 namespace MarketMinds.Web.Controllers
 {

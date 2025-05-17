@@ -1,6 +1,4 @@
-using System;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration; // Required for IConfiguration
 
 namespace DataAccessLayer // Assuming this is the correct namespace
 {

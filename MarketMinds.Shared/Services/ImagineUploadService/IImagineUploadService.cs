@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
-using System.IO;
+﻿using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Shared.Services.ImagineUploadService
 {

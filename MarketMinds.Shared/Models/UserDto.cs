@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json.Serialization;
 
 namespace MarketMinds.Shared.Models
@@ -19,6 +18,15 @@ namespace MarketMinds.Shared.Models
         public double Balance { get; set; }
         [JsonPropertyName("rating")]
         public double Rating { get; set; }
+        // merge-nicusor
+        [JsonPropertyName("failedLogIns")]
+        public int FailedLogIns { get; set; }
+        [JsonPropertyName("bannedUntil")]
+        public DateTime BannedUntil { get; set; }
+        [JsonPropertyName("isBanned")]
+        public bool IsBanned { get; set; }
+        [JsonPropertyName("phoneNumber")]
+        public string PhoneNumber { get; set; }
 
         public UserDto()
         {
@@ -47,11 +55,18 @@ namespace MarketMinds.Shared.Models
 
         public MarketMinds.Shared.Models.User ToDomainUser()
         {
-            var user = new MarketMinds.Shared.Models.User(Username, Email, PasswordHash)
+            var user = new MarketMinds.Shared.Models.User(
+                id: Id,
+                username: Username, 
+                email: Email, 
+                phoneNumber: PhoneNumber, 
+                userType: UserType, 
+                balance: Balance, 
+                bannedUntil: BannedUntil, 
+                isBanned: IsBanned, 
+                failedLogins: FailedLogIns, 
+                passwordHash: PasswordHash)
             {
-                Id = Id,
-                UserType = UserType,
-                Balance = Balance,
                 Rating = Rating
             };
             return user;

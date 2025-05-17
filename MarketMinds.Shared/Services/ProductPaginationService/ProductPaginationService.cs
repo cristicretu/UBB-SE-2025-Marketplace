@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using MarketMinds.Shared.Models;
-
 namespace MarketMinds.Shared.Services.ProductPaginationService
 {
     public class ProductPaginationService : IProductPaginationService

@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace Marketplace_SE.Service
+﻿namespace Marketplace_SE.Service
 {
     public static class BackendUserGetHelp
     {

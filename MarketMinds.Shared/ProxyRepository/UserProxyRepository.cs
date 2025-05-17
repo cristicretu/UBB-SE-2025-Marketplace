@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using System.Threading.Tasks;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +12,9 @@ namespace MarketMinds.Shared.ProxyRepository
         private readonly HttpClient httpClient;
         private readonly JsonSerializerOptions jsonOptions;
         private static readonly int ERROR_CODE = -1;
+        private const string ApiBaseRoute = "users";
+        private const string AuthorizationBaseRoute = "authorization";
+
 
         public UserProxyRepository(IConfiguration configuration)
         {
@@ -299,6 +296,180 @@ namespace MarketMinds.Shared.ProxyRepository
         private class UsernameCheckResult
         {
             public bool Exists { get; set; }
+        }
+
+
+
+
+
+
+
+
+
+
+        // merge-nicusor
+        public async Task AddUser(User user)
+        {
+            var response = await this.httpClient.PostAsJsonAsync($"{ApiBaseRoute}", user);
+            await this.ThrowOnError(nameof(AddUser), response);
+        }
+
+        public async Task<User?> GetUserById(int userId)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{userId}");
+            await this.ThrowOnError(nameof(GetUserById), response);
+
+            // Check if the response content is empty
+            if (response.Content.Headers.ContentLength == 0)
+            {
+                return null; // No content means no user
+            }
+
+            var user = await response.Content.ReadFromJsonAsync<User>();
+            return user;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> EmailExists(string email)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/email-exists?email={email}");
+            await this.ThrowOnError(nameof(EmailExists), response);
+
+            var found = await response.Content.ReadFromJsonAsync<bool>();
+            return found;
+        }
+
+        /// <inheritdoc />
+        public async Task<List<User>> GetAllUsers()
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}");
+            await this.ThrowOnError(nameof(GetAllUsers), response);
+
+            var users = await response.Content.ReadFromJsonAsync<List<User>>();
+            if (users == null)
+            {
+                users = new List<User>();
+            }
+
+            return users;
+        }
+
+        /// <inheritdoc />
+        public async Task<int> GetFailedLoginsCountByUserId(int userId)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/failed-logins-count/{userId}");
+            await this.ThrowOnError(nameof(GetFailedLoginsCountByUserId), response);
+
+            var failedLoginsCount = await response.Content.ReadFromJsonAsync<int>();
+            return failedLoginsCount;
+        }
+
+        /// <inheritdoc />
+        public async Task<int> GetTotalNumberOfUsers()
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/count");
+            await this.ThrowOnError(nameof(GetTotalNumberOfUsers), response);
+
+            var userCount = await response.Content.ReadFromJsonAsync<int>();
+            return userCount;
+        }
+
+        /// <inheritdoc />
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/email/{email}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null; // No user found with the given email
+            }
+            await this.ThrowOnError(nameof(GetUserByEmail), response);
+
+            // Check if the response content is empty
+            if (response.Content.Headers.ContentLength == 0)
+            {
+                return null; // No content means no user
+            }
+
+            var user = await response.Content.ReadFromJsonAsync<User>();
+            return user;
+        }
+
+        /// <inheritdoc />
+        public async Task<User?> GetUserByUsername(string username)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/username/{username}");
+            await this.ThrowOnError(nameof(GetUserByUsername), response);
+
+            var user = await response.Content.ReadFromJsonAsync<User>();
+            return user;
+        }
+
+        /// <inheritdoc />
+        public async Task LoadUserPhoneNumberAndEmailById(User user)
+        {
+            int userId = user.Id;
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/phone-email/{user.Id}");
+            await this.ThrowOnError(nameof(LoadUserPhoneNumberAndEmailById), response);
+
+            var newUser = await response.Content.ReadFromJsonAsync<User>();
+            if (newUser == null)
+            {
+                throw new InvalidOperationException($"Failed to load user data for UserId: {userId}. The API returned no data.");
+            }
+
+            user.PhoneNumber = newUser.PhoneNumber;
+            user.Email = newUser.Email;
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateUser(User user)
+        {
+            var response = await this.httpClient.PutAsJsonAsync($"{ApiBaseRoute}", user);
+            await this.ThrowOnError(nameof(UpdateUser), response);
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateUserFailedLoginsCount(User user, int newValueOfFailedLogIns)
+        {
+            var response = await this.httpClient.PutAsJsonAsync($"{ApiBaseRoute}/update-failed-logins/{newValueOfFailedLogIns}", user);
+            await this.ThrowOnError(nameof(UpdateUserFailedLoginsCount), response);
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateUserPhoneNumber(User user)
+        {
+            var response = await this.httpClient.PutAsJsonAsync($"{ApiBaseRoute}/update-phone-number", user);
+            await this.ThrowOnError(nameof(UpdateUserPhoneNumber), response);
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> UsernameExists(string username)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/username-exists?username={username}");
+            await this.ThrowOnError(nameof(UsernameExists), response);
+
+            var found = await response.Content.ReadFromJsonAsync<bool>();
+            return found;
+        }
+
+        private async Task ThrowOnError(string methodName, HttpResponseMessage response)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorMessage = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(errorMessage))
+                {
+                    errorMessage = response.ReasonPhrase;
+                }
+                throw new Exception($"{methodName}: {errorMessage}");
+            }
+        }
+
+        public async Task<string> AuthorizationLogin()
+        {
+            var response = await this.httpClient.PostAsync($"{AuthorizationBaseRoute}/login", null);
+            var token = await response.Content.ReadAsStringAsync();
+            return token;
         }
     }
 }

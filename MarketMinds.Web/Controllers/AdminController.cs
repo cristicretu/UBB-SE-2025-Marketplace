@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ProductCategoryService;
 using MarketMinds.Shared.Services.ProductConditionService;
-using System.Collections.Generic;
 
 namespace MarketMinds.Web.Controllers
 {

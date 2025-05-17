@@ -4,21 +4,14 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds;
 using MarketMinds.Helpers.Selectors;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.ViewModels;
-using Marketplace_SE.Utilities;
 using Marketplace_SE;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.

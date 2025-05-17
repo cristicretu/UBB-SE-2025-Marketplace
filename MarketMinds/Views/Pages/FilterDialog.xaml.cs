@@ -1,20 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
-using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
 using ProductCategory = MarketMinds.Shared.Models.Category;
 using ProductCondition = MarketMinds.Shared.Models.Condition;
-using MarketMinds.Shared.Services;
-using MarketMinds.Shared.Services.AuctionProductsService;
-using MarketMinds.Shared.Services.BorrowProductsService;
-using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace UiLayer
 {

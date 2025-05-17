@@ -1,8 +1,4 @@
-﻿using System.Net.Http;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;

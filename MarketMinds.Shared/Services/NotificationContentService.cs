@@ -1,0 +1,38 @@
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.ProxyRepository;
+
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Helper;
+
+namespace MarketMinds.Shared.Services
+{
+    public class NotificationContentService : INotificationContentService
+    {
+        private readonly INotificationRepository notificationRepository;
+
+        public NotificationContentService()
+        {
+            this.notificationRepository = new NotificationProxyRepository(AppConfig.GetBaseApiUrl());
+        }
+
+        public string GetUnreadNotificationsCountText(int unreadCount)
+        {
+            return $"You've got #{unreadCount} unread notifications.";
+        }
+
+        public async Task<List<Notification>> GetNotificationsForUser(int recipientId)
+        {
+            return await notificationRepository.GetNotificationsForUser(recipientId);
+        }
+
+        public void MarkAsRead(int notificationId)
+        {
+            notificationRepository.MarkAsRead(notificationId);
+        }
+
+        public void AddNotification(Notification notification)
+        {
+            notificationRepository.AddNotification(notification);
+        }
+    }
+}

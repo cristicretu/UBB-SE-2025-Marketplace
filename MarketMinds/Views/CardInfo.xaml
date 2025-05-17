@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketMinds.CardInfo"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Background" Value="#cccaca"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+
+    </Page.Resources>
+
+    <Grid Padding="20,20,20,0" RowSpacing="5" ColumnSpacing="60" Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions >
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="0" FontSize="20">Payment Details</TextBlock>
+
+        <ListView ItemsSource="{Binding ProductList}" Grid.Row="1" Grid.Column="0" Background="#cccaca" Foreground="Black">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock  FontSize="16" Foreground="Black" >
+                    <Run Text="Product name: " FontWeight="Bold"/>
+                     <Run Text="{Binding Name}"/>
+                        </TextBlock>
+                        <TextBlock  FontSize="16" Foreground="Black" >
+                    <Run Text="Price: " FontWeight="Bold"/>
+                     <Run Text="{Binding Price}"/>
+                        </TextBlock>
+                        <TextBlock  FontSize="16" Foreground="Black" >
+                      <Run Text="Seller ID: " FontWeight="Bold"/>
+                       <Run Text="{Binding SellerID}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="2" Grid.Column="0">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Subtotal: "/>
+                <TextBlock Text="{Binding Subtotal}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Delivery fee: "/>
+                <TextBlock Text="{Binding DeliveryFee}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Total: "/>
+                <TextBlock Text="{Binding Total}" />
+            </StackPanel>
+        </StackPanel>
+
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top"  Grid.Row="1" Grid.Column="1">
+            <TextBlock >Email:</TextBlock>
+            <TextBox Text="{Binding Email, Mode=TwoWay}" />
+
+            <TextBlock >Cardholder's Name:</TextBlock>
+            <TextBox Text="{Binding CardHolderName, Mode=TwoWay}" />
+
+            <TextBlock >Card Number:</TextBlock>
+            <TextBox Text="{Binding CardNumber, Mode=TwoWay}" />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                
+
+                <StackPanel Grid.Column="0" >
+                    <TextBlock>Expiry Date:</TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox Width="50" Text="{Binding CardMonth, Mode=TwoWay}"/>
+                        <TextBlock Text="/" VerticalAlignment="Center"/>
+                        <TextBox Width="50" Text="{Binding CardYear, Mode=TwoWay}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                    <TextBlock>CVC:</TextBlock>
+                    <TextBox Text="{Binding CardCVC, Mode=TwoWay}" Width="50"/>
+                </StackPanel>
+            </Grid>
+            
+            <Button Foreground="Black" Background="#cccaca" Margin="0, 30, 0, 0" HorizontalAlignment="Center" Click="OnPayButtonClickedAsync" Width="90">Pay</Button>
+
+        </StackPanel>
+    </Grid>
+</Page>

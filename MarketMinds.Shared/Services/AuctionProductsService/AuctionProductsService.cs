@@ -1,10 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Shared.Services.AuctionProductsService
@@ -464,7 +459,30 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                 }
             }
         }
-
         #endregion
+
+        // merge-nicusor
+        Task<Product> IProductService.GetProductByIdAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        {
+            // Not implemented in auction products service
+            return Task.FromResult<string>(null);
+        }
+        
+        /// <summary>
+        /// Gets a list of products that can be borrowed.
+        /// Implementation for IProductService interface.
+        /// </summary>
+        /// <returns>A list of borrowable products.</returns>
+        public async Task<List<Product>> GetBorrowableProductsAsync()
+        {
+            // Since this is AuctionProductsService, we don't have borrowable products
+            // Return an empty list when this method is called on this service
+            return new List<Product>();
+        }
     }
 }

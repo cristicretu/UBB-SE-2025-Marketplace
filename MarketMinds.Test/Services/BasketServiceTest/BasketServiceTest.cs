@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BasketService;
 using MarketMinds.Shared.IRepository;

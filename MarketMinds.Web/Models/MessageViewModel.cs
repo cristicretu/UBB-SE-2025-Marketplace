@@ -1,5 +1,3 @@
-using System;
-
 namespace MarketMinds.Web.Models
 {
     [Serializable]

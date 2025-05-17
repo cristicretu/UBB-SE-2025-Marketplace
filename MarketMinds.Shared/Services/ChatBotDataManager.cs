@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Marketplace_SE.Service
+﻿namespace Marketplace_SE.Service
 {
     public static class ChatBotDataManager
     {

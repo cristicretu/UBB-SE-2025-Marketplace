@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;

@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Runtime.Serialization;
 
 namespace MarketMinds.Shared.Models
 {
@@ -30,6 +26,9 @@ namespace MarketMinds.Shared.Models
 
         [Column("reviewer_id")]
         public int BuyerId { get; set; }
+
+        [Column("score")]
+        public int Score { get; set; }
 
         [NotMapped]
         public string SellerUsername { get; set; } = string.Empty;

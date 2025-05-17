@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MarketMinds.Shared.Models;
@@ -48,7 +47,14 @@ namespace MarketMinds.Shared.Services
                         user.Balance = reader.GetSingle();
                         break;
                     case "rating":
-                        user.Rating = reader.GetSingle();
+                        if (user.GetType().GetProperty("Rating") != null)
+                        {
+                            user.Rating = reader.GetSingle();
+                        }
+                        else
+                        {
+                            reader.Skip();
+                        }
                         break;
                     default:
                         reader.Skip();

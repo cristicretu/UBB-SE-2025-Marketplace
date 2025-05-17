@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketMinds.FinalisePurchase"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Background" Value="#cccaca"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid  Padding="20,20,20,0" RowSpacing="5" ColumnSpacing="60" Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions >
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="Thank you for your purchase!" Grid.Row="0" Grid.Column="0" FontSize="20"/>
+
+        <ListView ItemsSource="{Binding ProductList}" Grid.Row="1" Grid.Column="1" Background="#cccaca" Foreground="Black">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock  FontSize="16" Foreground="Black" >
+                    <Run Text="Product name: " FontWeight="Bold"/>
+                     <Run Text="{Binding Name}"/>
+                        </TextBlock>
+                        <TextBlock  FontSize="16" Foreground="Black" >
+                    <Run Text="Price: " FontWeight="Bold"/>
+                     <Run Text="{Binding Price}"/>
+                        </TextBlock>
+                        <TextBlock  FontSize="16" Foreground="Black" >
+                      <Run Text="Seller ID: " FontWeight="Bold"/>
+                       <Run Text="{Binding SellerID}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="2" Grid.Column="1">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Subtotal: "/>
+                <TextBlock Text="{Binding Subtotal}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Delivery fee: "/>
+                <TextBlock Text="{Binding DeliveryFee}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Total: "/>
+                <TextBlock Text="{Binding Total}" />
+            </StackPanel>
+
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Full Name: "/>
+                <TextBlock Text="{Binding FullName}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Phone Number: "/>
+                <TextBlock Text="{Binding PhoneNumber}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Email: "/>
+                <TextBlock Text="{Binding Email}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Payment Method: "/>
+                <TextBlock Text="{Binding PaymentMethod}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Order Status: "/>
+                <TextBlock Text="{Binding OrderStatus}"/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Left" Grid.Row="3">
+            <Button x:Name="continueShoppingButton"  VerticalAlignment="Bottom" Foreground="Black" Background="#cccaca" Click="OnContinueShopping_Clicked">Continue Shopping</Button>
+        </StackPanel>
+
+    </Grid>
+</Page>

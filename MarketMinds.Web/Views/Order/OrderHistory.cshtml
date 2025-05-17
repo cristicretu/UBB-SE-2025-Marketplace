@@ -1,0 +1,278 @@
+@model IEnumerable<MarketMinds.Shared.Models.OrderDisplayInfo>
+@{
+    ViewData["Title"] = "Order History";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Order History</h2>
+
+    <!-- Filter Controls -->
+    <div class="mb-6 flex flex-wrap gap-4 items-center">
+        <div class="flex-1">
+            <input type="text" id="searchInput" 
+                   class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                   placeholder="Search products...">
+        </div>
+        <div class="w-48">
+            <select id="timePeriodSelect" 
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                <option value="Last 3 Months">Last 3 Months</option>
+                <option value="Last 6 Months">Last 6 Months</option>
+                <option value="This Year">This Year</option>
+                <option value="all">All Orders</option>
+            </select>
+        </div>
+        <button onclick="refreshOrders()" 
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Refresh
+        </button>
+    </div>
+
+    <div id="noResultsMessage" class="hidden text-center text-gray-500 text-lg py-8">
+        No orders found matching your criteria
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul id="ordersList" class="divide-y divide-gray-200">
+            @foreach (var order in Model)
+            {
+                <li class="px-6 py-4 hover:bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">
+                                Order #@order.OrderSummaryID
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                Product: @order.ProductName
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                Category: @order.ProductCategory
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                Date: @order.OrderDate
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                Payment: @order.PaymentMethod
+                            </p>
+                        </div>
+                        <div class="ml-4 flex-shrink-0">
+                            <button onclick="showOrderDetails(@order.OrderSummaryID)" 
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div id="orderDetailsModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">Order Details</h3>
+                    <button onclick="closeOrderDetailsModal()" class="text-gray-400 hover:text-gray-500">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-4" id="orderDetailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let searchTimeout;
+        const searchInput = document.getElementById('searchInput');
+        const timePeriodSelect = document.getElementById('timePeriodSelect');
+        const ordersList = document.getElementById('ordersList');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                loadOrders();
+            }, 300);
+        });
+
+        timePeriodSelect.addEventListener('change', loadOrders);
+
+        function loadOrders() {
+            const searchText = searchInput.value;
+            const timePeriod = timePeriodSelect.value;
+
+            fetch(`/Order/GetFilteredOrders?searchText=${encodeURIComponent(searchText)}&timePeriod=${timePeriod}`)
+                .then(response => response.json())
+                .then(data => {
+                    ordersList.innerHTML = '';
+                    
+                    if (!data.success) {
+                        console.error('Error:', data.message);
+                        noResultsMessage.textContent = data.message;
+                        noResultsMessage.classList.remove('hidden');
+                        return;
+                    }
+
+                    if (data.orders.length === 0) {
+                        noResultsMessage.textContent = 'No orders found matching your criteria';
+                        noResultsMessage.classList.remove('hidden');
+                        return;
+                    }
+
+                    noResultsMessage.classList.add('hidden');
+                    data.orders.forEach(order => {
+                        const orderElement = createOrderElement(order);
+                        ordersList.appendChild(orderElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading orders:', error);
+                    noResultsMessage.textContent = 'Error loading orders. Please try again.';
+                    noResultsMessage.classList.remove('hidden');
+                });
+        }
+
+        function createOrderElement(order) {
+            const li = document.createElement('li');
+            li.className = 'px-6 py-4 hover:bg-gray-50';
+            li.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">
+                            Order #${order.orderSummaryID}
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            Product: ${order.productName}
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            Category: ${order.productCategory}
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            Date: ${order.orderDate}
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            Payment: ${order.paymentMethod}
+                        </p>
+                    </div>
+                    <div class="ml-4 flex-shrink-0">
+                        <button onclick="showOrderDetails(${order.orderSummaryID})" 
+                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `;
+            return li;
+        }
+
+        function refreshOrders() {
+            loadOrders();
+        }
+
+        function showOrderDetails(orderId) {
+            // Show loading state
+            document.getElementById('orderDetailsContent').innerHTML = '<div class="flex justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>';
+            document.getElementById('orderDetailsModal').classList.remove('hidden');
+
+            $.ajax({
+                url: '@Url.Action("GetOrderDetails", "Order")',
+                type: 'GET',
+                data: { orderId: orderId },
+                success: function(response) {
+                    if (response.success) {
+                        const summary = response.summary;
+                        let content = `
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Order Summary ID</p>
+                                        <p class="mt-1 text-sm text-gray-900">${summary.id}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Subtotal</p>
+                                        <p class="mt-1 text-sm text-gray-900">$${summary.subtotal.toFixed(2)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Warranty Tax</p>
+                                        <p class="mt-1 text-sm text-gray-900">$${summary.warrantyTax.toFixed(2)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Delivery Fee</p>
+                                        <p class="mt-1 text-sm text-gray-900">$${summary.deliveryFee.toFixed(2)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Final Total</p>
+                                        <p class="mt-1 text-sm text-gray-900">$${summary.finalTotal.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                                <div class="border-t border-gray-200 pt-4">
+                                    <h4 class="text-lg font-medium text-gray-900 mb-4">Customer Info</h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Full Name</p>
+                                            <p class="mt-1 text-sm text-gray-900">${summary.fullName || ''}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Email</p>
+                                            <p class="mt-1 text-sm text-gray-900">${summary.email || ''}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Phone Number</p>
+                                            <p class="mt-1 text-sm text-gray-900">${summary.phoneNumber || ''}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Address</p>
+                                            <p class="mt-1 text-sm text-gray-900">${summary.address || ''}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Postal Code</p>
+                                            <p class="mt-1 text-sm text-gray-900">${summary.postalCode || ''}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="border-t border-gray-200 pt-4">
+                                    <h4 class="text-lg font-medium text-gray-900 mb-4">Additional Info</h4>
+                                    <div>
+                                        <p class="text-sm text-gray-900">${summary.additionalInfo || ''}</p>
+                                    </div>
+                                </div>
+                                <div class="border-t border-gray-200 pt-4">
+                                    <h4 class="text-lg font-medium text-gray-900 mb-4">Contract Details</h4>
+                                    <div>
+                                        <p class="text-sm text-gray-900">${summary.contractDetails || ''}</p>
+                                    </div>
+                                </div>
+                            </div>`;
+                        document.getElementById('orderDetailsContent').innerHTML = content;
+                    } else {
+                        document.getElementById('orderDetailsContent').innerHTML = '<div class="text-red-600">Error: ' + response.message + '</div>';
+                    }
+                },
+                error: function(xhr, status, error) {
+                    document.getElementById('orderDetailsContent').innerHTML = '<div class="text-red-600">Error loading order details: ' + error + '</div>';
+                }
+            });
+        }
+
+        function closeOrderDetailsModal() {
+            document.getElementById('orderDetailsModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('orderDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeOrderDetailsModal();
+            }
+        });
+    </script>
+} 

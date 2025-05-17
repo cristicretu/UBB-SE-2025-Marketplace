@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionProductsService;
-using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Test.Services.Mocks
 {

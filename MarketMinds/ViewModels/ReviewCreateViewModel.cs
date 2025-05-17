@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Diagnostics;
-using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ReviewService;
-using Microsoft.UI.Xaml;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.ReviewCreationService;
 

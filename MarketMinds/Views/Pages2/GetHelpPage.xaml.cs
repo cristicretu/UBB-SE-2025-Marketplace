@@ -1,11 +1,5 @@
-using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using MarketMinds.Shared.Services.ConversationService;
-using MarketMinds.Shared.Services.MessageService;
-using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
-using MarketMinds.Views;
-using Marketplace_SE;
 
 namespace MarketMinds.Views.Pages2
 {

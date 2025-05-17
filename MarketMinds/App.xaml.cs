@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Dispatching;
 using BusinessLogicLayer.ViewModel;
 using DataAccessLayer;
-using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Services.AuctionProductsService;
@@ -19,18 +15,14 @@ using MarketMinds.Shared.Services.ProductCategoryService;
 using MarketMinds.Shared.Services.ProductConditionService;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.Services.ProductTagService;
-using MarketMinds.Shared.Services;
 using MarketMinds.ViewModels;
 using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.UserService;
-using Microsoft.Extensions.Logging.Abstractions;
 using Marketplace_SE.Services.DreamTeam;
 using MarketMinds.Shared.Services.ConversationService;
 using MarketMinds.Shared.Services.MessageService;
-using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
 using MarketMinds.Shared.IRepository;
-using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 
 namespace MarketMinds
@@ -127,6 +119,7 @@ namespace MarketMinds
 
                 // Initialize HttpClient
                 httpClient = new HttpClient();
+                Debug.WriteLine(AppContext.BaseDirectory);
                 string baseAddress = Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/";
                 httpClient.BaseAddress = new Uri(baseAddress);
                 Debug.WriteLine($"Initialized HTTP client with base address: {baseAddress}");
