@@ -53,7 +53,7 @@ namespace MarketMinds.Views
         /// <param name="e">The event data.</param>
         private void RegisterButtonTextBlock_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            ISignUpViewModel signUpViewModel = new SignUpViewModel(new UserService(AppConfig.Configuration));
+            ISignUpViewModel signUpViewModel = new SignUpViewModel(App.UserService);
             signUpViewModel.NavigateToLogin = () =>
             {
                 this.Frame.Navigate(typeof(LoginView), this.ViewModel);
