@@ -70,7 +70,16 @@ namespace MarketMinds.Shared.Services.UserService
             var hashedPassword = this.HashPassword(password);
 
             var userRole = (UserRole)role;
-            var newUser = new User(username, email, phoneNumber, role, DateTime.MinValue, false, 0, hashedPassword);
+            var newUser = new User(
+                username: username,
+                email: email,
+                phoneNumber: phoneNumber,
+                userType: role,
+                balance: 0,
+                bannedUntil: DateTime.MinValue,
+                isBanned: false,
+                failedLogins: 0,
+                passwordHash: hashedPassword);
 
             await this.repository.AddUser(newUser);
 
@@ -424,7 +433,7 @@ namespace MarketMinds.Shared.Services.UserService
                 return null;
             }
 
-            return new User
+            var user = new User
             {
                 Id = sharedUser.Id,
                 Username = sharedUser.Username,
@@ -433,8 +442,14 @@ namespace MarketMinds.Shared.Services.UserService
                 Password = sharedUser.Password,
                 UserType = sharedUser.UserType,
                 Balance = sharedUser.Balance,
-                Rating = sharedUser.Rating
             };
+
+            if (sharedUser.GetType().GetProperty("Rating") != null)
+            {
+                user.Rating = sharedUser.Rating;
+            }
+
+            return user;
         }
 
         private MarketMinds.Shared.Models.User ConvertToSharedUser(User domainUser)
@@ -443,7 +458,7 @@ namespace MarketMinds.Shared.Services.UserService
             {
                 return null;
             }
-            return new MarketMinds.Shared.Models.User
+            var user = new MarketMinds.Shared.Models.User
             {
                 Id = domainUser.Id,
                 Username = domainUser.Username,
@@ -452,8 +467,14 @@ namespace MarketMinds.Shared.Services.UserService
                 Password = domainUser.Password,
                 UserType = domainUser.UserType,
                 Balance = domainUser.Balance,
-                Rating = domainUser.Rating
             };
+
+            if (domainUser.GetType().GetProperty("Rating") != null)
+            {
+                user.Rating = domainUser.Rating;
+            }
+
+            return user;
         }
 
         private class UsernameCheckResult

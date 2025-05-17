@@ -26,7 +26,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             jsonOptions.Converters.Add(new UserJsonConverter());
         }
 
-        public List<Product> GetProducts()
+        public List<BuyProduct> GetProducts()
         {
             try
             {
@@ -35,7 +35,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 
                 var products = JsonSerializer.Deserialize<List<BuyProduct>>(json, jsonOptions);
-                return products?.Cast<Product>().ToList() ?? new List<Product>();
+                return products ?? new List<BuyProduct>();
             }
             catch (Exception ex)
             {
@@ -44,7 +44,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 {
                     Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
                 }
-                return new List<Product>();
+                return new List<BuyProduct>();
             }
         }
 
@@ -161,9 +161,9 @@ namespace MarketMinds.Shared.Services.BuyProductsService
 
         public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
         {
-            List<Product> products = GetProducts();
+            List<BuyProduct> buyProducts = GetProducts();
             List<Product> productResultSet = new List<Product>();
-            foreach (Product product in products)
+            foreach (BuyProduct product in buyProducts)
             {
                 bool matchesConditions = selectedConditions == null || selectedConditions.Count == NOCOUNT || selectedConditions.Any(c => c.Id == product.Condition.Id);
                 bool matchesCategories = selectedCategories == null || selectedCategories.Count == NOCOUNT || selectedCategories.Any(c => c.Id == product.Category.Id);
@@ -207,9 +207,17 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             throw new NotImplementedException("UpdateProductAsync is not implemented.");
         }
 
-        public Task<Product> GetProductByIdAsync(int productId)
+        public async Task<BuyProduct> GetProductByIdAsync(int productId)
         {
-            throw new NotImplementedException("GetProductByIdAsync is not implemented.");
+            try
+            {
+                return GetProductById(productId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting product by ID {productId}: {ex.Message}");
+                return null;
+            }
         }
 
         public Task<string> GetSellerNameAsync(int sellerId)
@@ -217,9 +225,23 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             throw new NotImplementedException("GetSellerNameAsync is not implemented.");
         }
 
+        // Explicit implementation for IProductService interface
+        async Task<Product> IProductService.GetProductByIdAsync(int productId)
+        {
+            // Call the other implementation and return the result
+            // This works because BuyProduct inherits from Product
+            return await GetProductByIdAsync(productId);
+        }
+        
+        // Explicit implementation for IProductService's GetSellerNameAsync
         Task<string> IProductService.GetSellerNameAsync(int? sellerId)
         {
-            throw new NotImplementedException();
+            // Call the non-nullable version if sellerId has a value
+            if (sellerId.HasValue)
+            {
+                return GetSellerNameAsync(sellerId.Value);
+            }
+            return Task.FromResult<string>(null);
         }
     }
 }
