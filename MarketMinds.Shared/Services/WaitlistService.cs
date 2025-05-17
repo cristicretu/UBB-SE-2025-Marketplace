@@ -5,6 +5,8 @@ namespace MarketMinds.Shared.Services
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
+    using MarketMinds.Shared.Helper;
+    using MarketMinds.Shared.ProxyRepository;
 
     /// <summary>
     /// Service for managing product waitlists
@@ -17,9 +19,9 @@ namespace MarketMinds.Shared.Services
         /// Initializes a new instance of the <see cref="WaitlistService"/> class.
         /// </summary>
         /// <param name="waitListRepository">The waitlist repository.</param>
-        public WaitlistService(IWaitListRepository waitListRepository)
+        public WaitlistService()
         {
-            _waitListRepository = waitListRepository ?? throw new ArgumentNullException(nameof(waitListRepository));
+            _waitListRepository = new WaitListProxyRepository(AppConfig.GetBaseApiUrl());
         }
 
         /// <summary>

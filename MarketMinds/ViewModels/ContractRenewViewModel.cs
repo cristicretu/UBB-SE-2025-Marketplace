@@ -10,6 +10,8 @@
     using MarketMinds.Shared.ProxyRepository;
     using MarketMinds.Shared.Services;
     using MarketMinds.Shared.Helper;
+    using QuestPDF.Fluent;
+    using QuestPDF.Helpers;
 
     public class ContractRenewViewModel : IContractRenewViewModel
     {

@@ -19,10 +19,10 @@ namespace MarketMinds.ViewModels
         /// Initializes a new instance of the WaitListViewModel class with the specified services.
         /// This constructor is typically used in production scenarios with dependency injection.
         /// </remarks>
-        public WaitListViewModel(IWaitlistService waitlistService, IProductService productService)
+        public WaitListViewModel()
         {
-            this.waitlistService = waitlistService;
-            this.productService = productService;
+            this.waitlistService = new WaitlistService();
+            this.productService = new ProductService();
         }
 
         /// <summary>
