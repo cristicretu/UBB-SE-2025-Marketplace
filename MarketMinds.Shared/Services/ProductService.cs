@@ -6,6 +6,7 @@ using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Helper;
 using System.Text.Json;
+using System.Linq;
 
 namespace MarketMinds.Shared.Services
 {
@@ -64,16 +65,13 @@ namespace MarketMinds.Shared.Services
         }
 
         /// <inheritdoc/>
-        public async Task<List<BorrowProduct>> GetBorrowableProductsAsync()
+        public async Task<List<Product>> GetBorrowableProductsAsync()
         {
             // Use the repository to fetch borrowable products from the database
-            return await _productRepository.GetBorrowableProductsAsync();
-        }
-
-        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
-        {
-            // TODO: Implement proper filtering and sorting logic
-            return new List<Product>();
+            var borrowProducts = await _productRepository.GetBorrowableProductsAsync();
+            
+            // Convert to List<Product> - BorrowProduct should inherit from Product
+            return borrowProducts.Cast<Product>().ToList();
         }
     }
 }

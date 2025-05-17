@@ -207,11 +207,13 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             throw new NotImplementedException("UpdateProductAsync is not implemented.");
         }
 
-        public async Task<BuyProduct> GetProductByIdAsync(int productId)
+        public async Task<Product> GetProductByIdAsync(int productId)
         {
             try
             {
-                return GetProductById(productId);
+                // Convert BuyProduct to Product when returning
+                BuyProduct buyProduct = GetProductById(productId);
+                return buyProduct; // BuyProduct should inherit from Product, so this should work
             }
             catch (Exception ex)
             {

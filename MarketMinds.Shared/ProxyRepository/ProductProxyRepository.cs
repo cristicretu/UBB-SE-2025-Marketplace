@@ -110,6 +110,100 @@ namespace MarketMinds.Shared.ProxyRepository
             await this.ThrowOnError(nameof(UpdateProductAsync), response);
         }
 
+        /// <inheritdoc />
+        public List<Product> GetProducts()
+        {
+            // Synchronous implementation of GetProducts
+            // This could be implemented to call the async version and wait for it
+            try
+            {
+                var response = httpClient.GetAsync($"{ApiBaseRoute}").Result;
+                ThrowOnError(nameof(GetProducts), response).Wait();
+                var products = response.Content.ReadFromJsonAsync<List<Product>>().Result;
+                return products ?? new List<Product>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetProducts: {ex.Message}");
+                return new List<Product>();
+            }
+        }
+
+        /// <inheritdoc />
+        public Product GetProductByID(int id)
+        {
+            // Synchronous implementation to get a product by ID
+            try
+            {
+                var response = httpClient.GetAsync($"{ApiBaseRoute}/{id}").Result;
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+                ThrowOnError(nameof(GetProductByID), response).Wait();
+                var product = response.Content.ReadFromJsonAsync<Product>().Result;
+                return product;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetProductByID: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <inheritdoc />
+        public void AddProduct(Product product)
+        {
+            // Synchronous implementation to add a product
+            try
+            {
+                var response = httpClient.PostAsJsonAsync($"{ApiBaseRoute}", product).Result;
+                ThrowOnError(nameof(AddProduct), response).Wait();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddProduct: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public void UpdateProduct(Product product)
+        {
+            // Synchronous implementation to update a product
+            try
+            {
+                var response = httpClient.PutAsJsonAsync($"{ApiBaseRoute}/{product.Id}", product).Result;
+                ThrowOnError(nameof(UpdateProduct), response).Wait();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in UpdateProduct: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public void DeleteProduct(Product product)
+        {
+            // Synchronous implementation to delete a product
+            if (product == null || product.Id <= 0)
+            {
+                throw new ArgumentException("Invalid product for deletion", nameof(product));
+            }
+
+            try
+            {
+                var response = httpClient.DeleteAsync($"{ApiBaseRoute}/{product.Id}").Result;
+                ThrowOnError(nameof(DeleteProduct), response).Wait();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in DeleteProduct: {ex.Message}");
+                throw;
+            }
+        }
+
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)

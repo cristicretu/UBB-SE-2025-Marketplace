@@ -180,7 +180,9 @@ namespace WebMarketplace.Models
             {
                 try
                 {
-                    _allProducts = (await _sellerService.GetAllProducts(Seller.Id)).ToList();
+                    // Convert BuyProduct list to Product list since BuyProduct inherits from Product
+                    var buyProducts = await _sellerService.GetAllProducts(Seller.Id);
+                    _allProducts = buyProducts.Cast<Product>().ToList();
                     FilterProducts(SearchText);
                 }
                 catch (Exception ex)

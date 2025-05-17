@@ -40,16 +40,6 @@ namespace MarketMinds.Shared.Models
         [Column("isBanned")]
         public bool IsBanned { get; set; }
 
-
-        [Column("failedLogIns")]
-        public int FailedLogIns { get; set; }
-
-        [Column("bannedUntil")]
-        public DateTime? BannedUntil { get; set; }
-
-        [Column("isBanned")]
-        public bool IsBanned { get; set; }
-
         [NotMapped]
         public string Token { get; set; } = string.Empty;
 
