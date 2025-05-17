@@ -380,7 +380,7 @@ namespace Server.Controllers
         {
             try
             {
-                var user = new User { UserId = buyerId };
+                var user = new User { Id = buyerId };
                 var buyer = new Buyer { User = user };
                 await this.buyerRepository.LoadBuyerInfo(buyer);
 

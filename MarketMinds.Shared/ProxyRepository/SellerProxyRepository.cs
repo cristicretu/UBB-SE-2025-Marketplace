@@ -76,12 +76,12 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
-        public async Task<List<Product>> GetProducts(int sellerId)
+        public async Task<List<BuyProduct>> GetProducts(int sellerId)
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{sellerId}/products");
             await this.ThrowOnError(nameof(GetProducts), response);
-            var products = await response.Content.ReadFromJsonAsync<List<Product>>();
-            return products ?? new List<Product>();
+            var products = await response.Content.ReadFromJsonAsync<List<BuyProduct>>();
+            return products ?? new List<BuyProduct>();
         }
 
         /// <inheritdoc />

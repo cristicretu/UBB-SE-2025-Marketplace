@@ -34,15 +34,14 @@ namespace MarketMinds.Repositories.ChatbotRepository
 
         public async Task<Basket> GetUserBasketAsync(int userId)
         {
-            return await databaseContext.Baskets
-                .FirstOrDefaultAsync(basket => basket.BuyerId == userId);
+            // Baskets table is commented out in ApplicationDbContext
+            return null;
         }
 
         public async Task<List<BasketItem>> GetBasketItemsAsync(int basketId)
         {
-            return await databaseContext.BasketItems
-                .Where(item => item.BasketId == basketId)
-                .ToListAsync();
+            // BasketItems table is commented out in ApplicationDbContext
+            return new List<BasketItem>();
         }
 
         public async Task<BuyProduct> GetBuyProductAsync(int productId)

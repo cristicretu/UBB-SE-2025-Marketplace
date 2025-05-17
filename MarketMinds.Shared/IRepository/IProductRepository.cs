@@ -29,6 +29,6 @@ namespace MarketMinds.Shared.IRepository
         /// Gets all borrowable products from the waitlist
         /// </summary>
         /// <returns>A list of products that are available for borrowing</returns>
-        Task<List<Product>> GetBorrowableProductsAsync();
+        Task<List<BorrowProduct>> GetBorrowableProductsAsync();
     }
 } 

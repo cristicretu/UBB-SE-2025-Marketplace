@@ -133,7 +133,7 @@ namespace Server.Repository
         //    List<Product> products = new List<Product>();
         //    foreach (BuyerCartItemEntity buyerCartItem in buyerCartItems)
         //    {
-        //        Product product = await this.dbContext.Products.FindAsync(buyerCartItem.ProductId)
+        //        Product product = await this.dbContext.BuyProducts.FindAsync(buyerCartItem.ProductId)
         //            ?? throw new Exception($"GetCartItemsAsync: Product not found for the product id: {buyerCartItem.ProductId}");
         //        products.Add(product);
         //    }

@@ -2,7 +2,6 @@ using System.Text.Json.Serialization;
 using DataAccessLayer;
 using MarketMinds.Repositories.AuctionProductsRepository;
 using MarketMinds.Repositories.BuyProductsRepository;
-using MarketMinds.Repositories.BasketRepository;
 using MarketMinds.Repositories.ReviewRepository;
 using MarketMinds.Repositories.ProductCategoryRepository;
 using MarketMinds.Repositories.ProductConditionRepository;
@@ -13,7 +12,6 @@ using MarketMinds.Repositories.ChatbotRepository;
 using MarketMinds.Shared.IRepository;
 using Microsoft.EntityFrameworkCore;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
-using Server.MarketMinds.Repositories.AccountRepository;
 using Server.MarketMinds.Repositories.UserRepository;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,13 +44,11 @@ builder.Services.AddDbContext<Server.DataAccessLayer.ApplicationDbContext>(optio
 // Register all repositories
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
 builder.Services.AddScoped<IBuyProductsRepository, BuyProductsRepository>();
-builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<MarketMinds.Shared.IRepository.IProductCategoryRepository, ProductCategoryRepository>();
 builder.Services.AddScoped<MarketMinds.Shared.IRepository.IProductConditionRepository, ProductConditionRepository>();
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IChatbotRepository, ChatbotRepository>();

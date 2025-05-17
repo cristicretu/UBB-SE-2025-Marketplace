@@ -33,15 +33,6 @@ namespace MarketMinds.Shared.Services
         }
 
         /// <inheritdoc/>
-        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, 
-            List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
-        {
-            // Implementation would depend on repository methods
-            // This is a placeholder until the repository has this method
-            return new List<Product>();
-        }
-
-        /// <inheritdoc/>
         public async Task<Product> GetProductByIdAsync(int productId)
         {
             return await _productRepository.GetProductByIdAsync(productId);
@@ -50,7 +41,21 @@ namespace MarketMinds.Shared.Services
         /// <inheritdoc/>
         public async Task<string> GetSellerNameAsync(int? sellerId)
         {
+            // Use the repository to fetch the seller name from the database
             return await _productRepository.GetSellerNameAsync(sellerId);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<BorrowProduct>> GetBorrowableProductsAsync()
+        {
+            // Use the repository to fetch borrowable products from the database
+            return await _productRepository.GetBorrowableProductsAsync();
+        }
+
+        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
+        {
+            // TODO: Implement proper filtering and sorting logic
+            return new List<Product>();
         }
     }
 }
