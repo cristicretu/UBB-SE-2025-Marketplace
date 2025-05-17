@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using Azure;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Models.DTOs;
@@ -59,7 +60,6 @@ namespace MarketMinds.Shared.ProxyRepository
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
-
 
 
 

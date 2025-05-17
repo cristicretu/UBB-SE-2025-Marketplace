@@ -62,7 +62,12 @@ namespace WebMarketplace.Models
             _orderService = new OrderService();
             _orderSummaryService = new OrderSummaryService();
             _dummyWalletService = new DummyWalletService();
-            var productRepository = new MarketMinds.Shared.ProxyRepository.ProductProxyRepository(MarketMinds.Shared.Helper.AppConfig.GetBaseApiUrl());
+            // get the IConfiguration
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+            var productRepository = new MarketMinds.Shared.ProxyRepository.BuyProductsProxyRepository(configuration);
             _productService = new ProductService(productRepository);
             _shoppingCartService = new ShoppingCartService();
             ProductList = _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1).Result;

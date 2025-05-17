@@ -219,24 +219,11 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 return null;
             }
         }
-
-        public Task<string> GetSellerNameAsync(int sellerId)
-        {
-            throw new NotImplementedException("GetSellerNameAsync is not implemented.");
-        }
-
-        // Explicit implementation for IProductService interface
-        async Task<Product> IProductService.GetProductByIdAsync(int productId)
-        {
-            // Call the other implementation and return the result
-            // This works because BuyProduct inherits from Product
-            return await GetProductByIdAsync(productId);
-        }
         
         // Explicit implementation for IProductService's GetSellerNameAsync
-        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        public Task<string> GetSellerNameAsync(int sellerId)
         {
-            return GetSellerNameAsync(sellerId ?? 0);
+            return this.buyProductsRepository.GetSellerNameAsync(sellerId);
         }
         
         /// <summary>

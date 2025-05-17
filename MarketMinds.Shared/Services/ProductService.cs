@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.ProxyRepository;
+using System.Text.Json;
 
 namespace MarketMinds.Shared.Services
 {
@@ -11,13 +13,13 @@ namespace MarketMinds.Shared.Services
     /// </summary>
     public class ProductService : IProductService
     {
-        private readonly IProductRepository _productRepository;
+        private readonly BuyProductsProxyRepository _productRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProductService"/> class.
         /// </summary>
         /// <param name="productRepository">The product repository.</param>
-        public ProductService(IProductRepository productRepository)
+        public ProductService(BuyProductsProxyRepository productRepository)
         {
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
         }
@@ -34,7 +36,23 @@ namespace MarketMinds.Shared.Services
         /// <inheritdoc/>
         public async Task<Product> GetProductByIdAsync(int productId)
         {
-            return await _productRepository.GetProductByIdAsync(productId);
+            // Get the raw JSON string
+            var productJson = _productRepository.GetProductById(productId);
+
+            if (string.IsNullOrWhiteSpace(productJson))
+            {
+                throw new KeyNotFoundException($"Product with ID {productId} was not found.");
+            }
+
+            // Deserialize to Product object
+            var product = JsonSerializer.Deserialize<Product>(productJson);
+
+            if (product == null)
+            {
+                throw new KeyNotFoundException($"Product with ID {productId} was not found or could not be parsed.");
+            }
+
+            return product;
         }
 
         /// <inheritdoc/>

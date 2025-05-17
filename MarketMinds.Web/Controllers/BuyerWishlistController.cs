@@ -166,7 +166,7 @@ namespace WebMarketplace.Controllers
                             try
                             {
                                 debugInfo.AppendLine($"Getting product for wishlist item: ProductId={wishlistItem.ProductId}");
-                        var product = await _productService.GetProductByIdAsync(wishlistItem.ProductId);
+                        var product = _productService.GetProductById(wishlistItem.ProductId);
 
                         if (product != null)
                         {

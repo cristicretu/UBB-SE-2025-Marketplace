@@ -70,7 +70,6 @@ builder.Services.AddTransient<IBorrowProductsService, MarketMinds.Shared.Service
 // Use the same instance for both interfaces
 builder.Services.AddTransient<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
 builder.Services.AddTransient<IBuyProductsService>(sp => sp.GetRequiredService<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>());
-builder.Services.AddTransient<IProductService>(sp => sp.GetRequiredService<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>());
 
 builder.Services.AddTransient<IProductCategoryService, ProductCategoryService>();
 builder.Services.AddTransient<IProductConditionService, ProductConditionService>();
