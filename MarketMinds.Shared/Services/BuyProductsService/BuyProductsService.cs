@@ -7,7 +7,7 @@ using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Shared.Services.BuyProductsService
 {
-    public class BuyProductsService : IBuyProductsService, IProductService
+    public class BuyProductsService : IBuyProductsService
     {
         private readonly BuyProductsProxyRepository buyProductsRepository;
         private readonly JsonSerializerOptions jsonOptions;
@@ -207,19 +207,9 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             throw new NotImplementedException("UpdateProductAsync is not implemented.");
         }
 
-        public Task<Product> GetProductByIdAsync(int productId)
-        {
-            throw new NotImplementedException("GetProductByIdAsync is not implemented.");
-        }
-
         public Task<string> GetSellerNameAsync(int sellerId)
         {
             throw new NotImplementedException("GetSellerNameAsync is not implemented.");
-        }
-
-        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
-        {
-            throw new NotImplementedException();
         }
     }
 }
