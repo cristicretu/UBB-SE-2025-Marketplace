@@ -51,17 +51,18 @@ namespace Server.DataAccessLayer
         public DbSet<OrderHistory> OrderHistory { get; set; }
         public DbSet<OrderCheckpoint> OrderCheckpoints { get; set; }
         public DbSet<TrackedOrder> TrackedOrders { get; set; }
-        public DbSet<UserWaitList> UserWaitLists { get; set; }
+        public DbSet<UserWaitList> UserWaitList { get; set; }
         public DbSet<DummyCardEntity> DummyCards { get; set; } // TODO change to Cards
         public DbSet<DummyWalletEntity> DummyWallets { get; set; } // TODO change to Wallets
         public DbSet<BuyerCartItemEntity> BuyerCartItems { get; set; }
+        public DbSet<BuyerWishlistItemsEntity> BuyersWishlistItems { get; set; }
         public DbSet<PDF> PDFs { get; set; }
         public DbSet<PredefinedContract> PredefinedContracts { get; set; }
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<SellerNotificationEntity> SellerNotifications { get; set; }
         public DbSet<FollowingEntity> Followings { get; set; }
         public DbSet<OrderNotificationEntity> OrderNotifications { get; set; }
-        public DbSet<Address> Addresses { get; set; } // buyer's address
+        public DbSet<Address> Addresses { get; set; }
         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -271,16 +272,16 @@ namespace Server.DataAccessLayer
             // --- Order Configuration --- merge-nicusor
             modelBuilder.Entity<Order>(entity =>
             {
-                entity.HasKey(o => o.OrderID);
+                entity.HasKey(o => o.Id);
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasForeignKey(o => o.Id)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne<Buyer>()
                     .WithMany()
-                    .HasForeignKey(o => o.BuyerID)
+                    .HasPrincipalKey(b => b.Id)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne<OrderSummary>()
@@ -294,6 +295,8 @@ namespace Server.DataAccessLayer
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.ToTable(t => t.HasCheckConstraint("PaymentMethodConstraint", "[PaymentMethod] IN ('card', 'wallet', 'cash')"));
+                
+                entity.Property(o => o.BuyerId).HasColumnName("BuyerID");
             });
 
             // --- Order Summary Configuration --- merge-nicusor
@@ -323,10 +326,10 @@ namespace Server.DataAccessLayer
             modelBuilder.Entity<Message>().HasKey(message => message.Id);
 
             modelBuilder.Entity<Message>()
-                .HasOne(message => message.User)
-                .WithMany()
-                .HasForeignKey(message => message.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(message => message.User)
+                .WithMany()
+                .HasForeignKey(message => message.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // --- PDF Configuration --- merge-nicusor
             modelBuilder.Entity<PDF>(entity =>
@@ -422,7 +425,8 @@ namespace Server.DataAccessLayer
 
                 entity.HasOne<BorrowProduct>()
                     .WithMany()
-                    .HasForeignKey(borrowProduct => borrowProduct.Id)
+                    .HasForeignKey(uw => uw.ProductWaitListID)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired(); // to respect Maria's DB design
 
@@ -497,12 +501,13 @@ namespace Server.DataAccessLayer
                 entity.HasOne<Buyer>()
                     .WithMany()
                     .HasForeignKey(bci => bci.BuyerId)
+                    .HasPrincipalKey(b => b.Id)
                     .OnDelete(DeleteBehavior.Restrict) // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
                     .IsRequired();
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasForeignKey(bci => bci.Id)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict) // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
                     .IsRequired();
             });
@@ -515,11 +520,12 @@ namespace Server.DataAccessLayer
                 entity.HasOne<Buyer>()
                     .WithMany()
                     .HasForeignKey(bwi => bwi.BuyerId)
+                    .HasPrincipalKey(b => b.Id)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasForeignKey(bwi => bwi.Id)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -593,7 +599,8 @@ namespace Server.DataAccessLayer
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasForeignKey(on => on.Id)
+                    .HasForeignKey(on => on.ProductID)
+                    .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired(false); // to respect Maria's DB design
 

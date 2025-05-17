@@ -41,20 +41,17 @@ namespace Server.Repository
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task AddProductAsync(string name, double price, int sellerId, string productType, DateTime startDate, DateTime endDate)
         {
-            Product product = new Product
+            BuyProduct product = new BuyProduct
             {
-                ProductId = 0,
-                Name = name,
+                Id = 0,
+                Title = name,
                 Description = string.Empty,
-                Price = price,
+                Price = (int)price,
                 SellerId = sellerId,
-                Stock = 0,
-                ProductType = productType,
-                StartDate = startDate,
-                EndDate = endDate,
+                Stock = 0
             };
 
-            await this.dbContext.Products.AddAsync(product);
+            await this.dbContext.BuyProducts.AddAsync(product);
             await this.dbContext.SaveChangesAsync();
         }
 
@@ -72,15 +69,12 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the product is not found.</exception>
         public async Task UpdateProductAsync(int id, string name, double price, int sellerId, string productType, DateTime startDate, DateTime endDate)
         {
-            Product? productToUpdate = await this.dbContext.Products.FindAsync(id)
+            BuyProduct? productToUpdate = await this.dbContext.BuyProducts.FindAsync(id)
                     ?? throw new Exception($"UpdateProductAsync:Product not found for the product id: {id}");
 
-            productToUpdate.Name = name;
-            productToUpdate.Price = price;
+            productToUpdate.Title = name;
+            productToUpdate.Price = (int)price;
             productToUpdate.SellerId = sellerId;
-            productToUpdate.ProductType = productType;
-            productToUpdate.StartDate = startDate;
-            productToUpdate.EndDate = endDate;
 
             await this.dbContext.SaveChangesAsync();
         }
@@ -93,10 +87,10 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the product is not found.</exception>
         public async Task DeleteProduct(int id)
         {
-            Product? productToDelete = await this.dbContext.Products.FindAsync(id)
+            BuyProduct? productToDelete = await this.dbContext.BuyProducts.FindAsync(id)
                     ?? throw new Exception($"DeleteProduct: Product not found for the product id: {id}");
 
-            this.dbContext.Products.Remove(productToDelete);
+            this.dbContext.BuyProducts.Remove(productToDelete);
             await this.dbContext.SaveChangesAsync();
         }
 
@@ -127,7 +121,7 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the product is not found.</exception>
         public async Task<Product> GetProductByIdAsync(int productId)
         {
-            Product? product = await this.dbContext.Products.FindAsync(productId)
+            Product? product = await this.dbContext.BuyProducts.FindAsync(productId)
                     ?? throw new Exception($"GetProductByIdAsync: Product not found for the product id: {productId}");
 
             return product;
@@ -137,11 +131,10 @@ namespace Server.Repository
         /// Gets all borrowable products from the waitlist
         /// </summary>
         /// <returns>A list of products that are available for borrowing</returns>
-        public async Task<List<Product>> GetBorrowableProductsAsync()
+        public async Task<List<BorrowProduct>> GetBorrowableProductsAsync()
         {
             // Get the products with these IDs
-            var products = await this.dbContext.Products
-                .Where(p => (p.ProductType.ToLower() == "borrowed" || p.ProductType.ToLower() == "borrowable"))
+            var products = await this.dbContext.BorrowProducts
                 .ToListAsync();
 
             return products;
