@@ -200,6 +200,8 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             return productResultSet;
         }
 
+        // merge-nicusor
+
         public Task UpdateProductAsync(int id, string name, double price, int sellerId, string productType, DateTime startDate, DateTime endDate)
         {
             throw new NotImplementedException("UpdateProductAsync is not implemented.");
@@ -215,9 +217,9 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             throw new NotImplementedException("GetSellerNameAsync is not implemented.");
         }
 
-        public Task<List<Product>> GetBorrowableProductsAsync()
+        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
         {
-            throw new NotImplementedException("GetBorrowableProductsAsync is not implemented.");
+            throw new NotImplementedException();
         }
     }
 }

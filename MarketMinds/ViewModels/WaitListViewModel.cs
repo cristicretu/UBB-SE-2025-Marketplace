@@ -1,31 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.IRepository;
-using Microsoft.Data.SqlClient;
-using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.Services;
 
 namespace MarketMinds.ViewModels
 {
     public class WaitListViewModel : IWaitListViewModel
     {
-        private readonly IWaitListRepository waitListModel;
-        private readonly IProductRepository productModel;
+        private readonly IWaitlistService waitlistService;
+        private readonly IProductService productService;
 
         /// <summary>
         /// Default constructor for WaitListViewModel.
         /// </summary>
-        /// <param name="connectionString">The database connection string. Cannot be null or empty.</param>
+        /// <param name="waitlistService">The waitlist service.</param>
+        /// <param name="productService">The product service.</param>
         /// <remarks>
-        /// Initializes a new instance of the WaitListViewModel class with the specified connection string,
-        /// creating new instances of the required model dependencies (WaitListRepository and ProductModel).
-        /// This constructor is typically used in production scenarios where real database connections are needed.
+        /// Initializes a new instance of the WaitListViewModel class with the specified services.
+        /// This constructor is typically used in production scenarios with dependency injection.
         /// </remarks>
-        public WaitListViewModel(string connectionString)
+        public WaitListViewModel(IWaitlistService waitlistService, IProductService productService)
         {
-            waitListModel = new WaitListProxyRepository(AppConfig.GetBaseApiUrl());
-            productModel = new ProductProxyRepository(AppConfig.GetBaseApiUrl());
+            this.waitlistService = waitlistService;
+            this.productService = productService;
         }
 
         /// <summary>
@@ -33,10 +30,9 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="userId">The ID of the user to be added to the waitlist. Must be a positive integer.</param>
         /// <param name="productId">The ID of the product. Must be a positive integer.</param>
-        /// <exception cref="SqlException">Thrown when there is an error executing the SQL command.</exception>
         public async Task AddUserToWaitlist(int userId, int productId)
         {
-            await waitListModel.AddUserToWaitlist(userId, productId);
+            await waitlistService.AddUserToWaitlist(userId, productId);
         }
 
         /// <summary>
@@ -44,21 +40,19 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="userId">The ID of the user to be removed from the waitlist. Must be a positive integer.</param>
         /// <param name="productId">The ID of the product. Must be a positive integer.</param>
-        /// <exception cref="SqlException">Thrown when there is an error executing the SQL command.</exception>
         public async Task RemoveUserFromWaitlist(int userId, int productId)
         {
-            await waitListModel.RemoveUserFromWaitlist(userId, productId);
+            await waitlistService.RemoveUserFromWaitlist(userId, productId);
         }
 
         /// <summary>
         /// Retrieves all users in a waitlist for a given product.
         /// </summary>
-        /// <param name="waitListProductId">The ID of the product waitlist. Must be a positive integer.</param>
+        /// <param name="productId">The ID of the product waitlist. Must be a positive integer.</param>
         /// <returns>A list of UserWaitList objects representing the users in the waitlist.</returns>
-        /// <exception cref="SqlException">Thrown when there is an error executing the SQL command.</exception>
         public async Task<List<UserWaitList>> GetUsersInWaitlist(int productId)
         {
-            return await waitListModel.GetUsersInWaitlist(productId);
+            return await waitlistService.GetUsersInWaitlist(productId);
         }
 
         /// <summary>
@@ -66,10 +60,9 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="userId">The ID of the user. Must be a positive integer.</param>
         /// <returns>A list of UserWaitList objects representing the waitlists the user is part of.</returns>
-        /// <exception cref="SqlException">Thrown when there is an error executing the SQL command.</exception>
         public async Task<List<UserWaitList>> GetUserWaitlists(int userId)
         {
-            return await waitListModel.GetUserWaitlists(userId);
+            return await waitlistService.GetUserWaitlists(userId);
         }
 
         /// <summary>
@@ -77,10 +70,9 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="productId">The ID of the product. Must be a positive integer.</param>
         /// <returns>The number of users in the waitlist.</returns>
-        /// <exception cref="SqlException">Thrown when there is an error executing the SQL command.</exception>
         public async Task<int> GetWaitlistSize(int productId)
         {
-            return await waitListModel.GetWaitlistSize(productId);
+            return await waitlistService.GetWaitlistSize(productId);
         }
 
         /// <summary>
@@ -89,10 +81,9 @@ namespace MarketMinds.ViewModels
         /// <param name="userId">The ID of the user. Must be a positive integer.</param>
         /// <param name="productId">The ID of the product. Must be a positive integer.</param>
         /// <returns>The position of the user in the waitlist, or -1 if the user is not in the waitlist.</returns>
-        /// <exception cref="SqlException">Thrown when there is an error executing the SQL command.</exception>
         public async Task<int> GetUserWaitlistPosition(int userId, int productId)
         {
-            return await waitListModel.GetUserWaitlistPosition(userId, productId);
+            return await waitlistService.GetUserWaitlistPosition(userId, productId);
         }
 
         /// <summary>
@@ -101,10 +92,9 @@ namespace MarketMinds.ViewModels
         /// <param name="userId">The ID of the user. Must be a positive integer.</param>
         /// <param name="productId">The ID of the product. Must be a positive integer.</param>
         /// <returns>True if the user is in the waitlist, otherwise false.</returns>
-        /// <exception cref="SqlException">Thrown when there is an error executing the SQL command.</exception>
         public async Task<bool> IsUserInWaitlist(int userId, int productId)
         {
-            return await waitListModel.IsUserInWaitlist(userId, productId);
+            return await waitlistService.IsUserInWaitlist(userId, productId);
         }
 
         /// <summary>
@@ -112,21 +102,19 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="sellerId">The ID of the seller. Can be null.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the name of the seller.</returns>
-        /// <exception cref="SqlException">Thrown when there is an error executing the SQL command.</exception>
         public async Task<string> GetSellerNameAsync(int? sellerId)
         {
-            return await productModel.GetSellerNameAsync(sellerId);
+            return await productService.GetSellerNameAsync(sellerId);
         }
 
         /// <summary>
-        /// Gets a dummy product by its ID asynchronously.
+        /// Gets a product by its ID asynchronously.
         /// </summary>
         /// <param name="productId">The ID of the product. Must be a positive integer.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the Product object.</returns>
-        /// <exception cref="SqlException">Thrown when there is an error executing the SQL command.</exception>
         public async Task<Product> GetProductByIdAsync(int productId)
         {
-            return await productModel.GetProductByIdAsync(productId);
+            return await productService.GetProductByIdAsync(productId);
         }
     }
 }
