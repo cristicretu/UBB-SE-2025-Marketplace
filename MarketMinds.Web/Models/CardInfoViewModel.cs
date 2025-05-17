@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.BuyProductsService;
+using Microsoft.Extensions.Configuration;
 
 namespace WebMarketplace.Models
 {
@@ -50,7 +51,18 @@ namespace WebMarketplace.Models
         public CardInfoViewModel()
         {
             _orderHistoryService = new OrderHistoryService();
-            _productService = new BuyProductsService();
+            
+            // Create a configuration object that works with BuyProductsProxyRepository
+            var configValues = new Dictionary<string, string>
+            {
+                {"ApiSettings:BaseUrl", MarketMinds.Shared.Helper.AppConfig.GetBaseApiUrl()}
+            };
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(configValues)
+                .Build();
+                
+            var buyProductsRepo = new MarketMinds.Shared.ProxyRepository.BuyProductsProxyRepository(configuration);
+            _productService = new BuyProductsService(buyProductsRepo);
 
             ProductList = new List<Product>();
         }
@@ -88,12 +100,32 @@ namespace WebMarketplace.Models
             double subtotalProducts = 0;
             foreach (var product in ProductList)
             {
-                subtotalProducts += product.Price;
+                // Check product type for proper price access
+                if (product is BuyProduct buyProduct)
+                {
+                    subtotalProducts += buyProduct.Price;
+                }
+                else if (product is BorrowProduct borrowProduct)
+                {
+                    // Handle borrow product pricing if different
+                    subtotalProducts += product.Price; // Use base price as fallback
+                }
+                else
+                {
+                    subtotalProducts += product.Price;
+                }
             }
 
             Subtotal = subtotalProducts;
 
-            if (subtotalProducts >= 200)
+            // Determine product type for delivery fee calculation
+            // Try to determine if any product is a special type
+            bool hasSpecialType = ProductList.Any(p => 
+                (p is BorrowProduct) || // For borrowed products
+                (p.GetType().Name.Contains("Refill")) || // For refill products
+                (p.GetType().Name.Contains("Auction"))); // For auction/bid products
+
+            if (subtotalProducts >= 200 || hasSpecialType)
             {
                 Total = subtotalProducts;
                 DeliveryFee = 0;

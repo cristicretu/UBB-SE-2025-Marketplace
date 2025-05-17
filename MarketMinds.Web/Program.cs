@@ -13,6 +13,7 @@ using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,8 +66,12 @@ builder.Services.AddSingleton<ReviewProxyRepository>();
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
 builder.Services.AddTransient<IBorrowProductsService, MarketMinds.Shared.Services.BorrowProductsService.BorrowProductsService>();
-builder.Services.AddTransient<IBuyProductsService, MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
-builder.Services.AddTransient<IProductService, MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
+
+// Use the same instance for both interfaces
+builder.Services.AddTransient<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
+builder.Services.AddTransient<IBuyProductsService>(sp => sp.GetRequiredService<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>());
+builder.Services.AddTransient<IProductService>(sp => sp.GetRequiredService<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>());
+
 builder.Services.AddTransient<IProductCategoryService, ProductCategoryService>();
 builder.Services.AddTransient<IProductConditionService, ProductConditionService>();
 builder.Services.AddTransient<IProductTagService, ProductTagService>();

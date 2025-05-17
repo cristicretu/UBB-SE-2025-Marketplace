@@ -258,9 +258,24 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
                 return null;
             }
 
-            var copy = new User(source.Id, source.Username, source.Email, source.PhoneNumber, source.UserType, source.Token);
+            var copy = new User(
+                id: source.Id, 
+                username: source.Username, 
+                email: source.Email, 
+                phoneNumber: source.PhoneNumber, 
+                userType: source.UserType, 
+                balance: 0.0, // Use 0.0 as default balance
+                bannedUntil: null, 
+                isBanned: false, 
+                failedLogins: 0, 
+                passwordHash: string.Empty);
+            
             copy.Balance = source.Balance;
-            copy.Rating = source.Rating;
+            copy.Token = source.Token;
+            if (source.GetType().GetProperty("Rating") != null)
+            {
+                copy.Rating = source.Rating;
+            }
 
             Debug.WriteLine($"Created user copy: ID={copy.Id}, Username={copy.Username}, Balance={copy.Balance}");
             return copy;
@@ -392,7 +407,10 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
 
                 if (root.TryGetProperty("rating", out var ratingProp) && ratingProp.ValueKind == JsonValueKind.Number)
                 {
-                    user.Rating = ratingProp.GetSingle();
+                    if (user.GetType().GetProperty("Rating") != null)
+                    {
+                        user.Rating = ratingProp.GetSingle();
+                    }
                 }
 
                 // Ensure balance has a reasonable value

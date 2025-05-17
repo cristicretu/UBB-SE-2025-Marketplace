@@ -43,6 +43,9 @@ namespace MarketMinds.Shared.Models
         [NotMapped]
         public string Token { get; set; } = string.Empty;
 
+        [NotMapped]
+        public double Rating { get; set; }
+
         private const double MAX_BALANCE = 999999;
 
         // Navigation properties

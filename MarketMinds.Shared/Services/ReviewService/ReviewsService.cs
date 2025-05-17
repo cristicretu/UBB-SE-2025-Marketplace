@@ -291,7 +291,7 @@ namespace MarketMinds.Shared.Services.ReviewService
                 return null;
             }
 
-            return new MarketMinds.Shared.Models.User
+            var user = new MarketMinds.Shared.Models.User
             {
                 Id = domainUser.Id,
                 Username = domainUser.Username,
@@ -299,8 +299,14 @@ namespace MarketMinds.Shared.Services.ReviewService
                 PasswordHash = domainUser.PasswordHash,
                 UserType = domainUser.UserType,
                 Balance = domainUser.Balance,
-                Rating = domainUser.Rating
             };
+
+            if (domainUser.GetType().GetProperty("Rating") != null)
+            {
+                user.Rating = domainUser.Rating;
+            }
+
+            return user;
         }
 
         private Review ConvertToDomainReview(MarketMinds.Shared.Models.Review sharedReview)

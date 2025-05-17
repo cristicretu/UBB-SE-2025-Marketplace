@@ -55,11 +55,18 @@ namespace MarketMinds.Shared.Models
 
         public MarketMinds.Shared.Models.User ToDomainUser()
         {
-            var user = new MarketMinds.Shared.Models.User(Username, Email, PhoneNumber, UserType, BannedUntil, IsBanned, FailedLogIns, PasswordHash)
+            var user = new MarketMinds.Shared.Models.User(
+                id: Id,
+                username: Username, 
+                email: Email, 
+                phoneNumber: PhoneNumber, 
+                userType: UserType, 
+                balance: Balance, 
+                bannedUntil: BannedUntil, 
+                isBanned: IsBanned, 
+                failedLogins: FailedLogIns, 
+                passwordHash: PasswordHash)
             {
-                Id = Id,
-                UserType = UserType,
-                Balance = Balance,
                 Rating = Rating
             };
             return user;
