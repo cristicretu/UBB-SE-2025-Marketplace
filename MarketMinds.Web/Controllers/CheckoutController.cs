@@ -84,11 +84,11 @@ namespace WebMarketplace.Controllers
         {
             try
             {
-                // Instead of fetching the product by ID, we'll create a dummy product for now
-                var product = new Product
+                // Create a BuyProduct instance instead of the abstract Product class
+                var product = new BuyProduct
                 {
-                    ProductId = productId,
-                    ProductType = "borrowed", // Assuming this is a borrowed product
+                    Id = productId, // Use Id instead of ProductId
+                    Title = "Borrowed Product", // Add a title for the placeholder
                     Price = 100 // Default price that will be modified by the borrowed tax calculation
                 };
                 

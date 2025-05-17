@@ -236,12 +236,19 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         // Explicit implementation for IProductService's GetSellerNameAsync
         Task<string> IProductService.GetSellerNameAsync(int? sellerId)
         {
-            // Call the non-nullable version if sellerId has a value
-            if (sellerId.HasValue)
-            {
-                return GetSellerNameAsync(sellerId.Value);
-            }
-            return Task.FromResult<string>(null);
+            return GetSellerNameAsync(sellerId ?? 0);
+        }
+        
+        /// <summary>
+        /// Gets a list of products that can be borrowed.
+        /// Implementation for IProductService interface.
+        /// </summary>
+        /// <returns>A list of borrowable products.</returns>
+        public async Task<List<Product>> GetBorrowableProductsAsync()
+        {
+            // Since this is BuyProductsService, we don't have borrowable products
+            // Return an empty list when this method is called on this service
+            return new List<Product>();
         }
     }
 }

@@ -55,7 +55,7 @@
                     foreach (var product in Model.ProductList)
                     {
                         <div class="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
-                            <p class="font-semibold text-gray-800">Product name: <span class="font-normal">@product.Name</span></p>
+                            <p class="font-semibold text-gray-800">Product name: <span class="font-normal">@product.Title</span></p>
                             <p class="font-semibold text-gray-800">Price: <span class="font-normal">@product.Price.ToString("C")</span></p>
                             
                             @if (product.SellerId > 0)

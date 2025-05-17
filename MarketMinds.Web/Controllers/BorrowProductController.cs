@@ -62,7 +62,7 @@ namespace WebMarketplace.Controllers
                     return NotFound();
                 }
 
-                _logger.LogInformation("Product {ProductName} (ID: {ProductId}) found", product.Name, id);
+                _logger.LogInformation("Product {ProductName} (ID: {ProductId}) found", product.Title, id);
                 
                 string sellerName = await _productService.GetSellerNameAsync(product.SellerId);
                 int currentUserId = GetCurrentUserId();
@@ -73,16 +73,11 @@ namespace WebMarketplace.Controllers
                 // Create the view model with proper type conversions
                 var viewModel = new BorrowProductViewModel
                 {
-                    ProductId = product.ProductId,
-                    ProductName = product.Name,
+                    ProductId = product.Id,
+                    ProductName = product.Title,
                     Price = product.Price, // Now both are double
                     SellerId = product.SellerId, // Both are int, no need to cast
                     SellerName = sellerName,
-                    ProductType = product.ProductType,
-                    // Handle dates safely to prevent ArgumentOutOfRangeException
-                    StartDate = SafeConvertToDateTimeOffset(product.StartDate),
-                    EndDate = SafeConvertToDateTimeOffset(product.EndDate),
-                    IsOnWaitlist = isOnWaitlist,
                     WaitlistPosition = position,
                     UnreadNotificationsCount = unreadNotificationsCount
                 };

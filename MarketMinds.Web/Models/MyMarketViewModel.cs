@@ -186,7 +186,7 @@ namespace WebMarketplace.Models
         {
             MyMarketProducts = string.IsNullOrEmpty(searchText)
                 ? _allProducts.ToList()
-                : _allProducts.Where(p => p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+                : _allProducts.Where(p => p.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         /// <summary>
@@ -245,7 +245,7 @@ namespace WebMarketplace.Models
                 if (Buyer != null)
                 {
                     var products = await _buyerService.GetProductsFromFollowedSellers(Buyer.FollowingUsersIds);
-                    _allProducts = products.OrderByDescending(p => p.ProductId).ToList();
+                    _allProducts = products.OrderByDescending(p => p.Id).ToList();
                     FilterProducts(ProductSearchTerm);
                 }
             }

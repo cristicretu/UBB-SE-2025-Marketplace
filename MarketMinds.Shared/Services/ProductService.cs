@@ -42,5 +42,13 @@ namespace MarketMinds.Shared.Services
         {
             return await _productRepository.GetSellerNameAsync(sellerId);
         }
+        
+        /// <inheritdoc/>
+        public async Task<List<Product>> GetBorrowableProductsAsync()
+        {
+            // This is a generic ProductService that doesn't specifically handle borrowable products
+            // Implement later if/when the repository supports this, or return empty list
+            return new List<Product>();
+        }
     }
 }

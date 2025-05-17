@@ -7,7 +7,7 @@
         <div class="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
             <div class="p-4">
                 <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-lg font-semibold text-gray-900 truncate">@product.Name</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 truncate">@product.Title</h3>
                     <div class="flex space-x-2">
                         <a href="#" class="text-blue-600 hover:text-blue-800">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -23,17 +23,33 @@
                 </div>
                 <p class="text-sm text-gray-600 mb-2">@(product.Description?.Length > 100 ? product.Description.Substring(0, 100) + "..." : product.Description)</p>
                 <div class="flex justify-between items-center pt-2">
-                    <span class="text-lg font-bold text-gray-900">$@product.Price.ToString("F2")</span>
+                    @{
+                        string priceString = "N/A";
+                        if (product is MarketMinds.Shared.Models.BuyProduct buyProduct)
+                        {
+                            priceString = buyProduct.Price.ToString("F2");
+                        }
+                        else
+                        {
+                            priceString = product.Price.ToString("F2");
+                        }
+                    }
+                    <span class="text-lg font-bold text-gray-900">$@priceString</span>
                     <span class="text-sm text-gray-600">Stock: @product.Stock</span>
                 </div>
-                @if (!string.IsNullOrEmpty(product.ProductType))
-                {
-                    <div class="mt-2 flex items-center">
-                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                            @product.ProductType
-                        </span>
-                    </div>
+                @{
+                    // Determine product type from the class name
+                    string productType = product.GetType().Name;
+                    if (productType.EndsWith("Product"))
+                    {
+                        productType = productType.Substring(0, productType.Length - "Product".Length);
+                    }
                 }
+                <div class="mt-2 flex items-center">
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                        @productType
+                    </span>
+                </div>
             </div>
         </div>
     }

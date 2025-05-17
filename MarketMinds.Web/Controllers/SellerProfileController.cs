@@ -52,7 +52,7 @@ namespace WebMarketplace.Controllers
 
             // For testing purposes, we'll use a placeholder method
             var users = await _userService.GetAllUsers();
-            return users.FirstOrDefault(u => u.Id == userId) ?? new User(userId, userType: UserRole.Seller); // Default to Seller role
+            return users.FirstOrDefault(u => u.Id == userId) ?? new User(userId, userType: (int)UserRole.Seller); // Default to Seller role
         }
 
         /// <summary>

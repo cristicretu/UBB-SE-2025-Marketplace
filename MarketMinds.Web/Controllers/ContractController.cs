@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace WebMarketplace.Controllers
 {
@@ -129,10 +132,10 @@ namespace WebMarketplace.Controllers
                             .Column(column =>
                             {
                                 column.Item()
+                                      .AlignCenter()
                                       .Text("Contract Document")
                                       .SemiBold()
-                                      .FontSize(20)
-                                      .AlignCenter();
+                                      .FontSize(20);
                             });
                     });
 

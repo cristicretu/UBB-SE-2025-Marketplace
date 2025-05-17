@@ -105,7 +105,7 @@ namespace WebMarketplace.Models
         {
             SellerProducts = string.IsNullOrEmpty(searchText)
                 ? _allSellerProducts.ToList()
-                : _allSellerProducts.Where(p => p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+                : _allSellerProducts.Where(p => p.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         /// <summary>

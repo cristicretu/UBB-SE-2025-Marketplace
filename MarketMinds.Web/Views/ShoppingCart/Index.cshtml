@@ -39,23 +39,23 @@
                         <tbody id="cart-items">
                         @foreach (var item in Model)
                         {
-                                <tr class="border-t product-row" data-product-id="@item.ProductId">
-                                    <td class="py-4 text-blue-800 font-medium">@item.Name</td>
+                                <tr class="border-t product-row" data-product-id="@item.Id">
+                                    <td class="py-4 text-blue-800 font-medium">@item.Title</td>
                                     <td class="py-4 text-center">@item.Price.ToString("C")</td>
                                     <td class="py-4 text-center">
                                         <div class="flex items-center justify-center">
-                                            <button class="quantity-btn minus-btn px-2 py-1 bg-gray-200 rounded-l" data-product-id="@item.ProductId">-</button>
+                                            <button class="quantity-btn minus-btn px-2 py-1 bg-gray-200 rounded-l" data-product-id="@item.Id">-</button>
                                             <input type="number" class="quantity-input w-12 text-center border-0 bg-gray-100" 
-                                                   value="@item.Stock" min="1" data-product-id="@item.ProductId">
-                                            <button class="quantity-btn plus-btn px-2 py-1 bg-gray-200 rounded-r" data-product-id="@item.ProductId">+</button>
+                                                   value="@item.Stock" min="1" data-product-id="@item.Id">
+                                            <button class="quantity-btn plus-btn px-2 py-1 bg-gray-200 rounded-r" data-product-id="@item.Id">+</button>
                                         </div>
                                     </td>
-                                    <td class="py-4 text-right item-total" data-product-id="@item.ProductId">
+                                    <td class="py-4 text-right item-total" data-product-id="@item.Id">
                                     @((item.Price * item.Stock).ToString("C"))
                                     </td>
                                     <td class="py-4 text-right">
                                         <button type="button" class="remove-item-btn bg-blue-800 hover:bg-blue-700 text-white py-1 px-4 rounded" 
-                                                data-product-id="@item.ProductId">
+                                                data-product-id="@item.Id">
                                             Remove
                                         </button>
                                     </td>
