@@ -177,13 +177,13 @@
                 }
 
                 // Check if the contract was already renewed using the service
-                if (await HasContractBeenRenewedAsync()) // This method now uses renewalService internally
+                if (await HasContractBeenRenewedAsync())
                 {
                     return (false, "This contract has already been renewed.");
                 }
 
                 // Validate the current date is within the renewal window (2 to 7 days before end)
-                if (!await IsRenewalPeriodValidAsync()) // This method uses GetProductDetailsByContractIdAsync which now uses contractService
+                if (!await IsRenewalPeriodValidAsync())
                 {
                     return (false, "Contract is not in a valid renewal period (between 2 and 7 days before end date).");
                 }

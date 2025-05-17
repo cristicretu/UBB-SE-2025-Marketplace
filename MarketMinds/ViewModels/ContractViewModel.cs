@@ -323,7 +323,7 @@ namespace MarketMinds.ViewModels
                     fieldReplacements["AgreementDate"] = startDate.Value.ToShortDateString(); // Assuming AgreementDate is StartDate
                     fieldReplacements["DueDate"] = endDate.Value.ToShortDateString(); // Assuming DueDate is EndDate
                 }
-                else // Handle cases where one or both dates might be null
+                else
                 {
                     fieldReplacements["StartDate"] = startDate.HasValue ? startDate.Value.ToShortDateString() : "N/A";
                     fieldReplacements["EndDate"] = endDate.HasValue ? endDate.Value.ToShortDateString() : "N/A";
@@ -344,7 +344,7 @@ namespace MarketMinds.ViewModels
                 // Handle nullable delivery date
                 fieldReplacements["DeliveryDate"] = deliveryDate.HasValue ? deliveryDate.Value.ToShortDateString() : "N/A";
             }
-            else // Handle case where productDetails itself is null
+            else
             {
                 fieldReplacements["StartDate"] = "N/A";
                 fieldReplacements["EndDate"] = "N/A";

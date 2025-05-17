@@ -4,8 +4,8 @@
 
 namespace MarketMinds.ViewModels
 {
-    using MarketMinds.Shared.Models;
     using System.Windows.Input;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Interface for managing buyer wishlist item view model operations.

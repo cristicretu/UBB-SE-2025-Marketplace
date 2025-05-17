@@ -11,6 +11,7 @@ using MarketMinds.Views.Pages;
 using MarketMinds.Helpers.ViewModelHelpers;
 using MarketMinds.Shared.Services.AuctionSortTypeConverterService;
 using MarketMinds.Shared.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.Views
 {
@@ -116,8 +117,10 @@ namespace MarketMinds.Views
 
         private async void FilterButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
+            // Cast to IProductService version for FilterDialog compatibility
+            SortAndFilterViewModel<IProductService> dialogViewModel = (SortAndFilterViewModel<IProductService>)(object)sortAndFilterViewModel;
             // Show a ContentDialog for filtering
-            FilterDialog filterDialog = new FilterDialog(sortAndFilterViewModel);
+            FilterDialog filterDialog = new FilterDialog(dialogViewModel);
             filterDialog.XamlRoot = Content.XamlRoot;
             var result = await filterDialog.ShowAsync();
             if (result == ContentDialogResult.Primary)

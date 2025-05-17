@@ -3,6 +3,7 @@
     using System.Windows.Input;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
+    using MarketMinds.Shared.Helper;
 
     public class MyMarketProductViewModel : IMyMarketProductViewModel
     {

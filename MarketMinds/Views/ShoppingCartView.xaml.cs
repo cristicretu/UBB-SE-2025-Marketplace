@@ -6,7 +6,6 @@ using MarketMinds.Shared.Services; // For ShoppingCartRepository
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace MarketMinds.Views
 {
-
     /// <summary>
     /// A user control that displays the shopping cart.
     /// </summary>

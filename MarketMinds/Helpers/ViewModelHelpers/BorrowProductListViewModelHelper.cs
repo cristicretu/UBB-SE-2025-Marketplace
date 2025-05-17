@@ -12,10 +12,10 @@ namespace MarketMinds.Helpers.ViewModelHelpers
     public class BorrowProductListViewModelHelper
     {
         private const int ItemsPerPage = 20;
-        private readonly SortAndFilterViewModel<IProductService> sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<BorrowProductsService> sortAndFilterViewModel;
         private readonly BorrowProductsViewModel borrowProductsViewModel;
 
-        public BorrowProductListViewModelHelper(SortAndFilterViewModel<IProductService> sortAndFilterViewModel, BorrowProductsViewModel borrowProductsViewModel)
+        public BorrowProductListViewModelHelper(SortAndFilterViewModel<BorrowProductsService> sortAndFilterViewModel, BorrowProductsViewModel borrowProductsViewModel)
         {
             this.sortAndFilterViewModel = sortAndFilterViewModel;
             this.borrowProductsViewModel = borrowProductsViewModel;
@@ -23,7 +23,7 @@ namespace MarketMinds.Helpers.ViewModelHelpers
 
         public (List<BorrowProduct> pageItems, int totalPages, List<BorrowProduct> fullList) GetBorrowProductsPage(
             BorrowProductsViewModel borrowProductsViewModel,
-            SortAndFilterViewModel<IProductService> sortAndFilterViewModel,
+            SortAndFilterViewModel<BorrowProductsService> sortAndFilterViewModel,
             int currentPage)
         {
             // Retrieve filtered and sorted products

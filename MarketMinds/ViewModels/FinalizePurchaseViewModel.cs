@@ -38,7 +38,6 @@ namespace MarketMinds.ViewModels
         /// <param name="orderHistoryID">The unique identifier for the order history.</param>
         public FinalizePurchaseViewModel(int orderHistoryID)
         {
-
             orderHistoryService = new OrderHistoryService();
             orderService = new OrderService();
             orderSummaryService = new OrderSummaryService();

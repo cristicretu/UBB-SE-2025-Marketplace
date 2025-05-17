@@ -9,7 +9,6 @@ namespace MarketMinds.ViewModels
         public int Quantity { get; set; }
         public double TotalPrice => Product.Price * Quantity;
 
-
         public CartItemViewModel(Product product, int quantity)
         {
             Product = product;

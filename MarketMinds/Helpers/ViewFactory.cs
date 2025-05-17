@@ -1,37 +1,47 @@
 namespace MarketMinds.Helpers
 {
     using MarketMinds.Views;
+    using MarketMinds.Shared.Services.Interfaces;
+    using BusinessLogicLayer.ViewModel;
 
     public static class ViewFactory
     {
         public static MarketMinds.Views.AuctionProductListView CreateAuctionProductListView()
         {
-            return new MarketMinds.Views.AuctionProductListView(MarketMinds.App.AuctionProductSortAndFilterViewModel);
+            var viewModel = MarketMinds.App.AuctionProductSortAndFilterViewModel;
+            return new MarketMinds.Views.AuctionProductListView(viewModel);
         }
 
         public static MarketMinds.Views.BorrowProductListView CreateBorrowProductListView()
         {
-            return new MarketMinds.Views.BorrowProductListView(MarketMinds.App.BorrowProductSortAndFilterViewModel);
+            var viewModel = MarketMinds.App.BorrowProductSortAndFilterViewModel;
+            return new MarketMinds.Views.BorrowProductListView(viewModel);
         }
 
         public static MarketMinds.Views.BuyProductListView CreateBuyProductListView()
         {
-            return new MarketMinds.Views.BuyProductListView(MarketMinds.App.BuyProductSortAndFilterViewModel);
+            // Cast to IProductService version for BuyProductListView compatibility
+            var sourceViewModel = MarketMinds.App.BuyProductSortAndFilterViewModel;
+            var viewModel = (SortAndFilterViewModel<IProductService>)(object)sourceViewModel;
+            return new MarketMinds.Views.BuyProductListView(viewModel);
         }
 
         public static MarketMinds.Views.FilterDialog CreateAuctionFilterDialog()
         {
-            return new MarketMinds.Views.FilterDialog(MarketMinds.App.AuctionProductSortAndFilterViewModel);
+            var viewModel = (SortAndFilterViewModel<IProductService>)(object)MarketMinds.App.AuctionProductSortAndFilterViewModel;
+            return new MarketMinds.Views.FilterDialog(viewModel);
         }
 
         public static MarketMinds.Views.FilterDialog CreateBorrowFilterDialog()
         {
-            return new MarketMinds.Views.FilterDialog(MarketMinds.App.BorrowProductSortAndFilterViewModel);
+            var viewModel = (SortAndFilterViewModel<IProductService>)(object)MarketMinds.App.BorrowProductSortAndFilterViewModel;
+            return new MarketMinds.Views.FilterDialog(viewModel);
         }
 
         public static MarketMinds.Views.FilterDialog CreateBuyFilterDialog()
         {
-            return new MarketMinds.Views.FilterDialog(MarketMinds.App.BuyProductSortAndFilterViewModel);
+            var viewModel = (SortAndFilterViewModel<IProductService>)(object)MarketMinds.App.BuyProductSortAndFilterViewModel;
+            return new MarketMinds.Views.FilterDialog(viewModel);
         }
     }
 }

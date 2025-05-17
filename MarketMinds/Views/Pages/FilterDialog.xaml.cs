@@ -4,6 +4,8 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services.Interfaces;
+using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
 using ProductCategory = MarketMinds.Shared.Models.Category;
 using ProductCondition = MarketMinds.Shared.Models.Condition;
@@ -12,7 +14,7 @@ namespace MarketMinds.Views
 {
     public partial class FilterDialog : ContentDialog
     {
-        private readonly dynamic sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<IProductService> sortAndFilterViewModel;
         private readonly ProductTagViewModel productTagViewModel;
         private readonly ProductConditionViewModel productConditionViewModel;
         private readonly ProductCategoryViewModel productCategoryViewModel;
@@ -30,7 +32,7 @@ namespace MarketMinds.Views
         private int initialDisplayCount = 5;
         private int additionalDisplayCount = 10;
 
-        public FilterDialog(object sortAndFilterViewModel)
+        public FilterDialog(SortAndFilterViewModel<IProductService> sortAndFilterViewModel)
         {
             this.InitializeComponent();
             this.sortAndFilterViewModel = sortAndFilterViewModel;

@@ -116,7 +116,6 @@ namespace MarketMinds.Views
             try
             {
                 if (deliveryCalendarDatePicker?.Date.HasValue == true)
-
                 {
                     await viewModel.UpdateEstimatedDeliveryDateAsync(TrackedOrderID, deliveryCalendarDatePicker.Date.Value.DateTime);
                     await ShowSuccessDialog("Successfully updated estimated delivery date");
@@ -203,7 +202,6 @@ namespace MarketMinds.Views
         }
 
         private void ManualTimestampRadio_Checked(object sender, RoutedEventArgs e)
-
         {
             UpdateDetails.Visibility = Visibility.Visible;
         }
@@ -214,7 +212,6 @@ namespace MarketMinds.Views
             {
                 DateTimePickers.Visibility = Visibility.Collapsed;
             }
-
         }
     }
 }

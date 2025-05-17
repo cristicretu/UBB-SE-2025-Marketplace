@@ -5,7 +5,6 @@ using MarketMinds.Shared.Models;
 namespace MarketMinds.ViewModels
 {
     public interface IShoppingCartViewModel
-
     {
         ObservableCollection<CartItemViewModel> CartItems { get; }
         Task LoadCartItemsAsync();
