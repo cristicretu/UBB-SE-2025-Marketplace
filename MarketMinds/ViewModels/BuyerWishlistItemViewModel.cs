@@ -28,10 +28,13 @@ namespace MarketMinds.ViewModels
 
         public BuyerWishlistItemViewModel()
         {
-            this.AddToCartCommand = new RelayCommand<Product>(async (product) =>
+            this.AddToCartCommand = new RelayCommand(async (product) =>
             {
-                var shoppingCartViewModel = new ShoppingCartViewModel(new ShoppingCartService(), buyerId: UserSession.CurrentUserId ?? 1);
-                await shoppingCartViewModel.AddToCartAsync(product, 1);
+                if (product is Product typedProduct)
+                {
+                    var shoppingCartViewModel = new ShoppingCartViewModel(new ShoppingCartService(), buyerId: UserSession.CurrentUserId ?? 1);
+                    await shoppingCartViewModel.AddToCartAsync(typedProduct, 1);
+                }
             });
         }
 
