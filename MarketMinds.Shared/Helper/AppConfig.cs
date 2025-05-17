@@ -54,10 +54,12 @@ namespace MarketMinds.Shared.Helper
         {
             // string? baseUrl = "http://172.30.247.110:80/";
             // take the url from the appsettings.json file
-            string? baseUrl = Configuration?["BaseApiUrl"];
+            string? baseUrl = Configuration?["ApiSettings:BaseUrl"];
 
             if (string.IsNullOrEmpty(baseUrl))
             {
+                // merge-nicusor
+                Debug.WriteLine(baseUrl);
                 throw new InvalidOperationException("Configuration 'BaseApiUrl' is required but not found or is empty.");
             }
 

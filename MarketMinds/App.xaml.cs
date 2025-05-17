@@ -242,7 +242,7 @@ namespace MarketMinds
             ReviewRepository = new ReviewProxyRepository(Configuration);
             ProductTagRepository = new ProductTagProxyRepository(Configuration);
             AuctionProductsRepository = new AuctionProductsProxyRepository(Configuration);
-            BorrowProductsRepository = new BorrowProductsProxyRepository(AppConfig.GetBaseApiUrl());
+            BorrowProductsRepository = new BorrowProductsProxyRepository(Configuration);
             BasketRepository = new BasketProxyRepository(Configuration);
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
 

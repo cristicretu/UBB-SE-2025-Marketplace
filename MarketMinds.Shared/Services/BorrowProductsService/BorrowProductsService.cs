@@ -14,7 +14,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
 
         public BorrowProductsService()
         {
-            this.borrowProductsRepository = new BorrowProductsProxyRepository(AppConfig.GetBaseApiUrl());
+            this.borrowProductsRepository = new BorrowProductsProxyRepository(AppConfig.Configuration);
         }
 
         public void CreateListing(Product product)

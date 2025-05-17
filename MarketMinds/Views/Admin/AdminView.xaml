@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MarketMinds.Views.Admin"
     xmlns:local2="using:MarketMinds.ViewModels.Admin"
-	xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
 	<Grid>
@@ -89,9 +88,6 @@
 				<TextBlock Text="{Binding ViewModel.totalUsersCount}" VerticalAlignment="Center"/>
 			</StackPanel>
 
-            <Grid Grid.Column="2">
-                <lvc:PieChart Series="{Binding PieSeries}" Width="300" Height="300"/>
-            </Grid>
 		</Grid>
 	</Grid>
 </Page>
