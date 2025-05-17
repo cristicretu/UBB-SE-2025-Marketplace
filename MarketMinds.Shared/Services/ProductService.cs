@@ -32,20 +32,20 @@ namespace MarketMinds.Shared.Services
         public async Task<string> GetSellerNameAsync(int? sellerId)
         {
             // Use the repository to fetch the seller name from the database
-            return await productRepository.GetSellerNameAsync(sellerId);
+            return await _productRepository.GetSellerNameAsync(sellerId);
         }
 
         /// <inheritdoc/>
         public async Task<List<BorrowProduct>> GetBorrowableProductsAsync()
         {
             // Use the repository to fetch borrowable products from the database
-            return await productRepository.GetBorrowableProductsAsync();
+            return await _productRepository.GetBorrowableProductsAsync();
         }
 
         public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
         {
-            throw new NotImplementedException();
-            return await _productRepository.GetSellerNameAsync(sellerId);
+            // TODO: Implement proper filtering and sorting logic
+            return new List<Product>();
         }
     }
 }

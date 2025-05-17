@@ -599,6 +599,7 @@ namespace Server.DataAccessLayer
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
+                    .HasForeignKey(on => on.ProductID)
                     .HasPrincipalKey(bp => bp.Id)
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired(false); // to respect Maria's DB design
