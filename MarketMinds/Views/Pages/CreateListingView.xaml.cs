@@ -1,9 +1,7 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
@@ -15,11 +13,8 @@ using MarketMinds;
 using MarketMinds.Helpers;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
-using Newtonsoft.Json;
 using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
 using Windows.Storage;
-using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.ListingFormValidationService;
 using ProductCategory = MarketMinds.Shared.Models.Category;
@@ -27,7 +22,7 @@ using ProductCondition = MarketMinds.Shared.Models.Condition;
 using MarketMinds.ViewModels;
 using WinRT.Interop;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     public sealed partial class CreateListingView : Page
     {

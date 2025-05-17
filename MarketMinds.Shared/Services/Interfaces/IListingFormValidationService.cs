@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Shared.Services.ListingFormValidationService

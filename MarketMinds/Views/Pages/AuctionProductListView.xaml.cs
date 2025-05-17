@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;
@@ -13,8 +11,9 @@ using MarketMinds.Views.Pages;
 using MarketMinds.Helpers.ViewModelHelpers;
 using MarketMinds.Shared.Services.AuctionSortTypeConverterService;
 using MarketMinds.Shared.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.Interfaces;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     public sealed partial class AuctionProductListView : Window
     {
@@ -118,8 +117,10 @@ namespace UiLayer
 
         private async void FilterButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
+            // Cast to IProductService version for FilterDialog compatibility
+            SortAndFilterViewModel<IProductService> dialogViewModel = (SortAndFilterViewModel<IProductService>)(object)sortAndFilterViewModel;
             // Show a ContentDialog for filtering
-            FilterDialog filterDialog = new FilterDialog(sortAndFilterViewModel);
+            FilterDialog filterDialog = new FilterDialog(dialogViewModel);
             filterDialog.XamlRoot = Content.XamlRoot;
             var result = await filterDialog.ShowAsync();
             if (result == ContentDialogResult.Primary)

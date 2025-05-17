@@ -1,0 +1,129 @@
+@model WebMarketplace.Models.MyMarketProfileViewModel
+@{
+    ViewData["Title"] = $"{Model.Seller.StoreName} - Profile";
+}
+
+<div class="bg-white shadow rounded-lg p-6">
+    <div class="mb-4">
+        <a href="@Url.Action("Index", "MyMarket")" class="text-blue-600 hover:text-blue-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to My Market
+        </a>
+    </div>
+
+    <!-- Seller Profile Header -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b pb-6">
+        <div class="flex items-center mb-4 lg:mb-0">
+            <div class="h-16 w-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-2xl font-semibold">
+                @(!string.IsNullOrEmpty(Model.Seller?.StoreName)
+                    ? Model.Seller.StoreName.Substring(0, 1)
+                    : "?")
+            </div>
+            <div class="ml-4">
+                <h1 class="text-2xl font-bold text-gray-900">@Model.Seller.StoreName</h1>
+                <div class="flex items-center mt-1">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span class="ml-1 text-sm text-gray-600">@Model.Seller.TrustScore.ToString("F1") Trust Score</span>
+                    </div>
+                    <span class="mx-2 text-gray-400">|</span>
+                    <span class="text-sm text-gray-600">@Model.Seller.FollowersCount Followers</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 lg:mt-0">
+            <button id="followButton" class="@(Model.IsFollowing ? "bg-gray-200 text-gray-700" : "bg-blue-600 text-white") px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
+                @(Model.IsFollowing ? "Following" : "Follow")
+            </button>
+        </div>
+    </div>
+
+    <!-- Store Information -->
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-3">Store Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Description</h3>
+                <p class="mt-1 text-gray-900">@Model.Seller.StoreDescription</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Location</h3>
+                <p class="mt-1 text-gray-900">@Model.Seller.StoreAddress</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Contact</h3>
+                <p class="mt-1 text-gray-900">@Model.Seller.PhoneNumber</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Email</h3>
+                <p class="mt-1 text-gray-900">@Model.Seller.Email</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seller's Products -->
+    <div>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Products</h2>
+            <div class="relative">
+                <input id="sellerProductSearchInput"
+                       type="text"
+                       placeholder="Search products..."
+                       class="border rounded-lg px-4 py-2 w-64"
+                       value="@Model.ProductSearchTerm">
+            </div>
+        </div>
+
+        <div id="sellerProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @await Html.PartialAsync("_SellerProductsPartial", Model)
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle seller products search
+            $('#sellerProductSearchInput').on('keyup', function() {
+                const searchTerm = $(this).val();
+                $.ajax({
+                    url: '@Url.Action("FilterSellerProducts", "MyMarket")',
+                    type: 'POST',
+                    data: {
+                        sellerId: @Model.Seller.Id,
+                        searchTerm: searchTerm
+                    },
+                    success: function(result) {
+                        $('#sellerProductsContainer').html(result);
+                    }
+                });
+            });
+
+            // Toggle follow status
+            $('#followButton').on('click', function() {
+                $.ajax({
+                    url: '@Url.Action("ToggleFollow", "MyMarket")',
+                    type: 'POST',
+                    data: { sellerId: @Model.Seller.Id },
+                    success: function(result) {
+                        if (result.success) {
+                            const btn = $('#followButton');
+                            if (result.isFollowing) {
+                                btn.removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-gray-700');
+                                btn.text('Following');
+                            } else {
+                                btn.removeClass('bg-gray-200 text-gray-700').addClass('bg-blue-600 text-white');
+                                btn.text('Follow');
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}

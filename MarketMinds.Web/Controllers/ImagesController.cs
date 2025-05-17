@@ -1,10 +1,5 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using MarketMinds.Shared.Services.ImagineUploadService;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 
 namespace MarketMinds.Web.Controllers

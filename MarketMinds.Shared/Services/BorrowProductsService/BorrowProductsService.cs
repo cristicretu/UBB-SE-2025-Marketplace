@@ -1,11 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Shared.Services.BorrowProductsService
 {
@@ -16,9 +17,9 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         private const int DEFAULT_PRODUCT_COUNT = 0;
         private const int NULL_PRODUCT_ID = 0;
 
-        public BorrowProductsService(BorrowProductsProxyRepository borrowProductsRepository)
+        public BorrowProductsService()
         {
-            this.borrowProductsRepository = borrowProductsRepository;
+            this.borrowProductsRepository = new BorrowProductsProxyRepository(AppConfig.Configuration);
         }
 
         public void CreateListing(Product product)
@@ -183,7 +184,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             }
         }
 
-        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
+        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType? sortCondition, string searchQuery)
         {
             List<Product> products = GetProducts();
             List<Product> productResultSet = new List<Product>();
@@ -221,6 +222,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                         }).ToList();
                 }
             }
+
             return productResultSet;
         }
 
@@ -353,5 +355,29 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         }
 
         #endregion
+
+        // merge-nicusor
+        Task<Product> IProductService.GetProductByIdAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        {
+            // Not implemented in borrow products service
+            return Task.FromResult<string>(null);
+        }
+        
+        /// <summary>
+        /// Gets a list of products that can be borrowed.
+        /// Implementation for IProductService interface.
+        /// </summary>
+        /// <returns>A list of borrowable products.</returns>
+        public async Task<List<Product>> GetBorrowableProductsAsync()
+        {
+            // Since this is BorrowProductsService, we can return all our products as they are borrowable
+            var borrowProducts = await GetAllBorrowProductsAsync();
+            return borrowProducts.Cast<Product>().ToList();
+        }
     }
 }

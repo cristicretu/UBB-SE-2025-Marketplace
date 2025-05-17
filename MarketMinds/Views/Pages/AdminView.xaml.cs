@@ -4,10 +4,9 @@ using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ViewModelLayer.ViewModel;
-using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Models;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     /// <summary>
     /// Interaction logic for AdminView.xaml

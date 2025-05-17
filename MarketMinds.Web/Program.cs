@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using MarketMinds.Shared;
-using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
-using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Shared.Services.BorrowProductsService;
 using MarketMinds.Shared.Services.BuyProductsService;
 using MarketMinds.Shared.Services.ProductCategoryService;
@@ -17,6 +13,7 @@ using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,8 +66,11 @@ builder.Services.AddSingleton<ReviewProxyRepository>();
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
 builder.Services.AddTransient<IBorrowProductsService, MarketMinds.Shared.Services.BorrowProductsService.BorrowProductsService>();
-builder.Services.AddTransient<IBuyProductsService, MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
-builder.Services.AddTransient<IProductService, MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
+
+// Use the same instance for both interfaces
+builder.Services.AddTransient<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
+builder.Services.AddTransient<IBuyProductsService>(sp => sp.GetRequiredService<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>());
+
 builder.Services.AddTransient<IProductCategoryService, ProductCategoryService>();
 builder.Services.AddTransient<IProductConditionService, ProductConditionService>();
 builder.Services.AddTransient<IProductTagService, ProductTagService>();

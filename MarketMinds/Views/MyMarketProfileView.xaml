@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketMinds.Views.MyMarketProfileView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds.Views"
+    xmlns:models="using:MarketMinds.Shared.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Seller Profile Section -->
+            <Border Style="{StaticResource PrimaryBorder}" Grid.Row="0">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0, 0, 10, 0">
+                        <Button Content="↩" Click="GoBackToMyMarket" Style="{StaticResource PrimaryButton}" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" FontSize="30" Width="60" Height="60"/>
+                    </StackPanel>
+                    <PersonPicture x:Name="ProfilePicture" DisplayName="{Binding StoreName}" Style="{StaticResource PersonPictureStyle}"  Width="100" Height="100" Margin="0,0,10,0" />
+                    <StackPanel MaxWidth="300">
+                        <TextBlock x:Name="DisplayName" Text="{Binding StoreName}" Style="{StaticResource PrimaryLabel}" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Username:" FontWeight="Bold" />
+                            <TextBlock x:Name="Username" Text="{Binding Username}" Margin="5,0,0,0" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Email:" FontWeight="Bold" />
+                            <TextBlock x:Name="Email" Text="{Binding Email}" Margin="5,0,0,0" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Phone:" FontWeight="Bold" />
+                            <TextBlock x:Name="PhoneNumber" Text="{Binding PhoneNumber}" Margin="5,0,0,0" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Address:" FontWeight="Bold" />
+                            <TextBlock x:Name="Address" Text="{Binding Address}" Margin="5,0,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20,0,0,0">
+                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                            <TextBlock Text="Followers:" Style="{StaticResource PrimaryLabel}" />
+                            <TextBlock x:Name="Followers" Text="{Binding FollowersCount}" Margin="5,0,0,0" FontSize="18"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                            <TextBlock Text="Trust Score:" Style="{StaticResource PrimaryLabel}" />
+                            <ProgressBar x:Name="TrustScore" Value="{Binding TrustScore}" Maximum="100" Width="100" Height="30" Foreground="#0D47A1" Margin="5,0,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">
+                        <Button Content="{Binding FollowButtonText}" Command="{Binding FollowCommand}" Background="{Binding FollowButtonColor}" Style="{StaticResource PrimaryButton}" Foreground="#0D47A1"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Search & Controls Section -->
+            <Grid Grid.Row="1" Margin="0,10,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox PlaceholderText="Search" TextChanged="OnSearchProductTextChanged" Style="{StaticResource PrimaryTextBox}" Grid.Column="0" />
+            </Grid>
+
+            <!-- Product Grid -->
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,10,0,0">
+                <ListView ItemsSource="{Binding SellerProducts}" SelectionMode="None"
+              ScrollViewer.VerticalScrollMode="Enabled"
+              ScrollViewer.HorizontalScrollMode="Disabled"
+              ScrollViewer.VerticalScrollBarVisibility="Auto"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <!-- Grid layout for horizontal alignment but vertical scrolling -->
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="10" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Product">
+                            <Border Style="{StaticResource ProductBorder}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Product Info -->
+                                    <StackPanel Grid.Row="0">
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource PrimaryLabel}" />
+                                        <TextBlock Text="{Binding Description}" />
+                                        <TextBlock Text="{Binding Price}" Foreground="Green" />
+                                    </StackPanel>
+
+                                    <!-- Add to Cart Button -->
+                                    <Button Grid.Row="1" Width="35" Height="35"
+                                ToolTipService.ToolTip="Add To Cart" Padding="0"
+                                Command="{Binding DataContext.AddToCartCommand, ElementName=ProductsList}"
+                                CommandParameter="{Binding}">
+                                        <Image Width="17" Height="17">
+                                            <Image.Source>
+                                                <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/cart-add.svg" />
+                                            </Image.Source>
+                                        </Image>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Page>

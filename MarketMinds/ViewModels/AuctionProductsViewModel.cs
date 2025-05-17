@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionProductsService;
-using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.AuctionValidationService;
 
 namespace ViewModelLayer.ViewModel;

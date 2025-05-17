@@ -1,13 +1,9 @@
-﻿using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services.ProductConditionService;
-using MarketMinds.Shared.ProxyRepository;
+﻿using MarketMinds.Shared.Services.ProductConditionService;
 using MarketMinds.Shared.IRepository;
 
 using NUnit.Framework;
 using Moq;
 using System.Collections.Generic;
-using Castle.Core.Configuration;
-using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using System;
 

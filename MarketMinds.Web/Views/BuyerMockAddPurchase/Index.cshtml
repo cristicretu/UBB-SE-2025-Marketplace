@@ -1,0 +1,20 @@
+﻿@model WebMarketplace.Models.BuyerMockAddPurchaseViewModel
+
+<h2>Add Purchase</h2>
+
+<form asp-action="AddPurchase" method="post">
+    <div>
+        <label for="ProductId">Product ID:</label>
+        <input asp-for="ProductId" id="ProductId" />
+    </div>
+    <div>
+        <label for="Quantity">Quantity:</label>
+        <input asp-for="Quantity" id="Quantity" />
+    </div>
+    <button type="submit">Add Purchase</button>
+</form>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <p>@TempData["SuccessMessage"]</p>
+}

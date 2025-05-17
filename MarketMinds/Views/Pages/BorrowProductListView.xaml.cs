@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
@@ -12,8 +11,9 @@ using MarketMinds.Helpers.ViewModelHelpers;
 using MarketMinds.Views.Pages;
 using MarketMinds.Shared.Services.BorrowSortTypeConverterService;
 using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.Interfaces;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     public sealed partial class BorrowProductListView : Window
     {
@@ -109,7 +109,9 @@ namespace UiLayer
 
         private async void FilterButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            FilterDialog filterDialog = new FilterDialog(sortAndFilterViewModel);
+            // Cast to IProductService version for FilterDialog compatibility
+            SortAndFilterViewModel<IProductService> dialogViewModel = (SortAndFilterViewModel<IProductService>)(object)sortAndFilterViewModel;
+            FilterDialog filterDialog = new FilterDialog(dialogViewModel);
             filterDialog.XamlRoot = Content.XamlRoot;
             var result = await filterDialog.ShowAsync();
             if (result == ContentDialogResult.Primary)

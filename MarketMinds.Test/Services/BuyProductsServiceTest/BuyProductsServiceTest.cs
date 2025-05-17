@@ -4,7 +4,6 @@ using NUnit.Framework;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BuyProductsService;
 using MarketMinds.Test.Services.BuyProductsServiceTest;
-using MarketMinds.Shared.ProxyRepository;
 
 
 namespace MarketMinds.Tests.Services.BuyProductsServiceTest

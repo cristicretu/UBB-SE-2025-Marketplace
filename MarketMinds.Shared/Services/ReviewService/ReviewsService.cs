@@ -1,14 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
+﻿using System.Diagnostics;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
-using MarketMinds.Shared.Services.UserService;
 using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.UserService;
 
 namespace MarketMinds.Shared.Services.ReviewService
 {
@@ -29,7 +26,7 @@ namespace MarketMinds.Shared.Services.ReviewService
             // If userService is null, create a new instance with the configuration
             if (this.userService == null)
             {
-                this.userService = new UserService.UserService(configuration);
+                this.userService = new MarketMinds.Shared.Services.UserService.UserService(configuration);
             }
 
             jsonOptions = new JsonSerializerOptions
@@ -294,7 +291,7 @@ namespace MarketMinds.Shared.Services.ReviewService
                 return null;
             }
 
-            return new MarketMinds.Shared.Models.User
+            var user = new MarketMinds.Shared.Models.User
             {
                 Id = domainUser.Id,
                 Username = domainUser.Username,
@@ -302,8 +299,14 @@ namespace MarketMinds.Shared.Services.ReviewService
                 PasswordHash = domainUser.PasswordHash,
                 UserType = domainUser.UserType,
                 Balance = domainUser.Balance,
-                Rating = domainUser.Rating
             };
+
+            if (domainUser.GetType().GetProperty("Rating") != null)
+            {
+                user.Rating = domainUser.Rating;
+            }
+
+            return user;
         }
 
         private Review ConvertToDomainReview(MarketMinds.Shared.Models.Review sharedReview)

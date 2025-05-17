@@ -1,10 +1,6 @@
-﻿using System.Net.Http;
-using System.Text.Json.Nodes;
-using System;
-using System.Collections.Generic;
+﻿using System.Text.Json.Nodes;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
-using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.ProxyRepository;
 
 namespace MarketMinds.Shared.Services.ProductConditionService

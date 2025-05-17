@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketMinds.Views.BillingInfo"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds"
+    xmlns:utils="using:MarketMinds.Utils" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+   >
+    <Page.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Background" Value="#cccaca"/>
+            
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+        <utils:SellerToVisibilityConverter x:Key="SellerToVisibilityConverter"/>
+        <utils:BorrowedToVisibilityConverter x:Key="BorrowedToVisibilityConverter"/>
+        <utils:StringToPaymentMethodConverter x:Key="StringToPaymentMethodConverter"/>
+    </Page.Resources>
+
+
+
+    <Grid Padding="20,40,20,0" RowSpacing="5" ColumnSpacing="60" Background="White" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="bInfoTitle"   FontSize="20" Grid.Row="0">Billing Information</TextBlock>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top"  Grid.Row="1">
+            <TextBox Text="{Binding FullName, Mode=TwoWay}" PlaceholderText="Full Name*" />
+            <TextBox Text="{Binding Email, Mode=TwoWay}" PlaceholderText="Email Address*" ></TextBox>
+            <TextBox Text="{Binding PhoneNumber, Mode=TwoWay}" PlaceholderText="Phone Number*" ></TextBox>
+            <TextBox Text="{Binding Address, Mode=TwoWay}" PlaceholderText="Address*" ></TextBox>
+            <TextBox Text="{Binding ZipCode, Mode=TwoWay}" PlaceholderText="Zipcode*" ></TextBox>
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="2">
+            <TextBlock x:Name="payInfo"  FontSize="20" >Payment Information</TextBlock>
+            <RadioButton x:Name="CashButton" IsEnabled="{Binding IsCashEnabled}" IsChecked="{Binding SelectedPaymentMethod, Mode=TwoWay, Converter={StaticResource StringToPaymentMethodConverter}, ConverterParameter=cash}" Background="#cccaca" Foreground="White" HorizontalAlignment="Stretch" >Cash Payment</RadioButton>
+            <RadioButton x:Name="CardButton" IsEnabled="{Binding IsCardEnabled}" IsChecked="{Binding SelectedPaymentMethod, Mode=TwoWay, Converter={StaticResource StringToPaymentMethodConverter}, ConverterParameter=card}" Background="#cccaca" Foreground="White" HorizontalAlignment="Stretch">Card Payment</RadioButton>
+            <RadioButton x:Name="WalletButton" IsEnabled="{Binding IsWalletEnabled}" IsChecked="{Binding SelectedPaymentMethod, Mode=TwoWay, Converter={StaticResource StringToPaymentMethodConverter}, ConverterParameter=wallet}" Background="#cccaca" Foreground="White" HorizontalAlignment="Stretch">Wallet Payment</RadioButton>
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="3">
+            <TextBlock  Foreground="Black" FontSize="20">Additional Delivery Information</TextBlock>
+            <TextBox Text="{Binding AdditionalInfo, Mode=TwoWay}" Height="80" Background="#cccaca" PlaceholderText="Observations for your order (optional)..." ></TextBox>
+        </StackPanel>
+
+        <TextBlock x:Name="orderSummary" FontSize="20" Grid.Row="0" Grid.Column="1">Order Summary:</TextBlock>
+
+        <ListView ItemsSource="{Binding ProductList}" Grid.Row="1" Grid.Column="1" Background="#cccaca" Foreground="Black">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                            <TextBlock  FontSize="16" Foreground="Black" >
+                            <Run Text="Product name: " FontWeight="Bold"/>
+                             <Run Text="{Binding Name}"/>
+                            </TextBlock>
+                            <TextBlock  FontSize="16" Foreground="Black" >
+                            <Run Text="Price: " FontWeight="Bold"/>
+                             <Run Text="{Binding Price}"/>
+                            </TextBlock>
+                        <TextBlock  FontSize="16" Foreground="Black" Visibility="{Binding SellerId, Converter={StaticResource  SellerToVisibilityConverter}}" >
+                              <Run Text="Seller ID: " FontWeight="Bold"/>
+                               <Run Text="{Binding SellerId}"/>
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding ProductType, Converter={StaticResource BorrowedToVisibilityConverter}}">
+                            <TextBlock Foreground="Black" Text="Start Date: " FontWeight="Bold"/>
+                            <DatePicker Foreground="Black" SelectedDate="{Binding StartDate, Mode=TwoWay}" SelectedDateChanged="OnStartDateChanged" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding ProductType, Converter={StaticResource BorrowedToVisibilityConverter}}">
+                            <TextBlock Foreground="Black" Text="End Date: " FontWeight="Bold"/>
+                            <DatePicker  Foreground="Black" SelectedDate="{Binding EndDate, Mode=TwoWay}" SelectedDateChanged="OnEndDateChanged" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="2" Grid.Column="1">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Subtotal: "/>
+                <TextBlock Text="{Binding Subtotal}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Warranty Tax: "/>
+                <TextBlock Text="{Binding WarrantyTax}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Delivery fee: "/>
+                <TextBlock Text="{Binding DeliveryFee}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Total: "/>
+                <TextBlock Text="{Binding Total}" />
+            </StackPanel>
+        </StackPanel>
+
+
+        <Button Content="Finalize Purchase" Click="OnFinalizeButtonClickedAsync"  Grid.Row="4" Grid.Column="1" Background="#cccaca" Foreground="Black" Width="200px" HorizontalAlignment="Center"/>
+
+    </Grid>
+
+</Page>

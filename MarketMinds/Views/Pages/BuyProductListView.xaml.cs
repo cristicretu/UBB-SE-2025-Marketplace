@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
@@ -13,13 +12,14 @@ using MarketMinds.Views.Pages;
 using MarketMinds.Helpers.ViewModelHelpers;
 using MarketMinds.Shared.Services.ProductPaginationService;
 using MarketMinds.Shared.Services.BuyProductsService;
+using MarketMinds.Shared.Services.Interfaces;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     public sealed partial class BuyProductListView : Window
     {
         private readonly BuyProductsViewModel buyProductsViewModel;
-        private readonly SortAndFilterViewModel<BuyProductsService> sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<IProductService> sortAndFilterViewModel;
         private readonly ProductPaginationService paginationService;
         private ObservableCollection<BuyProduct> buyProducts;
         private CompareProductsViewModel compareProductsViewModel;
@@ -32,7 +32,7 @@ namespace UiLayer
 
         private const int FIRST_PAGE = 1;
 
-        public BuyProductListView(SortAndFilterViewModel<BuyProductsService> sortAndFilterViewModel)
+        public BuyProductListView(SortAndFilterViewModel<IProductService> sortAndFilterViewModel)
         {
             this.InitializeComponent();
 

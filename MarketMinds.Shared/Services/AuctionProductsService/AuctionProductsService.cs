@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Shared.Services.AuctionProductsService
 {
@@ -253,9 +252,9 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             }
         }
 
-        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
+        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType? sortCondition, string searchQuery)
         {
-            List<AuctionProduct> products = GetProducts();
+            List<Product> products = GetProducts().Cast<Product>().ToList();
             List<Product> productResultSet = new List<Product>();
             foreach (Product product in products)
             {
@@ -291,6 +290,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                         }).ToList();
                 }
             }
+
             return productResultSet;
         }
 
@@ -464,7 +464,30 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                 }
             }
         }
-
         #endregion
+
+        // merge-nicusor
+        Task<Product> IProductService.GetProductByIdAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<string> IProductService.GetSellerNameAsync(int? sellerId)
+        {
+            // Not implemented in auction products service
+            return Task.FromResult<string>(null);
+        }
+        
+        /// <summary>
+        /// Gets a list of products that can be borrowed.
+        /// Implementation for IProductService interface.
+        /// </summary>
+        /// <returns>A list of borrowable products.</returns>
+        public async Task<List<Product>> GetBorrowableProductsAsync()
+        {
+            // Since this is AuctionProductsService, we don't have borrowable products
+            // Return an empty list when this method is called on this service
+            return new List<Product>();
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services;
+﻿using MarketMinds.Shared.Services;
 using NUnit.Framework;
 
 namespace MarketMinds.Test.Services

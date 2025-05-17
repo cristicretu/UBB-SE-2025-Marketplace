@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
-using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.IRepository;
-using System.Text.Json.Nodes;
 using MarketMinds.Shared.Models.DTOs;
 using MarketMinds.Shared.Models.DTOs.Mappers;
 

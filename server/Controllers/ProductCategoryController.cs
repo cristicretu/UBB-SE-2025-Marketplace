@@ -1,8 +1,5 @@
-using System;
 using System.Net;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using DataAccessLayer;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 

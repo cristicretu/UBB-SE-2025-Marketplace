@@ -1,5 +1,4 @@
 ﻿using MarketMinds.Shared.Models;
-using Windows.UI.Xaml;
 
 namespace MarketMinds.Services
 {

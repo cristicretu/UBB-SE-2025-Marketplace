@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Shared.IRepository

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services;
-using MarketMinds.Shared.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.Interfaces;
 
 namespace BusinessLogicLayer.ViewModel
 {

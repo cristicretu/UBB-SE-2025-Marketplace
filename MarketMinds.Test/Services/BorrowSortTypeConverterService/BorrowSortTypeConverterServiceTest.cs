@@ -1,6 +1,4 @@
-﻿using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using MarketMinds.Shared.Services.BorrowSortTypeConverterService;
 
 namespace MarketMinds.Test.Services

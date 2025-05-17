@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BasketService;
-using System;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using MarketMinds.Web.Models;

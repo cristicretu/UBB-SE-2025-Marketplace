@@ -1,5 +1,3 @@
-using System;
-
 namespace MarketMinds.Shared.Models
 {
     public class AuctionProductProductTag

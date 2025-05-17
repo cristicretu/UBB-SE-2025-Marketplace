@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NUnit.Framework;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.ListingFormValidationService;
 
 namespace MarketMinds.Test.Services

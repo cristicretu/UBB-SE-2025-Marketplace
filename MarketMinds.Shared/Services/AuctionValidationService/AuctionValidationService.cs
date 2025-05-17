@@ -1,4 +1,3 @@
-using System;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionProductsService;
 

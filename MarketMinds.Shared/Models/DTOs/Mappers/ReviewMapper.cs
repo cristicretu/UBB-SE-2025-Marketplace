@@ -1,7 +1,3 @@
-using System.Linq;
-using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Models.DTOs;
-
 namespace MarketMinds.Shared.Models.DTOs.Mappers
 {
     public static class ReviewMapper

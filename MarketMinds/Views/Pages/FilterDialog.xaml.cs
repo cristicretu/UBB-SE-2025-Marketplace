@@ -1,26 +1,20 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services.Interfaces;
 using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
 using ProductCategory = MarketMinds.Shared.Models.Category;
 using ProductCondition = MarketMinds.Shared.Models.Condition;
-using MarketMinds.Shared.Services;
-using MarketMinds.Shared.Services.AuctionProductsService;
-using MarketMinds.Shared.Services.BorrowProductsService;
-using MarketMinds.Shared.Services.BuyProductsService;
 
-namespace UiLayer
+namespace MarketMinds.Views
 {
     public partial class FilterDialog : ContentDialog
     {
-        private readonly dynamic sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<IProductService> sortAndFilterViewModel;
         private readonly ProductTagViewModel productTagViewModel;
         private readonly ProductConditionViewModel productConditionViewModel;
         private readonly ProductCategoryViewModel productCategoryViewModel;
@@ -38,7 +32,7 @@ namespace UiLayer
         private int initialDisplayCount = 5;
         private int additionalDisplayCount = 10;
 
-        public FilterDialog(object sortAndFilterViewModel)
+        public FilterDialog(SortAndFilterViewModel<IProductService> sortAndFilterViewModel)
         {
             this.InitializeComponent();
             this.sortAndFilterViewModel = sortAndFilterViewModel;
