@@ -129,6 +129,18 @@ namespace Server.DataAccessLayer
             {
                 entity.ToTable("Reviews");
                 entity.HasKey(review => review.Id);
+
+                entity.HasOne<Seller>()
+                    .WithMany()
+                    .HasForeignKey(review => review.SellerId)
+                    .HasPrincipalKey(seller => seller.Id)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                entity.HasOne<Buyer>()
+                    .WithMany()
+                    .HasForeignKey(review => review.BuyerId)
+                    .HasPrincipalKey(buyer => buyer.Id)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // --- ReviewImage Configuration ---

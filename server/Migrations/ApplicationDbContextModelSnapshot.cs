@@ -864,6 +864,10 @@ namespace server.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BuyerId");
+
+                    b.HasIndex("SellerId");
+
                     b.ToTable("Reviews", (string)null);
                 });
 
@@ -1561,6 +1565,21 @@ namespace server.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("MarketMinds.Shared.Models.Review", b =>
+                {
+                    b.HasOne("MarketMinds.Shared.Models.Buyer", null)
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MarketMinds.Shared.Models.Seller", null)
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.ReviewImage", b =>

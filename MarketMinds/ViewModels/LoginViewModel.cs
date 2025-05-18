@@ -204,9 +204,9 @@ namespace MarketMinds.ViewModels
                 return;
             }
 
-            if (user == null || !await this.UserService.CanUserLogin(user, this.Password))
+            if (!await this.UserService.CanUserLogin(user, this.Password))
             {
-                this.failedAttempts = (user != null ? user.FailedLogIns : 0) + 1;
+                this.failedAttempts = user.FailedLogIns + 1;
                 if (user != null)
                 {
                     await this.UserService.UpdateUserFailedLoginsCount(user, this.failedAttempts);
@@ -225,7 +225,7 @@ namespace MarketMinds.ViewModels
             {
                 this.ErrorMessage = "Login successful!";
                 this.failedAttempts = 0;
-                if (user != null)
+                if (user.FailedLogIns > 0)
                 {
                     await this.UserService.UpdateUserFailedLoginsCount(user, 0);
                     this.IsLoginEnabled = true;
