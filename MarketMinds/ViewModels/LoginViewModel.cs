@@ -254,16 +254,16 @@ namespace MarketMinds.ViewModels
                 return;
             }
 
-            if (await this.UserService.IsUserSuspended(this.Email))
+            if (user != null && user.IsBanned)
             {
                 TimeSpan remainingTime = this.banEndTime - DateTime.Now;
                 this.ErrorMessage = $"Too many failed attempts. Try again in {remainingTime.Seconds}s";
                 return;
             }
 
-            if (!await this.UserService.CanUserLogin(this.Email, this.Password))
+            if (user == null || !await this.UserService.CanUserLogin(user, this.Password))
             {
-                this.failedAttempts = await this.UserService.GetFailedLoginsCountByEmail(this.Email) + 1;
+                this.failedAttempts = (user != null ? user.FailedLogIns : 0) + 1;
                 if (user != null)
                 {
                     await this.UserService.UpdateUserFailedLoginsCount(user, this.failedAttempts);
