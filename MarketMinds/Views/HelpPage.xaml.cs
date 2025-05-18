@@ -580,10 +580,10 @@ namespace MarketMinds.Views
             {
                 await RunOnUIThreadAsync(() =>
                 {
-                    // Create Border container
+                    // Create Border container with consistent styling
                     Border messageBorder = new Border
                     {
-                        Background = new SolidColorBrush(isFromBot ? Microsoft.UI.Colors.LightSkyBlue : Microsoft.UI.Colors.LightGray),
+                        Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray),
                         CornerRadius = new CornerRadius(8),
                         Padding = new Thickness(15, 10, 15, 10),
                         HorizontalAlignment = isFromBot ? HorizontalAlignment.Left : HorizontalAlignment.Right,
@@ -595,7 +595,8 @@ namespace MarketMinds.Views
                     TextBlock messageText = new TextBlock
                     {
                         Text = message,
-                        TextWrapping = TextWrapping.Wrap
+                        TextWrapping = TextWrapping.Wrap,
+                        Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black)
                     };
 
                     // Add TextBlock to Border
@@ -624,10 +625,13 @@ namespace MarketMinds.Views
 
                 await RunOnUIThreadAsync(() =>
                 {
+                    // Get theme colors
+                    var darkTextBrush = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                    
                     // Create Border container
                     Border typingBorder = new Border
                     {
-                        Background = new SolidColorBrush(Microsoft.UI.Colors.LightSkyBlue),
+                        Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray),
                         CornerRadius = new CornerRadius(8),
                         Padding = new Thickness(15, 10, 15, 10),
                         HorizontalAlignment = HorizontalAlignment.Left,
@@ -640,7 +644,8 @@ namespace MarketMinds.Views
                     TextBlock typingText = new TextBlock
                     {
                         Text = "Typing...",
-                        TextWrapping = TextWrapping.Wrap
+                        TextWrapping = TextWrapping.Wrap,
+                        Foreground = darkTextBrush
                     };
 
                     // Add TextBlock to Border

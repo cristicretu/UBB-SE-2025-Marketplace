@@ -15,7 +15,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- Left sidebar with conversation list -->
-        <Grid Grid.Column="0" Background="#f0f0f0">
+        <Grid Grid.Column="0" Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -38,7 +38,7 @@
         </Grid>
 
         <!-- empty state -->
-        <Grid Grid.Column="1" x:Name="EmptyStatePanel" Background="White" Visibility="Visible">
+        <Grid Grid.Column="1" x:Name="EmptyStatePanel" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Visibility="Visible">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="Select a conversation or create a new one" 
                            FontSize="16" HorizontalAlignment="Center" Margin="0,0,0,20" />
@@ -46,7 +46,7 @@
         </Grid>
 
         <!-- Main chat area -->
-        <Grid Grid.Column="1" x:Name="ChatPanel" Background="White" Visibility="Collapsed">
+        <Grid Grid.Column="1" x:Name="ChatPanel" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
