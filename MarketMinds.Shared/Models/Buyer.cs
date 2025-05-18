@@ -36,6 +36,7 @@ namespace MarketMinds.Shared.Models
             this.ShippingAddress = new Address();
             this.BillingAddress = new Address();
             this.SyncedBuyerIds = new List<Buyer>(); // in the application this is not used, so i will not fetch data about it in the server repo - Alex
+            this.Bids = new List<Bid>();
         }
 
         /// <summary>
@@ -132,5 +133,10 @@ namespace MarketMinds.Shared.Models
         /// BUYER FOLLOWS SELLER => this list represents the seller's ID that the buyer is following - Alex
         /// </summary>
         public List<int> FollowingUsersIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bids placed by this buyer in auctions.
+        /// </summary>
+        public List<Bid> Bids { get; set; }
     }
 }

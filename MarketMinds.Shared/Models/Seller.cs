@@ -19,6 +19,9 @@ namespace MarketMinds.Shared.Models
             this.StoreAddress = string.Empty;
             this.FollowersCount = 0;
             this.TrustScore = 0;
+            this.AuctionProducts = new List<AuctionProduct>();
+            this.BuyProducts = new List<BuyProduct>();
+            this.BorrowProducts = new List<BorrowProduct>();
         }
 
         /// <summary>
@@ -38,6 +41,9 @@ namespace MarketMinds.Shared.Models
             this.StoreAddress = storeAddress;
             this.FollowersCount = followersCount;
             this.TrustScore = trustScore;
+            this.AuctionProducts = new List<AuctionProduct>();
+            this.BuyProducts = new List<BuyProduct>();
+            this.BorrowProducts = new List<BorrowProduct>();
         }
 
         /// <summary>
@@ -89,5 +95,20 @@ namespace MarketMinds.Shared.Models
         /// Gets or sets the trust score of the seller.
         /// </summary>
         public double TrustScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the auction products this seller is selling.
+        /// </summary>
+        public List<AuctionProduct> AuctionProducts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the buy products this seller is selling.
+        /// </summary>
+        public List<BuyProduct> BuyProducts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the borrow products this seller is offering.
+        /// </summary>
+        public List<BorrowProduct> BorrowProducts { get; set; }
     }
 }
