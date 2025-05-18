@@ -627,6 +627,7 @@ namespace MarketMinds.Views
                 {
                     // Get theme colors
                     var darkTextBrush = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                    
                     // Create Border container
                     Border typingBorder = new Border
                     {

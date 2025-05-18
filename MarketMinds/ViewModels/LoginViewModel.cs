@@ -281,13 +281,14 @@ namespace MarketMinds.ViewModels
             else
             {
                 this.ErrorMessage = "Login successful!";
+                this.OnPropertyChanged(nameof(this.ErrorMessage));
                 this.failedAttempts = 0;
                 if (user.FailedLogIns > 0)
                 {
-                    await this.UserService.UpdateUserFailedLoginsCount(user, 0);
-                    this.IsLoginEnabled = true;
-                    await this.successCallback.OnLoginSuccess(user);
+                    await this.UserService.UpdateUserFailedLoginsCount(user, this.failedAttempts);
                 }
+                this.IsLoginEnabled = true;
+                await this.successCallback.OnLoginSuccess(user);
             }
 
             this.OnPropertyChanged(nameof(this.FailedAttemptsText));
