@@ -52,7 +52,7 @@ namespace MarketMinds.Shared.Services.UserService
         /// <param name="password">The password of the user.</param>
         /// <returns>A <see cref="Task{bool}"/> representing the result of the asynchronous operation.
         /// The task result contains true if the user can log in, otherwise false.</returns>
-        Task<bool> CanUserLogin(string email, string password);
+        Task<bool> CanUserLogin(User user, string plainPassword);
 
         /// <summary>
         /// Updates the failed login count for a user.
