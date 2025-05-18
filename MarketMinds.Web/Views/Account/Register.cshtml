@@ -1,4 +1,4 @@
-@model MarketMinds.Shared.Models.User
+@model WebMarketplace.Models.RegisterViewModel
 @{
     ViewData["Title"] = "Register";
 }
@@ -22,10 +22,30 @@
                 <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
             </div>
             
-            <div class="mb-6">
+            <div class="mb-4">
+                <label asp-for="Telephone" class="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
+                <input asp-for="Telephone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <span asp-validation-for="Telephone" class="text-red-500 text-xs"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Role" class="block text-gray-700 text-sm font-bold mb-2">Account Type</label>
+                <select asp-for="Role" asp-items="ViewBag.Roles" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <option value="">Select Role</option>
+                </select>
+                <span asp-validation-for="Role" class="text-red-500 text-xs"></span>
+            </div>
+
+            <div class="mb-4">
                 <label asp-for="Password" class="block text-gray-700 text-sm font-bold mb-2"></label>
                 <input asp-for="Password" type="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
+            </div>
+            
+            <div class="mb-6">
+                <label asp-for="ConfirmPassword" class="block text-gray-700 text-sm font-bold mb-2">Confirm Password</label>
+                <input asp-for="ConfirmPassword" type="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <span asp-validation-for="ConfirmPassword" class="text-red-500 text-xs"></span>
             </div>
             
             <div class="flex items-center justify-between">
@@ -41,4 +61,5 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 } 

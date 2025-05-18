@@ -1,3 +1,4 @@
+@model WebMarketplace.Models.LoginViewModel
 @{
     ViewData["Title"] = "Login";
 }
@@ -10,13 +11,26 @@
             <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
             
             <div class="mb-4">
-                <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
-                <input type="text" name="username" id="username" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <label asp-for="Email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                <input asp-for="Email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
             </div>
             
             <div class="mb-6">
-                <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                <input type="password" name="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <label asp-for="Password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                <input asp-for="Password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required type="password">
+                <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
+            </div>
+
+            <div class="mb-6">
+                <label for="CaptchaInput" class="block text-gray-700 text-sm font-bold mb-2">Captcha</label>
+                <div class="flex items-center mb-2">
+                    <div class="bg-gray-100 px-4 py-2 rounded mr-2 font-mono text-lg select-none">
+                        @ViewData["CaptchaCode"]
+                    </div>
+                    <input asp-for="CaptchaInput" class="shadow appearance-none border rounded flex-1 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required placeholder="Enter captcha">
+                </div>
+                <span asp-validation-for="CaptchaInput" class="text-red-500 text-xs"></span>
             </div>
             
             <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
@@ -31,4 +45,8 @@
             </div>
         </form>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+} 

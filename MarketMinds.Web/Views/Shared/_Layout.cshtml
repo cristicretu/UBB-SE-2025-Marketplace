@@ -1,3 +1,5 @@
+@using MarketMinds.Shared.Services
+@using System.Security.Claims
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,6 +26,12 @@
     </script>
 </head>
 <body class="bg-gray-50">
+    @{
+        bool isAuthenticated = User.Identity?.IsAuthenticated == true || UserSession.CurrentUserId.HasValue;
+        string username = User.Identity?.IsAuthenticated == true 
+            ? User.Identity.Name 
+            : UserSession.CurrentUserId.HasValue ? "User" : null;
+    }
     <header>
         <nav class="bg-primary text-white py-4">
             <div class="container mx-auto px-4 flex justify-between items-center">
@@ -33,7 +41,7 @@
                         <li>
                             <a class="hover:text-primary-light transition" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        @if (User.Identity.IsAuthenticated)
+                        @if (isAuthenticated)
                         {
                             <li>
                                 <a class="hover:text-primary-light transition" asp-area="" asp-controller="Account" asp-action="Index">Account</a>
@@ -54,16 +62,14 @@
                                 <li>
                                     <a class="hover:text-primary-light transition" asp-controller="Admin" asp-action="Index">Admin</a>
                                 </li>
-                            <li class="relative group">
-                                <a class="hover:text-primary-light transition flex items-center" href="#">
-                                    <span>@User.Identity.Name</span>
+                            <li class="relative dropdown-container">
+                                <a class="hover:text-primary-light transition flex items-center cursor-pointer" id="userDropdown">
+                                    <span>@username</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </a>
-                                <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block z-10">
-                                    <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Profile</a>
-                                    <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Settings</a>
+                                <div id="userDropdownContent" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-10">
                                     <div class="border-t border-gray-100"></div>
                                     <form asp-controller="Account" asp-action="Logout" method="post">
                                         @Html.AntiForgeryToken()
@@ -89,6 +95,27 @@
     
     <div class="container mx-auto my-4 px-4">
         <main role="main">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                    <p>@TempData["SuccessMessage"]</p>
+                </div>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                    <p>@TempData["ErrorMessage"]</p>
+                </div>
+            }
+            
+            @if (TempData["WarningMessage"] != null)
+            {
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+                    <p>@TempData["WarningMessage"]</p>
+                </div>
+            }
+            
             @RenderBody()
         </main>
     </div>
@@ -103,6 +130,27 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userDropdown = document.getElementById('userDropdown');
+            const dropdownContent = document.getElementById('userDropdownContent');
+            
+            if (userDropdown && dropdownContent) {
+                // Toggle dropdown when clicking on the dropdown button
+                userDropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    dropdownContent.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userDropdown.contains(e.target) && !dropdownContent.contains(e.target)) {
+                        dropdownContent.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html> 
