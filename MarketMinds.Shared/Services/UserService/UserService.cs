@@ -656,7 +656,12 @@ namespace MarketMinds.Shared.Services.UserService
 
             var user = await this.GetUserByEmail(email); // here user can be null, careful! merge-nicusor
 
-            if (await this.IsUserSuspended(email) && user?.BannedUntil != null)
+            if (user == null)
+            {
+                return "User not found.";
+            }
+
+            if (await this.IsUserSuspended(email) && user.BannedUntil != null)
             {
                 TimeSpan remainingTime = user.BannedUntil.Value - DateTime.Now;
 
