@@ -21,7 +21,7 @@
         <!-- DataTemplate for MY Text Messages -->
         <DataTemplate x:Key="MyTextMessageTemplate"
                       x:DataType="domain:Message">
-            <Border Background="LightGreen"
+            <Border Background="{ThemeResource SystemAccentColor}"
                     CornerRadius="6"
                     Margin="40,4,0,4"
                     Padding="8"
@@ -29,14 +29,14 @@
                     MaxWidth="{Binding ActualWidth, ElementName=ChatListView, Converter={StaticResource WidthPercentageConverter}, ConverterParameter=0.7}">
                 <TextBlock Text="{Binding Content}"
                            TextWrapping="WrapWholeWords"
-                           Foreground="Black"/>
+                           Foreground="White"/>
             </Border>
         </DataTemplate>
 
         <!-- DataTemplate for TARGET's Text Messages -->
         <DataTemplate x:Key="TargetTextMessageTemplate"
                       x:DataType="domain:Message">
-            <Border Background="LightGray"
+            <Border Background="#E0E0E0"
                     CornerRadius="6"
                     Margin="0,4,40,4"
                     Padding="8"
@@ -44,14 +44,14 @@
                     MaxWidth="{Binding ActualWidth, ElementName=ChatListView, Converter={StaticResource WidthPercentageConverter}, ConverterParameter=0.7}">
                 <TextBlock Text="{Binding Content}"
                            TextWrapping="WrapWholeWords"
-                           Foreground="Black"/>
+                           Foreground="#202020"/>
             </Border>
         </DataTemplate>
 
         <!-- DataTemplate for MY Image Messages -->
         <DataTemplate x:Key="MyImageMessageTemplate"
                       x:DataType="domain:Message">
-            <Border Background="LightGreen"
+            <Border Background="{ThemeResource SystemAccentColor}"
                     CornerRadius="6"
                     Margin="40,4,0,4"
                     Padding="4"
@@ -66,7 +66,7 @@
         <!-- DataTemplate for TARGET's Image Messages -->
         <DataTemplate x:Key="TargetImageMessageTemplate"
                       x:DataType="domain:Message">
-            <Border Background="LightGray"
+            <Border Background="#E0E0E0"
                     CornerRadius="6"
                     Margin="0,4,40,4"
                     Padding="4"
@@ -79,7 +79,7 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Background="White"
+    <Grid Background="#F5F5F5"
           Padding="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -96,12 +96,14 @@
                     Click="BackButton_Click"
                     Width="40"
                     Height="40"
+                    Background="{ThemeResource SystemAccentColor}"
+                    Foreground="White"
                     Margin="0,0,10,0"/>
             <TextBlock x:Name="TargetUserTextBlock"
                        Text="Chat"
                        FontSize="20"
                        FontWeight="Bold"
-                       Foreground="#2C3E50"
+                       Foreground="#202020"
                        VerticalAlignment="Center"/>
         </StackPanel>
 
@@ -109,8 +111,8 @@
         <ListView
             x:Name="ChatListView"
             Grid.Row="1"
-            Background="WhiteSmoke"
-            BorderBrush="#ccc"
+            Background="White"
+            BorderBrush="#CCCCCC"
             BorderThickness="1"
             Padding="10,5"
             Margin="0"
@@ -144,6 +146,10 @@
                      Grid.Column="0"
                      PlaceholderText="Type a message..."
                      Margin="0,0,10,0"
+                     Background="White"
+                     Foreground="#202020"
+                     BorderBrush="#AAAAAA"
+                     BorderThickness="1"
                      AcceptsReturn="True"
                      TextWrapping="Wrap"/>
 
@@ -152,6 +158,8 @@
                     Content="📎"
                     Click="AttachButton_Click"
                     Width="40"
+                    Background="{ThemeResource SystemAccentColor}"
+                    Foreground="White"
                     Height="40"
                     Margin="0,0,10,0"/>
 
@@ -161,6 +169,8 @@
                     Click="SendButton_Click"
                     Width="80"
                     Height="40"
+                    Background="{ThemeResource SystemAccentColor}"
+                    Foreground="White"
                     Margin="0,0,10,0"/>
 
             <Button x:Name="ExportButton"
@@ -168,6 +178,8 @@
                     Content="Export"
                     Click="ExportButton_Click"
                     Width="80"
+                    Background="{ThemeResource SystemAccentColor}"
+                    Foreground="White"
                     Height="40"/>
         </Grid>
 

@@ -48,10 +48,6 @@ namespace MarketMinds.Shared.Models
 
         private const double MAX_BALANCE = 999999;
 
-        // Navigation properties
-        public ICollection<AuctionProduct> SellingItems { get; set; }
-        public ICollection<Bid> Bids { get; set; }
-
         // Default constructor for EF Core
         public User()
         {
@@ -69,8 +65,6 @@ namespace MarketMinds.Shared.Models
             FailedLogIns = failedLogins;
             Token = string.Empty;
             Password = string.Empty;
-            SellingItems = new List<AuctionProduct>();
-            Bids = new List<Bid>();
         }
     }
 }

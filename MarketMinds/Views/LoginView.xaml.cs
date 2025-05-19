@@ -4,6 +4,8 @@
 
 namespace MarketMinds.Views
 {
+    using MarketMinds.Shared.Helper;
+    using MarketMinds.Shared.Services.UserService;
     using MarketMinds.ViewModels;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Input;
@@ -51,7 +53,7 @@ namespace MarketMinds.Views
         /// <param name="e">The event data.</param>
         private void RegisterButtonTextBlock_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            ISignUpViewModel signUpViewModel = new SignUpViewModel(this.ViewModel.UserService);
+            ISignUpViewModel signUpViewModel = new SignUpViewModel(App.UserService);
             signUpViewModel.NavigateToLogin = () =>
             {
                 this.Frame.Navigate(typeof(LoginView), this.ViewModel);

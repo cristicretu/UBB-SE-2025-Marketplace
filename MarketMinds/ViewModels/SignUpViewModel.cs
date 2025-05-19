@@ -7,6 +7,7 @@ namespace MarketMinds.ViewModels
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Windows.Input;
+    using System.Threading.Tasks;
     using MarketMinds.Shared.Services;
     using MarketMinds.Shared.Services.UserService;
     using Microsoft.UI.Xaml.Controls;
@@ -173,9 +174,9 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="title">The title.</param>
         /// <param name="message">The message.</param>
-        private async System.Threading.Tasks.Task ShowDialog(string title, string message)
+        private async Task ShowDialog(string title, string message)
         {
-            if (App.MainWindow == null)
+            if (App.LoginWindow == null)
             {
                 return;
             }
@@ -186,7 +187,7 @@ namespace MarketMinds.ViewModels
                 Title = title,
                 Content = message,
                 CloseButtonText = "OK",
-                XamlRoot = App.MainWindow?.Content?.XamlRoot,
+                XamlRoot = App.LoginWindow.Content.XamlRoot,
             };
 
             await dialog.ShowAsync();

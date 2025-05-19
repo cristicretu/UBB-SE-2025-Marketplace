@@ -526,25 +526,9 @@ namespace MarketMinds.Shared.Services.UserService
         /// <param name="password">The password of the user.</param>
         /// <returns>A <see cref="Task{bool}"/> representing the result of the asynchronous operation.
         /// The task result contains true if the user can log in, otherwise false.</returns>
-        public async Task<bool> CanUserLogin(string email, string password)
+        public async Task<bool> CanUserLogin(User user, string plainPassword)
         {
-            if (await this.repository.EmailExists(email))
-            {
-                var user = await this.GetUserByEmail(email);
-                if (user == null)
-                {
-                    return false;
-                }
-
-                if (user.Password.StartsWith("plain:"))
-                {
-                    return user.Password == "plain:" + password;
-                }
-
-                return user.Password == this.HashPassword(password);
-            }
-
-            return false;
+            return user.PasswordHash == this.HashPassword(plainPassword);
         }
 
         /// <summary>
@@ -653,7 +637,7 @@ namespace MarketMinds.Shared.Services.UserService
         /// <param name="generatedCaptcha">The generated captcha value.</param>
         /// <returns>A <see cref="Task{string}"/> representing the result of the asynchronous operation.
         /// The task result contains a message indicating the login result.</returns>
-        public async Task<string> ValidateLoginCredentials(string email, string password, string enteredCaptcha, string generatedCaptcha)
+        public async Task<string> ValidateLoginCredentials(string email, string password, string enteredCaptcha, string generatedCaptcha) // THIS IS NOT EVEN USED IN THE CODE BTW - merge-nicusor
         {
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(enteredCaptcha))
             {
@@ -670,7 +654,7 @@ namespace MarketMinds.Shared.Services.UserService
                 return "Email does not exist.";
             }
 
-            var user = await this.GetUserByEmail(email);
+            var user = await this.GetUserByEmail(email); // here user can be null, careful! merge-nicusor
 
             if (await this.IsUserSuspended(email) && user?.BannedUntil != null)
             {
@@ -679,7 +663,7 @@ namespace MarketMinds.Shared.Services.UserService
                 return $"Too many failed attempts. Try again in {remainingTime.Seconds}s";
             }
 
-            if (!await this.CanUserLogin(email, password))
+            if (!await this.CanUserLogin(user, password)) // here user can be null if email does not exist, careful! merge-nicusor
             {
                 return "Login failed";
             }

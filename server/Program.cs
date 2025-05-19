@@ -10,9 +10,13 @@ using MarketMinds.Repositories.ConversationRepository;
 using MarketMinds.Repositories.MessageRepository;
 using MarketMinds.Repositories.ChatbotRepository;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.ProxyRepository;
 using Microsoft.EntityFrameworkCore;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
 using Server.MarketMinds.Repositories.UserRepository;
+// Additional repository namespaces
+using MarketMinds.Repositories;
+using Server.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +57,28 @@ builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IChatbotRepository, ChatbotRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAccountRepository, UserProxyRepository>();
+
+// Additional repository registrations
+builder.Services.AddScoped<IWaitListRepository, WaitListRepository>();
+builder.Services.AddScoped<ITrackedOrderRepository, TrackedOrderRepository>();
+builder.Services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
+builder.Services.AddScoped<ISellerRepository, SellerRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IPDFRepository, PDFRepository>();
+builder.Services.AddScoped<IOrderSummaryRepository, OrderSummaryRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderHistoryRepository, OrderHistoryRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IDummyWalletRepository, DummyWalletRepository>();
+builder.Services.AddScoped<IDummyCardRepository, DummyCardRepository>();
+builder.Services.AddScoped<IContractRepository, ContractRepository>();
+builder.Services.AddScoped<IContractRenewalRepository, ContractRenewalRepository>();
+builder.Services.AddScoped<IBuyerRepository, BuyerRepository>();
+// If IChatRepository has an implementation, register it
+// builder.Services.AddScoped<IChatRepository, ChatRepository>();
+// If IBasketRepository has an implementation, register it
+// builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

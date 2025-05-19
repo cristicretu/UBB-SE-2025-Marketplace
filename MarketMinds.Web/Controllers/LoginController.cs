@@ -67,6 +67,8 @@ namespace WebMarketplace.Controllers
                 return RedirectToAction("Index");
             }
 
+            // cristi: merge-nicusor -> careful here (user object) 
+            // the Password will allways be empty because it is not mapped in the database, use PasswordHash instead
             if (user.Password != _userService.HashPassword(model.Password))
             {
                 await _userService.HandleFailedLogin(model.Email);

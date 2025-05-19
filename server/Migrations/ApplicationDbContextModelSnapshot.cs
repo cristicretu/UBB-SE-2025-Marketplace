@@ -864,6 +864,10 @@ namespace server.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BuyerId");
+
+                    b.HasIndex("SellerId");
+
                     b.ToTable("Reviews", (string)null);
                 });
 
@@ -1285,17 +1289,15 @@ namespace server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MarketMinds.Shared.Models.User", "Seller")
-                        .WithMany("SellingItems")
+                    b.HasOne("MarketMinds.Shared.Models.Seller", null)
+                        .WithMany("AuctionProducts")
                         .HasForeignKey("SellerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
 
                     b.Navigation("Condition");
-
-                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.AuctionProductProductTag", b =>
@@ -1311,7 +1313,7 @@ namespace server.Migrations
 
             modelBuilder.Entity("MarketMinds.Shared.Models.Bid", b =>
                 {
-                    b.HasOne("MarketMinds.Shared.Models.User", "Bidder")
+                    b.HasOne("MarketMinds.Shared.Models.Buyer", null)
                         .WithMany("Bids")
                         .HasForeignKey("BidderId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1322,8 +1324,6 @@ namespace server.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Bidder");
 
                     b.Navigation("Product");
                 });
@@ -1342,17 +1342,15 @@ namespace server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MarketMinds.Shared.Models.User", "Seller")
-                        .WithMany()
+                    b.HasOne("MarketMinds.Shared.Models.Seller", null)
+                        .WithMany("BorrowProducts")
                         .HasForeignKey("SellerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
 
                     b.Navigation("Condition");
-
-                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.BorrowProductImage", b =>
@@ -1399,17 +1397,15 @@ namespace server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MarketMinds.Shared.Models.User", "Seller")
-                        .WithMany()
+                    b.HasOne("MarketMinds.Shared.Models.Seller", null)
+                        .WithMany("BuyProducts")
                         .HasForeignKey("SellerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
 
                     b.Navigation("Condition");
-
-                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.BuyProductImage", b =>
@@ -1544,13 +1540,11 @@ namespace server.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MarketMinds.Shared.Models.User", "Seller")
+                    b.HasOne("MarketMinds.Shared.Models.Seller", null)
                         .WithMany()
                         .HasForeignKey("SellerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.OrderCheckpoint", b =>
@@ -1571,6 +1565,21 @@ namespace server.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("MarketMinds.Shared.Models.Review", b =>
+                {
+                    b.HasOne("MarketMinds.Shared.Models.Buyer", null)
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MarketMinds.Shared.Models.Seller", null)
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.ReviewImage", b =>
@@ -1750,6 +1759,11 @@ namespace server.Migrations
                     b.Navigation("ProductTags");
                 });
 
+            modelBuilder.Entity("MarketMinds.Shared.Models.Buyer", b =>
+                {
+                    b.Navigation("Bids");
+                });
+
             modelBuilder.Entity("MarketMinds.Shared.Models.Category", b =>
                 {
                     b.Navigation("Products");
@@ -1770,11 +1784,13 @@ namespace server.Migrations
                     b.Navigation("ReviewImages");
                 });
 
-            modelBuilder.Entity("MarketMinds.Shared.Models.User", b =>
+            modelBuilder.Entity("MarketMinds.Shared.Models.Seller", b =>
                 {
-                    b.Navigation("Bids");
+                    b.Navigation("AuctionProducts");
 
-                    b.Navigation("SellingItems");
+                    b.Navigation("BorrowProducts");
+
+                    b.Navigation("BuyProducts");
                 });
 #pragma warning restore 612, 618
         }
