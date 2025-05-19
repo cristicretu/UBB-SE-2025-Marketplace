@@ -2,6 +2,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Models.DTOs.Mappers;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.Interfaces;
 
@@ -34,7 +36,12 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 Console.WriteLine("Received JSON from server:");
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 
-                var products = JsonSerializer.Deserialize<List<BuyProduct>>(json, jsonOptions);
+                // First deserialize to DTOs
+                var productDTOs = JsonSerializer.Deserialize<List<BuyProductDTO>>(json, jsonOptions);
+
+                // Then map DTOs to domain models
+                var products = BuyProductMapper.FromDTOList(productDTOs);
+
                 return products ?? new List<BuyProduct>();
             }
             catch (Exception ex)
@@ -137,7 +144,12 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 Console.WriteLine($"Received JSON for product {id} from server:");
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 
-                var product = JsonSerializer.Deserialize<BuyProduct>(json, jsonOptions);
+                // First deserialize to DTO
+                var productDTO = JsonSerializer.Deserialize<BuyProductDTO>(json, jsonOptions);
+
+                // Then map DTO to domain model
+                var product = BuyProductMapper.FromDTO(productDTO);
+
                 if (product == null)
                 {
                     throw new KeyNotFoundException($"Buy product with ID {id} not found.");
@@ -221,13 +233,13 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 return null;
             }
         }
-        
+
         // Explicit implementation for IProductService's GetSellerNameAsync
         public Task<string> GetSellerNameAsync(int sellerId)
         {
             return this.buyProductsRepository.GetSellerNameAsync(sellerId);
         }
-        
+
         /// <summary>
         /// Gets a list of products that can be borrowed.
         /// Implementation for IProductService interface.
