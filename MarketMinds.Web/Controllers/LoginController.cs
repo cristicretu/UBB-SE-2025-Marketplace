@@ -80,13 +80,15 @@ namespace WebMarketplace.Controllers
 
             await _userService.ResetFailedLogins(model.Email);
             UserSession.CurrentUserId = user.Id;
-            if((int)user.UserType==2)
+            
+            // Store the numeric user type in UserSession.CurrentUserRole
+            UserSession.CurrentUserRole = user.UserType.ToString();
+            
+            if((int)user.UserType == 2)
             {
-                UserSession.CurrentUserRole = "Buyer";
                 return RedirectToAction("Index", "BuyerProfile");
             }
-            UserSession.CurrentUserRole = "Seller";
-
+            
             return RedirectToAction("Index", "SellerProfile");
         }
 
