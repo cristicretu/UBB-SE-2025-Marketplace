@@ -20,11 +20,9 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             try
             {
                 var products = context.AuctionProducts
-                    .Include(product => product.Seller)
                     .Include(product => product.Condition)
                     .Include(product => product.Category)
                     .Include(product => product.Bids)
-                        .ThenInclude(bid => bid.Bidder)
                     .Include(product => product.Images)
                     .ToList();
 
@@ -100,11 +98,9 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             try
             {
                 var product = context.AuctionProducts
-                    .Include(product => product.Seller)
                     .Include(product => product.Condition)
                     .Include(product => product.Category)
                     .Include(product => product.Bids)
-                        .ThenInclude(bid => bid.Bidder)
                     .Include(product => product.Images)
                     .FirstOrDefault(product => product.Id == id);
 

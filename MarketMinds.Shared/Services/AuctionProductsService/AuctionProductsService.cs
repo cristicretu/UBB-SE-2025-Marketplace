@@ -302,11 +302,11 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
         {
             try
             {
-                return GetProducts();
+                return await Task.Run(() => auctionProductsRepository.GetProducts());
             }
             catch (Exception exception)
             {
-                return new List<AuctionProduct>();
+                throw new Exception($"Failed to retrieve auction products: {exception.Message}", exception);
             }
         }
 
@@ -314,11 +314,11 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
         {
             try
             {
-                return GetProductById(id);
+                return await Task.Run(() => auctionProductsRepository.GetProductById(id));
             }
             catch (Exception exception)
             {
-                return new AuctionProduct();
+                throw new Exception($"Failed to retrieve auction product by ID {id}: {exception.Message}", exception);
             }
         }
 

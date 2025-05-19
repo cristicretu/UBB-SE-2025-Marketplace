@@ -154,19 +154,53 @@ namespace MarketMinds.Shared.ProxyRepository
                 throw new InvalidOperationException("HTTP client is not properly initialized");
             }
 
-            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true,
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            };
-            serializerOptions.Converters.Add(new UserJsonConverter());
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
 
-            var response = httpClient.GetAsync("auctionproducts").Result;
-            response.EnsureSuccessStatusCode();
-            var json = response.Content.ReadAsStringAsync().Result;
-            var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
-            return products ?? new List<AuctionProduct>();
+                var response = httpClient.GetAsync("auctionproducts").Result;
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = response.Content.ReadAsStringAsync().Result;
+                    throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
+                }
+                
+                var json = response.Content.ReadAsStringAsync().Result;
+                
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<AuctionProduct>();
+                }
+                
+                try
+                {
+                    var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
+                    return products ?? new List<AuctionProduct>();
+                }
+                catch (System.Text.Json.JsonException jsonEx)
+                {
+                    throw new Exception($"Failed to deserialize auction products: {jsonEx.Message}. JSON: {json.Substring(0, Math.Min(100, json.Length))}...", jsonEx);
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new Exception($"HTTP request error: {httpEx.Message}", httpEx);
+            }
+            catch (Exception ex)
+            {
+                if (ex is System.Text.Json.JsonException || ex.Message.Contains("deserialize"))
+                {
+                    throw; // Re-throw deserialization exceptions already handled
+                }
+                throw new Exception($"Error retrieving auction products: {ex.Message}", ex);
+            }
         }
 
         public AuctionProduct GetProductById(int id)
@@ -176,19 +210,61 @@ namespace MarketMinds.Shared.ProxyRepository
                 throw new InvalidOperationException("HTTP client is not properly initialized");
             }
 
-            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true,
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            };
-            serializerOptions.Converters.Add(new UserJsonConverter());
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
 
-            var response = httpClient.GetAsync($"auctionproducts/{id}").Result;
-            response.EnsureSuccessStatusCode();
-            var json = response.Content.ReadAsStringAsync().Result;
-            var product = System.Text.Json.JsonSerializer.Deserialize<AuctionProduct>(json, serializerOptions);
-            return product;
+                var response = httpClient.GetAsync($"auctionproducts/{id}").Result;
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = response.Content.ReadAsStringAsync().Result;
+                    throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
+                }
+                
+                var json = response.Content.ReadAsStringAsync().Result;
+                
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    throw new KeyNotFoundException($"No data returned for auction product with ID {id}");
+                }
+                
+                try
+                {
+                    var product = System.Text.Json.JsonSerializer.Deserialize<AuctionProduct>(json, serializerOptions);
+                    if (product == null)
+                    {
+                        throw new KeyNotFoundException($"Deserialized null product for ID {id}");
+                    }
+                    return product;
+                }
+                catch (System.Text.Json.JsonException jsonEx)
+                {
+                    throw new Exception($"Failed to deserialize auction product: {jsonEx.Message}. JSON: {json.Substring(0, Math.Min(100, json.Length))}...", jsonEx);
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new Exception($"HTTP request error: {httpEx.Message}", httpEx);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw; // Rethrow key not found exception
+            }
+            catch (Exception ex)
+            {
+                if (ex is System.Text.Json.JsonException || ex.Message.Contains("deserialize"))
+                {
+                    throw; // Re-throw deserialization exceptions already handled
+                }
+                throw new Exception($"Error retrieving auction product with ID {id}: {ex.Message}", ex);
+            }
         }
     }
 }

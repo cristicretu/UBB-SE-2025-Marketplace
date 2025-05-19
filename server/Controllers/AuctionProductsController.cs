@@ -22,7 +22,7 @@ namespace MarketMinds.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(List<AuctionProductDTO>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetAuctionProducts()
         {
             try
@@ -33,25 +33,35 @@ namespace MarketMinds.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to retrieve auction products: {exception.Message}");
             }
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AuctionProductDTO), (int)HttpStatusCode.OK)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetAuctionProductById(int id)
         {
             try
             {
                 var product = auctionProductsRepository.GetProductByID(id);
+                
+                if (product == null)
+                {
+                    return NotFound($"Auction product with ID {id} not found.");
+                }
+                
                 var auctionProductDTO = AuctionProductMapper.ToDTO(product);
                 return Ok(auctionProductDTO);
             }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(knfEx.Message);
+            }
             catch (Exception exception)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to retrieve auction product with ID {id}: {exception.Message}");
             }
         }
 
