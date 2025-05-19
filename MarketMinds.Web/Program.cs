@@ -51,6 +51,18 @@ builder.Services.AddHttpClient("ApiClient", client =>
     client.BaseAddress = new Uri(baseUrl + "api/");
 });
 
+// Register ImageUploadService with configuration
+builder.Services.AddSingleton<IImageUploadService>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var clientId = configuration["ImgurSettings:ClientId"];
+    if (string.IsNullOrEmpty(clientId))
+    {
+        throw new InvalidOperationException("Imgur Client ID is not configured in appsettings.json");
+    }
+    return new ImageUploadService(configuration);
+});
+
 // Register repositories
 builder.Services.AddSingleton<AuctionProductsProxyRepository>();
 builder.Services.AddSingleton<BorrowProductsProxyRepository>();
