@@ -1,65 +1,8 @@
 // <copyright file="LoginViewModel.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
-// <copyright file="LoginViewModel.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
 namespace MarketMinds.ViewModels
 {
-    using System;
-    using System.ComponentModel;
-    using System.Threading.Tasks;
-    using System.Windows.Input;
-    using MarketMinds.Shared.Helper;
-    using MarketMinds.Shared.Services.UserService;
-    using MarketMinds.Shared.Services;
-    using MarketMinds.ViewModels;
-    using Microsoft.UI.Xaml;
-
-    /// <summary>
-    /// The login view model.
-    /// </summary>
-    public partial class LoginViewModel : INotifyPropertyChanged, ILoginViewModel
-    {
-        private readonly IOnLoginSuccessCallback successCallback;
-        private readonly ICaptchaService captchaService;
-        private string? email;
-        private string? password;
-        private string? errorMessage;
-        private int failedAttempts;
-        private bool isLoginEnabled = true;
-        private string? captchaText;
-        private string? captchaEnteredCode;
-        private DispatcherTimer? banTimer;
-        private DateTime banEndTime;
-        private bool hasAttemptedLogin = false;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LoginViewModel"/> class.
-        /// </summary>
-        /// <param name="userService">The user service.</param>
-        /// <param name="successCallback">The success callback.</param>
-        /// <param name="captchaService">An optional argument for captcha service.</param>
-        public LoginViewModel(IUserService userService, IOnLoginSuccessCallback successCallback, ICaptchaService? captchaService = null)
-        {
-            this.UserService = userService ?? throw new ArgumentNullException(nameof(userService));
-            this.successCallback = successCallback ?? throw new ArgumentNullException(nameof(successCallback));
-            this.captchaService = captchaService ?? new CaptchaService();
-
-            this.GenerateCaptcha();
-
-            this.LoginCommand = new RelayCommand(async () => await this.ExecuteLogin());
-        }
-
-        /// <summary>
-        /// The property changed event handler.
-        /// </summary>
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        /// <summary>
-        /// Gets the user service.
-        /// </summary>
-        public IUserService UserService { get; private set; }
     using System;
     using System.ComponentModel;
     using System.Threading.Tasks;
