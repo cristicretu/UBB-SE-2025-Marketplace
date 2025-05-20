@@ -106,6 +106,8 @@ namespace MarketMinds
             {
                 // Set the current user
                 CurrentUser = user;
+                // NEED THIS:
+                UserSession.CurrentUserId = CurrentUser.Id;
 
                 // Show the main window
                 ShowMainWindow();
