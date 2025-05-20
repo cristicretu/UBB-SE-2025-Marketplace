@@ -142,6 +142,22 @@ namespace MarketMinds.Shared.ProxyRepository
             await this.ThrowOnError(nameof(UpdateTrackedOrderAsync), response);
         }
 
+        /// <inheritdoc />
+        public async Task<TrackedOrder> GetTrackedOrderByOrderIdAsync(int orderId)
+        {
+            var response = await this.httpClient.GetAsync($"api/ordertracking/order/{orderId}");
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null; // Order not found
+            }
+            
+            await this.ThrowOnError(nameof(GetTrackedOrderByOrderIdAsync), response);
+            
+            var trackedOrder = await response.Content.ReadFromJsonAsync<TrackedOrder>();
+            return trackedOrder;
+        }
+
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)

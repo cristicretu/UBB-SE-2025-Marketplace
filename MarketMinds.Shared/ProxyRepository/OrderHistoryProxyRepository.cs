@@ -35,7 +35,7 @@ namespace MarketMinds.Shared.ProxyRepository
         /// <inheritdoc />
         public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryId)
         {
-            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{orderHistoryId}/dummy-products");
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{orderHistoryId}/products");
             await this.ThrowOnError(nameof(GetProductsFromOrderHistoryAsync), response);
 
             var products = await response.Content.ReadFromJsonAsync<List<Product>>();
@@ -45,7 +45,48 @@ namespace MarketMinds.Shared.ProxyRepository
         /// <inheritdoc />
         public async Task<int> CreateOrderHistoryAsync()
         {
-            throw new NotImplementedException("The CreateOrderHistoryAsync method is not implemented.");
+            var response = await this.httpClient.PostAsync(ApiBaseRoute, null);
+            await this.ThrowOnError(nameof(CreateOrderHistoryAsync), response);
+            var orderHistoryId = await response.Content.ReadFromJsonAsync<int>();
+            return orderHistoryId;
+        }
+        
+        /// <inheritdoc />
+        public async Task<List<OrderHistory>> GetOrderHistoriesByBuyerAsync(int buyerId)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/buyer/{buyerId}");
+            await this.ThrowOnError(nameof(GetOrderHistoriesByBuyerAsync), response);
+            
+            var orderHistories = await response.Content.ReadFromJsonAsync<List<OrderHistory>>();
+            return orderHistories ?? new List<OrderHistory>();
+        }
+        
+        /// <inheritdoc />
+        public async Task<OrderHistory> GetOrderHistoryByIdAsync(int orderHistoryId)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{orderHistoryId}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+            
+            await this.ThrowOnError(nameof(GetOrderHistoryByIdAsync), response);
+            var orderHistory = await response.Content.ReadFromJsonAsync<OrderHistory>();
+            return orderHistory;
+        }
+        
+        /// <inheritdoc />
+        public async Task UpdateOrderHistoryAsync(int orderHistoryId, string note, string shippingAddress, string paymentMethod)
+        {
+            var updateRequest = new
+            {
+                Note = note,
+                ShippingAddress = shippingAddress,
+                PaymentMethod = paymentMethod
+            };
+            
+            var response = await this.httpClient.PutAsJsonAsync($"{ApiBaseRoute}/{orderHistoryId}", updateRequest);
+            await this.ThrowOnError(nameof(UpdateOrderHistoryAsync), response);
         }
 
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)

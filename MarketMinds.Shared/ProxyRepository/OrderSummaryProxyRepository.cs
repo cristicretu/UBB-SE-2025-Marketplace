@@ -70,6 +70,12 @@ namespace MarketMinds.Shared.ProxyRepository
             await this.ThrowOnError(nameof(UpdateOrderSummaryAsync), response);
         }
 
+        Task<int> IOrderSummaryRepository.AddOrderSummaryAsync(OrderSummary orderSummary)
+        {
+            throw new NotImplementedException();
+        }
+
+
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)
