@@ -112,12 +112,10 @@ namespace MarketMinds
             buyerProfileWindow.Activate();
         }
 
-        // public static void ShowAdminProfile()
-        // {
-        //    var adminProfileWindow = new Window();
-        //    adminProfileWindow.Content = new MarketMinds.Views.AdminView();
-        //    adminProfileWindow.Activate();
-        // }
+        public static void ShowAdminProfile()
+        {
+            MainWindow.Activate();
+        }
 
         // Implementation of IOnLoginSuccessCallback
         private class LoginSuccessHandler : IOnLoginSuccessCallback
@@ -136,8 +134,8 @@ namespace MarketMinds
                     case 2: // Buyer
                         ShowBuyerProfile();
                         break;
-                    case 0: // Admin (if 0 is admin, adjust if needed)
-                        // ShowAdminProfile();
+                    case 1: // Admin
+                         ShowAdminProfile();
                         break;
                     default:
                         ShowMainWindow();
