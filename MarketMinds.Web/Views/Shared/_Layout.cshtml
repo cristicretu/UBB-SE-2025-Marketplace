@@ -27,10 +27,33 @@
 </head>
 <body class="bg-gray-50">
     @{
-        bool isAuthenticated = User.Identity?.IsAuthenticated == true || UserSession.CurrentUserId.HasValue;
-        string username = User.Identity?.IsAuthenticated == true 
-            ? User.Identity.Name 
-            : UserSession.CurrentUserId.HasValue ? "User" : null;
+        bool isAuthenticated = User.Identity?.IsAuthenticated == true && UserSession.CurrentUserId.HasValue;
+        string username = isAuthenticated ? (User.Identity.Name ?? "User") : null;
+        
+        var sessionRole = UserSession.CurrentUserRole ?? "null";
+            
+        int userType = 0;
+        if (isAuthenticated && !string.IsNullOrEmpty(UserSession.CurrentUserRole))
+        {
+            if (int.TryParse(UserSession.CurrentUserRole, out int parsedType))
+            {
+                userType = parsedType;
+            }
+            else
+            {
+                switch (UserSession.CurrentUserRole)
+                {
+                    case "Admin": userType = 1; break;
+                    case "Buyer": userType = 2; break;
+                    case "Seller": userType = 3; break;
+                    default: userType = 0; break;
+                }
+            }
+        }
+        
+        bool isAdmin = isAuthenticated && userType == 1;
+        bool isBuyer = isAuthenticated && userType == 2;
+        bool isSeller = isAuthenticated && userType == 3;
     }
     <header>
         <nav class="bg-primary text-white py-4">
@@ -46,9 +69,12 @@
                             <li>
                                 <a class="hover:text-primary-light transition" asp-area="" asp-controller="Account" asp-action="Index">Account</a>
                             </li>
-                            <li>
-                                <a class="hover:text-primary-light transition" asp-area="" asp-controller="Home" asp-action="Create">Create</a>
-                            </li>
+                            @if (isSeller || isAdmin)
+                            {
+                                <li>
+                                    <a class="hover:text-primary-light transition" asp-area="" asp-controller="Home" asp-action="Create">Create</a>
+                                </li>
+                            }
                             <li>
                                 <a class="hover:text-primary-light transition" asp-area="" asp-controller="ChatBot" asp-action="Index">ChatBot</a>
                             </li>
@@ -59,12 +85,15 @@
                                     </svg>
                                 </a>
                             </li>
+                            @if (userType == 1)
+                            {
                                 <li>
                                     <a class="hover:text-primary-light transition" asp-controller="Admin" asp-action="Index">Admin</a>
                                 </li>
+                            }
                             <li class="relative dropdown-container">
                                 <a class="hover:text-primary-light transition flex items-center cursor-pointer" id="userDropdown">
-                                    <span>@username</span>
+                                    <span>@username (@(string.IsNullOrEmpty(sessionRole) ? "Guest" : sessionRole))</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>

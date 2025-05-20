@@ -90,10 +90,20 @@ namespace MarketMinds.Shared.Helper
             string jsonFilePath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
             Debug.WriteLine(jsonFilePath);
 
-            var builder = new ConfigurationBuilder()
-                .AddJsonFile(jsonFilePath, optional: true, reloadOnChange: true);
 
-            Configuration = builder.Build();
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(baseDirectory)
+                    .AddJsonFile(jsonFilePath, optional: false, reloadOnChange: true);
+
+                Configuration = builder.Build();
+                Debug.WriteLine("ApiSettings:BaseUrl = " + Configuration?["ApiSettings:BaseUrl"]);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading configuration: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+            }
         }
+
     }
 }
