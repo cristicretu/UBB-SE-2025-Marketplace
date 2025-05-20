@@ -1,22 +1,27 @@
-using System.Text.Json.Serialization;
 using DataAccessLayer;
+// Additional repository namespaces
+using MarketMinds.Repositories;
 using MarketMinds.Repositories.AuctionProductsRepository;
 using MarketMinds.Repositories.BuyProductsRepository;
-using MarketMinds.Repositories.ReviewRepository;
+using MarketMinds.Repositories.ChatbotRepository;
+using MarketMinds.Repositories.ConversationRepository;
+using MarketMinds.Repositories.MessageRepository;
 using MarketMinds.Repositories.ProductCategoryRepository;
 using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
-using MarketMinds.Repositories.ConversationRepository;
-using MarketMinds.Repositories.MessageRepository;
-using MarketMinds.Repositories.ChatbotRepository;
+using MarketMinds.Repositories.ReviewRepository;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
 using Server.MarketMinds.Repositories.UserRepository;
-// Additional repository namespaces
-using MarketMinds.Repositories;
 using Server.Repository;
+using System.Text;
+using System.Text.Json.Serialization;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +49,28 @@ var localDataSource = builder.Configuration["LocalDataSource"];
 var connectionString = $"Server={localDataSource};Database={initialCatalog};Trusted_Connection=True;TrustServerCertificate=True";
 builder.Services.AddDbContext<Server.DataAccessLayer.ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+    };
+});
 
 // Register all repositories
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
@@ -75,6 +102,8 @@ builder.Services.AddScoped<IDummyCardRepository, DummyCardRepository>();
 builder.Services.AddScoped<IContractRepository, ContractRepository>();
 builder.Services.AddScoped<IContractRenewalRepository, ContractRenewalRepository>();
 builder.Services.AddScoped<IBuyerRepository, BuyerRepository>();
+builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
+
 // If IChatRepository has an implementation, register it
 // builder.Services.AddScoped<IChatRepository, ChatRepository>();
 // If IBasketRepository has an implementation, register it

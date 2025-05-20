@@ -183,6 +183,7 @@ namespace MarketMinds.ViewModels
                 return;
             }
 
+            await this.UserService.AuthorizationLogin();
             // var user = await UserService.GetUserByEmail(Email);
             var (success, msg, user) = await this.UserService.LoginAsync(this.Email, this.Password, this.CaptchaEnteredCode, this.CaptchaText);
 
