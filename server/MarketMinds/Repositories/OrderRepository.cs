@@ -47,14 +47,50 @@ namespace Server.Repository
             OrderHistory orderHistory = new OrderHistory
             {
                 OrderID = 0, // will be populated by the database
+                BuyerID = buyerId, // Set the BuyerID for the order history
+                CreatedAt = DateTime.UtcNow, // Ensure we use UTC time for consistency
             };
             await this.dbContext.OrderHistory.AddAsync(orderHistory);
             await this.dbContext.SaveChangesAsync(); // Here the OrderHistory record is created and the orderHistory.OrderID is populated
+
+            // Now get product details to populate Name and other fields
+            var productName = "Unknown";
+            double productCost = 0;
+            int sellerId = 0;
+            
+            // Try to fetch product details based on product type
+            if (productType.Equals("new", StringComparison.OrdinalIgnoreCase) || 
+                productType.Equals("used", StringComparison.OrdinalIgnoreCase))
+            {
+                var buyProduct = await this.dbContext.BuyProducts.FindAsync(productId);
+                if (buyProduct != null)
+                {
+                    productName = buyProduct.Title;
+                    productCost = buyProduct.Price;
+                    sellerId = buyProduct.SellerId;
+                }
+            }
+            else if (productType.Equals("borrowed", StringComparison.OrdinalIgnoreCase))
+            {
+                var borrowProduct = await this.dbContext.BorrowProducts.FindAsync(productId);
+                if (borrowProduct != null)
+                {
+                    productName = borrowProduct.Title;
+                    var duration = borrowProduct.EndDate - borrowProduct.StartDate;
+                    int days = duration.HasValue ? (int)Math.Ceiling(duration.Value.TotalDays) : 0;
+                    productCost = days * borrowProduct.DailyRate;
+                    sellerId = borrowProduct.SellerId;
+                }
+            }
 
             // Now, add the new Order
             Order order = new Order
             {
                 Id = 0, // Will be populated by the database
+                Name = productName,
+                Description = "Order for " + productName,
+                Cost = productCost,
+                SellerId = sellerId,
                 ProductID = productId,
                 BuyerId = buyerId,
                 ProductType = productType,
@@ -324,6 +360,17 @@ namespace Server.Repository
         {
             return await this.dbContext.OrderSummary.FindAsync(orderSummaryId)
                 ?? throw new KeyNotFoundException($"GetOrderSummaryAsync: OrderSummary with ID {orderSummaryId} not found");
+        }
+
+        /// <summary>
+        /// Retrieves an order by its ID.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to retrieve.</param>
+        /// <returns>The order with the specified ID, or null if not found.</returns>
+        public async Task<Order> GetOrderByIdAsync(int orderId)
+        {
+            Order? order = await this.dbContext.Orders.FindAsync(orderId);
+            return order;
         }
 
         private static OrderDisplayInfo CreateOrderDisplayInfoFromOrderAndProduct(Order order, Product product)

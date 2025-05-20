@@ -13,32 +13,32 @@
         /// <summary>
         /// Order has been processed and payment confirmed.
         /// </summary>
-        PROCESSING = 1,
+        Processing = 1,
         
         /// <summary>
         /// Order has been shipped.
         /// </summary>
-        SHIPPED = 2,
+        Shipped = 2,
         
         /// <summary>
         /// Order is in warehouse awaiting shipment.
         /// </summary>
-        IN_WAREHOUSE = 3,
+        InWarehouse = 3,
         
         /// <summary>
         /// Order is being transported to its destination.
         /// </summary>
-        IN_TRANSIT = 4,
+        InTransit = 4,
         
         /// <summary>
         /// Order is out for delivery.
         /// </summary>
-        OUT_FOR_DELIVERY = 5,
+        OutForDelivery = 5,
         
         /// <summary>
         /// Order has been successfully delivered to the customer.
         /// </summary>
-        DELIVERED = 6,
+        Delivered = 6,
         
         /// <summary>
         /// Order has been cancelled.

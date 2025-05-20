@@ -127,25 +127,7 @@ namespace MarketMinds.Shared.Services
                 throw new ArgumentException("Order ID must be positive", nameof(orderId));
             }
 
-            var borrowedOrders = await orderRepository.GetBorrowedOrderHistoryAsync(0);
-            foreach (var order in borrowedOrders)
-            {
-                if (order.Id == orderId)
-                {
-                    return order;
-                }
-            }
-
-            var newUsedOrders = await orderRepository.GetNewOrUsedOrderHistoryAsync(0);
-            foreach (var order in newUsedOrders)
-            {
-                if (order.Id == orderId)
-                {
-                    return order;
-                }
-            }
-
-            return null;
+            return await orderRepository.GetOrderByIdAsync(orderId);
         }
 
         public async Task<List<Order>> GetCombinedOrderHistoryAsync(int buyerId, string timePeriodFilter = "all")
