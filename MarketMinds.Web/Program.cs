@@ -65,6 +65,8 @@ builder.Services.AddSingleton<MarketMinds.Shared.ProxyRepository.ChatbotProxyRep
 builder.Services.AddSingleton<ConversationProxyRepository>();
 builder.Services.AddSingleton<MessageProxyRepository>();
 builder.Services.AddSingleton<ReviewProxyRepository>();
+builder.Services.AddSingleton<ShoppingCartProxyRepository>(sp =>
+    new ShoppingCartProxyRepository(sp.GetRequiredService<IConfiguration>()));
 
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
@@ -86,6 +88,7 @@ builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatbotServi
 builder.Services.AddTransient<IConversationService, ConversationService>();
 builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();
+builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
 
 // Register repository interfaces
 builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());
@@ -98,6 +101,7 @@ builder.Services.AddTransient<MarketMinds.Shared.IRepository.IChatbotRepository>
 builder.Services.AddTransient<IConversationRepository>(sp => sp.GetRequiredService<ConversationProxyRepository>());
 builder.Services.AddTransient<IMessageRepository>(sp => sp.GetRequiredService<MessageProxyRepository>());
 builder.Services.AddTransient<IReviewRepository>(sp => sp.GetRequiredService<ReviewProxyRepository>());
+builder.Services.AddTransient<IShoppingCartRepository>(sp => sp.GetRequiredService<ShoppingCartProxyRepository>());
 
 var app = builder.Build();
 

@@ -22,6 +22,7 @@ namespace Server.DataModels
         {
             this.BuyerId = buyerId;
             this.ProductId = productId;
+            this.BuyProductId = productId;
             this.Quantity = quantity;
         }
 
@@ -34,6 +35,11 @@ namespace Server.DataModels
         /// Gets or sets the product ID.
         /// </summary>
         public int ProductId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the buy product ID (foreign key to BuyProduct table).
+        /// </summary>
+        public int BuyProductId { get; set; }
 
         /// <summary>
         /// Gets or sets the quantity.
