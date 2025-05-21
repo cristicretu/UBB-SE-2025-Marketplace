@@ -11,7 +11,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using MarketMinds.Shared.Models.DTOs;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Proxy repository class for managing order summary operations via REST API.
@@ -29,7 +29,7 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             this.httpClient = new HttpClient();
             this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            
+
         }
 
         /// <inheritdoc />
@@ -72,9 +72,25 @@ namespace MarketMinds.Shared.ProxyRepository
 
         Task<int> IOrderSummaryRepository.AddOrderSummaryAsync(OrderSummary orderSummary)
         {
-            throw new NotImplementedException();
+            return AddOrderSummaryAsync(orderSummary);
         }
 
+        private async Task<int> AddOrderSummaryAsync(OrderSummary orderSummary)
+        {
+            try
+            {
+                var response = await this.httpClient.PostAsJsonAsync(ApiBaseRoute, orderSummary);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                await this.ThrowOnError(nameof(AddOrderSummaryAsync), response);
+                var orderSummaryId = await response.Content.ReadFromJsonAsync<int>();
+
+                return orderSummaryId;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
 
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {

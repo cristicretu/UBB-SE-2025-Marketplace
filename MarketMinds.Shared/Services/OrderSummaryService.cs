@@ -95,5 +95,18 @@ namespace MarketMinds.Shared.Services
 
             return await orderSummaryRepository.GetOrderSummaryByIdAsync(orderSummaryId);
         }
+
+        /// <inheritdoc/>
+        public async Task<int> CreateOrderSummaryAsync(OrderSummary orderSummary)
+        {
+            if (orderSummary == null)
+            {
+                throw new ArgumentNullException(nameof(orderSummary));
+            }
+            // Add any other validation for orderSummary properties if needed
+            // For example, check if OrderHistoryId is valid, etc.
+
+            return await orderSummaryRepository.AddOrderSummaryAsync(orderSummary);
+        }
     }
 }

@@ -38,9 +38,22 @@ namespace MarketMinds.Shared.Services
         }
 
         /// <inheritdoc/>
-        public async Task<int> CreateOrderHistoryAsync()
+        public async Task<int> CreateOrderHistoryAsync(int userId)
         {
-            throw new NotImplementedException("The CreateOrderHistoryAsync method is not implemented.");
+            try
+            {
+                if (userId <= 0)
+                {
+                    throw new ArgumentException("User ID must be positive", nameof(userId));
+                }
+                var newOrderHistoryId = await orderHistoryRepository.CreateOrderHistoryAsync(userId);
+
+                return newOrderHistoryId;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
     }
 }

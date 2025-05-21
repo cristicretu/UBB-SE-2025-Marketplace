@@ -3,6 +3,10 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
 using WebMarketplace.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 
 namespace WebMarketplace.Controllers
 {
@@ -58,32 +62,70 @@ namespace WebMarketplace.Controllers
         [HttpPost]
         public async Task<IActionResult> BillingInfo(BillingInfoViewModel model)
         {
+            List<Product> cartItems = new List<Product>();
+            try
+            {
+                cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading cart items initially: {ex.Message}");
+                // Potentially add a model error here if cart loading is critical before validation
+            }
+            model.ProductList = cartItems;
+
             if (!ModelState.IsValid)
             {
-                // Re-load cart items to maintain the view state if validation fails
-                try
-                {
-                    var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
-                    model.ProductList = cartItems;
-                    model.CalculateOrderTotal();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error reloading cart items on validation failure: {ex.Message}");
-                    model.ProductList = new List<Product>();
-                }
-
+                model.CalculateOrderTotal(); 
                 return View(model);
             }
 
-            // Process payment method specific logic (e.g., wallet refill)
             if (model.SelectedPaymentMethod == "wallet")
             {
+                model.CalculateOrderTotal(); 
                 await ProcessWalletRefill(model);
             }
+            else
+            {
+                model.CalculateOrderTotal();
+            }
 
-            // Redirect to the FinalizePurchase confirmation page
-            // NOTE: Order creation logic needs to be implemented elsewhere or the Order model needs to be updated.
+            try
+            {
+                var userId = UserSession.CurrentUserId ?? 1; 
+                
+                if (cartItems == null || !cartItems.Any())
+                {
+                    ModelState.AddModelError(string.Empty, "Your cart is empty. Please add items before proceeding.");
+                    return View(model); 
+                }
+
+                var orderRequestDto = new OrderCreationRequestDto { /* ... (mapping) ... */ }; // Assume mapping is correct as before
+                // Mapping DTO from ViewModel
+                orderRequestDto.Subtotal = model.Subtotal;
+                orderRequestDto.WarrantyTax = model.WarrantyTax;
+                orderRequestDto.DeliveryFee = model.DeliveryFee;
+                orderRequestDto.Total = model.Total;
+                orderRequestDto.FullName = model.FullName;
+                orderRequestDto.Email = model.Email;
+                orderRequestDto.PhoneNumber = model.PhoneNumber;
+                orderRequestDto.Address = model.Address;
+                orderRequestDto.ZipCode = model.ZipCode;
+                orderRequestDto.AdditionalInfo = model.AdditionalInfo;
+                orderRequestDto.SelectedPaymentMethod = model.SelectedPaymentMethod;
+
+                var newOrderHistoryId = await _orderService.CreateOrderFromCartAsync(orderRequestDto, userId, cartItems);
+                model.OrderHistoryID = newOrderHistoryId; 
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error creating order (FULL EXCEPTION): {ex.ToString()}"); // Log full exception
+                ModelState.AddModelError(string.Empty, "An error occurred while creating your order. Please try again.");
+                ModelState.AddModelError(string.Empty, $"DEBUG: {ex.ToString()}"); // ADD FULL EXCEPTION TO MODELSTATE
+                model.CalculateOrderTotal(); 
+                return View(model);
+            }
+
             return RedirectToAction("FinalizePurchase", new { orderHistoryId = model.OrderHistoryID });
         }
 
@@ -179,24 +221,55 @@ namespace WebMarketplace.Controllers
         {
             try
             {
-                // Create a BuyProduct instance instead of the abstract Product class
-                var product = new BuyProduct
+                var product = await _productService.GetProductByIdAsync(productId);
+                if (product == null)
                 {
-                    Id = productId, // Use Id instead of ProductId
-                    Title = "Borrowed Product", // Add a title for the placeholder
-                    Price = 100 // Default price that will be modified by the borrowed tax calculation
-                };
+                    return Json(new { success = false, message = "Product not found." });
+                }
 
-                var model = new BillingInfoViewModel();
-                model.StartDate = startDate;
-                model.EndDate = endDate;
-                await model.ApplyBorrowedTax(product);
+                if (startDate > endDate)
+                {
+                    return Json(new { success = false, message = "Start date cannot be after end date." });
+                }
 
-                return Json(new { success = true });
+                int monthsBorrowed = ((endDate.Year - startDate.Year) * 12) + endDate.Month - startDate.Month;
+                if (monthsBorrowed <= 0)
+                {
+                    monthsBorrowed = 1; // Minimum 1 month for calculation
+                }
+
+                double warrantyTaxRate = 0.2; // Example: 20% warranty tax
+                double originalPrice = product.Price; // Assuming product.Price is the base price per month for borrowable items
+                
+                double totalBorrowPrice = originalPrice * monthsBorrowed;
+                double calculatedWarrantyTax = totalBorrowPrice * warrantyTaxRate;
+                double finalPriceWithTax = totalBorrowPrice + calculatedWarrantyTax;
+
+                // The client-side will need to know the new subtotal/total after this change.
+                // This response should provide enough info for the client to update relevant parts of the order summary display.
+                // For now, returning the calculated tax and the final price for this specific item.
+                // The client-side JS will then need to recalculate the overall order total or refresh the page.
+
+                // Note: This action currently only calculates. It does not persist these values anywhere permanently yet.
+                // The actual order creation (CreateOrderFromCartAsync) will use the values present in the cart items and BillingInfoViewModel/DTO at that time.
+                // If this tax needs to be stored before finalizing purchase, more logic would be needed here or in a service.
+
+                return Json(new 
+                {
+                    success = true, 
+                    productId = productId,
+                    originalItemPrice = originalPrice, // Price per period (e.g. month)
+                    monthsBorrowed = monthsBorrowed,
+                    borrowPriceBeforeTax = totalBorrowPrice, // Total price for the duration, before tax
+                    calculatedWarrantyTax = calculatedWarrantyTax, // The tax amount for this item
+                    finalItemPriceWithTax = finalPriceWithTax, // Total price for this item for the duration, including tax
+                    message = "Tax calculated successfully. Please ensure your cart totals are updated if necessary."
+                });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                System.Diagnostics.Debug.WriteLine($"Error in UpdateBorrowedTax: {ex.Message}");
+                return Json(new { success = false, message = "An error occurred while calculating tax: " + ex.Message });
             }
         }
 

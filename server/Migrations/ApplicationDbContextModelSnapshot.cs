@@ -83,9 +83,10 @@ namespace server.Migrations
                         .HasColumnName("end_datetime")
                         .HasAnnotation("Relational:JsonPropertyName", "endAuctionDate");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int")
-                        .HasColumnName("price");
+                    b.Property<double>("Price")
+                        .HasColumnType("float")
+                        .HasColumnName("price")
+                        .HasAnnotation("Relational:JsonPropertyName", "price");
 
                     b.Property<int>("SellerId")
                         .HasColumnType("int")
@@ -212,9 +213,10 @@ namespace server.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("is_borrowed");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int")
-                        .HasColumnName("price");
+                    b.Property<double>("Price")
+                        .HasColumnType("float")
+                        .HasColumnName("price")
+                        .HasAnnotation("Relational:JsonPropertyName", "price");
 
                     b.Property<int>("SellerId")
                         .HasColumnType("int")
@@ -320,7 +322,8 @@ namespace server.Migrations
 
                     b.Property<double>("Price")
                         .HasColumnType("float")
-                        .HasColumnName("price");
+                        .HasColumnName("price")
+                        .HasAnnotation("Relational:JsonPropertyName", "price");
 
                     b.Property<int>("SellerId")
                         .HasColumnType("int")
@@ -369,6 +372,8 @@ namespace server.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("BuyProductImages", (string)null);
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "images");
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.BuyProductProductTag", b =>
@@ -395,6 +400,8 @@ namespace server.Migrations
                     b.HasIndex("TagId");
 
                     b.ToTable("BuyProductProductTags", (string)null);
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "productTags");
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.Buyer", b =>
@@ -683,7 +690,7 @@ namespace server.Migrations
 
                     b.ToTable("OrderCheckpoints", t =>
                         {
-                            t.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')");
+                            t.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN ('Processing', 'Shipped', 'InWarehouse', 'InTransit', 'OutForDelivery', 'Delivered')");
                         });
                 });
 
@@ -694,6 +701,21 @@ namespace server.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderID"));
+
+                    b.Property<int>("BuyerID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingAddress")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("OrderID");
 
@@ -953,7 +975,7 @@ namespace server.Migrations
 
                     b.ToTable("TrackedOrders", t =>
                         {
-                            t.HasCheckConstraint("TrackedOrderConstraint", "[CurrentStatus] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')");
+                            t.HasCheckConstraint("TrackedOrderConstraint", "[CurrentStatus] IN ('Processing', 'Shipped', 'InWarehouse', 'InTransit', 'OutForDelivery', 'Delivered')");
                         });
                 });
 

@@ -1,23 +1,24 @@
 using System.ComponentModel.DataAnnotations;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services;
-using MarketMinds.Shared.Services.Interfaces;
+// using MarketMinds.Shared.Services; // No longer directly instantiating services
+// using MarketMinds.Shared.Services.Interfaces; // No longer directly instantiating services
+// using Microsoft.Extensions.Configuration; // No longer used here
+// using System.IO; // No longer used here
+using System.Collections.Generic; // For List<T>
+using System.Linq; // For .Any()
+using System;
 
 namespace WebMarketplace.Models
 {
     public class BillingInfoViewModel
     {
-        private readonly IOrderHistoryService _orderHistoryService;
-        private readonly IOrderSummaryService _orderSummaryService;
-        private readonly IOrderService _orderService;
-        private readonly IProductService _productService;
-        private readonly IDummyWalletService _dummyWalletService;
-        private readonly IShoppingCartService _shoppingCartService;
+        // Removed service fields: _orderHistoryService, _orderService, _orderSummaryService, _productService, _dummyWalletService, _shoppingCartService
+        
         public int OrderHistoryID { get; set; }
 
-        public bool IsWalletEnabled { get; set; }
-        public bool IsCashEnabled { get; set; }
-        public bool IsCardEnabled { get; set; }
+        public bool IsWalletEnabled { get; set; } = true; // Default to true, controller can override
+        public bool IsCashEnabled { get; set; } = true;   // Default to true, controller can override
+        public bool IsCardEnabled { get; set; } = true;   // Default to true, controller can override
 
         [Required(ErrorMessage = "Please select a payment method")]
         public string SelectedPaymentMethod { get; set; }
@@ -46,35 +47,26 @@ namespace WebMarketplace.Models
         [Display(Name = "Additional Information")]
         public string AdditionalInfo { get; set; }
 
+        // StartDate and EndDate for borrow products - these might be better associated per product 
+        // or handled differently if there are multiple borrowable items in the cart.
+        // For now, keeping them as they are, but their usage in ApplyBorrowedTax needs review.
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        public double Subtotal { get; set; }
-        public double DeliveryFee { get; set; }
-        public double Total { get; set; }
-        public double WarrantyTax { get; set; }
+        public double Subtotal { get; set; } // Should be populated by the controller or CalculateOrderTotal
+        public double DeliveryFee { get; set; } // Should be populated by the controller or CalculateOrderTotal
+        public double Total { get; set; } // Should be populated by the controller or CalculateOrderTotal
+        public double WarrantyTax { get; set; } // Should be populated by the controller or influenced by tax logic
 
         public List<Product> ProductList { get; set; }
 
-        // Default parameterless constructor for model binding
         public BillingInfoViewModel()
         {
-            _orderHistoryService = new OrderHistoryService();
-            _orderService = new OrderService();
-            _orderSummaryService = new OrderSummaryService();
-            _dummyWalletService = new DummyWalletService();
-            // get the IConfiguration
-            IConfiguration configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
-            var productRepository = new MarketMinds.Shared.ProxyRepository.BuyProductsProxyRepository(configuration);
-            _productService = new ProductService(productRepository);
-            _shoppingCartService = new ShoppingCartService();
-            ProductList = new List<Product>(); // Initialize with empty list
+            // Service instantiations removed.
+            ProductList = new List<Product>();
             StartDate = DateTime.Today;
             EndDate = DateTime.Today.AddMonths(1);
-            SetVisibilityRadioButtons(); // Enable all payment methods by default
+            // SetVisibilityRadioButtons(); // Controller should handle this if needed based on app settings
         }
 
         public BillingInfoViewModel(int orderHistoryID) : this()
@@ -82,32 +74,26 @@ namespace WebMarketplace.Models
             OrderHistoryID = orderHistoryID;
         }
 
-        public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryID)
-        {
-            return await _orderHistoryService.GetProductsFromOrderHistoryAsync(orderHistoryID);
-        }
+        // Removed: public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryID)
+        // This logic should be in the controller.
 
-        public void SetVisibilityRadioButtons()
-        {
-            IsCardEnabled = true;
-            IsCashEnabled = true;
-            IsWalletEnabled = true;
-        }
+        // Removed: public void SetVisibilityRadioButtons()
+        // Payment method availability should be determined by config/settings and passed by the controller if needed.
 
-        public void CalculateOrderTotal()
+        public void CalculateOrderTotal() // This method is okay as it operates on the ViewModel's own data.
         {
-            if (ProductList == null || ProductList.Count == 0)
+            if (ProductList == null || !ProductList.Any())
             {
                 Total = 0;
                 Subtotal = 0;
                 DeliveryFee = 0;
+                WarrantyTax = 0; // Ensure warranty tax is reset too
                 return;
             }
 
             double subtotalProducts = 0;
             foreach (var product in ProductList)
             {
-                // Check product type for proper price access
                 if (product is BuyProduct buyProduct)
                 {
                     // Multiply price by stock (quantity) for BuyProducts
@@ -115,85 +101,38 @@ namespace WebMarketplace.Models
                 }
                 else if (product is BorrowProduct borrowProduct)
                 {
-                    // Handle borrow product pricing if different
-                    subtotalProducts += product.Price; // Use base price as fallback
+                    subtotalProducts += borrowProduct.Price; 
                 }
                 else
                 {
                     subtotalProducts += product.Price;
                 }
             }
-
-            // For orders over 200, a fixed delivery fee of 13.99 will be added
-            // (this is only for orders of new, used or borrowed products)
             Subtotal = subtotalProducts;
 
-            // Determine product type for delivery fee calculation
-            // Try to determine if any product is a special type
-            bool hasSpecialType = ProductList.Any(p =>
-                (p is BorrowProduct) || // For borrowed products
-                (p.GetType().Name.Contains("Refill")) || // For refill products
-                (p.GetType().Name.Contains("Auction"))); // For auction/bid products
+            // Recalculate WarrantyTax based on current ProductList and dates if logic is kept here.
+            // For simplicity in this step, assuming WarrantyTax is either set externally or calculated 
+            // by a more focused method if ApplyBorrowedTax is called.
+            // The current ApplyBorrowedTax modifies WarrantyTax directly.
 
-            if (subtotalProducts >= 200 || hasSpecialType)
+            bool hasSpecialType = ProductList.Any(p =>
+                (p is BorrowProduct) || 
+                (p.GetType().Name.Contains("Refill")) || 
+                (p.GetType().Name.Contains("Auction"))); 
+
+            if (Subtotal >= 200 || hasSpecialType)
             {
-                Total = subtotalProducts;
                 DeliveryFee = 0;
             }
             else
             {
                 DeliveryFee = 13.99;
-                Total = subtotalProducts + DeliveryFee;
             }
+            Total = Subtotal + DeliveryFee + WarrantyTax; // Make sure WarrantyTax is included
         }
 
-        public async Task ApplyBorrowedTax(Product product)
-        {
-            if (product == null)
-            {
-                return;
-            }
-
-            if (StartDate > EndDate)
-            {
-                return;
-            }
-
-            int monthsBorrowed = ((EndDate.Year - StartDate.Year) * 12) + EndDate.Month - StartDate.Month;
-            if (monthsBorrowed <= 0)
-            {
-                monthsBorrowed = 1;
-            }
-
-            double warrantyTaxAmount = 0.2;
-
-            // Cast to correct product type if needed
-            double productPrice = 0;
-            if (product is BuyProduct buyProduct)
-            {
-                productPrice = buyProduct.Price;
-                double finalPrice = productPrice * monthsBorrowed;
-                WarrantyTax += finalPrice * warrantyTaxAmount;
-                buyProduct.Price = finalPrice + WarrantyTax;
-            }
-            else if (product is BorrowProduct borrowProduct)
-            {
-                // Handle BorrowProduct if needed
-                // Access properties specific to BorrowProduct
-            }
-            else
-            {
-                // Fall back to the base Product price
-                productPrice = product.Price;
-                double finalPrice = productPrice * monthsBorrowed;
-                WarrantyTax += finalPrice * warrantyTaxAmount;
-                // Note: Can't modify price directly on base Product as it might be read-only
-            }
-
-            CalculateOrderTotal();
-
-            // These dates should probably be stored in a separate model or service
-            // rather than directly on the Product
-        }
+        // Removed: public async Task ApplyBorrowedTax(Product product)
+        // This logic needs to move to a service or controller action.
+        // The controller's UpdateBorrowedTax action will handle this.
     }
 }

@@ -11,7 +11,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Proxy repository class for managing order history operations via REST API.
@@ -29,7 +29,7 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             this.httpClient = new HttpClient();
             this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            
+
         }
 
         /// <inheritdoc />
@@ -43,24 +43,36 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
-        public async Task<int> CreateOrderHistoryAsync()
+        public async Task<int> CreateOrderHistoryAsync(int buyerId)
         {
-            var response = await this.httpClient.PostAsync(ApiBaseRoute, null);
-            await this.ThrowOnError(nameof(CreateOrderHistoryAsync), response);
-            var orderHistoryId = await response.Content.ReadFromJsonAsync<int>();
-            return orderHistoryId;
+            try
+            {
+                var content = JsonContent.Create(new { BuyerId = buyerId });
+
+                var response = await this.httpClient.PostAsync(ApiBaseRoute, content);
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                await this.ThrowOnError(nameof(CreateOrderHistoryAsync), response);
+                var orderHistoryId = await response.Content.ReadFromJsonAsync<int>();
+                return orderHistoryId;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
-        
+
         /// <inheritdoc />
         public async Task<List<OrderHistory>> GetOrderHistoriesByBuyerAsync(int buyerId)
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/buyer/{buyerId}");
             await this.ThrowOnError(nameof(GetOrderHistoriesByBuyerAsync), response);
-            
+
             var orderHistories = await response.Content.ReadFromJsonAsync<List<OrderHistory>>();
             return orderHistories ?? new List<OrderHistory>();
         }
-        
+
         /// <inheritdoc />
         public async Task<OrderHistory> GetOrderHistoryByIdAsync(int orderHistoryId)
         {
@@ -69,12 +81,12 @@ namespace MarketMinds.Shared.ProxyRepository
             {
                 return null;
             }
-            
+
             await this.ThrowOnError(nameof(GetOrderHistoryByIdAsync), response);
             var orderHistory = await response.Content.ReadFromJsonAsync<OrderHistory>();
             return orderHistory;
         }
-        
+
         /// <inheritdoc />
         public async Task UpdateOrderHistoryAsync(int orderHistoryId, string note, string shippingAddress, string paymentMethod)
         {
@@ -84,7 +96,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 ShippingAddress = shippingAddress,
                 PaymentMethod = paymentMethod
             };
-            
+
             var response = await this.httpClient.PutAsJsonAsync($"{ApiBaseRoute}/{orderHistoryId}", updateRequest);
             await this.ThrowOnError(nameof(UpdateOrderHistoryAsync), response);
         }
