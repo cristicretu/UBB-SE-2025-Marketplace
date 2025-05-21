@@ -1,15 +1,14 @@
 ﻿namespace MarketMinds.Shared.ProxyRepository
 {
-    using MarketMinds.Shared.IRepository;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.Models.DTOs;
-    using MarketMinds.Shared.Shared;
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Net.Http.Json;
     using System.Text.Json;
     using System.Threading.Tasks;
+    using MarketMinds.Shared.Models.DTOs;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Proxy repository class for managing contract operations via REST API.
@@ -17,7 +16,7 @@
     public class ContractProxyRepository : IContractRepository
     {
         private const string ApiBaseRoute = "api/contracts";
-        private readonly CustomHttpClient httpClient;
+        private readonly HttpClient httpClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContractProxyRepository"/> class.
@@ -25,9 +24,9 @@
         /// <param name="baseApiUrl">The base url of the API.</param>
         public ContractProxyRepository(string baseApiUrl)
         {
-            var _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            this.httpClient = new CustomHttpClient(_httpClient);
+            this.httpClient = new HttpClient();
+            this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
+            
         }
 
         /// <inheritdoc />
