@@ -9,35 +9,103 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="50" CornerRadius="12" BorderBrush="{ThemeResource SystemAccentColorDark1}" BorderThickness="2" Width="550" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                Padding="50" 
+                CornerRadius="12" 
+                BorderBrush="{ThemeResource SystemAccentColorDark1}" 
+                BorderThickness="2" 
+                Width="550">
             <StackPanel Spacing="20">
-                <TextBlock Text="Login Page" FontSize="42" FontWeight="Bold" TextAlignment="Center" Foreground="{ThemeResource SystemAccentColorDark2}"/>
-                <TextBlock Text="Welcome to our MarketPlace!" FontSize="24" Margin="0,5" TextAlignment="Center" Foreground="{ThemeResource SystemAccentColor}"/>
-                <TextBlock Text="{Binding ErrorMessage}" FontSize="18" Foreground="{ThemeResource SystemErrorTextColor}" TextAlignment="Center"/>
-                <TextBlock Text="{Binding FailedAttemptsText}" FontSize="18" Foreground="{ThemeResource SystemErrorTextColor}" TextAlignment="Center"/>
-                <TextBox PlaceholderText="Enter your email" Text="{Binding Email, Mode=TwoWay}" Width="Auto" Height="45"/>
-                <PasswordBox PlaceholderText="Enter your password" Password="{Binding Password, Mode=TwoWay}" Width="Auto" Height="45"/>
+                <TextBlock Text="Login Page" 
+                           FontSize="42" 
+                           FontWeight="Bold" 
+                           TextAlignment="Center" 
+                           Foreground="{ThemeResource SystemAccentColorDark2}"/>
+                <TextBlock Text="Welcome back to MarketMinds!" 
+                           FontSize="24" 
+                           TextAlignment="Center" 
+                           Margin="0,5"
+                           Foreground="{ThemeResource SystemAccentColor}"/>
+                <TextBlock Text="{Binding ErrorMessage}" 
+                           FontSize="18" 
+                           Foreground="{ThemeResource SystemErrorTextColor}" 
+                           TextAlignment="Center"/>
+                <TextBlock Text="{Binding FailedAttemptsText}" 
+                           FontSize="18" 
+                           Foreground="{ThemeResource SystemErrorTextColor}" 
+                           TextAlignment="Center"/>
+                
+                <TextBox PlaceholderText="Enter your email" 
+                         Text="{Binding Email, Mode=TwoWay}" 
+                         Width="Auto" 
+                         Height="45" 
+                         Padding="8" 
+                         BorderThickness="0" 
+                         CornerRadius="8"/>
+                
+                <PasswordBox PlaceholderText="Enter your password" 
+                             Password="{Binding Password, Mode=TwoWay}" 
+                             Width="Auto" 
+                             Height="45" 
+                             Padding="8" 
+                             BorderThickness="0" 
+                             CornerRadius="8"/>
+                
                 <!-- Captcha -->
-                <TextBlock Text="Captcha Verification" FontSize="18" FontWeight="Bold"/>
-                        <TextBox Text="{Binding CaptchaText}" 
-                                Width="Auto" Height="60" Padding="10" 
-                BorderBrush="{ThemeResource SystemAccentColor}" BorderThickness="3" CornerRadius="8"
-                FontFamily="Lucida Handwriting" FontSize="24" FontStyle="Italic" 
-                FontWeight="Bold" TextAlignment="Center" 
-                Foreground="{ThemeResource SystemAccentColorDark2}" Background="{ThemeResource TextControlBackgroundDisabled}"
-                IsReadOnly="True" IsHitTestVisible="False"/>
+                <TextBlock Text="Captcha Verification" 
+                           FontSize="18" 
+                           FontWeight="Bold"/>
+                
+                <TextBox Text="{Binding CaptchaText}" 
+                         Width="Auto" 
+                         Height="60" 
+                         Padding="10" 
+                         BorderBrush="{ThemeResource SystemAccentColor}" 
+                         BorderThickness="3" 
+                         CornerRadius="8"
+                         FontFamily="Lucida Handwriting" 
+                         FontSize="24" 
+                         FontStyle="Italic" 
+                         FontWeight="Bold" 
+                         TextAlignment="Center" 
+                         Foreground="{ThemeResource SystemAccentColorDark2}" 
+                         Background="{ThemeResource TextControlBackgroundDisabled}"
+                         IsReadOnly="True" 
+                         IsHitTestVisible="False"/>
 
-                <TextBox PlaceholderText="Enter Captcha" Text="{Binding CaptchaEnteredCode, Mode=TwoWay}" Width="Auto" Height="45"/>
+                <TextBox PlaceholderText="Enter Captcha" 
+                         Text="{Binding CaptchaEnteredCode, Mode=TwoWay}" 
+                         Width="Auto" 
+                         Height="45" 
+                         Padding="8" 
+                         BorderThickness="0" 
+                         CornerRadius="8"/>
 
-                <Button Content="Login" Command="{Binding LoginCommand}" IsEnabled="{Binding IsLoginEnabled}" Width="200" Height="50" Background="{ThemeResource AccentButtonBackground}" Foreground="{ThemeResource AccentButtonForeground}"
+                <Button Content="Login" 
+                        Command="{Binding LoginCommand}" 
+                        IsEnabled="{Binding IsLoginEnabled}" 
+                        Width="200" 
+                        Height="50" 
+                        Background="{ThemeResource AccentButtonBackground}" 
+                        Foreground="{ThemeResource AccentButtonForeground}"
+                        CornerRadius="8"
+                        FontSize="18"
+                        FontWeight="Bold"
                         HorizontalAlignment="Center"/>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Text="Don't have an account? " FontSize="14"/>
-                    <TextBlock x:Name="RegisterButtonTextBlock" Text="Register now" Foreground="{ThemeResource SystemAccentColor}" FontSize="14" FontWeight="Bold" PointerPressed="RegisterButtonTextBlock_PointerPressed" />
+                <StackPanel Orientation="Horizontal" 
+                            HorizontalAlignment="Center" 
+                            Spacing="5">
+                    <TextBlock Text="Don't have an account? " 
+                               FontSize="14"/>
+                    <TextBlock x:Name="RegisterButtonTextBlock" 
+                               Text="Register now" 
+                               Foreground="{ThemeResource SystemAccentColor}" 
+                               FontSize="14" 
+                               FontWeight="Bold" 
+                               PointerPressed="RegisterButtonTextBlock_PointerPressed"/>
                 </StackPanel>
-
             </StackPanel>
         </Border>
     </Grid>
