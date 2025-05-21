@@ -55,6 +55,7 @@ namespace MarketMinds
         public static BuyProductsProxyRepository BuyProductsRepository;
 
         // Service declarations
+        public static IBuyerService BuyerService;
         public static AdminService AdminService;
         public static AnalyticsService AnalyticsService;
         public static BuyProductsService BuyProductsService;
@@ -75,6 +76,7 @@ namespace MarketMinds
         public static MarketMinds.Shared.Services.DreamTeam.ChatbotService.IChatbotService NewChatbotService;
 
         // ViewModel declarations
+        public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
         public static AdminViewModel AdminViewModel { get; private set; }
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
         public static BorrowProductsViewModel BorrowProductsViewModel { get; private set; }
@@ -103,6 +105,7 @@ namespace MarketMinds
         private static IConfiguration appConfiguration;
         public static Window LoginWindow = null!;
         public static Window MainWindow = null!;
+        public static Window BuyerProfileWindow = null!;
         private static HttpClient httpClient;
         public static void ShowSellerProfile()
         {
@@ -113,9 +116,13 @@ namespace MarketMinds
 
         public static void ShowBuyerProfile()
         {
-            var buyerProfileWindow = new Window();
-            buyerProfileWindow.Content = new MarketMinds.Views.BuyerProfileView();
-            buyerProfileWindow.Activate();
+            BuyerProfileWindow = new Window();
+            BuyerProfileViewModel.User = CurrentUser;
+            _ = BuyerProfileViewModel.LoadBuyerProfile();
+            var buyerProfileView = new MarketMinds.Views.BuyerProfileView();
+            buyerProfileView.ViewModel = BuyerProfileViewModel;
+            BuyerProfileWindow.Content = buyerProfileView;
+            BuyerProfileWindow.Activate();
         }
 
         public static void ShowAdminProfile()
@@ -144,7 +151,7 @@ namespace MarketMinds
                         ShowBuyerProfile();
                         break;
                     case 1: // Admin
-                         ShowAdminProfile();
+                        ShowAdminProfile();
                         break;
                     default:
                         ShowMainWindow();
@@ -304,6 +311,7 @@ namespace MarketMinds
             ChatbotRepository = new ChatbotProxyRepository(Configuration);
             ChatRepository = new ChatProxyRepository(Configuration);
             UserRepository = new UserProxyRepository(Configuration);
+            BuyerRepository = new BuyerProxyRepository(Configuration);
             ReviewRepository = new ReviewProxyRepository(Configuration);
             ProductTagRepository = new ProductTagProxyRepository(Configuration);
             AuctionProductsRepository = new AuctionProductsProxyRepository(Configuration);
@@ -316,6 +324,7 @@ namespace MarketMinds
             AnalyticsService = new AnalyticsService(UserRepository, BuyerRepository);
 
             UserService = new UserService(Configuration);
+            BuyerService = new BuyerService(BuyerRepository, UserRepository);
             ReviewsService = new ReviewsService(Configuration, UserService, CurrentUser);
             BuyProductsService = new BuyProductsService(BuyProductsRepository);
             BorrowProductsService = new BorrowProductsService();
@@ -344,6 +353,11 @@ namespace MarketMinds
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
+            BuyerProfileViewModel = new BuyerProfileViewModel()
+            {
+                BuyerService = BuyerService,
+                User = CurrentUser,
+            };
             // Initialize login and register view models with proper callbacks
             AdminViewModel = new AdminViewModel(AdminService, AnalyticsService, UserService);
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
