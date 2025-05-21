@@ -39,7 +39,6 @@ namespace MarketMinds
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
         // Repository declarations
-        public static IBuyerRepository BuyerRepository;
         public static IProductCategoryRepository ProductCategoryRepository;
         public static IMessageRepository MessageRepository;
         public static IProductConditionRepository ProductConditionRepository;
