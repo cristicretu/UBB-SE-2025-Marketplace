@@ -12,7 +12,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing shopping cart data.
     /// </summary>
-    [Authorize]
     [Route("api/shoppingcart")]
     [ApiController]
     public class ShoppingCartApiController : ControllerBase
