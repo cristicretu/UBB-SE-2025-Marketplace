@@ -94,5 +94,32 @@ namespace Server.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while updating order summary with ID {request.Id}: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Asynchronously adds a new order summary.
+        /// </summary>
+        /// <param name="orderSummary">The order summary data to add.</param>
+        /// <returns>The ID of the newly created order summary.</returns>
+        [HttpPost]
+        [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<int>> AddOrderSummary([FromBody] OrderSummary orderSummary)
+        {
+            if (orderSummary == null)
+            {
+                return this.BadRequest("Valid order summary data is required.");
+            }
+
+            try
+            {
+                int newOrderSummaryId = await orderSummaryRepository.AddOrderSummaryAsync(orderSummary);
+                return this.CreatedAtAction(nameof(GetOrderSummaryById), new { id = newOrderSummaryId }, newOrderSummaryId);
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while adding order summary: {ex.Message}");
+            }
+        }
     }
 }

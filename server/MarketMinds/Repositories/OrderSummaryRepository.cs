@@ -56,9 +56,13 @@ namespace Server.Repository
             return orderSummary;
         }
 
-        Task<int> IOrderSummaryRepository.AddOrderSummaryAsync(OrderSummary orderSummary)
+        /// <inheritdoc/>
+        public async Task<int> AddOrderSummaryAsync(OrderSummary orderSummary)
         {
-            throw new NotImplementedException();
+            // Validation should happen at the service level
+            await this.dbContext.OrderSummary.AddAsync(orderSummary);
+            await this.dbContext.SaveChangesAsync();
+            return orderSummary.ID;
         }
 
     }

@@ -70,11 +70,14 @@ namespace MarketMinds.Shared.ProxyRepository
             await this.ThrowOnError(nameof(UpdateOrderSummaryAsync), response);
         }
 
-        Task<int> IOrderSummaryRepository.AddOrderSummaryAsync(OrderSummary orderSummary)
+        /// <inheritdoc />
+        public async Task<int> AddOrderSummaryAsync(OrderSummary orderSummary)
         {
-            throw new NotImplementedException();
+            var response = await this.httpClient.PostAsJsonAsync($"{ApiBaseRoute}", orderSummary);
+            await this.ThrowOnError(nameof(AddOrderSummaryAsync), response);
+            var newOrderSummaryId = await response.Content.ReadFromJsonAsync<int>();
+            return newOrderSummaryId;
         }
-
 
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {

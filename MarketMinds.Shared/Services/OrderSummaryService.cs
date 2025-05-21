@@ -29,12 +29,66 @@ namespace MarketMinds.Shared.Services
                                      string fullName, string email, string phoneNumber, string address,
                                      string postalCode, string additionalInfo, string contractDetails)
         {
-            // Validate inputs
+            // Validate id
             if (id <= 0)
             {
                 throw new ArgumentException("Order summary ID must be positive", nameof(id));
             }
 
+            // Validate other inputs
+            ValidateOrderSummaryInputs(subtotal, warrantyTax, deliveryFee, finalTotal, fullName, email, phoneNumber, address, postalCode);
+
+            await orderSummaryRepository.UpdateOrderSummaryAsync(id, subtotal, warrantyTax, deliveryFee, finalTotal,
+                                              fullName, email, phoneNumber, address,
+                                              postalCode, additionalInfo, contractDetails);
+        }
+
+        /// <inheritdoc/>
+        public async Task<OrderSummary> GetOrderSummaryByIdAsync(int orderSummaryId)
+        {
+            if (orderSummaryId <= 0)
+            {
+                throw new ArgumentException("Order summary ID must be positive", nameof(orderSummaryId));
+            }
+
+            return await orderSummaryRepository.GetOrderSummaryByIdAsync(orderSummaryId);
+        }
+
+        /// <inheritdoc/>
+        public async Task<int> AddOrderSummaryAsync(double subtotal, double warrantyTax, double deliveryFee, double finalTotal,
+                                     string fullName, string email, string phoneNumber, string address,
+                                     string postalCode, string? additionalInfo, string? contractDetails)
+        {
+            // Validate inputs
+            ValidateOrderSummaryInputs(subtotal, warrantyTax, deliveryFee, finalTotal, fullName, email, phoneNumber, address, postalCode);
+
+            // Create new OrderSummary entity
+            OrderSummary orderSummary = new OrderSummary
+            {
+                Subtotal = subtotal,
+                WarrantyTax = warrantyTax,
+                DeliveryFee = deliveryFee,
+                FinalTotal = finalTotal,
+                FullName = fullName,
+                Email = email,
+                PhoneNumber = phoneNumber,
+                Address = address,
+                PostalCode = postalCode,
+                AdditionalInfo = additionalInfo ?? string.Empty,
+                ContractDetails = contractDetails ?? string.Empty
+            };
+
+            // Add order summary to the repository
+            return await orderSummaryRepository.AddOrderSummaryAsync(orderSummary);
+        }
+
+        /// <summary>
+        /// Validates the inputs for an order summary.
+        /// </summary>
+        private void ValidateOrderSummaryInputs(double subtotal, double warrantyTax, double deliveryFee, double finalTotal,
+                                     string fullName, string email, string phoneNumber, string address,
+                                     string postalCode)
+        {
             if (subtotal < 0)
             {
                 throw new ArgumentException("Subtotal cannot be negative", nameof(subtotal));
@@ -79,21 +133,6 @@ namespace MarketMinds.Shared.Services
             {
                 throw new ArgumentException("Postal code cannot be empty", nameof(postalCode));
             }
-
-            await orderSummaryRepository.UpdateOrderSummaryAsync(id, subtotal, warrantyTax, deliveryFee, finalTotal,
-                                              fullName, email, phoneNumber, address,
-                                              postalCode, additionalInfo, contractDetails);
-        }
-
-        /// <inheritdoc/>
-        public async Task<OrderSummary> GetOrderSummaryByIdAsync(int orderSummaryId)
-        {
-            if (orderSummaryId <= 0)
-            {
-                throw new ArgumentException("Order summary ID must be positive", nameof(orderSummaryId));
-            }
-
-            return await orderSummaryRepository.GetOrderSummaryByIdAsync(orderSummaryId);
         }
     }
 }
