@@ -174,8 +174,33 @@ namespace MarketMinds.Controllers
         {
             try
             {   
-                var product = auctionProductsRepository.GetProductByID(id);
+                Console.WriteLine($"SERVER: PlaceBid - Received bid request for auction {id} from bidder {bidDTO.BidderId} amount {bidDTO.Amount}");
                 
+                // First check if the product exists
+                var product = auctionProductsRepository.GetProductByID(id);
+                if (product == null)
+                {
+                    Console.WriteLine($"SERVER: PlaceBid - Auction {id} not found");
+                    return NotFound($"Auction product with ID {id} not found.");
+                }
+                
+                Console.WriteLine($"SERVER: PlaceBid - Found auction: {product.Title}, CurrentPrice={product.CurrentPrice}, EndTime={product.EndTime}");
+                
+                // Check if the auction has ended
+                if (DateTime.Now >= product.EndTime)
+                {
+                    Console.WriteLine($"SERVER: PlaceBid - Auction has ended, EndTime={product.EndTime}, Now={DateTime.Now}");
+                    return BadRequest("Cannot place bid on an ended auction.");
+                }
+                
+                // Validate bid amount is higher than current price
+                if (bidDTO.Amount <= product.CurrentPrice)
+                {
+                    Console.WriteLine($"SERVER: PlaceBid - Bid amount {bidDTO.Amount} not higher than current price {product.CurrentPrice}");
+                    return BadRequest($"Bid amount must be higher than the current price (${product.CurrentPrice}).");
+                }
+                
+                // Create and add the bid
                 var bid = new Bid
                 {
                     BidderId = bidDTO.BidderId,
@@ -183,14 +208,37 @@ namespace MarketMinds.Controllers
                     Price = bidDTO.Amount,
                     Timestamp = DateTime.Now
                 };
+                
+                Console.WriteLine($"SERVER: PlaceBid - Adding bid to auction {id}");
                 product.Bids.Add(bid);
                 product.CurrentPrice = bidDTO.Amount;
-                auctionProductsRepository.UpdateProduct(product);
                 
-                return Ok(new { Success = true, Message = $"Bid of ${bidDTO.Amount} placed successfully." });
+                Console.WriteLine($"SERVER: PlaceBid - Updating product in repository");
+                try {
+                    auctionProductsRepository.UpdateProduct(product);
+                    
+                    Console.WriteLine($"SERVER: PlaceBid - Bid successfully placed");
+                    return Ok(new { Success = true, Message = $"Bid of ${bidDTO.Amount} placed successfully." });
+                }
+                catch (Exception dbException) 
+                {
+                    // Check for foreign key constraint error specifically related to bidder_id
+                    if (dbException.InnerException != null && 
+                        dbException.InnerException.Message.Contains("FK_Bids_Buyers_bidder_id"))
+                    {
+                        Console.WriteLine($"SERVER: PlaceBid - User role error: User ID {bidDTO.BidderId} is not a buyer");
+                        return BadRequest("Your account does not have buyer privileges. Only buyer accounts can place bids.");
+                    }
+                    throw; // Re-throw if it's a different error
+                }
             }
             catch (Exception exception)
             {
+                Console.WriteLine($"SERVER: PlaceBid - Error: {exception.GetType().Name}: {exception.Message}");
+                if (exception.InnerException != null)
+                {
+                    Console.WriteLine($"SERVER: PlaceBid - Inner error: {exception.InnerException.GetType().Name}: {exception.InnerException.Message}");
+                }
                 return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred: {exception.Message}");
             }
         }

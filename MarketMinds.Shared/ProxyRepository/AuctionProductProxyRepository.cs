@@ -122,6 +122,8 @@ namespace MarketMinds.Shared.ProxyRepository
                 throw new InvalidOperationException("HTTP client is not properly initialized");
             }
             
+            Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Creating bid: ProductId={auction.Id}, BidderId={bidder.Id}, Amount={bidAmount}");
+            
             var bidToSend = new
             {
                 ProductId = auction.Id,
@@ -132,17 +134,42 @@ namespace MarketMinds.Shared.ProxyRepository
             
             try
             {
+                Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Sending POST to auctionproducts/{auction.Id}/bids");
                 var response = httpClient.PostAsJsonAsync($"auctionproducts/{auction.Id}/bids", bidToSend).Result;
+                
+                Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Response status: {(int)response.StatusCode} {response.StatusCode}");
                 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Error response content: {errorContent}");
+                    
+                    // Check for specific user role error message
+                    if (response.StatusCode == System.Net.HttpStatusCode.BadRequest && 
+                        errorContent.Contains("Your account doesn't have permission to place bids. Only buyer accounts can place bids."))
+                    {
+                        Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Detected buyer role error");
+                        throw new InvalidOperationException("ERROR_NOT_BUYER: Your account doesn't have permission to place bids. Only buyer accounts can place bids.");
+                    }
+                    
                     var errorMessage = !string.IsNullOrWhiteSpace(errorContent) ? errorContent : "Unknown server error";
                     throw new Exception($"Server rejected bid: {errorMessage} (Status code: {(int)response.StatusCode})");
                 }
+                
+                Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Bid placed successfully");
+            }
+            catch (InvalidOperationException)
+            {
+                // Pass through the user role error
+                throw;
             }
             catch (Exception exception)
             {
+                Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Exception: {exception.GetType().Name}: {exception.Message}");
+                if (exception.InnerException != null)
+                {
+                    Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Inner exception: {exception.InnerException.GetType().Name}: {exception.InnerException.Message}");
+                }
                 throw new Exception($"Failed to place bid: {exception.Message}", exception);
             }
         }

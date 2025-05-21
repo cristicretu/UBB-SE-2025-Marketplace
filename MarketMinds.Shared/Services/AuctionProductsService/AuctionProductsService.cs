@@ -184,40 +184,57 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
         {
             if (auction == null)
             {
+                Console.WriteLine("TRACE: ValidateBid - Auction is null");
                 throw new ArgumentNullException(nameof(auction), "Auction cannot be null");
             }
             
             if (auction.Id <= 0)
             {
+                Console.WriteLine("TRACE: ValidateBid - Invalid auction ID");
                 throw new InvalidOperationException("Cannot bid on an unsaved auction");
             }
             
             if (bidderId <= 0)
             {
+                Console.WriteLine("TRACE: ValidateBid - Invalid bidder ID");
                 throw new InvalidOperationException("Cannot bid with an invalid user id");
             }
             
             if (bidderId == auction.SellerId)
             {
+                Console.WriteLine($"TRACE: ValidateBid - Bidder ({bidderId}) is the seller ({auction.SellerId})");
                 throw new InvalidOperationException("You cannot bid on your own auction");
             }
             
             if (IsAuctionEnded(auction))
             {
+                Console.WriteLine($"TRACE: ValidateBid - Auction has ended (EndTime={auction.EndTime}, Now={DateTime.Now})");
                 throw new InvalidOperationException("Cannot place bid on an ended auction");
             }
             
             if (DateTime.Now < auction.StartTime)
             {
+                Console.WriteLine($"TRACE: ValidateBid - Auction hasn't started yet (StartTime={auction.StartTime}, Now={DateTime.Now})");
                 throw new InvalidOperationException($"Auction hasn't started yet. Starts at {auction.StartTime}");
             }
             
-            double minimumBid = auction.Bids?.Count == NULL_BID_AMOUNT ? auction.StartPrice : auction.CurrentPrice + 1;
+            // Calculate minimum bid
+            double minimumBid = auction.CurrentPrice + 1;
+            if (auction.Bids == null || auction.Bids.Count == 0)
+            {
+                minimumBid = auction.StartPrice;
+            }
 
+            Console.WriteLine($"TRACE: ValidateBid - Minimum bid is {minimumBid}, attempted bid is {bidAmount}");
             if (bidAmount < minimumBid)
             {
                 throw new InvalidOperationException($"Bid must be at least ${minimumBid}");
             }
+            
+            // Note: We don't have direct access to the bidder's balance in this method
+            // since we only have the bidder ID. The balance check would need to be implemented
+            // at the API endpoint that provides the user's balance information.
+            Console.WriteLine($"TRACE: ValidateBid - Bid is valid");
         }
 
         public void ExtendAuctionTime(AuctionProduct auction)
@@ -353,16 +370,31 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
         {
             try
             {
+                Console.WriteLine($"TRACE: PlaceBidAsync start - auctionId={auctionId}, bidderId={bidderId}, bidAmount={bidAmount}");
                 var auction = GetProductById(auctionId);
                 if (auction == null || auction.Id == 0)
                 {
+                    Console.WriteLine($"TRACE: PlaceBidAsync failed - Auction not found with ID {auctionId}");
                     throw new KeyNotFoundException($"Auction product with ID {auctionId} not found.");
                 }
                 
-                ValidateBid(auction, bidderId, bidAmount);
+                Console.WriteLine($"TRACE: PlaceBidAsync - Auction found: ID={auction.Id}, CurrentPrice={auction.CurrentPrice}, EndTime={auction.EndTime}");
+                Console.WriteLine($"TRACE: PlaceBidAsync - Validating bid");
+                
+                try {
+                    ValidateBid(auction, bidderId, bidAmount);
+                } catch (Exception validateEx) {
+                    Console.WriteLine($"TRACE: PlaceBidAsync - Validation failed: {validateEx.GetType().Name}: {validateEx.Message}");
+                    throw;
+                }
+                
+                Console.WriteLine($"TRACE: PlaceBidAsync - Processing refund for previous bidder");
                 ProcessRefundForPreviousBidder(auction, bidAmount);
+                
+                Console.WriteLine($"TRACE: PlaceBidAsync - Extending auction time if needed");
                 ExtendAuctionTimeIfNeeded(auction);
                 
+                Console.WriteLine($"TRACE: PlaceBidAsync - Current EndTime={auction.EndTime}, Now={DateTime.Now}");
                 if (auction.EndTime > DateTime.Now)
                 {
                     var bid = new Bid
@@ -375,16 +407,39 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
                     var bidder = new User { Id = bidderId };
                     
-                    auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
-                    return true;
+                    Console.WriteLine($"TRACE: PlaceBidAsync - Calling repository PlaceBid");
+                    try {
+                        auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
+                        Console.WriteLine($"TRACE: PlaceBidAsync - Bid placed successfully");
+                        return true;
+                    } catch (InvalidOperationException repoEx) when (repoEx.Message.Contains("buyer") || repoEx.Message.Contains("permission")) {
+                        Console.WriteLine($"TRACE: PlaceBidAsync - User role error: {repoEx.Message}");
+                        throw; // Re-throw to propagate to caller
+                    } catch (Exception repoEx) {
+                        Console.WriteLine($"TRACE: PlaceBidAsync - Repository error: {repoEx.GetType().Name}: {repoEx.Message}");
+                        throw;
+                    }
                 }
                 else
                 {
+                    Console.WriteLine($"TRACE: PlaceBidAsync - Auction has already ended: EndTime={auction.EndTime}, Now={DateTime.Now}");
                     throw new InvalidOperationException("Auction has already ended.");
                 }
             }
+            catch (InvalidOperationException) when (DateTime.Now >= GetProductById(auctionId).EndTime)
+            {
+                Console.WriteLine($"TRACE: PlaceBidAsync - Exception caught: Auction has ended");
+                return false;
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("buyer") || ex.Message.Contains("permission"))
+            {
+                // Let this specific error propagate up to be handled specially by the controller
+                Console.WriteLine($"TRACE: PlaceBidAsync - Buyer role error propagated: {ex.Message}");
+                throw;
+            }
             catch (Exception exception)
             {
+                Console.WriteLine($"TRACE: PlaceBidAsync - Exception caught: {exception.GetType().Name}: {exception.Message}");
                 return false;
             }
         }
