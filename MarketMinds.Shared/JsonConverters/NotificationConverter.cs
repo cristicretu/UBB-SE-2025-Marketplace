@@ -18,13 +18,13 @@ public class NotificationConverter : JsonConverter<Notification>
         return category switch
         {
             NotificationCategory.OUTBIDDED => JsonSerializer.Deserialize<OutbiddedNotification>(json, options),
-            NotificationCategory.CONTRACT_RENEWAL_ACCEPTED => JsonSerializer.Deserialize<ContractRenewalAnswerNotification>(json, options),
+            NotificationCategory.CONTRACT_RENEWAL_ANS => JsonSerializer.Deserialize<ContractRenewalAnswerNotification>(json, options),
             NotificationCategory.CONTRACT_RENEWAL_WAITLIST => JsonSerializer.Deserialize<ContractRenewalWaitlistNotification>(json, options),
             NotificationCategory.ORDER_SHIPPING_PROGRESS => JsonSerializer.Deserialize<OrderShippingProgressNotification>(json, options),
             NotificationCategory.PAYMENT_CONFIRMATION => JsonSerializer.Deserialize<PaymentConfirmationNotification>(json, options),
             NotificationCategory.PRODUCT_REMOVED => JsonSerializer.Deserialize<ProductRemovedNotification>(json, options),
             NotificationCategory.PRODUCT_AVAILABLE => JsonSerializer.Deserialize<ProductAvailableNotification>(json, options),
-            NotificationCategory.CONTRACT_RENEWAL_REQUEST => JsonSerializer.Deserialize<ContractRenewalRequestNotification>(json, options),
+            NotificationCategory.CONTRACT_RENEWAL_REQ => JsonSerializer.Deserialize<ContractRenewalRequestNotification>(json, options),
             NotificationCategory.CONTRACT_EXPIRATION => JsonSerializer.Deserialize<ContractExpirationNotification>(json, options),
             _ => throw new NotSupportedException($"Unknown notification category: {category}")
         };

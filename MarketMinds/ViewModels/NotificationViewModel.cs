@@ -5,8 +5,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using Microsoft.UI.Dispatching;
 
 namespace MarketMinds.ViewModels
 {
@@ -35,16 +37,17 @@ namespace MarketMinds.ViewModels
         /// Initializes a new instance of the <see cref="NotificationViewModel"/> class.
         /// </summary>
         /// <param name="currentUserId">The identifier of the current user for notification retrieval.</param>
-        public NotificationViewModel(int currentUserId, bool autoLoad = true)
+        public NotificationViewModel(int userId, bool autoLoad = true)
         {
             Notifications = new ObservableCollection<Notification>();
-            this.currentUserId = currentUserId;
+            this.currentUserId = userId;
             this.notificationContentService = new NotificationContentService();
             MarkAsReadCommand = new NotificationRelayCommand<int>(async (id) => await MarkAsReadAsync(id));
+            ClearAllCommand = new RelayCommand(ClearAllNotifications);
 
             if (autoLoad)
             {
-                _ = LoadNotificationsAsync(currentUserId);
+                _ = LoadUnreadNotificationsAsync(currentUserId);
             }
         }
 
@@ -94,23 +97,68 @@ namespace MarketMinds.ViewModels
         public ICommand MarkAsReadCommand { get; }
 
         /// <summary>
+        /// Gets the command for clearing all notifications.
+        /// </summary>
+        public ICommand ClearAllCommand { get; }
+
+        /// <summary>
+        /// Clears all notifications by marking them as read and removing them from the collection
+        /// </summary>
+        /// <returns></returns>
+        public async Task ClearAllNotifications()
+        {
+            if (Notifications.Count == 0)
+            {
+                return;
+            }
+            try
+            {
+                var notificationsToClear = Notifications.ToList();
+
+                await this.notificationContentService.MarkAllAsRead(currentUserId);
+
+                DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+                {
+                    Notifications.Clear();
+                    UnreadCount = 0;
+                    OnPropertyChanged(nameof(UnReadNotificationsCountText));
+                });
+                ShowPopup?.Invoke("All notifications cleared.");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error clearing notifications: {ex.Message}");
+                ShowPopup?.Invoke($"Failed to clear notifications: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Asynchronously loads notifications for the specified recipient.
         /// </summary>
         /// <param name="recipientId">The recipient user identifier.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public async Task LoadNotificationsAsync(int recipientId)
+        public async Task LoadUnreadNotificationsAsync(int recipientId)
         {
             try
             {
                 IsLoading = true;
-                var notifications = await Task.Run(() => this.notificationContentService.GetNotificationsForUser(recipientId));
 
-                Notifications = new ObservableCollection<Notification>(notifications);
-                UnreadCount = Notifications.Count(n => !n.IsRead);
+                var loadedNotifications = await this.notificationContentService.GetUnreadNotificationsForUser(recipientId);
+
+                Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+                {
+                    Notifications.Clear();
+                    foreach (var notification in loadedNotifications)
+                    {
+                        Notifications.Add(notification);
+                    }
+                    UnreadCount = Notifications.Count(n => !n.IsRead);
+                    OnPropertyChanged(nameof(UnReadNotificationsCountText));
+                });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading notifications: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading notifications: {ex}");
             }
             finally
             {
@@ -127,7 +175,15 @@ namespace MarketMinds.ViewModels
         {
             try
             {
-                await Task.Run(() => this.notificationContentService.MarkAsRead(notificationId));
+                await this.notificationContentService.MarkAllAsRead(notificationId);
+
+                // Update the local notification state
+                var notification = Notifications.FirstOrDefault(n => n.NotificationID == notificationId);
+                if (notification != null)
+                {
+                    notification.IsRead = true;
+                    UnreadCount = Notifications.Count(n => !n.IsRead);
+                }
             }
             catch (Exception ex)
             {
@@ -150,13 +206,17 @@ namespace MarketMinds.ViewModels
 
             try
             {
-                await Task.Run(() => this.notificationContentService.AddNotification(notification));
+                await this.notificationContentService.AddNotification(notification);
 
                 if (notification.RecipientID == currentUserId)
                 {
-                    Notifications.Insert(0, notification);
-                    UnreadCount++;
-                    ShowPopup?.Invoke("Notification sent!");
+                    Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+                    {
+                        Notifications.Insert(0, notification);
+                        UnreadCount++;
+                        OnPropertyChanged(nameof(UnReadNotificationsCountText));
+                        ShowPopup?.Invoke("Notification sent!");
+                    });
                 }
             }
             catch (Exception ex)

@@ -12,6 +12,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
+    using Microsoft.Extensions.Configuration;
 
 
     /// <summary>
@@ -34,7 +35,7 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
-        public async void AddNotification(Notification notification)
+        public async Task AddNotification(Notification notification)
         {
             if (notification == null)
             {
@@ -52,6 +53,8 @@ namespace MarketMinds.Shared.ProxyRepository
             await this.ThrowOnError(nameof(GetNotificationsForUser), response);
             //var notifications = await response.Content.ReadFromJsonAsync<List<Notification>>();
 
+            var rawJson = await response.Content.ReadAsStringAsync();
+
             var options = new JsonSerializerOptions();
             options.Converters.Add(new NotificationConverter());
 
@@ -63,9 +66,9 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
-        public async void MarkAsRead(int notificationId)
+        public async Task MarkAsRead(int userId)
         {
-            var response = await this.httpClient.PutAsync($"{ApiBaseRoute}/{notificationId}/mark-read", null); // No body needed for this PUT.
+            var response = await this.httpClient.PutAsync($"{ApiBaseRoute}/{userId}/mark-read", null);
             await this.ThrowOnError(nameof(MarkAsRead), response);
         }
 

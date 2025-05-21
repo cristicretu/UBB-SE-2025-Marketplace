@@ -131,6 +131,8 @@ namespace MarketMinds
             {
                 // Set the current user
                 CurrentUser = user;
+                // NEED THIS:
+                UserSession.CurrentUserId = CurrentUser.Id;
 
                 // Redirect based on user role
                 switch (user.UserType)
