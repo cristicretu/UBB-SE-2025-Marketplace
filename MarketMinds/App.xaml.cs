@@ -29,6 +29,7 @@ using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using static MarketMinds.ViewModels.ContractRenewViewModel;
 
 namespace MarketMinds
 {
@@ -68,6 +69,10 @@ namespace MarketMinds
         public static IConversationService ConversationService;
         public static IMessageService MessageService;
         public static MarketMinds.Shared.Services.DreamTeam.ChatbotService.IChatbotService NewChatbotService;
+        public static IContractService ContractService;
+        public static IPDFService PDFService;
+        public static IContractRenewalService ContractRenewalService;
+        public static IFileSystem FileSystem;
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -90,6 +95,7 @@ namespace MarketMinds
         public static LoginViewModel LoginViewModel { get; private set; }
         public static RegisterViewModel RegisterViewModel { get; private set; }
         public static MarketMinds.Shared.Models.User CurrentUser { get; set; }
+        public static ContractRenewViewModel ContractRenewViewModel { get; private set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -149,6 +155,7 @@ namespace MarketMinds
                 }
             }
         }
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -316,6 +323,11 @@ namespace MarketMinds
             ChatBotService = new ChatbotService(ChatbotRepository);
             ChatService = new MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService(ChatRepository);
             NewChatbotService = new MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
+            ContractService = new ContractService();
+            PDFService = new PDFService();
+            ContractRenewalService = new ContractRenewalService();
+            FileSystem = new FileSystemWrapper();
+
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
@@ -330,6 +342,7 @@ namespace MarketMinds
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
+            ContractRenewViewModel = new ContractRenewViewModel(ContractService, PDFService, ContractRenewalService, UserService, FileSystem);
             // Initialize login and register view models with proper callbacks
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
             RegisterViewModel = new RegisterViewModel(UserService);

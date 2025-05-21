@@ -13,7 +13,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing PDF data.
     /// </summary>
-    [Authorize]
     [Route("api/pdfs")]
     [ApiController]
     public class PdfApiController : ControllerBase
