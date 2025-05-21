@@ -26,6 +26,31 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     .Include(product => product.Images)
                     .ToList();
                 
+                // Load the bidder information for each product's bids
+                foreach (var product in products)
+                {
+                    // Load seller information
+                    var seller = context.Users.FirstOrDefault(u => u.Id == product.SellerId);
+                    if (seller != null)
+                    {
+                        product.Seller = seller;
+                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Loaded seller for product {product.Id}: Id={seller.Id}, Username={seller.Username}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Could not find seller with ID {product.SellerId} for product {product.Id}");
+                    }
+                    
+                    foreach (var bid in product.Bids)
+                    {
+                        var bidderUser = context.Users.FirstOrDefault(u => u.Id == bid.BidderId);
+                        if (bidderUser != null)
+                        {
+                            bid.Bidder = bidderUser;
+                        }
+                    }
+                }
+                
                 // Debug statement to check if categories are loaded
                 Console.WriteLine("========== DEBUG: AuctionProductsRepository.GetProducts ==========");
                 foreach (var product in products)
@@ -120,6 +145,41 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 if (product == null)
                 {
                     throw new KeyNotFoundException($"AuctionProduct with ID {id} not found.");
+                }
+
+                // Load seller information
+                var seller = context.Users.FirstOrDefault(u => u.Id == product.SellerId);
+                if (seller != null)
+                {
+                    product.Seller = seller;
+                    Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Loaded seller: Id={seller.Id}, Username={seller.Username}");
+                }
+                else
+                {
+                    Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Could not find seller with ID {product.SellerId}");
+                }
+
+                // Log condition data
+                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Product {id}, ConditionId={product.ConditionId}");
+                if (product.Condition != null)
+                {
+                    Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Condition loaded: Id={product.Condition.Id}, Name={product.Condition.Name}, Description={product.Condition.Description}");
+                }
+                else
+                {
+                    Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Condition is NULL despite Include!");
+                }
+
+                // Load the bidder information for each bid
+                foreach (var bid in product.Bids)
+                {
+                    // Since we're ignoring the Bidder navigation property in the entity configuration,
+                    // we need to manually load the User information and set it
+                    var bidderUser = context.Users.FirstOrDefault(u => u.Id == bid.BidderId);
+                    if (bidderUser != null)
+                    {
+                        bid.Bidder = bidderUser;
+                    }
                 }
 
                 return product;

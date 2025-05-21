@@ -16,6 +16,12 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
             // Debug statement for mapping
             Console.WriteLine("========== DEBUG: AuctionProductMapper.ToDTO ==========");
             Console.WriteLine($"Product ID: {entity.Id}, Title: {entity.Title}");
+            Console.WriteLine($"ConditionId: {entity.ConditionId}, Condition object: {(entity.Condition != null ? "Loaded" : "NULL")}");
+            if (entity.Condition != null)
+            {
+                Console.WriteLine($"Condition Id: {entity.Condition.Id}, Name: {entity.Condition.Name}, Description: {entity.Condition.Description}");
+            }
+            
             Console.WriteLine($"Category ID: {entity.CategoryId}, Category object: {(entity.Category != null ? "Loaded" : "NULL")}");
             if (entity.Category != null)
             {
@@ -52,7 +58,7 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 {
                     Id = entity.Condition.Id,
                     DisplayTitle = entity.Condition.Name,
-                    Description = null
+                    Description = entity.Condition.Description
                 }
                 : null,
                 Category = entity.Category != null ? new CategoryDTO

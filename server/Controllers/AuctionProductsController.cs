@@ -69,7 +69,57 @@ namespace MarketMinds.Controllers
                     return NotFound($"Auction product with ID {id} not found.");
                 }
                 
+                Console.WriteLine($"SERVER: GetAuctionProductById - Found auction {id} with {product.Bids.Count} bids");
+                
+                // Log seller information
+                Console.WriteLine($"SERVER: GetAuctionProductById - SellerId: {product.SellerId}");
+                if (product.Seller != null)
+                {
+                    Console.WriteLine($"SERVER: GetAuctionProductById - Seller loaded: Id={product.Seller.Id}, Username={product.Seller.Username}, Email={product.Seller.Email}");
+                }
+                else
+                {
+                    Console.WriteLine($"SERVER: GetAuctionProductById - Seller is NULL despite having SellerId={product.SellerId}");
+                }
+                
+                // Log condition information
+                Console.WriteLine($"SERVER: GetAuctionProductById - ConditionId: {product.ConditionId}");
+                if (product.Condition != null)
+                {
+                    Console.WriteLine($"SERVER: GetAuctionProductById - Condition: Id={product.Condition.Id}, Name={product.Condition.Name}, Description={product.Condition.Description}");
+                }
+                else
+                {
+                    Console.WriteLine($"SERVER: GetAuctionProductById - Condition is NULL");
+                }
+                
+                foreach (var bid in product.Bids)
+                {
+                    Console.WriteLine($"SERVER: GetAuctionProductById - Bid {bid.Id}: BidderId={bid.BidderId}, Bidder.Username={bid.Bidder?.Username ?? "NULL"}");
+                }
+                
                 var auctionProductDTO = AuctionProductMapper.ToDTO(product);
+                
+                // Log DTO seller information
+                if (auctionProductDTO.Seller != null)
+                {
+                    Console.WriteLine($"SERVER: GetAuctionProductById - DTO Seller: Id={auctionProductDTO.Seller.Id}, Username={auctionProductDTO.Seller.Username}");
+                }
+                else
+                {
+                    Console.WriteLine($"SERVER: GetAuctionProductById - DTO Seller is NULL");
+                }
+                
+                // Log DTO condition information
+                if (auctionProductDTO.Condition != null)
+                {
+                    Console.WriteLine($"SERVER: GetAuctionProductById - DTO Condition: Id={auctionProductDTO.Condition.Id}, DisplayTitle={auctionProductDTO.Condition.DisplayTitle}, Description={auctionProductDTO.Condition.Description}");
+                }
+                else
+                {
+                    Console.WriteLine($"SERVER: GetAuctionProductById - DTO Condition is NULL");
+                }
+                
                 return Ok(auctionProductDTO);
             }
             catch (KeyNotFoundException knfEx)
@@ -214,22 +264,25 @@ namespace MarketMinds.Controllers
                 product.CurrentPrice = bidDTO.Amount;
                 
                 Console.WriteLine($"SERVER: PlaceBid - Updating product in repository");
-                try {
+                
+                try
+                {
                     auctionProductsRepository.UpdateProduct(product);
-                    
                     Console.WriteLine($"SERVER: PlaceBid - Bid successfully placed");
                     return Ok(new { Success = true, Message = $"Bid of ${bidDTO.Amount} placed successfully." });
                 }
-                catch (Exception dbException) 
+                catch (Exception dbEx)
                 {
-                    // Check for foreign key constraint error specifically related to bidder_id
-                    if (dbException.InnerException != null && 
-                        dbException.InnerException.Message.Contains("FK_Bids_Buyers_bidder_id"))
+                    // Check for the foreign key constraint error for bidder_id
+                    if (dbEx.InnerException != null && 
+                        dbEx.InnerException.Message.Contains("FK_Bids_Buyers"))
                     {
-                        Console.WriteLine($"SERVER: PlaceBid - User role error: User ID {bidDTO.BidderId} is not a buyer");
-                        return BadRequest("Your account does not have buyer privileges. Only buyer accounts can place bids.");
+                        Console.WriteLine($"SERVER: PlaceBid - User role error: User {bidDTO.BidderId} is not a buyer");
+                        return BadRequest("Your account doesn't have permission to place bids. Only buyer accounts can place bids.");
                     }
-                    throw; // Re-throw if it's a different error
+                    
+                    // If it's not a buyer role error, re-throw
+                    throw;
                 }
             }
             catch (Exception exception)

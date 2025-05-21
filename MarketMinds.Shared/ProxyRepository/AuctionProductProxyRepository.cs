@@ -54,8 +54,7 @@ namespace MarketMinds.Shared.ProxyRepository
             // Ensure we have a valid SellerId
             if (auctionProduct.SellerId <= 0)
             {
-                // For demo purposes, use a default SellerId if none provided
-                auctionProduct.SellerId = 1;
+                throw new ArgumentException("SellerId must be specified and greater than zero", nameof(auctionProduct.SellerId));
             }
             
             // Filter out any null URLs in images
@@ -196,6 +195,8 @@ namespace MarketMinds.Shared.ProxyRepository
                 };
                 serializerOptions.Converters.Add(new UserJsonConverter());
                 serializerOptions.Converters.Add(new CategoryJsonConverter());
+                serializerOptions.Converters.Add(new ConditionJsonConverter());
+                serializerOptions.Converters.Add(new SellerJsonConverter());
 
                 var response = httpClient.GetAsync("auctionproducts").Result;
                 
@@ -219,20 +220,16 @@ namespace MarketMinds.Shared.ProxyRepository
                 }
                 catch (System.Text.Json.JsonException jsonEx)
                 {
-                    throw new Exception($"Failed to deserialize auction products: {jsonEx.Message}. JSON: {json.Substring(0, Math.Min(100, json.Length))}...", jsonEx);
+                    throw new InvalidOperationException($"Failed to deserialize API response: {jsonEx.Message}", jsonEx);
                 }
             }
             catch (HttpRequestException httpEx)
             {
-                throw new Exception($"HTTP request error: {httpEx.Message}", httpEx);
+                throw new InvalidOperationException($"Failed to communicate with API: {httpEx.Message}", httpEx);
             }
             catch (Exception ex)
             {
-                if (ex is System.Text.Json.JsonException || ex.Message.Contains("deserialize"))
-                {
-                    throw; // Re-throw deserialization exceptions already handled
-                }
-                throw new Exception($"Error retrieving auction products: {ex.Message}", ex);
+                throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
             }
         }
 
@@ -253,6 +250,8 @@ namespace MarketMinds.Shared.ProxyRepository
                 };
                 serializerOptions.Converters.Add(new UserJsonConverter());
                 serializerOptions.Converters.Add(new CategoryJsonConverter());
+                serializerOptions.Converters.Add(new ConditionJsonConverter());
+                serializerOptions.Converters.Add(new SellerJsonConverter());
 
                 var response = httpClient.GetAsync($"auctionproducts/{id}").Result;
                 

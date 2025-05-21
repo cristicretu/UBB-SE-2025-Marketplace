@@ -81,6 +81,17 @@ namespace MarketMinds.Web.Controllers
                     return NotFound();
                 }
                 
+                // Log condition information
+                _logger.LogInformation($"WEB: Details - ConditionId: {auctionProduct.ConditionId}");
+                if (auctionProduct.Condition != null)
+                {
+                    _logger.LogInformation($"WEB: Details - Condition loaded: Id={auctionProduct.Condition.Id}, Name={auctionProduct.Condition.Name}, Description={auctionProduct.Condition.Description}");
+                }
+                else
+                {
+                    _logger.LogWarning($"WEB: Details - Condition is NULL despite ConditionId={auctionProduct.ConditionId}");
+                }
+                
                 return View(auctionProduct);
             }
             catch (Exception ex)
@@ -177,9 +188,9 @@ namespace MarketMinds.Web.Controllers
                 
                 return RedirectToAction(nameof(Details), new { id });
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("buyer") || ex.Message.Contains("permission"))
+            catch (Exception ex) when (ex.Message.Contains("permission") || ex.Message.Contains("buyer"))
             {
-                _logger.LogWarning($"User account type error: {ex.Message}");
+                _logger.LogWarning($"User account type error when bidding: {ex.Message}");
                 TempData["ErrorMessage"] = "Your account doesn't have permission to place bids. Only buyer accounts can place bids.";
                 return RedirectToAction(nameof(Details), new { id });
             }
