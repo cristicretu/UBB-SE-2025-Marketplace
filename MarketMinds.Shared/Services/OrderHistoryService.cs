@@ -40,7 +40,12 @@ namespace MarketMinds.Shared.Services
         /// <inheritdoc/>
         public async Task<int> CreateOrderHistoryAsync(int userId)
         {
-            var newOrderHistoryId = await orderHistoryRepository.CreateOrderHistoryAsync();
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be positive", nameof(userId));
+            }
+            
+            var newOrderHistoryId = await orderHistoryRepository.CreateOrderHistoryAsync(userId);
             return newOrderHistoryId;
         }
     }

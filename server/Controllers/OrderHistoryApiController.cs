@@ -42,6 +42,36 @@ namespace Server.Controllers
         }
 
         /// <summary>
+        /// Asynchronously creates a new order history record.
+        /// </summary>
+        /// <param name="request">Request containing buyer ID.</param>
+        /// <returns>The ID of the newly created order history.</returns>
+        [HttpPost]
+        [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<int>> CreateOrderHistory([FromBody] OrderHistoryCreateRequest request)
+        {
+            if (request == null || request.BuyerId <= 0)
+            {
+                return this.BadRequest("A valid buyer ID is required.");
+            }
+            
+            try
+            {
+                var orderHistoryId = await this.orderHistoryRepository.CreateOrderHistoryAsync(request.BuyerId);
+                
+                // Return the ID of the newly created order history with a 201 Created status.
+                return this.StatusCode(StatusCodes.Status201Created, orderHistoryId);
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions and return a 500 Internal Server Error status
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while creating a new order history: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Asynchronously retrieves products from order history by ID.
         /// </summary>
         /// <param name="orderHistoryId">The ID of the order history.</param>
@@ -278,28 +308,39 @@ namespace Server.Controllers
     }
 
     /// <summary>
-    /// DTO for updating an order history.
+    /// Request model for creating a new order history.
+    /// </summary>
+    public class OrderHistoryCreateRequest
+    {
+        /// <summary>
+        /// Gets or sets the buyer ID.
+        /// </summary>
+        public int BuyerId { get; set; }
+    }
+
+    /// <summary>
+    /// Request model for updating an existing order history.
     /// </summary>
     public class OrderHistoryUpdateRequest
     {
         /// <summary>
-        /// Gets or sets the note for the order history.
+        /// Gets or sets the note.
         /// </summary>
         public string? Note { get; set; }
         
         /// <summary>
-        /// Gets or sets the shipping address for the order history.
+        /// Gets or sets the shipping address.
         /// </summary>
         public string? ShippingAddress { get; set; }
         
         /// <summary>
-        /// Gets or sets the payment method for the order history.
+        /// Gets or sets the payment method.
         /// </summary>
         public string? PaymentMethod { get; set; }
     }
 
     /// <summary>
-    /// DTO for order with tracking information.
+    /// DTO for combining order and tracking information.
     /// </summary>
     public class OrderWithTrackingDTO
     {
@@ -309,7 +350,7 @@ namespace Server.Controllers
         public Order Order { get; set; }
         
         /// <summary>
-        /// Gets or sets the tracked order information.
+        /// Gets or sets the tracked order.
         /// </summary>
         public TrackedOrder TrackedOrder { get; set; }
     }

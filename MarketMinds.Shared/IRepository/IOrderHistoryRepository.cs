@@ -17,8 +17,9 @@ namespace MarketMinds.Shared.IRepository
         /// <summary>
         /// Creates a new order history record in the database.
         /// </summary>
+        /// <param name="buyerId">The ID of the buyer for this order history.</param>
         /// <returns>A task representing the asynchronous operation that returns the ID of the newly created order history.</returns>
-        Task<int> CreateOrderHistoryAsync();
+        Task<int> CreateOrderHistoryAsync(int buyerId);
         
         /// <summary>
         /// Retrieves all order histories for a specific buyer.

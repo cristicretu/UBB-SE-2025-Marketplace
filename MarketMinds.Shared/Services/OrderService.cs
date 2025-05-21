@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace MarketMinds.Shared.Services
 {
@@ -16,7 +17,6 @@ namespace MarketMinds.Shared.Services
         private readonly IOrderHistoryService _orderHistoryService;
         private readonly IOrderSummaryService _orderSummaryService;
         private readonly IShoppingCartService _shoppingCartService;
-
 
         public OrderService(
             IOrderRepository orderRepository,
@@ -210,43 +210,104 @@ namespace MarketMinds.Shared.Services
 
         public async Task<int> CreateOrderFromCartAsync(OrderCreationRequestDto orderRequestDto, int userId, List<Product> cartItems)
         {
-            if (orderRequestDto == null) throw new ArgumentNullException(nameof(orderRequestDto));
-            if (cartItems == null || !cartItems.Any()) throw new ArgumentException("Cart items cannot be null or empty", nameof(cartItems));
-            if (userId <= 0) throw new ArgumentException("User ID must be positive", nameof(userId));
+            Debug.WriteLine("[OrderService] Attempting to create order from cart.");
+            Debug.WriteLine($"[OrderService] Using Base API URL: {AppConfig.GetBaseApiUrl()} (ensure this is correct)");
 
-            var orderHistoryId = await _orderHistoryService.CreateOrderHistoryAsync(userId);
-
-            var newOrderSummary = new OrderSummary
+            if (orderRequestDto == null)
             {
-                Subtotal = orderRequestDto.Subtotal,
-                WarrantyTax = orderRequestDto.WarrantyTax,
-                DeliveryFee = orderRequestDto.DeliveryFee,
-                FinalTotal = orderRequestDto.Total,
-                FullName = orderRequestDto.FullName,
-                Email = orderRequestDto.Email,
-                PhoneNumber = orderRequestDto.PhoneNumber,
-                Address = orderRequestDto.Address,
-                PostalCode = orderRequestDto.ZipCode,
-                AdditionalInfo = orderRequestDto.AdditionalInfo,
-                ContractDetails = null
-            };
-            var orderSummaryId = await _orderSummaryService.CreateOrderSummaryAsync(newOrderSummary);
-
-            foreach (var product in cartItems)
+                Debug.WriteLine("[OrderService] Error: orderRequestDto is null.");
+                throw new ArgumentNullException(nameof(orderRequestDto));
+            }
+            if (cartItems == null || !cartItems.Any())
             {
-                string productType = product.GetType().Name;
-                await orderRepository.AddOrderAsync(
-                    productId: product.Id,
-                    buyerId: userId,
-                    productType: productType,
-                    paymentMethod: orderRequestDto.SelectedPaymentMethod,
-                    orderSummaryId: orderSummaryId,
-                    orderDate: DateTime.UtcNow
-                );
+                Debug.WriteLine("[OrderService] Error: cartItems is null or empty.");
+                throw new ArgumentException("Cart items cannot be null or empty", nameof(cartItems));
+            }
+            if (userId <= 0)
+            {
+                Debug.WriteLine("[OrderService] Error: userId is invalid.");
+                throw new ArgumentException("User ID must be positive", nameof(userId));
             }
 
-            await _shoppingCartService.ClearCartAsync(userId);
+            int orderHistoryId = 0;
+            int orderSummaryId = 0;
 
+            try
+            {
+                Debug.WriteLine($"[OrderService] Step 1: Creating OrderHistory for userId: {userId}");
+                orderHistoryId = await _orderHistoryService.CreateOrderHistoryAsync(userId);
+                Debug.WriteLine($"[OrderService] Step 1 Success: Created OrderHistoryId: {orderHistoryId}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[OrderService] CRITICAL ERROR in Step 1 (CreateOrderHistoryAsync): {ex.ToString()}");
+                throw;
+            }
+
+            try
+            {
+                Debug.WriteLine($"[OrderService] Step 2: Creating OrderSummary. OrderHistoryId: {orderHistoryId}");
+                var newOrderSummary = new OrderSummary
+                {
+                    Subtotal = orderRequestDto.Subtotal,
+                    WarrantyTax = orderRequestDto.WarrantyTax,
+                    DeliveryFee = orderRequestDto.DeliveryFee,
+                    FinalTotal = orderRequestDto.Total,
+                    FullName = orderRequestDto.FullName,
+                    Email = orderRequestDto.Email,
+                    PhoneNumber = orderRequestDto.PhoneNumber,
+                    Address = orderRequestDto.Address,
+                    PostalCode = orderRequestDto.ZipCode,
+                    AdditionalInfo = orderRequestDto.AdditionalInfo,
+                    ContractDetails = null
+                };
+                orderSummaryId = await _orderSummaryService.CreateOrderSummaryAsync(newOrderSummary);
+                Debug.WriteLine($"[OrderService] Step 2 Success: Created OrderSummaryId: {orderSummaryId}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[OrderService] CRITICAL ERROR in Step 2 (CreateOrderSummaryAsync): {ex.ToString()}");
+                throw;
+            }
+
+            try
+            {
+                Debug.WriteLine($"[OrderService] Step 3: Adding Order items. OrderSummaryId: {orderSummaryId}");
+                foreach (var product in cartItems)
+                {
+                    string productType = product.GetType().Name;
+                    Debug.WriteLine($"[OrderService] Adding product to order: ProductId={product.Id}, Type={productType}, BuyerId={userId}, PaymentMethod={orderRequestDto.SelectedPaymentMethod}");
+                    await orderRepository.AddOrderAsync(
+                        productId: product.Id,
+                        buyerId: userId,
+                        productType: productType,
+                        paymentMethod: orderRequestDto.SelectedPaymentMethod,
+                        orderSummaryId: orderSummaryId,
+                        orderDate: DateTime.UtcNow
+                    );
+                    Debug.WriteLine($"[OrderService] Successfully added product: {product.Id}");
+                }
+                Debug.WriteLine("[OrderService] Step 3 Success: All order items added.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[OrderService] CRITICAL ERROR in Step 3 (AddOrderAsync loop): {ex.ToString()}");
+                throw;
+            }
+
+            try
+            {
+                Debug.WriteLine($"[OrderService] Step 4: Clearing shopping cart for userId: {userId}");
+                await _shoppingCartService.ClearCartAsync(userId);
+                Debug.WriteLine("[OrderService] Step 4 Success: Shopping cart cleared.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[OrderService] ERROR in Step 4 (ClearCartAsync): {ex.ToString()}");
+                throw;
+            }
+
+            Debug.WriteLine($"[OrderService] Order creation process completed successfully. Returning OrderHistoryId: {orderHistoryId}");
             return orderHistoryId;
         }
 

@@ -43,9 +43,11 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
-        public async Task<int> CreateOrderHistoryAsync()
+        public async Task<int> CreateOrderHistoryAsync(int buyerId)
         {
-            var response = await this.httpClient.PostAsync(ApiBaseRoute, null);
+            // Use Json content to pass the buyerId
+            var content = JsonContent.Create(new { BuyerId = buyerId });
+            var response = await this.httpClient.PostAsync(ApiBaseRoute, content);
             await this.ThrowOnError(nameof(CreateOrderHistoryAsync), response);
             var orderHistoryId = await response.Content.ReadFromJsonAsync<int>();
             return orderHistoryId;

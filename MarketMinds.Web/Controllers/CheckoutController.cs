@@ -62,7 +62,6 @@ namespace WebMarketplace.Controllers
         [HttpPost]
         public async Task<IActionResult> BillingInfo(BillingInfoViewModel model)
         {
-            // Fetch cart items early, as they are needed for both validation failure and order creation
             List<Product> cartItems = new List<Product>();
             try
             {
@@ -71,72 +70,59 @@ namespace WebMarketplace.Controllers
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading cart items initially: {ex.Message}");
-                // If cart loading fails, we might want to show an error or proceed with an empty cart
-                // For now, let's allow proceeding, and order creation will likely fail or create an empty order if cartItems is empty.
+                // Potentially add a model error here if cart loading is critical before validation
             }
-            model.ProductList = cartItems; // Ensure model has the latest cart items
-            // Recalculate totals if cart items were just fetched, in case they changed or failed to load previously
-            // model.CalculateOrderTotal(); // This should be called after ProductList is set.
+            model.ProductList = cartItems;
 
             if (!ModelState.IsValid)
             {
-                // Model state is invalid, ProductList is already set from above.
-                // We might need to re-calculate totals if they depend on other model properties that might have been invalid.
-                model.CalculateOrderTotal(); // Recalculate with potentially invalid model data but correct product list.
+                model.CalculateOrderTotal(); 
                 return View(model);
             }
 
-            // Process payment method specific logic (e.g., wallet refill)
             if (model.SelectedPaymentMethod == "wallet")
             {
-                // Ensure total is calculated before wallet processing
                 model.CalculateOrderTotal(); 
                 await ProcessWalletRefill(model);
             }
             else
             {
-                // Ensure totals are calculated if not wallet payment either
                 model.CalculateOrderTotal();
             }
 
-            // Create the order
             try
             {
-                var userId = UserSession.CurrentUserId ?? 1; // Fallback to a default user ID if null
+                var userId = UserSession.CurrentUserId ?? 1; 
                 
-                // Ensure cartItems are available for order creation
                 if (cartItems == null || !cartItems.Any())
                 {
-                    // Handle empty cart scenario - perhaps redirect to cart page with a message
                     ModelState.AddModelError(string.Empty, "Your cart is empty. Please add items before proceeding.");
-                    return View(model); // Return to view with error
+                    return View(model); 
                 }
 
-                // Create DTO from ViewModel
-                var orderRequestDto = new OrderCreationRequestDto
-                {
-                    Subtotal = model.Subtotal,
-                    WarrantyTax = model.WarrantyTax,
-                    DeliveryFee = model.DeliveryFee,
-                    Total = model.Total,
-                    FullName = model.FullName,
-                    Email = model.Email,
-                    PhoneNumber = model.PhoneNumber,
-                    Address = model.Address,
-                    ZipCode = model.ZipCode,
-                    AdditionalInfo = model.AdditionalInfo,
-                    SelectedPaymentMethod = model.SelectedPaymentMethod
-                };
+                var orderRequestDto = new OrderCreationRequestDto { /* ... (mapping) ... */ }; // Assume mapping is correct as before
+                // Mapping DTO from ViewModel
+                orderRequestDto.Subtotal = model.Subtotal;
+                orderRequestDto.WarrantyTax = model.WarrantyTax;
+                orderRequestDto.DeliveryFee = model.DeliveryFee;
+                orderRequestDto.Total = model.Total;
+                orderRequestDto.FullName = model.FullName;
+                orderRequestDto.Email = model.Email;
+                orderRequestDto.PhoneNumber = model.PhoneNumber;
+                orderRequestDto.Address = model.Address;
+                orderRequestDto.ZipCode = model.ZipCode;
+                orderRequestDto.AdditionalInfo = model.AdditionalInfo;
+                orderRequestDto.SelectedPaymentMethod = model.SelectedPaymentMethod;
 
                 var newOrderHistoryId = await _orderService.CreateOrderFromCartAsync(orderRequestDto, userId, cartItems);
-                model.OrderHistoryID = newOrderHistoryId; // Update the model with the new ID for the redirect
+                model.OrderHistoryID = newOrderHistoryId; 
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error creating order: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error creating order (FULL EXCEPTION): {ex.ToString()}"); // Log full exception
                 ModelState.AddModelError(string.Empty, "An error occurred while creating your order. Please try again.");
-                // ProductList is already set from above.
-                model.CalculateOrderTotal(); // Recalculate for view
+                ModelState.AddModelError(string.Empty, $"DEBUG: {ex.ToString()}"); // ADD FULL EXCEPTION TO MODELSTATE
+                model.CalculateOrderTotal(); 
                 return View(model);
             }
 
