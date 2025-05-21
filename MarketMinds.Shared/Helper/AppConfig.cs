@@ -81,14 +81,29 @@ namespace MarketMinds.Shared.Helper
         /// </summary>
         private static void LoadConfiguration()
         {
-            Debug.WriteLine("LMAOOOOO");
-            string jsonFilePath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
-            Debug.WriteLine(jsonFilePath);
+            try
+            {
+                // Use AppContext.BaseDirectory instead of Directory.GetCurrentDirectory()
+                string baseDirectory = AppContext.BaseDirectory;
+                Debug.WriteLine($"Base directory: {baseDirectory}");
 
-            var builder = new ConfigurationBuilder()
-                .AddJsonFile(jsonFilePath, optional: true, reloadOnChange: true);
+                string jsonFilePath = Path.Combine(baseDirectory, "appsettings.json");
+                Debug.WriteLine($"Looking for config at: {jsonFilePath}");
+                Debug.WriteLine($"File exists: {File.Exists(jsonFilePath)}");
 
-            Configuration = builder.Build();
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(baseDirectory)
+                    .AddJsonFile(jsonFilePath, optional: false, reloadOnChange: true);
+
+                Configuration = builder.Build();
+                Debug.WriteLine("ApiSettings:BaseUrl = " + Configuration?["ApiSettings:BaseUrl"]);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading configuration: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+            }
         }
+
     }
 }

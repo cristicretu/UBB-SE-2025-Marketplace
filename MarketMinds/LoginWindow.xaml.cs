@@ -27,11 +27,11 @@ namespace MarketMinds
         private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
         {
             // Check if we've navigated back to LoginView with a successful login
-            if (e.SourcePageType == typeof(MarketMinds.Views.LoginView) && App.CurrentUser != null)
-            {
-                // User has successfully logged in, show main application
-                App.ShowMainWindow();
-            }
+            // if (e.SourcePageType == typeof(MarketMinds.Views.LoginView) && App.CurrentUser != null)
+            // {
+            //    // User has successfully logged in, show main application
+            //    App.ShowMainWindow();
+            // }
         }
     }
 }

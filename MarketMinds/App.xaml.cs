@@ -98,6 +98,24 @@ namespace MarketMinds
         public static Window LoginWindow = null!;
         public static Window MainWindow = null!;
         private static HttpClient httpClient;
+        public static void ShowSellerProfile()
+        {
+            var sellerProfileWindow = new Window();
+            sellerProfileWindow.Content = new MarketMinds.Views.SellerProfileView();
+            sellerProfileWindow.Activate();
+        }
+
+        public static void ShowBuyerProfile()
+        {
+            var buyerProfileWindow = new Window();
+            buyerProfileWindow.Content = new MarketMinds.Views.BuyerProfileView();
+            buyerProfileWindow.Activate();
+        }
+
+        public static void ShowAdminProfile()
+        {
+            MainWindow.Activate();
+        }
 
         // Implementation of IOnLoginSuccessCallback
         private class LoginSuccessHandler : IOnLoginSuccessCallback
@@ -107,13 +125,30 @@ namespace MarketMinds
                 // Set the current user
                 CurrentUser = user;
 
-                // Show the main window
-                ShowMainWindow();
+                // Redirect based on user role
+                switch (user.UserType)
+                {
+                    case 3: // Seller
+                        ShowSellerProfile();
+                        break;
+                    case 2: // Buyer
+                        ShowBuyerProfile();
+                        break;
+                    case 1: // Admin
+                         ShowAdminProfile();
+                        break;
+                    default:
+                        ShowMainWindow();
+                        break;
+                }
 
-                return;
+                // Optionally close the login window
+                if (LoginWindow != null)
+                {
+                    LoginWindow.Close();
+                }
             }
         }
-
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
