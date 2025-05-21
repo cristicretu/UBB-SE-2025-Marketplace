@@ -19,6 +19,7 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 Title = entity.Title,
                 Description = entity.Description,
                 Price = entity.Price,
+                Stock = entity.Stock,
                 Condition = entity.Condition != null ? new ConditionDTO
                 {
                     Id = entity.Condition.Id,
@@ -104,7 +105,8 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 Id = dto.Id,
                 Title = dto.Title,
                 Description = dto.Description,
-                Price = dto.Price
+                Price = dto.Price,
+                Stock = dto.Stock
             };
 
             // Map seller

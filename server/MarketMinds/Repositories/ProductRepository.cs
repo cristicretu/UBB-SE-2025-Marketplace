@@ -75,6 +75,7 @@ namespace Server.Repository
             productToUpdate.Title = name;
             productToUpdate.Price = (int)price;
             productToUpdate.SellerId = sellerId;
+            productToUpdate.Stock = productToUpdate.Stock; // Preserve existing stock value
 
             await this.dbContext.SaveChangesAsync();
         }
