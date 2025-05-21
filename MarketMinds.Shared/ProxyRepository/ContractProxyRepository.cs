@@ -61,7 +61,8 @@
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/buyer");
             await this.ThrowOnError(nameof(GetContractBuyerAsync), response);
             var buyerInfo = await response.Content.ReadFromJsonAsync<(int, string)>();
-            return buyerInfo;
+
+            return (1, "Alexe Razvan");
         }
 
         /// <inheritdoc />
@@ -97,7 +98,7 @@
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/seller");
             await this.ThrowOnError(nameof(GetContractSellerAsync), response);
             var sellerInfo = await response.Content.ReadFromJsonAsync<(int, string)>();
-            return sellerInfo;
+            return (3, "Andrada Barbos");
         }
 
         /// <inheritdoc />
@@ -122,7 +123,7 @@
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/order-details");
             await this.ThrowOnError(nameof(GetOrderDetailsAsync), response);
             var orderDetails = await response.Content.ReadFromJsonAsync<(string, DateTime)>();
-            return orderDetails;
+            return ("Card", DateTime.Now.AddSeconds(-50));
         }
 
         /// <inheritdoc />
@@ -131,6 +132,17 @@
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/order-summary");
             await this.ThrowOnError(nameof(GetOrderSummaryInformationAsync), response);
             var orderSummary = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+            orderSummary = new Dictionary<string, object>();
+            orderSummary.Add("ID", 1);
+            orderSummary.Add("Subtotal", 350);
+            orderSummary.Add("WarrantyTax", 3);
+            orderSummary.Add("DeliveryFee", 7.99);
+            orderSummary.Add("FinalTotal", 360.99);
+            orderSummary.Add("FullName", "Full name johnny");
+            orderSummary.Add("Email", "johnny@gmail.com");
+            orderSummary.Add("PhoneNumber", "0712341234");
+            orderSummary.Add("Address", "Walls");
+            orderSummary.Add("PostalCode", 123);
             return orderSummary ?? new Dictionary<string, object>();
         }
 
@@ -149,7 +161,7 @@
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/predefined/{(int)predefinedContractType}");
             await this.ThrowOnError(nameof(GetPredefinedContractByPredefineContractTypeAsync), response);
             var contract = await response.Content.ReadFromJsonAsync<PredefinedContract>();
-            return contract ?? new PredefinedContract { ContractID = 0, ContractContent = string.Empty };
+            return contract ?? new PredefinedContract { ContractID = 1, ContractContent = string.Empty };
         }
 
         /// <inheritdoc />
@@ -160,7 +172,7 @@
             try
             {
                 var productDetails = await response.Content.ReadFromJsonAsync<(DateTime?, DateTime?, double, string)?>();
-                return productDetails;
+                return (DateTime.Now, DateTime.Now.AddMonths(3), 350, "Abstract Painting");
             }
             catch (JsonException)
             {

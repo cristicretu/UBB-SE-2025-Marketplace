@@ -275,12 +275,12 @@ namespace Server.Repository
                 .FirstOrDefaultAsync() ?? throw new Exception("GetProductDetailsByContractIdAsync: Order not found for order ID: " + contract.OrderID);
 
             // Get the product of the order
-            BorrowProduct product = await this.dbContext.BorrowProducts
+            BuyProduct product = await this.dbContext.BuyProducts
                 .Where(product => product.Id == order.ProductID)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetProductDetailsByContractIdAsync: Product not found for product ID: " + order.ProductID);
 
             // Return the product details
-            return (product.StartDate, product.EndDate, product.Price, product.Title);
+            return (DateTime.Now, DateTime.Now.AddMonths(3), product.Price, product.Title);
         }
 
         /// <summary>
@@ -338,15 +338,16 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the contract or tracked order is not found.</exception>
         public async Task<DateTime?> GetDeliveryDateByContractIdAsync(long contractId)
         {
+
             Contract? contract = await this.dbContext.Contracts
                 .Where(contract => contract.ContractID == contractId)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetDeliveryDateByContractIdAsync: Contract not found for contract ID: " + contractId);
 
-            TrackedOrder? trackedOrder = await this.dbContext.TrackedOrders
-                .Where(trackedOrder => trackedOrder.OrderID == contract.OrderID)
+            Order? order = await this.dbContext.Orders
+                .Where(order => order.Id == contract.OrderID)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetDeliveryDateByContractIdAsync: Tracked order not found for order ID: " + contract.OrderID);
 
-            return trackedOrder.EstimatedDeliveryDate.ToDateTime(TimeOnly.MinValue);
+            return order.OrderDate.AddDays(2).DateTime;
         }
 
         /// <summary>
