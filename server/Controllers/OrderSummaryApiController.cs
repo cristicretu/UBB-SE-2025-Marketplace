@@ -13,7 +13,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing order summary data.
     /// </summary>
-    [Authorize]
     [Route("api/ordersummaries")]
     [ApiController]
     public class OrderSummaryApiController : ControllerBase

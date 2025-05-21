@@ -12,7 +12,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing buyer data.
     /// </summary>
-    [Authorize]
     [Route("api/buyers")]
     [ApiController]
     public class BuyerApiController : ControllerBase
