@@ -29,9 +29,9 @@ using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
-using MarketMinds.ViewModels.ContractRenewViewModel;
 using MarketMinds.Views;
 using MarketMinds.ViewModels.Admin;
+using static MarketMinds.ViewModels.ContractRenewViewModel;
 
 namespace MarketMinds
 {
