@@ -28,7 +28,24 @@ namespace MarketMinds.Controllers
             try
             {
                 var products = auctionProductsRepository.GetProducts();
+                
+                Console.WriteLine("========== DEBUG: AuctionProductsController.GetAuctionProducts ==========");
+                Console.WriteLine($"Retrieved {products.Count} products from repository");
+                
                 var dtos = AuctionProductMapper.ToDTOList(products);
+                
+                Console.WriteLine($"Mapped to {dtos.Count} DTOs");
+                foreach (var dto in dtos)
+                {
+                    Console.WriteLine($"DTO ID: {dto.Id}, Title: {dto.Title}");
+                    Console.WriteLine($"DTO Category: {(dto.Category != null ? "Present" : "NULL")}");
+                    if (dto.Category != null)
+                    {
+                        Console.WriteLine($"DTO Category ID: {dto.Category.Id}, DisplayTitle: {dto.Category.DisplayTitle}");
+                    }
+                }
+                Console.WriteLine("=====================================================================");
+                
                 return Ok(dtos);
             }
             catch (Exception exception)
@@ -71,6 +88,8 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateAuctionProduct([FromBody] AuctionProduct product)
         {
+            Console.WriteLine($"TRACE: CreateAuctionProduct API endpoint received EndTime: {product.EndTime}");
+            
             if (product?.Id != NULL_PRODUCT_ID)
             {
                 return BadRequest("Product ID should not be provided when creating a new product.");
@@ -180,20 +199,33 @@ namespace MarketMinds.Controllers
         {
             var now = DateTime.Now;
             
+            Console.WriteLine($"TRACE: InitializeDates received EndTime: {product.EndTime}");
+            Console.WriteLine($"TRACE: Conditions - Default: {product.EndTime == default}, < MINIMUM_SQL_DATETIME: {product.EndTime < MINIMUM_SQL_DATETIME}, < now: {product.EndTime < now}");
+            
             if (product.StartTime == default || product.StartTime < MINIMUM_SQL_DATETIME)
             {
                 product.StartTime = now;
             }
             
-            if (product.EndTime == default || product.EndTime < MINIMUM_SQL_DATETIME)
+            // Only set a default EndTime if it's invalid (default value, earlier than min SQL date, or in the past)
+            if (product.EndTime == default || product.EndTime < MINIMUM_SQL_DATETIME || product.EndTime < now)
             {
+                Console.WriteLine($"TRACE: Setting default EndTime (original: {product.EndTime})");
                 product.EndTime = now.AddDays(7);
             }
+            else
+            {
+                Console.WriteLine($"TRACE: Keeping original EndTime: {product.EndTime}");
+            }
             
+            // Still enforce that EndTime is after StartTime
             if (product.EndTime < product.StartTime)
             {
+                Console.WriteLine($"TRACE: EndTime is before StartTime, adjusting (was: {product.EndTime})");
                 product.EndTime = product.StartTime.AddDays(7);
             }
+            
+            Console.WriteLine($"TRACE: InitializeDates final EndTime: {product.EndTime}");
             
             if (product.StartPrice <= 0 && product.CurrentPrice > 0)
             {

@@ -77,6 +77,7 @@ namespace MarketMinds.Web.Controllers
             _logger.LogInformation("POST: Home/Create - Starting product creation");
             _logger.LogInformation("Received parameters - productType: {ProductType}, tagIds: {TagIds}, imageUrls: {ImageUrls}", 
                 productType, tagIds, imageUrls);
+            _logger.LogInformation("TRACE: Original EndTime from form: {EndTime}", auctionProduct?.EndTime);
             _logger.LogInformation("AuctionProduct details - Title: {Title}, Description: {Description}, StartPrice: {StartPrice}, CategoryId: {CategoryId}, ConditionId: {ConditionId}, SellerId: {SellerId}",
                 auctionProduct?.Title,
                 auctionProduct?.Description?.Substring(0, Math.Min(50, auctionProduct?.Description?.Length ?? 0)),
@@ -107,11 +108,24 @@ namespace MarketMinds.Web.Controllers
                 auctionProduct.StartTime = DateTime.Now;
             }
             
-            if (auctionProduct.EndTime == default)
+            // Only set a default EndTime if one wasn't provided or it's invalid
+            // Check for both default value and a date that's earlier than startup
+            _logger.LogInformation("TRACE: Before EndTime check - Current value: {EndTime}, Default: {IsDefault}, Earlier than now: {IsEarlier}", 
+                auctionProduct.EndTime, 
+                auctionProduct.EndTime == default,
+                auctionProduct.EndTime < DateTime.Now);
+                
+            if (auctionProduct.EndTime == default || auctionProduct.EndTime < DateTime.Now)
             {
-                _logger.LogInformation("Setting default EndTime to 7 days from now");
+                _logger.LogInformation("Setting default EndTime to 7 days from now (Original was: {OriginalEndTime})", auctionProduct.EndTime);
                 auctionProduct.EndTime = DateTime.Now.AddDays(7);
             }
+            else
+            {
+                _logger.LogInformation("Using user-provided EndTime: {EndTime}", auctionProduct.EndTime);
+            }
+            
+            _logger.LogInformation("TRACE: After EndTime check - Final value: {EndTime}", auctionProduct.EndTime);
 
             // Process image URLs
             if (!string.IsNullOrEmpty(imageUrls))
@@ -191,7 +205,9 @@ namespace MarketMinds.Web.Controllers
                     }
 
                     // Create the auction product
+                    _logger.LogInformation("TRACE: Before service call - EndTime: {EndTime}", auctionProduct.EndTime);
                     var result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
+                    _logger.LogInformation("TRACE: After service call - Result: {Result}", result);
                     
                     if (result)
                     {

@@ -25,6 +25,19 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     .Include(product => product.Bids)
                     .Include(product => product.Images)
                     .ToList();
+                
+                // Debug statement to check if categories are loaded
+                Console.WriteLine("========== DEBUG: AuctionProductsRepository.GetProducts ==========");
+                foreach (var product in products)
+                {
+                    Console.WriteLine($"Product ID: {product.Id}, Title: {product.Title}");
+                    Console.WriteLine($"Category ID: {product.CategoryId}, Category object: {(product.Category != null ? "Loaded" : "NULL")}");
+                    if (product.Category != null)
+                    {
+                        Console.WriteLine($"Category Name: {product.Category.Name}, Description: {product.Category.Description}");
+                    }
+                }
+                Console.WriteLine("================================================================");
 
                 return products;
             }

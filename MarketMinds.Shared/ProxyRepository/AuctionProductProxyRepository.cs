@@ -29,6 +29,8 @@ namespace MarketMinds.Shared.ProxyRepository
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
             
+            Console.WriteLine($"TRACE: Repository.CreateListing received EndTime: {auctionProduct.EndTime}");
+            
             if (string.IsNullOrWhiteSpace(auctionProduct.Title))
             {
                 throw new ArgumentException("Title cannot be empty", nameof(auctionProduct.Title));
@@ -82,12 +84,14 @@ namespace MarketMinds.Shared.ProxyRepository
                 SellerId = auctionProduct.SellerId,
                 ConditionId = auctionProduct.ConditionId,
                 CategoryId = auctionProduct.CategoryId,
-                StartTime = auctionProduct.StartTime,
-                EndTime = auctionProduct.EndTime,
-                StartPrice = auctionProduct.StartPrice,
-                CurrentPrice = auctionProduct.CurrentPrice,
+                startAuctionDate = auctionProduct.StartTime,
+                endAuctionDate = auctionProduct.EndTime,
+                startingPrice = auctionProduct.StartPrice,
+                currentPrice = auctionProduct.CurrentPrice,
                 Images = imagesList
             };
+            
+            Console.WriteLine($"TRACE: About to send API request with endAuctionDate: {productToSend.endAuctionDate}");
 
             try
             {
@@ -99,6 +103,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 }
                 
                 var responseContent = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine($"TRACE: API response received: {responseContent}");
             }
             catch (HttpRequestException ex)
             {
@@ -163,6 +168,7 @@ namespace MarketMinds.Shared.ProxyRepository
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
                 };
                 serializerOptions.Converters.Add(new UserJsonConverter());
+                serializerOptions.Converters.Add(new CategoryJsonConverter());
 
                 var response = httpClient.GetAsync("auctionproducts").Result;
                 
@@ -219,6 +225,7 @@ namespace MarketMinds.Shared.ProxyRepository
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
                 };
                 serializerOptions.Converters.Add(new UserJsonConverter());
+                serializerOptions.Converters.Add(new CategoryJsonConverter());
 
                 var response = httpClient.GetAsync($"auctionproducts/{id}").Result;
                 
