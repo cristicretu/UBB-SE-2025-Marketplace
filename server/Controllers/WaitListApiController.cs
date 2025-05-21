@@ -14,7 +14,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing waitlist data.
     /// </summary>
-    [Authorize]
     [Route("api/waitlist")]
     [ApiController]
     public class WaitListApiController : ControllerBase

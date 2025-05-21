@@ -13,7 +13,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing dummy product data.
     /// </summary>
-    [Authorize]
     [Route("api/products")]
     [ApiController]
     public class ProductApiController : ControllerBase
