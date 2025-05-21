@@ -67,7 +67,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
             try
             {
                 return context.BuyProducts
-                    .Include(p => p.Seller)
+                    // .Include(p => p.Seller)
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
                     .Include(p => p.Images)
