@@ -71,18 +71,26 @@
                              CornerRadius="8"/>
 
 				<!-- Account Type -->
-				<ComboBox SelectedValue="{Binding Role, Mode=TwoWay}" 
-                          SelectedValuePath="Tag" 
-                          SelectedIndex="-1" 
-                          PlaceholderText="Select account type"
-                          Width="Auto" 
-                          Height="45" 
-                          Padding="8" 
-                          BorderThickness="0" 
-                          CornerRadius="8">
-					<ComboBoxItem Content="Buyer" Tag="2"/>
-					<ComboBoxItem Content="Seller" Tag="3"/>
-				</ComboBox>
+				<StackPanel>
+					<TextBlock Text="Account Type" 
+                               FontSize="16" 
+                               FontWeight="Bold" 
+                               Foreground="{ThemeResource SystemAccentColorDark2}"/>
+                    <ComboBox SelectedValue="{Binding Role, Mode=TwoWay}" 
+                              SelectedValuePath="Tag" 
+                              SelectedIndex="0" 
+                              Width="Auto" 
+                              Height="40" 
+                              Padding="8" 
+                              BorderBrush="{ThemeResource SystemAccentColor}" 
+                              BorderThickness="2" 
+                              CornerRadius="8">
+                        <ComboBoxItem Content="Admin" Tag="1"/>
+                        <ComboBoxItem Content="Buyer" Tag="2"/>
+                        <ComboBoxItem Content="Seller" Tag="3"/>
+                    </ComboBox>
+				</StackPanel>
+
 
 				<!-- Signup Button -->
 				<Button Content="Sign Up"
