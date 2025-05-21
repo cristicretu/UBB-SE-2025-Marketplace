@@ -13,7 +13,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing contract data.
     /// </summary>
-    [Authorize]
     [Route("api/contracts")]
     [ApiController]
     public class ContractApiController : ControllerBase

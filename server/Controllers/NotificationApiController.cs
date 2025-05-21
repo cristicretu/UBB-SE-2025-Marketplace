@@ -16,7 +16,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing notification data.
     /// </summary>
-    [Authorize]
     [Route("api/notifications")]
     [ApiController]
     public class NotificationApiController : ControllerBase
