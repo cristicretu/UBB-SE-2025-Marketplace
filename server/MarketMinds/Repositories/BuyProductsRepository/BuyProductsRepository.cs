@@ -141,7 +141,21 @@ namespace MarketMinds.Repositories.BuyProductsRepository
 
             try
             {
-                context.Entry(product).State = EntityState.Modified;
+                var existingProduct = context.BuyProducts.Find(product.Id);
+                if (existingProduct == null)
+                {
+                    throw new KeyNotFoundException($"BuyProduct with ID {product.Id} not found for update.");
+                }
+
+                // Update all fields including stock
+                existingProduct.Title = product.Title;
+                existingProduct.Description = product.Description;
+                existingProduct.Price = product.Price;
+                existingProduct.SellerId = product.SellerId;
+                existingProduct.CategoryId = product.CategoryId;
+                existingProduct.ConditionId = product.ConditionId;
+                existingProduct.Stock = product.Stock;
+
                 context.SaveChanges();
             }
             catch (DbUpdateConcurrencyException ex)

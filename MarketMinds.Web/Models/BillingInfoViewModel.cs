@@ -110,7 +110,8 @@ namespace WebMarketplace.Models
                 // Check product type for proper price access
                 if (product is BuyProduct buyProduct)
                 {
-                    subtotalProducts += buyProduct.Price;
+                    // Multiply price by stock (quantity) for BuyProducts
+                    subtotalProducts += buyProduct.Price * buyProduct.Stock;
                 }
                 else if (product is BorrowProduct borrowProduct)
                 {

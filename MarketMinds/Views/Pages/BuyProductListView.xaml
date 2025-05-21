@@ -110,6 +110,11 @@
                                                FontWeight="SemiBold"/>
                                     <TextBlock Text="{Binding Price}"/>
                                 </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Stock: "
+                                               FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Stock}"/>
+                                </StackPanel>
                             </StackPanel>
                             <!-- Button for add to compare -->
                             <Button Content="+"
