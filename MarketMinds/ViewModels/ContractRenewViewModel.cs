@@ -41,7 +41,7 @@ namespace MarketMinds.ViewModels
         private string statusText;
         private string statusColor;
         private DateTime newStartDate;
-        private int fallBackYear = 1;
+        private static int fallBackYear = 1;
         private DateTime newEndDate = DateTime.Now.AddYears(fallBackYear);
         private bool isLoading;
         private string message;
