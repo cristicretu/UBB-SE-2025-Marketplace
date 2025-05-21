@@ -81,7 +81,7 @@ Expected Delivery Date: {DeliveryDate}
 
 The parties hereby indicate their acceptance of this Agreement by their signatures below or by their electronic acceptance through the MarketMinds platform.
 
-Agreement Status: {ContractStatus}
+Agreement Status: APPROVED
 
 SELLER: {SellerName}
 BUYER: {BuyerName}
