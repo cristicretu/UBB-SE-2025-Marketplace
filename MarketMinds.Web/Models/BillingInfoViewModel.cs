@@ -55,7 +55,7 @@ namespace WebMarketplace.Models
         public double WarrantyTax { get; set; }
 
         public List<Product> ProductList { get; set; }
-        
+
         // Default parameterless constructor for model binding
         public BillingInfoViewModel()
         {
@@ -71,10 +71,10 @@ namespace WebMarketplace.Models
             var productRepository = new MarketMinds.Shared.ProxyRepository.BuyProductsProxyRepository(configuration);
             _productService = new ProductService(productRepository);
             _shoppingCartService = new ShoppingCartService();
-            ProductList = _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1).Result;
+            ProductList = new List<Product>(); // Initialize with empty list
             StartDate = DateTime.Today;
             EndDate = DateTime.Today.AddMonths(1);
-            CalculateOrderTotal();
+            SetVisibilityRadioButtons(); // Enable all payment methods by default
         }
 
         public BillingInfoViewModel(int orderHistoryID) : this()
@@ -83,20 +83,26 @@ namespace WebMarketplace.Models
             InitializeViewModel(orderHistoryID);
         }
 
-        private async void InitializeViewModel(int orderHistoryID)
+        private async Task InitializeViewModelAsync()
         {
             try
             {
-                ProductList = await GetProductsFromOrderHistoryAsync(orderHistoryID);
-                SetVisibilityRadioButtons();
+                var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+                ProductList = cartItems;
                 CalculateOrderTotal();
             }
             catch (Exception ex)
             {
-                SetVisibilityRadioButtons();
-                // Log the exception
-                Console.WriteLine($"Error loading from order history: {ex.Message}");
+                // Log the error but don't throw - we want to show the page even if cart loading fails
+                System.Diagnostics.Debug.WriteLine($"Error loading cart items: {ex.Message}");
+                ProductList = new List<Product>();
             }
+        }
+
+        private void InitializeViewModel(int orderHistoryID)
+        {
+            // Start async initialization but don't wait for it
+            _ = InitializeViewModelAsync();
         }
 
         public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryID)
@@ -146,11 +152,11 @@ namespace WebMarketplace.Models
 
             // Determine product type for delivery fee calculation
             // Try to determine if any product is a special type
-            bool hasSpecialType = ProductList.Any(p => 
+            bool hasSpecialType = ProductList.Any(p =>
                 (p is BorrowProduct) || // For borrowed products
                 (p.GetType().Name.Contains("Refill")) || // For refill products
                 (p.GetType().Name.Contains("Auction"))); // For auction/bid products
-            
+
             if (subtotalProducts >= 200 || hasSpecialType)
             {
                 Total = subtotalProducts;
@@ -169,12 +175,12 @@ namespace WebMarketplace.Models
             {
                 return;
             }
-            
+
             if (StartDate > EndDate)
             {
                 return;
             }
-            
+
             int monthsBorrowed = ((EndDate.Year - StartDate.Year) * 12) + EndDate.Month - StartDate.Month;
             if (monthsBorrowed <= 0)
             {
@@ -182,7 +188,7 @@ namespace WebMarketplace.Models
             }
 
             double warrantyTaxAmount = 0.2;
-            
+
             // Cast to correct product type if needed
             double productPrice = 0;
             if (product is BuyProduct buyProduct)
@@ -212,4 +218,4 @@ namespace WebMarketplace.Models
             // rather than directly on the Product
         }
     }
-} 
+}
