@@ -275,7 +275,20 @@ namespace MarketMinds.Shared.Services
                 Debug.WriteLine($"[OrderService] Step 3: Adding Order items. OrderSummaryId: {orderSummaryId}");
                 foreach (var product in cartItems)
                 {
-                    string productType = product.GetType().Name;
+                    string productType;
+                    if (product is BorrowProduct)
+                    {
+                        productType = "borrowed";
+                    }
+                    else if (product is BuyProduct)
+                    {
+                        productType = "new";
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Unsupported product type: {product.GetType().Name}");
+                    }
+
                     Debug.WriteLine($"[OrderService] Adding product to order: ProductId={product.Id}, Type={productType}, BuyerId={userId}, PaymentMethod={orderRequestDto.SelectedPaymentMethod}");
                     await orderRepository.AddOrderAsync(
                         productId: product.Id,
@@ -307,7 +320,6 @@ namespace MarketMinds.Shared.Services
                 throw;
             }
 
-            Debug.WriteLine($"[OrderService] Order creation process completed successfully. Returning OrderHistoryId: {orderHistoryId}");
             return orderHistoryId;
         }
 

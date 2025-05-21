@@ -61,18 +61,32 @@ namespace Server.Repository
         /// <returns>A task representing the asynchronous operation that returns the ID of the newly created order history.</returns>
         public async Task<int> CreateOrderHistoryAsync(int buyerId)
         {
-            var orderHistory = new OrderHistory
+            try
             {
-                BuyerID = buyerId,
-                CreatedAt = DateTime.UtcNow,
-                ShippingAddress = string.Empty,
-                PaymentMethod = string.Empty
-            };
+                var orderHistory = new OrderHistory
+                {
+                    BuyerID = buyerId,
+                    CreatedAt = DateTime.UtcNow,
+                    ShippingAddress = string.Empty,
+                    PaymentMethod = string.Empty
+                };
+                this.dbContext.OrderHistory.Add(orderHistory);
+                try
+                {
+                    await this.dbContext.SaveChangesAsync();
 
-            this.dbContext.OrderHistory.Add(orderHistory);
-            await this.dbContext.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
 
-            return orderHistory.OrderID;
+                return orderHistory.OrderID;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -96,12 +110,12 @@ namespace Server.Repository
         public async Task<OrderHistory> GetOrderHistoryByIdAsync(int orderHistoryId)
         {
             OrderHistory? orderHistory = await this.dbContext.OrderHistory.FindAsync(orderHistoryId);
-            
+
             if (orderHistory == null)
             {
                 throw new Exception($"GetOrderHistoryByIdAsync: No OrderHistory with id: {orderHistoryId}");
             }
-            
+
             return orderHistory;
         }
 
@@ -116,15 +130,15 @@ namespace Server.Repository
         public async Task UpdateOrderHistoryAsync(int orderHistoryId, string shippingAddress, string paymentMethod)
         {
             OrderHistory? orderHistory = await this.dbContext.OrderHistory.FindAsync(orderHistoryId);
-            
+
             if (orderHistory == null)
             {
                 throw new Exception($"UpdateOrderHistoryAsync: No OrderHistory with id: {orderHistoryId}");
             }
-            
+
             orderHistory.ShippingAddress = shippingAddress;
             orderHistory.PaymentMethod = paymentMethod;
-            
+
             await this.dbContext.SaveChangesAsync();
         }
 
@@ -139,16 +153,16 @@ namespace Server.Repository
         public async Task UpdateOrderHistoryAsync(int orderHistoryId, string note, string shippingAddress, string paymentMethod)
         {
             OrderHistory? orderHistory = await this.dbContext.OrderHistory.FindAsync(orderHistoryId);
-            
+
             if (orderHistory == null)
             {
                 throw new Exception($"UpdateOrderHistoryAsync: No OrderHistory with id: {orderHistoryId}");
             }
-            
+
             orderHistory.Note = note;
             orderHistory.ShippingAddress = shippingAddress;
             orderHistory.PaymentMethod = paymentMethod;
-            
+
             await this.dbContext.SaveChangesAsync();
         }
     }

@@ -94,5 +94,19 @@ namespace Server.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while updating order summary with ID {request.Id}: {ex.Message}");
             }
         }
+
+        [HttpPost]
+        public async Task<ActionResult<int>> CreateOrderSummary([FromBody] OrderSummary orderSummary)
+        {
+            try
+            {
+                var newOrderSummaryId = await orderSummaryRepository.AddOrderSummaryAsync(orderSummary);
+                return Ok(newOrderSummaryId);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while creating a new order summary: {ex.Message}");
+            }
+        }
     }
 }

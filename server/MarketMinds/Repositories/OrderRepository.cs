@@ -43,64 +43,85 @@ namespace Server.Repository
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task AddOrderAsync(int productId, int buyerId, string productType, string paymentMethod, int orderSummaryId, DateTime orderDate)
         {
-            // First, add a new OrderHistory record because we need the ID for the Order record
-            OrderHistory orderHistory = new OrderHistory
+            try
             {
-                OrderID = 0, // will be populated by the database
-                BuyerID = buyerId, // Set the BuyerID for the order history
-                CreatedAt = DateTime.UtcNow, // Ensure we use UTC time for consistency
-            };
-            await this.dbContext.OrderHistory.AddAsync(orderHistory);
-            await this.dbContext.SaveChangesAsync(); // Here the OrderHistory record is created and the orderHistory.OrderID is populated
-
-            // Now get product details to populate Name and other fields
-            var productName = "Unknown";
-            double productCost = 0;
-            int sellerId = 0;
-            
-            // Try to fetch product details based on product type
-            if (productType.Equals("new", StringComparison.OrdinalIgnoreCase) || 
-                productType.Equals("used", StringComparison.OrdinalIgnoreCase))
-            {
-                var buyProduct = await this.dbContext.BuyProducts.FindAsync(productId);
-                if (buyProduct != null)
+                // First, add a new OrderHistory record because we need the ID for the Order record
+                OrderHistory orderHistory = new OrderHistory
                 {
-                    productName = buyProduct.Title;
-                    productCost = buyProduct.Price;
-                    sellerId = buyProduct.SellerId;
-                }
-            }
-            else if (productType.Equals("borrowed", StringComparison.OrdinalIgnoreCase))
-            {
-                var borrowProduct = await this.dbContext.BorrowProducts.FindAsync(productId);
-                if (borrowProduct != null)
-                {
-                    productName = borrowProduct.Title;
-                    var duration = borrowProduct.EndDate - borrowProduct.StartDate;
-                    int days = duration.HasValue ? (int)Math.Ceiling(duration.Value.TotalDays) : 0;
-                    productCost = days * borrowProduct.DailyRate;
-                    sellerId = borrowProduct.SellerId;
-                }
-            }
+                    OrderID = 0, // will be populated by the database
+                    BuyerID = buyerId, // Set the BuyerID for the order history
+                    CreatedAt = DateTime.UtcNow, // Ensure we use UTC time for consistency
+                };
 
-            // Now, add the new Order
-            Order order = new Order
+                await this.dbContext.OrderHistory.AddAsync(orderHistory);
+                await this.dbContext.SaveChangesAsync();
+
+                // Get product details based on product type
+                string productName = "Unknown";
+                double productCost = 0;
+                int sellerId = 0;
+
+                if (productType.Equals("new", StringComparison.OrdinalIgnoreCase) ||
+                    productType.Equals("used", StringComparison.OrdinalIgnoreCase))
+                {
+                    var buyProduct = await this.dbContext.BuyProducts.FindAsync(productId);
+                    if (buyProduct != null)
+                    {
+                        productName = buyProduct.Title;
+                        productCost = buyProduct.Price;
+                        sellerId = buyProduct.SellerId;
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"Buy product with ID {productId} not found");
+                    }
+                }
+                else if (productType.Equals("borrowed", StringComparison.OrdinalIgnoreCase))
+                {
+                    var borrowProduct = await this.dbContext.BorrowProducts.FindAsync(productId);
+                    if (borrowProduct != null)
+                    {
+                        productName = borrowProduct.Title;
+                        var duration = borrowProduct.EndDate - borrowProduct.StartDate;
+                        int days = duration.HasValue ? (int)Math.Ceiling(duration.Value.TotalDays) : 0;
+                        productCost = days * borrowProduct.DailyRate;
+                        sellerId = borrowProduct.SellerId;
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"Borrow product with ID {productId} not found");
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid product type: {productType}");
+                }
+
+                // Now, add the new Order
+                Order order = new Order
+                {
+                    Id = 0, // Will be populated by the database
+                    Name = productName,
+                    Description = "Order for " + productName,
+                    Cost = productCost,
+                    SellerId = sellerId,
+                    ProductID = productId,
+                    BuyerId = buyerId,
+                    ProductType = productType,
+                    PaymentMethod = paymentMethod,
+                    OrderSummaryID = orderSummaryId,
+                    OrderDate = DateTime.SpecifyKind(orderDate, DateTimeKind.Utc), // Ensure the order date is in UTC
+                    OrderHistoryID = orderHistory.OrderID, // The new order history record ID which was populated by the database
+                };
+
+                await this.dbContext.Orders.AddAsync(order);
+                await this.dbContext.SaveChangesAsync();
+
+            }
+            catch (Exception ex)
             {
-                Id = 0, // Will be populated by the database
-                Name = productName,
-                Description = "Order for " + productName,
-                Cost = productCost,
-                SellerId = sellerId,
-                ProductID = productId,
-                BuyerId = buyerId,
-                ProductType = productType,
-                PaymentMethod = paymentMethod,
-                OrderSummaryID = orderSummaryId,
-                OrderDate = DateTime.SpecifyKind(orderDate, DateTimeKind.Utc), // Ensure the order date is in UTC
-                OrderHistoryID = orderHistory.OrderID, // The new order history record ID which was populated by the database
-            };
-            await this.dbContext.Orders.AddAsync(order);
-            await this.dbContext.SaveChangesAsync();
+                throw;
+            }
         }
 
         /// <summary>
@@ -376,7 +397,7 @@ namespace Server.Repository
         private static OrderDisplayInfo CreateOrderDisplayInfoFromOrderAndProduct(Order order, Product product)
         {
             string productCategory = (order.ProductType == "new" || order.ProductType == "used") ? "new" : "borrowed";
-            
+
             return new OrderDisplayInfo
             {
                 OrderID = order.Id,

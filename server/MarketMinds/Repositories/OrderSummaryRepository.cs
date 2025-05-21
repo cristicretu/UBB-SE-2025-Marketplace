@@ -56,9 +56,18 @@ namespace Server.Repository
             return orderSummary;
         }
 
-        Task<int> IOrderSummaryRepository.AddOrderSummaryAsync(OrderSummary orderSummary)
+        public async Task<int> AddOrderSummaryAsync(OrderSummary orderSummary)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await this.dbContext.OrderSummary.AddAsync(orderSummary);
+                await this.dbContext.SaveChangesAsync();
+                return orderSummary.ID;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
     }

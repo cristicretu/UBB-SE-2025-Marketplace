@@ -63,14 +63,14 @@ namespace Server.DataAccessLayer
         public DbSet<FollowingEntity> Followings { get; set; }
         public DbSet<OrderNotificationEntity> OrderNotifications { get; set; }
         public DbSet<Address> Addresses { get; set; }
-        
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // --- User Configuration ---
-            modelBuilder.Entity<User>(entity => 
+            modelBuilder.Entity<User>(entity =>
             {
                 entity.ToTable("Users");
                 entity.HasKey(user => user.Id);
@@ -125,7 +125,7 @@ namespace Server.DataAccessLayer
             });
 
             // --- Review Configuration ---
-            modelBuilder.Entity<Review>(entity => 
+            modelBuilder.Entity<Review>(entity =>
             {
                 entity.ToTable("Reviews");
                 entity.HasKey(review => review.Id);
@@ -135,7 +135,7 @@ namespace Server.DataAccessLayer
                     .HasForeignKey(review => review.SellerId)
                     .HasPrincipalKey(seller => seller.Id)
                     .OnDelete(DeleteBehavior.Restrict);
-                
+
                 entity.HasOne<Buyer>()
                     .WithMany()
                     .HasForeignKey(review => review.BuyerId)
@@ -144,14 +144,14 @@ namespace Server.DataAccessLayer
             });
 
             // --- ReviewImage Configuration ---
-            modelBuilder.Entity<ReviewImage>(entity => 
+            modelBuilder.Entity<ReviewImage>(entity =>
             {
                 entity.ToTable("ReviewsPictures");
                 entity.HasKey(reviewPicture => reviewPicture.Id);
             });
 
             // --- ProductTag Configuration ---
-            modelBuilder.Entity<ProductTag>(entity => 
+            modelBuilder.Entity<ProductTag>(entity =>
             {
                 entity.ToTable("ProductTags");
                 entity.HasKey(productTag => productTag.Id);
@@ -163,7 +163,7 @@ namespace Server.DataAccessLayer
             });
 
             // --- Condition Configuration ---
-            modelBuilder.Entity<Condition>(entity => 
+            modelBuilder.Entity<Condition>(entity =>
             {
                 entity.ToTable("ProductConditions");
                 entity.HasKey(productCondition => productCondition.Id);
@@ -171,7 +171,7 @@ namespace Server.DataAccessLayer
             });
 
             // --- Category Configuration ---
-            modelBuilder.Entity<Category>(entity => 
+            modelBuilder.Entity<Category>(entity =>
             {
                 entity.ToTable("ProductCategories");
                 entity.HasKey(productCondition => productCondition.Id);
@@ -179,71 +179,71 @@ namespace Server.DataAccessLayer
             });
 
             // --- AuctionProduct Configuration ---
-            modelBuilder.Entity<AuctionProduct>(entity => 
+            modelBuilder.Entity<AuctionProduct>(entity =>
             {
                 entity.ToTable("AuctionProducts");
                 entity.HasKey(auctionProducts => auctionProducts.Id);
-                
+
                 // Configure relationship with Seller instead of User
                 entity.HasOne<Seller>()
                     .WithMany(s => s.AuctionProducts)
                     .HasForeignKey(p => p.SellerId)
                     .OnDelete(DeleteBehavior.Restrict);
-                
+
                 // Modify any existing relationship that might refer to User
                 entity.Ignore(p => p.Seller); // Ignore the User navigation property since we'll use Seller
             });
 
             // --- ProductImage Configuration ---
-            modelBuilder.Entity<ProductImage>(entity => 
+            modelBuilder.Entity<ProductImage>(entity =>
             {
                 entity.ToTable("AuctionProductsImages");
                 entity.HasKey(image => image.Id);
             });
 
             // --- AuctionProductProductTag Configuration ---
-            modelBuilder.Entity<AuctionProductProductTag>(entity => 
+            modelBuilder.Entity<AuctionProductProductTag>(entity =>
             {
                 entity.ToTable("AuctionProductProductTags");
                 entity.HasKey(productTag => productTag.Id);
             });
 
             // --- Bid Configuration ---
-            modelBuilder.Entity<Bid>(entity => 
+            modelBuilder.Entity<Bid>(entity =>
             {
                 entity.ToTable("Bids");
                 entity.HasKey(bid => bid.Id);
-                
+
                 // Change relationship from User to Buyer
                 entity.HasOne<Buyer>()
                     .WithMany(buyer => buyer.Bids)
                     .HasForeignKey(b => b.BidderId)
                     .OnDelete(DeleteBehavior.Restrict);
-                
+
                 // Ignore the User-based bidder property
                 entity.Ignore(b => b.Bidder);
             });
 
             // --- BuyProduct Configuration ---
-            modelBuilder.Entity<BuyProduct>(entity => 
+            modelBuilder.Entity<BuyProduct>(entity =>
             {
                 entity.ToTable("BuyProducts");
                 entity.HasKey(buyProduct => buyProduct.Id);
                 entity.Ignore(buyProduct => buyProduct.Tags)
                     .Ignore(buyProduct => buyProduct.NonMappedImages);
-                
+
                 // Configure relationship with Seller instead of User
                 entity.HasOne<Seller>()
                     .WithMany(s => s.BuyProducts)
                     .HasForeignKey(p => p.SellerId)
                     .OnDelete(DeleteBehavior.Restrict);
-                
+
                 // Modify any existing relationship that might refer to User
                 entity.Ignore(p => p.Seller); // Ignore the User navigation property since we'll use Seller
             });
 
             // --- BuyProductImage Configuration ---
-            modelBuilder.Entity<BuyProductImage>(entity => 
+            modelBuilder.Entity<BuyProductImage>(entity =>
             {
                 entity.ToTable("BuyProductImages");
                 entity.HasKey(image => image.Id);
@@ -255,7 +255,7 @@ namespace Server.DataAccessLayer
             });
 
             // --- BuyProductProductTag Configuration ---
-            modelBuilder.Entity<BuyProductProductTag>(entity => 
+            modelBuilder.Entity<BuyProductProductTag>(entity =>
             {
                 entity.ToTable("BuyProductProductTags");
                 entity.HasKey(productTag => productTag.Id);
@@ -272,7 +272,7 @@ namespace Server.DataAccessLayer
             });
 
             // --- BorrowProduct Configuration ---
-            modelBuilder.Entity<BorrowProduct>(entity => 
+            modelBuilder.Entity<BorrowProduct>(entity =>
             {
                 entity.ToTable("BorrowProducts");
                 entity.HasKey(borrowProduct => borrowProduct.Id);
@@ -281,19 +281,19 @@ namespace Server.DataAccessLayer
                 entity.Property(borrowProduct => borrowProduct.StartDate).HasColumnName("start_date");
                 entity.Property(borrowProduct => borrowProduct.EndDate).HasColumnName("end_date");
                 entity.Property(borrowProduct => borrowProduct.IsBorrowed).HasColumnName("is_borrowed");
-                
+
                 // Configure relationship with Seller instead of User
                 entity.HasOne<Seller>()
                     .WithMany(s => s.BorrowProducts)
                     .HasForeignKey(p => p.SellerId)
                     .OnDelete(DeleteBehavior.Restrict);
-                
+
                 // Modify any existing relationship that might refer to User
                 entity.Ignore(p => p.Seller); // Ignore the User navigation property since we'll use Seller
             });
 
             // --- BorrowProductImage Configuration ---
-            modelBuilder.Entity<BorrowProductImage>(entity => 
+            modelBuilder.Entity<BorrowProductImage>(entity =>
             {
                 entity.ToTable("BorrowProductImages");
                 entity.HasKey(image => image.Id);
@@ -305,7 +305,7 @@ namespace Server.DataAccessLayer
             });
 
             // --- BorrowProductProductTag Configuration ---
-            modelBuilder.Entity<BorrowProductProductTag>(entity => 
+            modelBuilder.Entity<BorrowProductProductTag>(entity =>
             {
                 entity.ToTable("BorrowProductProductTags");
                 entity.HasKey(productTag => productTag.Id);
@@ -324,7 +324,43 @@ namespace Server.DataAccessLayer
             // --- Order Configuration --- merge-nicusor
             modelBuilder.Entity<Order>(entity =>
             {
-                entity.HasKey(o => o.Id);
+                entity.HasKey(order => order.Id);
+
+                entity.Property(order => order.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(order => order.Description)
+                    .IsRequired(false);
+
+                entity.Property(order => order.Cost)
+                    .IsRequired();
+
+                entity.Property(order => order.SellerId)
+                    .IsRequired();
+
+                entity.Property(order => order.BuyerId)
+                    .IsRequired()
+                    .HasColumnName("BuyerID");
+
+                entity.Property(order => order.ProductID)
+                    .IsRequired();
+
+                entity.Property(order => order.ProductType)
+                    .IsRequired();
+
+                entity.Property(order => order.PaymentMethod)
+                    .IsRequired();
+
+                entity.Property(order => order.OrderSummaryID)
+                    .IsRequired();
+
+                entity.Property(order => order.OrderDate)
+                    .IsRequired()
+                    .HasColumnType("datetimeoffset");
+
+                entity.Property(order => order.OrderHistoryID)
+                    .IsRequired();
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
@@ -355,8 +391,6 @@ namespace Server.DataAccessLayer
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.ToTable(t => t.HasCheckConstraint("PaymentMethodConstraint", "[PaymentMethod] IN ('card', 'wallet', 'cash')"));
-                
-                entity.Property(o => o.BuyerId).HasColumnName("BuyerID");
             });
 
             // --- OrderSummary Configuration --- merge-nicusor
@@ -369,17 +403,34 @@ namespace Server.DataAccessLayer
             modelBuilder.Entity<OrderHistory>(entity =>
             {
                 entity.HasKey(OrderHistory => OrderHistory.OrderID);
+
+                entity.Property(oh => oh.BuyerID)
+                    .IsRequired()
+                    .HasColumnType("int");
+
+                entity.Property(oh => oh.CreatedAt)
+                    .IsRequired()
+                    .HasColumnType("datetime2");
+
+                entity.Property(oh => oh.Note)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(oh => oh.ShippingAddress)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(oh => oh.PaymentMethod)
+                    .HasColumnType("nvarchar(max)");
             });
 
             // --- Conversation Configuration ---
-            modelBuilder.Entity<Conversation>(entity => 
+            modelBuilder.Entity<Conversation>(entity =>
             {
                 entity.ToTable("Conversations");
                 entity.HasKey(conversation => conversation.Id);
             });
 
             // --- Message Configuration ---
-            modelBuilder.Entity<Message>(entity => 
+            modelBuilder.Entity<Message>(entity =>
             {
                 entity.ToTable("Messages");
                 entity.HasKey(message => message.Id);
@@ -620,15 +671,15 @@ namespace Server.DataAccessLayer
             });
 
             // --- SellerNotification Configuration --- merge-nicusor
-             modelBuilder.Entity<SellerNotificationEntity>(entity =>
-            {
-                entity.HasKey(sellerNotification => sellerNotification.NotificationID);
+            modelBuilder.Entity<SellerNotificationEntity>(entity =>
+           {
+               entity.HasKey(sellerNotification => sellerNotification.NotificationID);
 
-                entity.HasOne<Seller>()
-                    .WithMany()
-                    .HasForeignKey(sellerNotification => sellerNotification.SellerID)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+               entity.HasOne<Seller>()
+                   .WithMany()
+                   .HasForeignKey(sellerNotification => sellerNotification.SellerID)
+                   .OnDelete(DeleteBehavior.Restrict);
+           });
 
             // --- OrderNotification Configuration --- merge-nicusor
             modelBuilder.Entity<OrderNotificationEntity>(entity =>
