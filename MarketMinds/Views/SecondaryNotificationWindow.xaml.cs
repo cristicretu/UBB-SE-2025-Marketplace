@@ -15,9 +15,8 @@ namespace MarketMinds.Views
         public SecondaryNotificationWindow(Notification notification)
         {
             this.InitializeComponent();
-            this.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(400, 200, 1080, 600));
+            this.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(400, 200, 1000, 800));
             this.SelectedNotification = notification;
-            contractFileButton.IsEnabled = false;
             this.Populate();
         }
 
@@ -40,10 +39,6 @@ namespace MarketMinds.Views
             var mainWindow = new MainNotificationWindow();
             mainWindow.Activate();
             this.Close();
-        }
-
-        private void GoToContractFile(object sender, RoutedEventArgs e)
-        {
         }
     }
 }
