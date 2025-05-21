@@ -7,7 +7,7 @@ namespace WebMarketplace.Models
     {
         private readonly IOrderHistoryService _orderHistoryService;
         private readonly IOrderSummaryService _orderSummaryService;
-        
+
         public int OrderHistoryID { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
@@ -15,35 +15,32 @@ namespace WebMarketplace.Models
         public string Address { get; set; }
         public string PaymentMethod { get; set; }
         public string OrderStatus { get; set; } = "Pending";
-        
+
+        public List<Product> ProductList { get; set; } = new List<Product>();
         public double Subtotal { get; set; }
         public double DeliveryFee { get; set; }
         public double Total { get; set; }
-        
-        public List<Product> ProductList { get; set; }
-        
+
         // Default parameterless constructor for model binding
         public FinalizePurchaseViewModel()
         {
             _orderHistoryService = new OrderHistoryService();
             _orderSummaryService = new OrderSummaryService();
-            
-            ProductList = new List<Product>();
         }
-        
+
         public FinalizePurchaseViewModel(int orderHistoryID) : this()
         {
             OrderHistoryID = orderHistoryID;
             InitializeViewModel(orderHistoryID);
         }
-        
+
         private async void InitializeViewModel(int orderHistoryID)
         {
             try
             {
                 // Get products from order history
                 ProductList = await _orderHistoryService.GetProductsFromOrderHistoryAsync(orderHistoryID);
-                
+
                 // Get order summary details
                 var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(orderHistoryID);
                 if (orderSummary != null)
@@ -60,7 +57,7 @@ namespace WebMarketplace.Models
                 {
                     CalculateOrderTotal();
                 }
-                
+
                 // Get payment method from first order
                 var orders = await new OrderService().GetOrdersFromOrderHistoryAsync(orderHistoryID);
                 if (orders != null && orders.Count > 0)
@@ -78,7 +75,7 @@ namespace WebMarketplace.Models
                 Console.WriteLine($"Error loading order details: {ex.Message}");
             }
         }
-        
+
         public void CalculateOrderTotal()
         {
             if (ProductList == null || ProductList.Count == 0)
@@ -112,13 +109,13 @@ namespace WebMarketplace.Models
 
             // Determine product type for delivery fee calculation
             string productType = "standard";
-            
+
             // Try to determine if any product is a special type
-            bool hasSpecialType = ProductList.Any(p => 
+            bool hasSpecialType = ProductList.Any(p =>
                 (p is BorrowProduct) || // For borrowed products
                 (p.GetType().Name.Contains("Refill")) || // For refill products
                 (p.GetType().Name.Contains("Auction"))); // For auction/bid products
-            
+
             if (subtotalProducts >= 200 || hasSpecialType)
             {
                 Total = subtotalProducts;
@@ -131,4 +128,4 @@ namespace WebMarketplace.Models
             }
         }
     }
-} 
+}

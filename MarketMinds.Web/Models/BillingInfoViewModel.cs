@@ -80,29 +80,6 @@ namespace WebMarketplace.Models
         public BillingInfoViewModel(int orderHistoryID) : this()
         {
             OrderHistoryID = orderHistoryID;
-            InitializeViewModel(orderHistoryID);
-        }
-
-        private async Task InitializeViewModelAsync()
-        {
-            try
-            {
-                var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
-                ProductList = cartItems;
-                CalculateOrderTotal();
-            }
-            catch (Exception ex)
-            {
-                // Log the error but don't throw - we want to show the page even if cart loading fails
-                System.Diagnostics.Debug.WriteLine($"Error loading cart items: {ex.Message}");
-                ProductList = new List<Product>();
-            }
-        }
-
-        private void InitializeViewModel(int orderHistoryID)
-        {
-            // Start async initialization but don't wait for it
-            _ = InitializeViewModelAsync();
         }
 
         public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryID)

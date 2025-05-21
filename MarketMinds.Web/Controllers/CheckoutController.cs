@@ -13,24 +13,45 @@ namespace WebMarketplace.Controllers
         private readonly IOrderService _orderService;
         private readonly IProductService _productService;
         private readonly IDummyWalletService _dummyWalletService;
+        private readonly IShoppingCartService _shoppingCartService;
 
         public CheckoutController(
             IOrderHistoryService orderHistoryService,
             IOrderSummaryService orderSummaryService,
             IOrderService orderService,
             IProductService productService,
-            IDummyWalletService dummyWalletService)
+            IDummyWalletService dummyWalletService,
+            IShoppingCartService shoppingCartService)
         {
             _orderHistoryService = orderHistoryService;
             _orderSummaryService = orderSummaryService;
             _orderService = orderService;
             _productService = productService;
             _dummyWalletService = dummyWalletService;
+            _shoppingCartService = shoppingCartService;
         }
 
-        public IActionResult BillingInfo(int orderHistoryId)
+        public async Task<IActionResult> BillingInfo(int orderHistoryId)
         {
             var model = new BillingInfoViewModel(orderHistoryId);
+
+            // Get cart items and populate the model
+            try
+            {
+                var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+                model.ProductList = cartItems;
+                model.CalculateOrderTotal(); // Calculate totals after getting cart items
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't throw - we want to show the page even if cart loading fails
+                System.Diagnostics.Debug.WriteLine($"Error loading cart items: {ex.Message}");
+                model.ProductList = new List<Product>();
+                model.Subtotal = 0;
+                model.DeliveryFee = 0;
+                model.Total = 0;
+            }
+
             return View(model);
         }
 
@@ -39,21 +60,31 @@ namespace WebMarketplace.Controllers
         {
             if (!ModelState.IsValid)
             {
+                // Re-load cart items to maintain the view state if validation fails
+                try
+                {
+                    var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+                    model.ProductList = cartItems;
+                    model.CalculateOrderTotal();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error reloading cart items on validation failure: {ex.Message}");
+                    model.ProductList = new List<Product>();
+                }
+
                 return View(model);
             }
 
-            if (model.SelectedPaymentMethod == "card")
+            // Process payment method specific logic (e.g., wallet refill)
+            if (model.SelectedPaymentMethod == "wallet")
             {
-                return RedirectToAction("CardInfo", new { orderHistoryId = model.OrderHistoryID });
+                await ProcessWalletRefill(model);
             }
-            else
-            {
-                if (model.SelectedPaymentMethod == "wallet")
-                {
-                    await ProcessWalletRefill(model);
-                }
-                return RedirectToAction("FinalizePurchase", new { orderHistoryId = model.OrderHistoryID });
-            }
+
+            // Redirect to the FinalizePurchase confirmation page
+            // NOTE: Order creation logic needs to be implemented elsewhere or the Order model needs to be updated.
+            return RedirectToAction("FinalizePurchase", new { orderHistoryId = model.OrderHistoryID });
         }
 
         public IActionResult CardInfo(int orderHistoryId)
@@ -69,14 +100,77 @@ namespace WebMarketplace.Controllers
             {
                 return View(model);
             }
-            
+
             // Process card payment
             return RedirectToAction("FinalizePurchase", new { orderHistoryId = model.OrderHistoryID });
         }
 
-        public IActionResult FinalizePurchase(int orderHistoryId)
+        public async Task<IActionResult> FinalizePurchase(int orderHistoryId)
         {
             var model = new FinalizePurchaseViewModel(orderHistoryId);
+
+            // Fetch cart items and populate the model
+            try
+            {
+                var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+                model.ProductList = cartItems;
+
+                // Calculate totals (assuming a similar logic to BillingInfoViewModel's CalculateOrderTotal)
+                if (cartItems != null && cartItems.Any())
+                {
+                    double subtotalProducts = 0;
+                    foreach (var product in cartItems)
+                    {
+                        if (product is BuyProduct buyProduct)
+                        {
+                            subtotalProducts += buyProduct.Price;
+                        }
+                        else if (product is BorrowProduct borrowProduct)
+                        {
+                            // Handle borrow product pricing if different
+                            subtotalProducts += product.Price; // Use base price as fallback
+                        }
+                        else
+                        {
+                            subtotalProducts += product.Price;
+                        }
+                    }
+
+                    model.Subtotal = subtotalProducts;
+
+                    // Determine product type for delivery fee calculation (assuming same logic)
+                    bool hasSpecialType = cartItems.Any(p =>
+                         (p is BorrowProduct) ||
+                         (p.GetType().Name.Contains("Refill")) ||
+                         (p.GetType().Name.Contains("Auction")));
+
+                    if (subtotalProducts >= 200 || hasSpecialType)
+                    {
+                        model.Total = subtotalProducts;
+                        model.DeliveryFee = 0;
+                    }
+                    else
+                    {
+                        model.DeliveryFee = 13.99;
+                        model.Total = subtotalProducts + model.DeliveryFee;
+                    }
+                }
+                else
+                {
+                    model.Subtotal = 0;
+                    model.DeliveryFee = 0;
+                    model.Total = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading cart items for FinalizePurchase: {ex.Message}");
+                model.ProductList = new List<Product>();
+                model.Subtotal = 0;
+                model.DeliveryFee = 0;
+                model.Total = 0;
+            }
+
             return View(model);
         }
 
@@ -92,12 +186,12 @@ namespace WebMarketplace.Controllers
                     Title = "Borrowed Product", // Add a title for the placeholder
                     Price = 100 // Default price that will be modified by the borrowed tax calculation
                 };
-                
+
                 var model = new BillingInfoViewModel();
                 model.StartDate = startDate;
                 model.EndDate = endDate;
                 await model.ApplyBorrowedTax(product);
-                
+
                 return Json(new { success = true });
             }
             catch (Exception ex)
@@ -113,4 +207,4 @@ namespace WebMarketplace.Controllers
             await _dummyWalletService.UpdateWalletBalance(1, newBalance);
         }
     }
-} 
+}
