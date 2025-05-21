@@ -17,7 +17,8 @@ namespace MarketMinds.Shared.Services
         /// <summary>
         /// Creates a new order history record in the database.
         /// </summary>
+        /// <param name="userId">The ID of the user for whom the order history is created.</param>
         /// <returns>A task representing the asynchronous operation that returns the ID of the newly created order history.</returns>
-        Task<int> CreateOrderHistoryAsync();
+        Task<int> CreateOrderHistoryAsync(int userId);
     }
 }

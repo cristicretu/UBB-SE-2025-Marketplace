@@ -1,13 +1,12 @@
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace WebMarketplace.Models
 {
     public class FinalizePurchaseViewModel
     {
-        private readonly IOrderHistoryService _orderHistoryService;
-        private readonly IOrderSummaryService _orderSummaryService;
-
         public int OrderHistoryID { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
@@ -21,64 +20,18 @@ namespace WebMarketplace.Models
         public double DeliveryFee { get; set; }
         public double Total { get; set; }
 
-        // Default parameterless constructor for model binding
         public FinalizePurchaseViewModel()
         {
-            _orderHistoryService = new OrderHistoryService();
-            _orderSummaryService = new OrderSummaryService();
         }
 
         public FinalizePurchaseViewModel(int orderHistoryID) : this()
         {
             OrderHistoryID = orderHistoryID;
-            InitializeViewModel(orderHistoryID);
-        }
-
-        private async void InitializeViewModel(int orderHistoryID)
-        {
-            try
-            {
-                // Get products from order history
-                ProductList = await _orderHistoryService.GetProductsFromOrderHistoryAsync(orderHistoryID);
-
-                // Get order summary details
-                var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(orderHistoryID);
-                if (orderSummary != null)
-                {
-                    FullName = orderSummary.FullName;
-                    Email = orderSummary.Email;
-                    PhoneNumber = orderSummary.PhoneNumber;
-                    Address = orderSummary.Address;
-                    Subtotal = orderSummary.Subtotal;
-                    DeliveryFee = orderSummary.DeliveryFee;
-                    Total = orderSummary.FinalTotal;
-                }
-                else
-                {
-                    CalculateOrderTotal();
-                }
-
-                // Get payment method from first order
-                var orders = await new OrderService().GetOrdersFromOrderHistoryAsync(orderHistoryID);
-                if (orders != null && orders.Count > 0)
-                {
-                    PaymentMethod = orders[0].PaymentMethod;
-                }
-                else
-                {
-                    PaymentMethod = "Not specified";
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log the exception
-                Console.WriteLine($"Error loading order details: {ex.Message}");
-            }
         }
 
         public void CalculateOrderTotal()
         {
-            if (ProductList == null || ProductList.Count == 0)
+            if (ProductList == null || !ProductList.Any())
             {
                 Total = 0;
                 Subtotal = 0;
@@ -89,15 +42,13 @@ namespace WebMarketplace.Models
             double subtotalProducts = 0;
             foreach (var product in ProductList)
             {
-                // Check product type for proper price access
                 if (product is BuyProduct buyProduct)
                 {
                     subtotalProducts += buyProduct.Price;
                 }
                 else if (product is BorrowProduct borrowProduct)
                 {
-                    // Handle borrow product pricing if different
-                    subtotalProducts += product.Price; // Use base price as fallback
+                    subtotalProducts += product.Price;
                 }
                 else
                 {
@@ -107,19 +58,15 @@ namespace WebMarketplace.Models
 
             Subtotal = subtotalProducts;
 
-            // Determine product type for delivery fee calculation
-            string productType = "standard";
-
-            // Try to determine if any product is a special type
             bool hasSpecialType = ProductList.Any(p =>
-                (p is BorrowProduct) || // For borrowed products
-                (p.GetType().Name.Contains("Refill")) || // For refill products
-                (p.GetType().Name.Contains("Auction"))); // For auction/bid products
+                (p is BorrowProduct) ||
+                (p.GetType().Name.Contains("Refill")) ||
+                (p.GetType().Name.Contains("Auction")));
 
             if (subtotalProducts >= 200 || hasSpecialType)
             {
-                Total = subtotalProducts;
                 DeliveryFee = 0;
+                Total = subtotalProducts;
             }
             else
             {

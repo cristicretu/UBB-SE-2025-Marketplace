@@ -1,19 +1,33 @@
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
-
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Shared.Services
 {
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository orderRepository;
+        private readonly IOrderHistoryService _orderHistoryService;
+        private readonly IOrderSummaryService _orderSummaryService;
+        private readonly IShoppingCartService _shoppingCartService;
 
 
-        public OrderService()
+        public OrderService(
+            IOrderRepository orderRepository,
+            IOrderHistoryService orderHistoryService,
+            IOrderSummaryService orderSummaryService,
+            IShoppingCartService shoppingCartService)
         {
-            this.orderRepository = new OrderProxyRepository(AppConfig.GetBaseApiUrl());
+            this.orderRepository = orderRepository;
+            _orderHistoryService = orderHistoryService;
+            _orderSummaryService = orderSummaryService;
+            _shoppingCartService = shoppingCartService;
         }
 
         public async Task AddOrderAsync(int productId, int buyerId, string productType, string paymentMethod, int orderSummaryId, DateTime orderDate)
@@ -194,15 +208,57 @@ namespace MarketMinds.Shared.Services
             return await orderRepository.GetOrderSummaryAsync(orderSummaryId);
         }
 
+        public async Task<int> CreateOrderFromCartAsync(OrderCreationRequestDto orderRequestDto, int userId, List<Product> cartItems)
+        {
+            if (orderRequestDto == null) throw new ArgumentNullException(nameof(orderRequestDto));
+            if (cartItems == null || !cartItems.Any()) throw new ArgumentException("Cart items cannot be null or empty", nameof(cartItems));
+            if (userId <= 0) throw new ArgumentException("User ID must be positive", nameof(userId));
+
+            var orderHistoryId = await _orderHistoryService.CreateOrderHistoryAsync(userId);
+
+            var newOrderSummary = new OrderSummary
+            {
+                Subtotal = orderRequestDto.Subtotal,
+                WarrantyTax = orderRequestDto.WarrantyTax,
+                DeliveryFee = orderRequestDto.DeliveryFee,
+                FinalTotal = orderRequestDto.Total,
+                FullName = orderRequestDto.FullName,
+                Email = orderRequestDto.Email,
+                PhoneNumber = orderRequestDto.PhoneNumber,
+                Address = orderRequestDto.Address,
+                PostalCode = orderRequestDto.ZipCode,
+                AdditionalInfo = orderRequestDto.AdditionalInfo,
+                ContractDetails = null
+            };
+            var orderSummaryId = await _orderSummaryService.CreateOrderSummaryAsync(newOrderSummary);
+
+            foreach (var product in cartItems)
+            {
+                string productType = product.GetType().Name;
+                await orderRepository.AddOrderAsync(
+                    productId: product.Id,
+                    buyerId: userId,
+                    productType: productType,
+                    paymentMethod: orderRequestDto.SelectedPaymentMethod,
+                    orderSummaryId: orderSummaryId,
+                    orderDate: DateTime.UtcNow
+                );
+            }
+
+            await _shoppingCartService.ClearCartAsync(userId);
+
+            return orderHistoryId;
+        }
+
         private void ValidateOrderParameters(int productId, int buyerId, string productType, string paymentMethod, int orderSummaryId)
         {
             if (productId <= 0)
             {
                 throw new ArgumentException("Product ID must be positive", nameof(productId));
             }
-            if (buyerId <= 0)
+            if (buyerId < 0)
             {
-                throw new ArgumentException("Buyer ID must be positive", nameof(buyerId));
+                throw new ArgumentException("Buyer ID cannot be negative", nameof(buyerId));
             }
             if (string.IsNullOrWhiteSpace(productType))
             {
