@@ -597,9 +597,6 @@ namespace server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BuyProductId")
-                        .HasColumnType("int");
-
                     b.Property<int>("BuyerId")
                         .HasColumnType("int")
                         .HasColumnName("BuyerID");
@@ -640,13 +637,13 @@ namespace server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BuyProductId");
-
                     b.HasIndex("BuyerId");
 
                     b.HasIndex("OrderHistoryID");
 
                     b.HasIndex("OrderSummaryID");
+
+                    b.HasIndex("ProductID");
 
                     b.HasIndex("SellerId");
 
@@ -1056,9 +1053,6 @@ namespace server.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int>("BuyProductId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Quantity")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -1066,7 +1060,7 @@ namespace server.Migrations
 
                     b.HasKey("BuyerId", "ProductId");
 
-                    b.HasIndex("BuyProductId");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("BuyerCartItems");
                 });
@@ -1100,12 +1094,9 @@ namespace server.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("BuyProductId")
-                        .HasColumnType("int");
-
                     b.HasKey("BuyerId", "ProductId");
 
-                    b.HasIndex("BuyProductId");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("BuyerWishlistItems");
                 });
@@ -1517,11 +1508,6 @@ namespace server.Migrations
 
             modelBuilder.Entity("MarketMinds.Shared.Models.Order", b =>
                 {
-                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
-                        .WithMany()
-                        .HasForeignKey("BuyProductId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("MarketMinds.Shared.Models.Buyer", null)
                         .WithMany()
                         .HasForeignKey("BuyerId")
@@ -1537,6 +1523,12 @@ namespace server.Migrations
                     b.HasOne("MarketMinds.Shared.Models.OrderSummary", null)
                         .WithMany()
                         .HasForeignKey("OrderSummaryID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
+                        .WithMany()
+                        .HasForeignKey("ProductID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1630,15 +1622,15 @@ namespace server.Migrations
 
             modelBuilder.Entity("Server.DataModels.BuyerCartItemEntity", b =>
                 {
-                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
-                        .WithMany()
-                        .HasForeignKey("BuyProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("MarketMinds.Shared.Models.Buyer", null)
                         .WithMany()
                         .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1660,14 +1652,15 @@ namespace server.Migrations
 
             modelBuilder.Entity("Server.DataModels.BuyerWishlistItemsEntity", b =>
                 {
-                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
-                        .WithMany()
-                        .HasForeignKey("BuyProductId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("MarketMinds.Shared.Models.Buyer", null)
                         .WithMany()
                         .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
