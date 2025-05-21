@@ -20,7 +20,7 @@ namespace MarketMinds.Shared.ProxyRepository
     /// <param name="databaseConnection">The database connection instance.</param>
     public class BuyerProxyRepository : IBuyerRepository
     {
-        private const string ApiBaseRoute = "api/buyers";
+        private const string ApiBaseRoute = "buyers";
         private readonly HttpClient httpClient;
 
         /// <summary>
@@ -30,9 +30,18 @@ namespace MarketMinds.Shared.ProxyRepository
         public BuyerProxyRepository(IConfiguration configuration)
         {
             this.httpClient = new HttpClient();
-            string baseAddress = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
-            this.httpClient.BaseAddress = new System.Uri(baseAddress);
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            if (string.IsNullOrEmpty(apiBaseUrl))
+            {
+                throw new InvalidOperationException("API base URL is null or empty");
+            }
 
+            if (!apiBaseUrl.EndsWith("/"))
+            {
+                apiBaseUrl += "/";
+            }
+
+            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
         /// <inheritdoc />

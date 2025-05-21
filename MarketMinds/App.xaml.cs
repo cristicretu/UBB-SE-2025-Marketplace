@@ -29,6 +29,8 @@ using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using MarketMinds.Views;
+using MarketMinds.ViewModels.Admin;
 
 namespace MarketMinds
 {
@@ -44,6 +46,7 @@ namespace MarketMinds
         public static IConversationRepository ConversationRepository;
         public static IChatRepository ChatRepository;
         public static IChatbotRepository ChatbotRepository;
+        public static BuyerProxyRepository BuyerRepository;
         public static UserProxyRepository UserRepository;
         public static ReviewProxyRepository ReviewRepository;
         public static ProductTagProxyRepository ProductTagRepository;
@@ -54,6 +57,8 @@ namespace MarketMinds
 
         // Service declarations
         public static IBuyerService BuyerService;
+        public static AdminService AdminService;
+        public static AnalyticsService AnalyticsService;
         public static BuyProductsService BuyProductsService;
         public static BorrowProductsService BorrowProductsService;
         public static AuctionProductsService AuctionProductsService;
@@ -73,6 +78,7 @@ namespace MarketMinds
 
         // ViewModel declarations
         public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
+        public static AdminViewModel AdminViewModel { get; private set; }
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
         public static BorrowProductsViewModel BorrowProductsViewModel { get; private set; }
         public static AuctionProductsViewModel AuctionProductsViewModel { get; private set; }
@@ -122,7 +128,8 @@ namespace MarketMinds
 
         public static void ShowAdminProfile()
         {
-            MainWindow.Activate();
+            var adminWindow = new AdminView();
+            adminWindow.Activate();
         }
 
         // Implementation of IOnLoginSuccessCallback
@@ -297,6 +304,7 @@ namespace MarketMinds
         {
             // Create but don't show the main window yet
             MainWindow = new MarketMinds.MainWindow();
+            BuyerRepository = new BuyerProxyRepository(Configuration);
             ProductCategoryRepository = new ProductCategoryProxyRepository(Configuration);
             MessageRepository = new MessageProxyRepository(Configuration);
             ProductConditionRepository = new ProductConditionProxyRepository(Configuration);
@@ -313,6 +321,9 @@ namespace MarketMinds
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
 
             // Initialize services
+            AdminService = new AdminService(UserRepository);
+            AnalyticsService = new AnalyticsService(UserRepository, BuyerRepository);
+
             UserService = new UserService(Configuration);
             BuyerService = new BuyerService(BuyerRepository, UserRepository);
             ReviewsService = new ReviewsService(Configuration, UserService, CurrentUser);
@@ -349,6 +360,7 @@ namespace MarketMinds
                 User = CurrentUser,
             };
             // Initialize login and register view models with proper callbacks
+            AdminViewModel = new AdminViewModel(AdminService, AnalyticsService, UserService);
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
             RegisterViewModel = new RegisterViewModel(UserService);
             ReviewCreateViewModel = null;
