@@ -12,7 +12,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing contract renewals.
     /// </summary>
-    [Authorize]
     [Route("api/contract-renewals")]
     [ApiController]
     public class ContractRenewalApiController : ControllerBase

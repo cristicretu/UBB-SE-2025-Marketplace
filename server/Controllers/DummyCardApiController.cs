@@ -13,7 +13,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing dummy card data.
     /// </summary>
-    [Authorize]
     [Route("api/dummycards")]
     [ApiController]
     public class DummyCardApiController : ControllerBase
