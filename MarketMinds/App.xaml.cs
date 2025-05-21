@@ -37,6 +37,7 @@ namespace MarketMinds
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
         // Repository declarations
+        public static IBuyerRepository BuyerRepository;
         public static IProductCategoryRepository ProductCategoryRepository;
         public static IMessageRepository MessageRepository;
         public static IProductConditionRepository ProductConditionRepository;
@@ -52,6 +53,7 @@ namespace MarketMinds
         public static BuyProductsProxyRepository BuyProductsRepository;
 
         // Service declarations
+        public static IBuyerService BuyerService;
         public static BuyProductsService BuyProductsService;
         public static BorrowProductsService BorrowProductsService;
         public static AuctionProductsService AuctionProductsService;
@@ -70,6 +72,7 @@ namespace MarketMinds
         public static MarketMinds.Shared.Services.DreamTeam.ChatbotService.IChatbotService NewChatbotService;
 
         // ViewModel declarations
+        public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
         public static BorrowProductsViewModel BorrowProductsViewModel { get; private set; }
         public static AuctionProductsViewModel AuctionProductsViewModel { get; private set; }
@@ -97,6 +100,7 @@ namespace MarketMinds
         private static IConfiguration appConfiguration;
         public static Window LoginWindow = null!;
         public static Window MainWindow = null!;
+        public static Window BuyerProfileWindow = null!;
         private static HttpClient httpClient;
         public static void ShowSellerProfile()
         {
@@ -107,9 +111,13 @@ namespace MarketMinds
 
         public static void ShowBuyerProfile()
         {
-            var buyerProfileWindow = new Window();
-            buyerProfileWindow.Content = new MarketMinds.Views.BuyerProfileView();
-            buyerProfileWindow.Activate();
+            BuyerProfileWindow = new Window();
+            BuyerProfileViewModel.User = CurrentUser;
+            _ = BuyerProfileViewModel.LoadBuyerProfile();
+            var buyerProfileView = new MarketMinds.Views.BuyerProfileView();
+            buyerProfileView.ViewModel = BuyerProfileViewModel;
+            BuyerProfileWindow.Content = buyerProfileView;
+            BuyerProfileWindow.Activate();
         }
 
         public static void ShowAdminProfile()
@@ -137,7 +145,7 @@ namespace MarketMinds
                         ShowBuyerProfile();
                         break;
                     case 1: // Admin
-                         ShowAdminProfile();
+                        ShowAdminProfile();
                         break;
                     default:
                         ShowMainWindow();
@@ -151,6 +159,7 @@ namespace MarketMinds
                 }
             }
         }
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -295,6 +304,7 @@ namespace MarketMinds
             ChatbotRepository = new ChatbotProxyRepository(Configuration);
             ChatRepository = new ChatProxyRepository(Configuration);
             UserRepository = new UserProxyRepository(Configuration);
+            BuyerRepository = new BuyerProxyRepository(Configuration);
             ReviewRepository = new ReviewProxyRepository(Configuration);
             ProductTagRepository = new ProductTagProxyRepository(Configuration);
             AuctionProductsRepository = new AuctionProductsProxyRepository(Configuration);
@@ -304,6 +314,7 @@ namespace MarketMinds
 
             // Initialize services
             UserService = new UserService(Configuration);
+            BuyerService = new BuyerService(BuyerRepository, UserRepository);
             ReviewsService = new ReviewsService(Configuration, UserService, CurrentUser);
             BuyProductsService = new BuyProductsService(BuyProductsRepository);
             BorrowProductsService = new BorrowProductsService();
@@ -332,6 +343,11 @@ namespace MarketMinds
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
+            BuyerProfileViewModel = new BuyerProfileViewModel()
+            {
+                BuyerService = BuyerService,
+                User = CurrentUser,
+            };
             // Initialize login and register view models with proper callbacks
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
             RegisterViewModel = new RegisterViewModel(UserService);
