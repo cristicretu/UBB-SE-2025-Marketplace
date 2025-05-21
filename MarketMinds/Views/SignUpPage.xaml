@@ -109,9 +109,10 @@
                               BorderBrush="{ThemeResource SystemAccentColor}" 
                               BorderThickness="2" 
                               CornerRadius="8">
-						<ComboBoxItem Content="Buyer" Tag="2"/>
-						<ComboBoxItem Content="Seller" Tag="3"/>
-					</ComboBox>
+                        <ComboBoxItem Content="Admin" Tag="1"/>
+                        <ComboBoxItem Content="Buyer" Tag="2"/>
+                        <ComboBoxItem Content="Seller" Tag="3"/>
+                    </ComboBox>
 				</StackPanel>
 
 				<!-- Signup Button -->

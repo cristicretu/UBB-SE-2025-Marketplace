@@ -52,9 +52,9 @@ namespace MarketMinds.Shared.Services.UserService
                 throw new Exception("The phone number should start with +40 area code followed by 9 digits.");
             }
 
-            if (role != (int)UserRole.Buyer && role != (int)UserRole.Seller)
+            if (!Enum.IsDefined(typeof(UserRole), role))
             {
-                throw new Exception("Please select an account type (Buyer or Seller).");
+                throw new Exception("Invalid user role. (Currently: Buyer, Seller or Admin)");
             }
 
             if (await this.repository.UsernameExists(username))

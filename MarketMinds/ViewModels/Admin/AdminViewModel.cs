@@ -1,122 +1,87 @@
-// <copyright file="AdminViewModel.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.UserService;
+using Microsoft.UI.Xaml.Controls;
 
 namespace MarketMinds.ViewModels.Admin
 {
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Linq;
-    using MarketMinds.Shared.Models;
-    using MarketMinds.Shared.Services;
-    using Microsoft.UI.Xaml.Controls;
-    using MarketMinds.Shared.Services.UserService;
-
-    /// <summary>
-    /// The admin view model.
-    /// </summary>
-    public class AdminViewModel : IAdminViewModel
+    public class AdminViewModel : IAdminViewModel, INotifyPropertyChanged
     {
-        /// <summary>
-        /// The private instance of the admin view model.
-        /// </summary>
-        private static AdminViewModel? instance;
-
-        /// <summary>
-        /// The admin service.
-        /// </summary>
         private readonly IAdminService adminService;
-
-        /// <summary>
-        /// The user service.
-        /// </summary>
         private readonly IUserService userService;
-
-        /// <summary>
-        /// The analytics service.
-        /// </summary>
         private readonly IAnalyticsService analyticsService;
 
-        /// <summary>
-        /// The items in the admin view.
-        /// </summary>
-        private ObservableCollection<IUserRowViewModel>? items;
+        private ObservableCollection<IUserRowViewModel> users = new();
+        private int totalUsersCount;
 
-        /// <summary>
-        /// The users in the admin view.
-        /// </summary>
-        private List<User> users = new();
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        /// <summary>
-        /// The total users count.
-        /// </summary>
-        private int totalUsersCount = 0;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AdminViewModel"/> class.
-        /// </summary>
-        /// <param name="adminService">The admin service for managing administrative operations.</param>
-        /// <param name="analyticsService">The analytics service for retrieving statistical data.</param>
-        /// <param name="userService">The user service for user-related operations.</param>
-        public AdminViewModel(IAdminService adminService, IAnalyticsService analyticsService, IUserService userService)
+        public AdminViewModel(
+            IAdminService adminService,
+            IAnalyticsService analyticsService,
+            IUserService userService)
         {
-            instance = this;
             this.adminService = adminService;
             this.analyticsService = analyticsService;
-
-            // this.SetupPieChart();
             this.userService = userService;
         }
 
-        /// <summary>
-        /// Gets the users in the admin view.
-        /// </summary>
         public ObservableCollection<IUserRowViewModel> Users
         {
-            get
+            get => users;
+            private set
             {
-                this.users = this.userService.GetAllUsers().Result;
-                this.items ??= new ObservableCollection<IUserRowViewModel>(
-                    this.users.Select(user => new UserRowViewModel(user, this.adminService, this)));
-                return this.items;
+                users = value;
+                OnPropertyChanged();
             }
         }
 
-        /// <summary>
-        /// Gets or sets the pie series.
-        /// </summary>
-        // public List<ISeries>? PieSeries { get; set; }
+        public int TotalUsersCount
+        {
+            get => totalUsersCount;
+            private set
+            {
+                totalUsersCount = value;
+                OnPropertyChanged();
+            }
+        }
 
-        /// <summary>
-        /// Ban a user.
-        /// </summary>
-        /// <param name="user">The user to ban.</param>
+        public async Task LoadDataAsync()
+        {
+            var userList = await userService.GetAllUsers();
+            var userViewModels = userList.Select(user => new UserRowViewModel(user, adminService, this)).ToList();
+            Users = new ObservableCollection<IUserRowViewModel>(userViewModels);
+
+            TotalUsersCount = await analyticsService.GetTotalNumberOfUsers();
+        }
+
+        public async void RefreshUsers()
+        {
+            await LoadDataAsync();
+            OnPropertyChanged(nameof(Users));
+        }
+
         public void BanUser(User user)
         {
-            if (user != null)
+            if (user == null)
             {
-                this.Users.Remove(this.Users.Where(u => u.Username != user.Username).First());
+                return;
+            }
+
+            var toRemove = Users.FirstOrDefault(u => u.Username == user.Username);
+            if (toRemove != null)
+            {
+                Users.Remove(toRemove);
                 ShowBanDialog(user.Username);
             }
         }
 
-        /// <summary>
-        /// Refresh the users.
-        /// </summary>
-        public async void RefreshUsers()
-        {
-            this.users = await this.userService.GetAllUsers();
-            this.items?.Clear();
-            foreach (var user in this.users)
-            {
-                this.items?.Add(new UserRowViewModel(user, this.adminService, this));
-            }
-        }
-
-        /// <summary>
-        /// Show the ban dialog.
-        /// </summary>
-        /// <param name="username">The username of the user to ban.</param>
         private static void ShowBanDialog(string username)
         {
             var dialog = new ContentDialog
@@ -126,32 +91,12 @@ namespace MarketMinds.ViewModels.Admin
                 CloseButtonText = "OK",
                 XamlRoot = App.MainWindow?.Content.XamlRoot,
             };
-            _ = dialog.ShowAsync();
+            _ = dialog.ShowAsync(); // fire-and-forget
         }
 
-        /// <summary>
-        /// Setup the pie chart.
-        /// </summary>
-        // private void SetupPieChart()
-        // {
-        //     this.totalUsersCount = this.analyticsService.GetTotalNumberOfUsers().Result;
-        //     var buyersCount = this.analyticsService.GetTotalNumberOfBuyers().Result;
-
-        // this.PieSeries =
-        //     [
-        //         new PieSeries<double>
-        //         {
-        //             Values = new List<double> { buyersCount },
-        //             Name = "Buyers",
-        //             Fill = new SolidColorPaint(new SKColor(25, 118, 210)),
-        //         },
-        //         new PieSeries<double>
-        //         {
-        //             Values = new List<double> { this.totalUsersCount - buyersCount },
-        //             Name = "Sellers",
-        //             Fill = new SolidColorPaint(new SKColor(10, 56, 113)),
-        //         },
-        //     ];
-        // }
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
