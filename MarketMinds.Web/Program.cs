@@ -67,6 +67,12 @@ builder.Services.AddSingleton<MessageProxyRepository>();
 builder.Services.AddSingleton<ReviewProxyRepository>();
 builder.Services.AddSingleton<ShoppingCartProxyRepository>(sp =>
     new ShoppingCartProxyRepository(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton<OrderSummaryProxyRepository>(sp =>
+    new OrderSummaryProxyRepository(sp.GetRequiredService<IConfiguration>()["ApiSettings:BaseUrl"] ?? "http://localhost:5001"));
+builder.Services.AddSingleton<OrderProxyRepository>(sp =>
+    new OrderProxyRepository(sp.GetRequiredService<IConfiguration>()["ApiSettings:BaseUrl"] ?? "http://localhost:5001"));
+builder.Services.AddSingleton<DummyWalletProxyRepository>(sp =>
+    new DummyWalletProxyRepository(sp.GetRequiredService<IConfiguration>()["ApiSettings:BaseUrl"] ?? "http://localhost:5001"));
 
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
@@ -89,6 +95,10 @@ builder.Services.AddTransient<IConversationService, ConversationService>();
 builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();
 builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
+builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
+builder.Services.AddTransient<IOrderSummaryService, OrderSummaryService>();
+builder.Services.AddTransient<IOrderService, OrderService>();
+builder.Services.AddTransient<IDummyWalletService, DummyWalletService>();
 
 // Register repository interfaces
 builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());
@@ -102,6 +112,9 @@ builder.Services.AddTransient<IConversationRepository>(sp => sp.GetRequiredServi
 builder.Services.AddTransient<IMessageRepository>(sp => sp.GetRequiredService<MessageProxyRepository>());
 builder.Services.AddTransient<IReviewRepository>(sp => sp.GetRequiredService<ReviewProxyRepository>());
 builder.Services.AddTransient<IShoppingCartRepository>(sp => sp.GetRequiredService<ShoppingCartProxyRepository>());
+builder.Services.AddTransient<IOrderSummaryRepository>(sp => sp.GetRequiredService<OrderSummaryProxyRepository>());
+builder.Services.AddTransient<IOrderRepository>(sp => sp.GetRequiredService<OrderProxyRepository>());
+builder.Services.AddTransient<IDummyWalletRepository>(sp => sp.GetRequiredService<DummyWalletProxyRepository>());
 
 var app = builder.Build();
 

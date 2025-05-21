@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MarketMinds.Shared.Models
 {
@@ -6,13 +7,18 @@ namespace MarketMinds.Shared.Models
     public class BuyProduct : Product
     {
         [Column("price")]
-        public double Price { get; set; }
+        [JsonPropertyName("price")]
+        public override double Price { get; set; }
 
         // Additional navigation properties specific to BuyProduct
+        [JsonPropertyName("images")]
         public ICollection<BuyProductImage> Images { get; set; } = new List<BuyProductImage>();
+
+        [JsonPropertyName("productTags")]
         public ICollection<BuyProductProductTag> ProductTags { get; set; } = new List<BuyProductProductTag>();
 
         [NotMapped]
+        [JsonIgnore]
         public List<Image> NonMappedImages { get; set; }
 
         public BuyProduct() : base()
