@@ -138,11 +138,11 @@
             orderSummary.Add("WarrantyTax", 3);
             orderSummary.Add("DeliveryFee", 7.99);
             orderSummary.Add("FinalTotal", 360.99);
-            orderSummary.Add("FullName", "Full name johnny");
-            orderSummary.Add("Email", "johnny@gmail.com");
+            orderSummary.Add("FullName", "Alexe Adrian Gigel Constantin Razvan");
+            orderSummary.Add("Email", "Alexis@gmail.com");
             orderSummary.Add("PhoneNumber", "0712341234");
-            orderSummary.Add("Address", "Walls");
-            orderSummary.Add("PostalCode", 123);
+            orderSummary.Add("Address", "Your walls");
+            orderSummary.Add("PostalCode", 50553);
             return orderSummary ?? new Dictionary<string, object>();
         }
 
