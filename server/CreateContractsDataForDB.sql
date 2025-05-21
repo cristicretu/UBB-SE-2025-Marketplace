@@ -29,19 +29,19 @@ AND:
 {BuyerName} ("Buyer"), a registered user on the MarketMinds Marketplace.
 
 BUYER CONTACT DETAILS:
-Full Name: {FullName}
-Email: {Email}
-Phone Number: {PhoneNumber}
-Address: {Address}
-Postal Code: {PostalCode}
+Full Name: {fullName}
+Email: {email}
+Phone Number: {phoneNumber}
+Address: {address}
+Postal Code: {postalCode}
 
 PRODUCT DETAILS:
 Description: {ProductDescription}
 Purchase Price: ${Price}
-Subtotal: ${Subtotal}
-Warranty Fee: ${WarrantyTax}
-Delivery Fee: ${DeliveryFee}
-Final Total: ${FinalTotal}
+Subtotal: ${subtotal}
+Warranty Fee: ${warrantyTax}
+Delivery Fee: ${deliveryFee}
+Final Total: ${finalTotal}
 Payment Method: {PaymentMethod}
 Expected Delivery Date: {DeliveryDate}
 
@@ -115,6 +115,14 @@ VALUES ('good', 'kinda good'),
 
 SELECT * FROM BuyProducts
 
+SELECT * FROM Buyers
+
+UPDATE Sellers
+SET StoreName = 'Alexe Razvan'
+
+UPDATE Buyers
+SET FirstName = 'Barbos', LastName = 'Andrada'
+
 GO
 DECLARE @sellerID int;
 SET @sellerID = 10
@@ -131,6 +139,9 @@ VALUES
 SELECT * FROM OrderSummary
 INSERT INTO OrderSummary
 VALUES (10, 1, 2, 20, 'Full name johnny', 'johnny@gmail.com', '0712341234', 'Walls', 123, 'Add', 'Det')
+
+UPDATE OrderSummary
+SET Subtotal=350, WarrantyTax=3, DeliveryFee=7.99, FinalTotal=360.99, [Address]='Your walls', FullName='Alexe Adrian Gigel Constantin Razvan', Email='Alexis@gmail.com'
 
 SELECT * FROM Orders
 SELECT * FROM Buyers
