@@ -8,57 +8,32 @@
         /// <summary>
         /// Order has been received but not yet processed.
         /// </summary>
-        Pending = 0,
-        
-        /// <summary>
-        /// Order has been processed and payment confirmed.
-        /// </summary>
-        Processing = 1,
+        PROCESSING = 0,
         
         /// <summary>
         /// Order has been shipped.
         /// </summary>
-        Shipped = 2,
+        SHIPPED = 1,
         
         /// <summary>
         /// Order is in warehouse awaiting shipment.
         /// </summary>
-        InWarehouse = 3,
+        IN_WAREHOUSE = 2,
         
         /// <summary>
         /// Order is being transported to its destination.
         /// </summary>
-        InTransit = 4,
+        IN_TRANSIT = 3,
         
         /// <summary>
         /// Order is out for delivery.
         /// </summary>
-        OutForDelivery = 5,
+        OUT_FOR_DELIVERY = 4,
         
         /// <summary>
         /// Order has been successfully delivered to the customer.
         /// </summary>
-        Delivered = 6,
-        
-        /// <summary>
-        /// Order has been cancelled.
-        /// </summary>
-        Cancelled = 7,
-        
-        /// <summary>
-        /// Order refund has been requested.
-        /// </summary>
-        RefundRequested = 8,
-        
-        /// <summary>
-        /// Order has been refunded.
-        /// </summary>
-        Refunded = 9,
-        
-        /// <summary>
-        /// Order has been rejected.
-        /// </summary>
-        Rejected = 10
+        DELIVERED = 5,
     }
     
     public class OrderCheckpoint

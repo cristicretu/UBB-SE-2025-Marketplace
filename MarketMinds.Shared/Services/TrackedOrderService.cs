@@ -217,7 +217,7 @@ namespace MarketMinds.Shared.Services
             int orderId,
             DateOnly estimatedDeliveryDate,
             string deliveryAddress,
-            OrderStatus initialStatus = OrderStatus.Pending,
+            OrderStatus initialStatus = OrderStatus.PROCESSING,
             string initialDescription = "Order created and being tracked")
         {
             if (orderId <= 0)
@@ -298,26 +298,18 @@ namespace MarketMinds.Shared.Services
             // Base progress on the current status
             switch (trackedOrder.CurrentStatus)
             {
-                case OrderStatus.Pending:
-                    return 0;
-                case OrderStatus.Processing:
+                case OrderStatus.PROCESSING:
                     return 20;
-                case OrderStatus.Shipped:
+                case OrderStatus.SHIPPED:
                     return 40;
-                case OrderStatus.InWarehouse:
+                case OrderStatus.IN_WAREHOUSE:
                     return 60;
-                case OrderStatus.InTransit:
+                case OrderStatus.IN_TRANSIT:
                     return 75;
-                case OrderStatus.OutForDelivery:
+                case OrderStatus.OUT_FOR_DELIVERY:
                     return 90;
-                case OrderStatus.Delivered:
+                case OrderStatus.DELIVERED:
                     return 100;
-                case OrderStatus.Cancelled:
-                case OrderStatus.RefundRequested:
-                case OrderStatus.Refunded:
-                case OrderStatus.Rejected:
-                    // These are not part of the delivery progress tracking
-                    return 0;
                 default:
                     return 0;
             }

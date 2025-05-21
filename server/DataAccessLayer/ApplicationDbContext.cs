@@ -499,9 +499,11 @@ namespace Server.DataAccessLayer
                     .IsRequired(); // to respect Maria's DB design
 
                 entity.Property(trackedOrder => trackedOrder.CurrentStatus)
-                    .IsRequired(); // to respect Maria's DB design
+                    .HasColumnType("int"); // Change to int to match the enum
 
-                entity.ToTable(t => t.HasCheckConstraint("TrackedOrderConstraint", "[CurrentStatus] IN ('Processing', 'Shipped', 'InWarehouse', 'InTransit', 'OutForDelivery', 'Delivered')")); // to respect Maria's DB design
+                entity.ToTable("TrackedOrders");
+                // Remove or update the constraint to work with int values
+                // entity.ToTable(t => t.HasCheckConstraint("TrackedOrderConstraint", "[CurrentStatus] IN ('Processing', 'Shipped', 'InWarehouse', 'InTransit', 'OutForDelivery', 'Delivered')")); // to respect Maria's DB design
             });
 
             // --- OrderCheckpoint Configuration --- merge-nicusor
@@ -524,7 +526,7 @@ namespace Server.DataAccessLayer
                 entity.Property(orderCheckpoint => orderCheckpoint.Status)
                     .IsRequired(); // to respect Maria's DB design
 
-                entity.ToTable(orderCheckpoint => orderCheckpoint.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN ('Processing', 'Shipped', 'InWarehouse', 'InTransit', 'OutForDelivery', 'Delivered')"));
+                entity.ToTable(orderCheckpoint => orderCheckpoint.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')"));
             });
 
             // --- UserWaitList Configuration --- merge-nicusor

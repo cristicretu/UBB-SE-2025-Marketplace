@@ -97,11 +97,46 @@ namespace WebMarketplace.Controllers
         {
             _logger.LogInformation($"TrackOrder action called with orderId: {orderId}");
             
-            var trackedOrder = await _trackedOrderService.GetTrackedOrderByIDAsync(orderId);
+            var trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(orderId);
             if (trackedOrder == null)
             {
                 _logger.LogWarning($"Tracked order not found for orderId: {orderId}");
-                return NotFound();
+                
+                // Try to get the order details to get a proper delivery address
+                try {
+                    // Get the order first and then get its order summary
+                    var order = await _orderService.GetOrderByIdAsync(orderId);
+                    if (order == null)
+                    {
+                        _logger.LogError($"Order not found for orderId: {orderId}");
+                        return Json(new { success = false, message = "Order not found" });
+                    }
+                    
+                    var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(order.OrderSummaryID);
+                    string deliveryAddress = orderSummary?.Address ?? "No delivery address provided";
+                    
+                    await _trackedOrderService.CreateTrackedOrderForOrderAsync(
+                        orderId, 
+                        DateOnly.FromDateTime(DateTime.Now.AddDays(7)), // Better estimate for delivery
+                        deliveryAddress,
+                        OrderStatus.PROCESSING,
+                        "Order received"
+                    );
+                }
+                catch (Exception ex) {
+                    _logger.LogError(ex, $"Error creating tracked order for orderId: {orderId}");
+                    return Json(new { success = false, message = "Error creating tracked order" });
+                }
+                
+                _logger.LogInformation($"Creating new tracked order for orderId: {orderId}");
+                trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(orderId);
+                if (trackedOrder == null)
+                {
+                    _logger.LogError($"Failed to create tracked order for orderId: {orderId}");
+                    return Json(new { success = false, message = "Failed to create tracked order" });
+                }
+                _logger.LogInformation($"Created new tracked order for orderId: {orderId}");
+                return View("TrackedOrder", trackedOrder);
             }
 
             if (hasControl)
@@ -122,7 +157,7 @@ namespace WebMarketplace.Controllers
         {
             try
             {
-                var trackedOrder = await _trackedOrderService.GetTrackedOrderByIDAsync(trackedOrderId);
+                var trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(trackedOrderId);
                 if (trackedOrder == null)
                 {
                     return Json(new { success = false, message = "Tracked order not found" });
