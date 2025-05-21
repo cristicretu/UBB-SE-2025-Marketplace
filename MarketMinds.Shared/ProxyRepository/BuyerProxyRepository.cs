@@ -12,6 +12,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using System.Web;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
+    using Microsoft.Extensions.Configuration;
 
     /// <summary>
     /// Repository class for managing buyer-related database operations.
@@ -26,11 +27,12 @@ namespace MarketMinds.Shared.ProxyRepository
         /// Initializes a new instance of the <see cref="BuyerProxyRepository"/> class.
         /// </summary>
         /// <param name="baseApiUrl">The base url of the API.</param>
-        public BuyerProxyRepository(string baseApiUrl)
+        public BuyerProxyRepository(IConfiguration configuration)
         {
             this.httpClient = new HttpClient();
-            this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            
+            string baseAddress = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
+            this.httpClient.BaseAddress = new System.Uri(baseAddress);
+
         }
 
         /// <inheritdoc />
