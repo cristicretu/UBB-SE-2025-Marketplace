@@ -17,7 +17,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing order data.
     /// </summary>
-    [Authorize]
     [Route("api/orders")]
     [ApiController]
     public class OrderApiController : ControllerBase

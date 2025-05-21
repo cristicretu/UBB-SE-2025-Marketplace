@@ -328,7 +328,8 @@ namespace Server.DataAccessLayer
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasPrincipalKey(bp => bp.Id)
+                    .HasForeignKey(order => order.ProductID)
+                    .HasPrincipalKey(buyProduct => buyProduct.Id)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne<Buyer>()
@@ -554,13 +555,14 @@ namespace Server.DataAccessLayer
                 entity.HasOne<Buyer>()
                     .WithMany()
                     .HasForeignKey(buyerCartItem => buyerCartItem.BuyerId)
-                    .HasPrincipalKey(b => b.Id)
+                    .HasPrincipalKey(buyer => buyer.Id)
                     .OnDelete(DeleteBehavior.Restrict) // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
                     .IsRequired();
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasPrincipalKey(bp => bp.Id)
+                    .HasForeignKey(buyerCartItem => buyerCartItem.ProductId)
+                    .HasPrincipalKey(buyProduct => buyProduct.Id)
                     .OnDelete(DeleteBehavior.Restrict) // not specified in Maria's DB design, but I left restrict to avoid breaking changes (can be changed later)
                     .IsRequired();
             });
@@ -573,12 +575,13 @@ namespace Server.DataAccessLayer
                 entity.HasOne<Buyer>()
                     .WithMany()
                     .HasForeignKey(buyerWishlistItem => buyerWishlistItem.BuyerId)
-                    .HasPrincipalKey(b => b.Id)
+                    .HasPrincipalKey(buyer => buyer.Id)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne<BuyProduct>()
                     .WithMany()
-                    .HasPrincipalKey(bp => bp.Id)
+                    .HasForeignKey(buyerWishlistItem => buyerWishlistItem.ProductId)
+                    .HasPrincipalKey(buyProduct => buyProduct.Id)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -653,7 +656,7 @@ namespace Server.DataAccessLayer
                 entity.HasOne<BuyProduct>()
                     .WithMany()
                     .HasForeignKey(orderNotification => orderNotification.ProductID)
-                    .HasPrincipalKey(bp => bp.Id)
+                    .HasPrincipalKey(buyProduct => buyProduct.Id)
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired(false); // to respect Maria's DB design
 

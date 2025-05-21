@@ -19,7 +19,7 @@ namespace MarketMinds.ViewModels
         event Action<string> ShowPopup;
 
         Task AddNotificationAsync(Notification notification);
-        Task LoadNotificationsAsync(int recipientId);
+        Task LoadUnreadNotificationsAsync(int recipientId);
         Task MarkAsReadAsync(int notificationId);
     }
 }

@@ -17,7 +17,6 @@ namespace Server.Controllers // Assuming the controller is in the Server project
     /// <summary>
     /// API controller for managing tracked order data.
     /// </summary>
-    [Authorize]
     [Route("api/trackedorders")]
     [ApiController]
     public class TrackedOrderApiController : ControllerBase

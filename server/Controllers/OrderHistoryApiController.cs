@@ -16,7 +16,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing order history data.
     /// </summary>
-    [Authorize]
     [Route("api/orderhistory")]
     [ApiController]
     public class OrderHistoryApiController : ControllerBase

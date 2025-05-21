@@ -29,7 +29,9 @@ using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
-using static MarketMinds.ViewModels.ContractRenewViewModel;
+using MarketMinds.ViewModels.ContractRenewViewModel;
+using MarketMinds.Views;
+using MarketMinds.ViewModels.Admin;
 
 namespace MarketMinds
 {
@@ -44,6 +46,7 @@ namespace MarketMinds
         public static IConversationRepository ConversationRepository;
         public static IChatRepository ChatRepository;
         public static IChatbotRepository ChatbotRepository;
+        public static BuyerProxyRepository BuyerRepository;
         public static UserProxyRepository UserRepository;
         public static ReviewProxyRepository ReviewRepository;
         public static ProductTagProxyRepository ProductTagRepository;
@@ -53,6 +56,9 @@ namespace MarketMinds
         public static BuyProductsProxyRepository BuyProductsRepository;
 
         // Service declarations
+        public static IBuyerService BuyerService;
+        public static AdminService AdminService;
+        public static AnalyticsService AnalyticsService;
         public static BuyProductsService BuyProductsService;
         public static BorrowProductsService BorrowProductsService;
         public static AuctionProductsService AuctionProductsService;
@@ -75,6 +81,8 @@ namespace MarketMinds
         public static IFileSystem FileSystem;
 
         // ViewModel declarations
+        public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
+        public static AdminViewModel AdminViewModel { get; private set; }
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
         public static BorrowProductsViewModel BorrowProductsViewModel { get; private set; }
         public static AuctionProductsViewModel AuctionProductsViewModel { get; private set; }
@@ -103,6 +111,7 @@ namespace MarketMinds
         private static IConfiguration appConfiguration;
         public static Window LoginWindow = null!;
         public static Window MainWindow = null!;
+        public static Window BuyerProfileWindow = null!;
         private static HttpClient httpClient;
         public static void ShowSellerProfile()
         {
@@ -113,14 +122,19 @@ namespace MarketMinds
 
         public static void ShowBuyerProfile()
         {
-            var buyerProfileWindow = new Window();
-            buyerProfileWindow.Content = new MarketMinds.Views.BuyerProfileView();
-            buyerProfileWindow.Activate();
+            BuyerProfileWindow = new Window();
+            BuyerProfileViewModel.User = CurrentUser;
+            _ = BuyerProfileViewModel.LoadBuyerProfile();
+            var buyerProfileView = new MarketMinds.Views.BuyerProfileView();
+            buyerProfileView.ViewModel = BuyerProfileViewModel;
+            BuyerProfileWindow.Content = buyerProfileView;
+            BuyerProfileWindow.Activate();
         }
 
         public static void ShowAdminProfile()
         {
-            MainWindow.Activate();
+            var adminWindow = new AdminView();
+            adminWindow.Activate();
         }
 
         // Implementation of IOnLoginSuccessCallback
@@ -130,6 +144,8 @@ namespace MarketMinds
             {
                 // Set the current user
                 CurrentUser = user;
+                // NEED THIS:
+                UserSession.CurrentUserId = CurrentUser.Id;
 
                 // Redirect based on user role
                 switch (user.UserType)
@@ -141,7 +157,7 @@ namespace MarketMinds
                         ShowBuyerProfile();
                         break;
                     case 1: // Admin
-                         ShowAdminProfile();
+                        ShowAdminProfile();
                         break;
                     default:
                         ShowMainWindow();
@@ -293,6 +309,7 @@ namespace MarketMinds
         {
             // Create but don't show the main window yet
             MainWindow = new MarketMinds.MainWindow();
+            BuyerRepository = new BuyerProxyRepository(Configuration);
             ProductCategoryRepository = new ProductCategoryProxyRepository(Configuration);
             MessageRepository = new MessageProxyRepository(Configuration);
             ProductConditionRepository = new ProductConditionProxyRepository(Configuration);
@@ -300,6 +317,7 @@ namespace MarketMinds
             ChatbotRepository = new ChatbotProxyRepository(Configuration);
             ChatRepository = new ChatProxyRepository(Configuration);
             UserRepository = new UserProxyRepository(Configuration);
+            BuyerRepository = new BuyerProxyRepository(Configuration);
             ReviewRepository = new ReviewProxyRepository(Configuration);
             ProductTagRepository = new ProductTagProxyRepository(Configuration);
             AuctionProductsRepository = new AuctionProductsProxyRepository(Configuration);
@@ -308,7 +326,11 @@ namespace MarketMinds
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
 
             // Initialize services
+            AdminService = new AdminService(UserRepository);
+            AnalyticsService = new AnalyticsService(UserRepository, BuyerRepository);
+
             UserService = new UserService(Configuration);
+            BuyerService = new BuyerService(BuyerRepository, UserRepository);
             ReviewsService = new ReviewsService(Configuration, UserService, CurrentUser);
             BuyProductsService = new BuyProductsService(BuyProductsRepository);
             BorrowProductsService = new BorrowProductsService();
@@ -343,7 +365,13 @@ namespace MarketMinds
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
             ContractRenewViewModel = new ContractRenewViewModel(ContractService, PDFService, ContractRenewalService, UserService, FileSystem);
+            BuyerProfileViewModel = new BuyerProfileViewModel()
+            {
+                BuyerService = BuyerService,
+                User = CurrentUser,
+            };
             // Initialize login and register view models with proper callbacks
+            AdminViewModel = new AdminViewModel(AdminService, AnalyticsService, UserService);
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
             RegisterViewModel = new RegisterViewModel(UserService);
             ReviewCreateViewModel = null;
