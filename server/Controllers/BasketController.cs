@@ -14,6 +14,10 @@ namespace MarketMinds.Controllers
     public class BasketController : ControllerBase
     {
         private readonly IBasketRepository basketRepository;
+        private readonly IOrderRepository orderRepository;
+        private readonly IOrderHistoryRepository orderHistoryRepository;
+        private readonly IOrderSummaryRepository orderSummaryRepository;
+        private readonly ITrackedOrderRepository trackedOrderRepository;
 
         // Add JsonSerializerOptions that disables reference handling
         private readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions
@@ -23,9 +27,18 @@ namespace MarketMinds.Controllers
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        public BasketController(IBasketRepository basketRepository)
+        public BasketController(
+            IBasketRepository basketRepository,
+            IOrderRepository orderRepository,
+            IOrderHistoryRepository orderHistoryRepository,
+            IOrderSummaryRepository orderSummaryRepository,
+            ITrackedOrderRepository trackedOrderRepository)
         {
             this.basketRepository = basketRepository;
+            this.orderRepository = orderRepository;
+            this.orderHistoryRepository = orderHistoryRepository;
+            this.orderSummaryRepository = orderSummaryRepository;
+            this.trackedOrderRepository = trackedOrderRepository;
         }
 
         [HttpGet("user/{userId}")]
@@ -329,5 +342,152 @@ namespace MarketMinds.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
+
+        /// <summary>
+        /// Processes a checkout operation for a user's basket.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="checkoutInfo">Information needed for the checkout process.</param>
+        /// <returns>Order summary and tracking information.</returns>
+        [HttpPost("user/{userId}/checkout")]
+        [ProducesResponseType(typeof(CheckoutResultDTO), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> CheckoutBasket(int userId, [FromBody] CheckoutInfoDTO checkoutInfo)
+        {
+            try
+            {
+                // Validate the checkout information
+                if (checkoutInfo == null)
+                {
+                    return BadRequest("Checkout information is required.");
+                }
+
+                // Get the user's basket
+                Basket basket = basketRepository.GetBasketByUserId(userId);
+                
+                // Get all items in the basket
+                List<BasketItem> items = basketRepository.GetBasketItems(basket.Id);
+                
+                if (items.Count == 0)
+                {
+                    return BadRequest("Cannot checkout an empty basket.");
+                }
+
+                // Create OrderSummary
+                OrderSummary orderSummary = new OrderSummary
+                {
+                    Subtotal = items.Sum(item => item.GetPrice()),
+                    WarrantyTax = checkoutInfo.WarrantyTax,
+                    DeliveryFee = checkoutInfo.DeliveryFee,
+                    FinalTotal = items.Sum(item => item.GetPrice()) + checkoutInfo.WarrantyTax + checkoutInfo.DeliveryFee,
+                    FullName = checkoutInfo.FullName,
+                    Email = checkoutInfo.Email,
+                    PhoneNumber = checkoutInfo.PhoneNumber,
+                    Address = checkoutInfo.Address,
+                    PostalCode = checkoutInfo.PostalCode,
+                    AdditionalInfo = checkoutInfo.AdditionalInfo,
+                    ContractDetails = checkoutInfo.ContractDetails
+                };
+                
+                int orderSummaryId = await orderSummaryRepository.AddOrderSummaryAsync(orderSummary);
+                
+                // Create OrderHistory
+                int orderHistoryId = await orderHistoryRepository.CreateOrderHistoryAsync();
+                
+                // Create order for each basket item
+                List<int> orderIds = new List<int>();
+                
+                foreach (var item in items)
+                {
+                    // Create order record
+                    await orderRepository.AddOrderAsync(
+                        item.ProductId,
+                        userId,
+                        "BuyProduct", // assuming product type is BuyProduct
+                        checkoutInfo.PaymentMethod,
+                        orderSummaryId,
+                        DateTime.Now);
+                    
+                    // Get the most recently created order's ID
+                    var recentOrders = await orderRepository.GetOrdersFromOrderHistoryAsync(orderHistoryId);
+                    int orderId = recentOrders.OrderByDescending(o => o.Id).First().Id;
+                    orderIds.Add(orderId);
+                    
+                    // Create tracked order record
+                    TrackedOrder trackedOrder = new TrackedOrder
+                    {
+                        OrderID = orderId,
+                        CurrentStatus = OrderStatus.Pending,
+                        EstimatedDeliveryDate = DateOnly.FromDateTime(DateTime.Now.AddDays(7)),
+                        DeliveryAddress = checkoutInfo.Address
+                    };
+                    
+                    await trackedOrderRepository.AddTrackedOrderAsync(trackedOrder);
+                    
+                    // Create initial order checkpoint
+                    OrderCheckpoint initialCheckpoint = new OrderCheckpoint
+                    {
+                        TrackedOrderID = trackedOrder.TrackedOrderID,
+                        Timestamp = DateTime.Now,
+                        Location = "Warehouse",
+                        Description = "Order received and processing started",
+                        Status = OrderStatus.Pending
+                    };
+                    
+                    await trackedOrderRepository.AddOrderCheckpointAsync(initialCheckpoint);
+                }
+                
+                // Clear the basket after successful checkout
+                basketRepository.ClearBasket(basket.Id);
+                
+                // Return checkout result
+                var result = new CheckoutResultDTO
+                {
+                    OrderSummaryId = orderSummaryId,
+                    OrderHistoryId = orderHistoryId,
+                    OrderIds = orderIds,
+                    TotalAmount = orderSummary.FinalTotal,
+                    EstimatedDeliveryDate = DateTime.Now.AddDays(7)
+                };
+                
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"An error occurred during checkout: {ex.Message}");
+            }
+        }
+    }
+}
+
+// Add this DTO to represent checkout information
+namespace MarketMinds.Shared.Models.DTOs
+{
+    public class CheckoutInfoDTO
+    {
+        public string PaymentMethod { get; set; } = "card"; // Default to card
+        public double WarrantyTax { get; set; } = 0;
+        public double DeliveryFee { get; set; } = 0;
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string PostalCode { get; set; } = string.Empty;
+        public string? AdditionalInfo { get; set; }
+        public string? ContractDetails { get; set; }
+    }
+
+    public class CheckoutResultDTO
+    {
+        public int OrderSummaryId { get; set; }
+        public int OrderHistoryId { get; set; }
+        public List<int> OrderIds { get; set; } = new List<int>();
+        public double TotalAmount { get; set; }
+        public DateTime EstimatedDeliveryDate { get; set; }
     }
 }

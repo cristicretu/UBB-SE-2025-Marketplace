@@ -55,5 +55,11 @@ namespace Server.Repository
 
             return orderSummary;
         }
+
+        Task<int> IOrderSummaryRepository.AddOrderSummaryAsync(OrderSummary orderSummary)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

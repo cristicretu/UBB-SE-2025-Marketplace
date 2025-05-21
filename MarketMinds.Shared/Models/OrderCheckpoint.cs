@@ -1,14 +1,66 @@
 ﻿namespace MarketMinds.Shared.Models
 {
+    /// <summary>
+    /// Represents the status of an order in the system.
+    /// </summary>
     public enum OrderStatus
     {
-        PROCESSING,
-        SHIPPED,
-        IN_WAREHOUSE,
-        IN_TRANSIT,
-        OUT_FOR_DELIVERY,
-        DELIVERED
+        /// <summary>
+        /// Order has been received but not yet processed.
+        /// </summary>
+        Pending = 0,
+        
+        /// <summary>
+        /// Order has been processed and payment confirmed.
+        /// </summary>
+        Processing = 1,
+        
+        /// <summary>
+        /// Order has been shipped.
+        /// </summary>
+        Shipped = 2,
+        
+        /// <summary>
+        /// Order is in warehouse awaiting shipment.
+        /// </summary>
+        InWarehouse = 3,
+        
+        /// <summary>
+        /// Order is being transported to its destination.
+        /// </summary>
+        InTransit = 4,
+        
+        /// <summary>
+        /// Order is out for delivery.
+        /// </summary>
+        OutForDelivery = 5,
+        
+        /// <summary>
+        /// Order has been successfully delivered to the customer.
+        /// </summary>
+        Delivered = 6,
+        
+        /// <summary>
+        /// Order has been cancelled.
+        /// </summary>
+        Cancelled = 7,
+        
+        /// <summary>
+        /// Order refund has been requested.
+        /// </summary>
+        RefundRequested = 8,
+        
+        /// <summary>
+        /// Order has been refunded.
+        /// </summary>
+        Refunded = 9,
+        
+        /// <summary>
+        /// Order has been rejected.
+        /// </summary>
+        Rejected = 10
     }
+    
     public class OrderCheckpoint
     {
         public int CheckpointID { get; set; }

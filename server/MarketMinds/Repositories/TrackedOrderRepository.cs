@@ -128,6 +128,25 @@ namespace Server.Repository
         }
 
         /// <summary>
+        /// Retrieves a tracked order associated with a specific order ID.
+        /// </summary>
+        /// <param name="orderId">The order ID to find the tracked order for.</param>
+        /// <returns>The tracked order associated with the specified order ID.</returns>
+        /// <exception cref="Exception">Thrown when no tracked order is found for the given order ID.</exception>
+        public async Task<TrackedOrder> GetTrackedOrderByOrderIdAsync(int orderId)
+        {
+            TrackedOrder? trackedOrder = await this.dbContext.TrackedOrders
+                .FirstOrDefaultAsync(order => order.OrderID == orderId);
+                
+            if (trackedOrder == null)
+            {
+                throw new Exception($"GetTrackedOrderByOrderIdAsync: No TrackedOrder found for OrderID: {orderId}");
+            }
+            
+            return trackedOrder;
+        }
+
+        /// <summary>
         /// Updates an existing order checkpoint in the database.
         /// </summary>
         /// <param name="checkpointID">ID of the checkpoint to update.</param>

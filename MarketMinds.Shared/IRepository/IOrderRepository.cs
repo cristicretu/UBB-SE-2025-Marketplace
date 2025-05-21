@@ -18,5 +18,6 @@ namespace MarketMinds.Shared.IRepository
         Task<List<OrderDisplayInfo>> GetOrdersWithProductInfoAsync(int userId, string? searchText = null, string? timePeriod = null);
         Task<Dictionary<int, string>> GetProductCategoryTypesAsync(int userId);
         Task<OrderSummary> GetOrderSummaryAsync(int orderSummaryId);
+        Task<Order> GetOrderByIdAsync(int orderId);
     }
 }

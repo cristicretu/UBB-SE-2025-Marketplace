@@ -62,5 +62,64 @@ namespace Server.Repository
         {
             throw new NotImplementedException("The CreateOrderHistoryAsync method is not implemented.");
         }
+
+        /// <summary>
+        /// Gets all order histories for a specific buyer.
+        /// </summary>
+        /// <param name="buyerId">The ID of the buyer.</param>
+        /// <returns>A list of order histories for the specified buyer.</returns>
+        public async Task<List<OrderHistory>> GetOrderHistoriesByBuyerAsync(int buyerId)
+        {
+            return await this.dbContext.OrderHistory
+                .Where(history => history.BuyerID == buyerId)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets an order history by its ID.
+        /// </summary>
+        /// <param name="orderHistoryId">The ID of the order history to retrieve.</param>
+        /// <returns>The order history with the specified ID.</returns>
+        /// <exception cref="Exception">Thrown when the order history with the specified ID is not found.</exception>
+        public async Task<OrderHistory> GetOrderHistoryByIdAsync(int orderHistoryId)
+        {
+            OrderHistory? orderHistory = await this.dbContext.OrderHistory.FindAsync(orderHistoryId);
+            
+            if (orderHistory == null)
+            {
+                throw new Exception($"GetOrderHistoryByIdAsync: No OrderHistory with id: {orderHistoryId}");
+            }
+            
+            return orderHistory;
+        }
+
+        /// <summary>
+        /// Updates an order history with new information.
+        /// </summary>
+        /// <param name="orderHistoryId">The ID of the order history to update.</param>
+        /// <param name="shippingAddress">The new shipping address.</param>
+        /// <param name="paymentMethod">The new payment method.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        /// <exception cref="Exception">Thrown when the order history with the specified ID is not found.</exception>
+        public async Task UpdateOrderHistoryAsync(int orderHistoryId, string shippingAddress, string paymentMethod)
+        {
+            OrderHistory? orderHistory = await this.dbContext.OrderHistory.FindAsync(orderHistoryId);
+            
+            if (orderHistory == null)
+            {
+                throw new Exception($"UpdateOrderHistoryAsync: No OrderHistory with id: {orderHistoryId}");
+            }
+            
+            orderHistory.ShippingAddress = shippingAddress;
+            orderHistory.PaymentMethod = paymentMethod;
+            
+            await this.dbContext.SaveChangesAsync();
+        }
+
+        Task IOrderHistoryRepository.UpdateOrderHistoryAsync(int orderHistoryId, string note, string shippingAddress, string paymentMethod)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

@@ -65,6 +65,12 @@ builder.Services.AddSingleton<MarketMinds.Shared.ProxyRepository.ChatbotProxyRep
 builder.Services.AddSingleton<ConversationProxyRepository>();
 builder.Services.AddSingleton<MessageProxyRepository>();
 builder.Services.AddSingleton<ReviewProxyRepository>();
+builder.Services.AddSingleton<OrderProxyRepository>(sp =>
+    new OrderProxyRepository(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<OrderSummaryProxyRepository>(sp =>
+    new OrderSummaryProxyRepository(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<TrackedOrderProxyRepository>(sp =>
+    new TrackedOrderProxyRepository(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
 
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
@@ -73,6 +79,7 @@ builder.Services.AddTransient<IBorrowProductsService, MarketMinds.Shared.Service
 // Use the same instance for both interfaces
 builder.Services.AddTransient<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
 builder.Services.AddTransient<IBuyProductsService>(sp => sp.GetRequiredService<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>());
+builder.Services.AddTransient<IProductService>(sp => sp.GetRequiredService<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>());
 
 builder.Services.AddTransient<IProductCategoryService, ProductCategoryService>();
 builder.Services.AddTransient<IProductConditionService, ProductConditionService>();
@@ -85,6 +92,10 @@ builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatbotServi
 builder.Services.AddTransient<IConversationService, ConversationService>();
 builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();
+builder.Services.AddTransient<IOrderService, OrderService>();
+builder.Services.AddTransient<ITrackedOrderService, TrackedOrderService>();
+builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
+builder.Services.AddTransient<IOrderSummaryService, OrderSummaryService>();
 
 // Register repository interfaces
 builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());
@@ -97,6 +108,10 @@ builder.Services.AddTransient<MarketMinds.Shared.IRepository.IChatbotRepository>
 builder.Services.AddTransient<IConversationRepository>(sp => sp.GetRequiredService<ConversationProxyRepository>());
 builder.Services.AddTransient<IMessageRepository>(sp => sp.GetRequiredService<MessageProxyRepository>());
 builder.Services.AddTransient<IReviewRepository>(sp => sp.GetRequiredService<ReviewProxyRepository>());
+builder.Services.AddTransient<IOrderHistoryRepository>(sp => sp.GetRequiredService<OrderHistoryProxyRepository>());
+builder.Services.AddTransient<IOrderRepository>(sp => sp.GetRequiredService<OrderProxyRepository>());
+builder.Services.AddTransient<IOrderSummaryRepository>(sp => sp.GetRequiredService<OrderSummaryProxyRepository>());
+builder.Services.AddTransient<ITrackedOrderRepository>(sp => sp.GetRequiredService<TrackedOrderProxyRepository>());
 
 var app = builder.Build();
 

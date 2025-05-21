@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using System.Security.Claims;
 
 namespace WebMarketplace.Controllers
 {
@@ -26,11 +27,25 @@ namespace WebMarketplace.Controllers
         }
 
         // GET: Order/OrderHistory
-        public async Task<IActionResult> OrderHistory(int userId)
+        public async Task<IActionResult> OrderHistory(int userId = 0)
         {
             try
             {
+                _logger.LogInformation($"OrderHistory action called with userId parameter: {userId}");
+                
+                // Get the current user's ID from claims if userId is not provided
+                if (userId <= 0)
+                {
+                    userId = GetCurrentUserId();
+                    if (userId <= 0)
+                    {
+                        _logger.LogWarning("No valid user ID found in claims");
+                        return View(Array.Empty<OrderDisplayInfo>());
+                    }
+                }
+                
                 var orders = await _orderService.GetOrdersWithProductInfoAsync(userId);
+                _logger.LogInformation($"Retrieved {orders?.Count ?? 0} orders for userId: {userId}");
                 return View(orders);
             }
             catch (Exception ex)
@@ -48,8 +63,13 @@ namespace WebMarketplace.Controllers
             {
                 _logger.LogInformation($"GetFilteredOrders called with searchText: {searchText}, timePeriod: {timePeriod}");
                 
-                // Get the current user's ID from the session or authentication
-                int userId = 1; // TODO: Replace with actual user ID from session/auth
+                // Get the current user's ID from claims
+                int userId = GetCurrentUserId();
+                if (userId <= 0)
+                {
+                    _logger.LogWarning("No valid user ID found in claims for GetFilteredOrders");
+                    return Json(new { success = false, message = "Unable to determine your user ID. Please log in again." });
+                }
 
                 _logger.LogInformation($"Getting orders for userId: {userId}");
                 var orders = await _orderService.GetOrdersWithProductInfoAsync(userId, searchText, timePeriod);
@@ -208,6 +228,28 @@ namespace WebMarketplace.Controllers
                 _logger.LogError(ex, "Error getting order summary details");
                 return Json(new { success = false, message = "Error retrieving order summary details" });
             }
+        }
+
+        // Helper method to get the current user ID
+        private int GetCurrentUserId()
+        {
+            int userId = 0;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out userId))
+            {
+                _logger.LogInformation($"Got userId from claims: {userId}");
+                return userId;
+            }
+            
+            var customIdClaim = User.FindFirst("UserId");
+            if (customIdClaim != null && int.TryParse(customIdClaim.Value, out userId))
+            {
+                _logger.LogInformation($"Got userId from custom claim: {userId}");
+                return userId;
+            }
+            
+            return 0;
         }
     }
 } 
