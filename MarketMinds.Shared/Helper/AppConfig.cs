@@ -27,7 +27,8 @@ namespace MarketMinds.Shared.Helper
 
         private static string authorizationToken = "NOT SET";
 
-        public static string AuthorizationToken {
+        public static string AuthorizationToken
+        {
             get
             {
                 return authorizationToken;
@@ -82,13 +83,17 @@ namespace MarketMinds.Shared.Helper
         /// </summary>
         private static void LoadConfiguration()
         {
-            Debug.WriteLine("LMAOOOOO - Loading Configuration from AppConfig.cs :3");
-            // Had to change the path to the appsettings.json file to be relative to the project directory, other wise I got a weird path 
-            // Like C:\WINDOWS\system32\appsettings.json
+            try
+            {
+                Debug.WriteLine("LMAOOOOO - Loading Configuration from AppConfig.cs :3");
 
-            // THIS MAY OR MAY NOT BREAK THE WHOLE APP BUT I DONT THINK IT WILLLLL
-            string jsonFilePath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
-            Debug.WriteLine(jsonFilePath);
+                // Had to change the path to the appsettings.json file to be relative to the project directory, other wise I got a weird path 
+                // Like C:\WINDOWS\system32\appsettings.json
+                string baseDirectory = AppContext.BaseDirectory;
+
+                // THIS MAY OR MAY NOT BREAK THE WHOLE APP BUT I DONT THINK IT WILLLLL
+                string jsonFilePath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+                Debug.WriteLine(jsonFilePath);
 
 
                 var builder = new ConfigurationBuilder()
