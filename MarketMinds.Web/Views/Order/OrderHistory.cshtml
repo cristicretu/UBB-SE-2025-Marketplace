@@ -98,6 +98,10 @@
         const ordersList = document.getElementById('ordersList');
         const noResultsMessage = document.getElementById('noResultsMessage');
 
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrders();
+        });
+
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {

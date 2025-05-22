@@ -1,11 +1,13 @@
 using MarketMinds.Shared.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Shared.Services
 {
     public interface IOrderService
     {
-        Task AddOrderAsync(int productId, int buyerId, string productType, string paymentMethod, int orderSummaryId, DateTime orderDate);
-        Task UpdateOrderAsync(int orderId, string productType, string paymentMethod, DateTime orderDate);
+        Task AddOrderAsync(int productId, int buyerId, string productType, string paymentMethod, int orderSummaryId, System.DateTime orderDate);
+        Task UpdateOrderAsync(int orderId, string productType, string paymentMethod, System.DateTime orderDate);
         Task DeleteOrderAsync(int orderId);
         Task<List<Order>> GetBorrowedOrderHistoryAsync(int buyerId);
         Task<List<Order>> GetNewOrUsedOrderHistoryAsync(int buyerId);
@@ -20,5 +22,7 @@ namespace MarketMinds.Shared.Services
         Task<List<OrderDisplayInfo>> GetOrdersWithProductInfoAsync(int userId, string searchText = null, string timePeriod = null);
         Task<Dictionary<int, string>> GetProductCategoryTypesAsync(int userId);
         Task<OrderSummary> GetOrderSummaryAsync(int orderSummaryId);
+
+        Task<int> CreateOrderFromCartAsync(OrderCreationRequestDto orderRequestDto, int userId, List<Product> cartItems);
     }
 }

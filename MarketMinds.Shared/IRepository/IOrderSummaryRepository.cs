@@ -35,5 +35,7 @@ namespace MarketMinds.Shared.IRepository
         /// <returns>A task representing the asynchronous operation that returns the order summary.</returns>
         /// <exception cref="KeyNotFoundException">Thrown when the order summary with the specified ID is not found.</exception>
         Task<OrderSummary> GetOrderSummaryByIdAsync(int orderSummaryId);
+        Task<int> AddOrderSummaryAsync(OrderSummary orderSummary);
+
     }
 } 

@@ -33,5 +33,12 @@ namespace MarketMinds.Shared.Services
         /// <param name="orderSummaryId">The ID of the order summary to retrieve.</param>
         /// <returns>A task that returns the <see cref="OrderSummary"/> object if found; otherwise, <c>null</c>.</returns>
         Task<OrderSummary> GetOrderSummaryByIdAsync(int orderSummaryId);
+
+        /// <summary>
+        /// Creates a new order summary record in the database.
+        /// </summary>
+        /// <param name="orderSummary">The order summary object to create.</param>
+        /// <returns>A task representing the asynchronous operation that returns the ID of the newly created order summary.</returns>
+        Task<int> CreateOrderSummaryAsync(OrderSummary orderSummary);
     }
 }

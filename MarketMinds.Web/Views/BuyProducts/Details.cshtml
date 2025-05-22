@@ -11,15 +11,18 @@
             @if (Model.Images != null && Model.Images.Any())
             {
                 <div class="relative h-96">
-                    <img id="mainImage" src="@Model.Images.First().Url" alt="@Model.Title" class="w-full h-full object-cover">
+                    <img id="mainImage" src="@Model.Images.First().Url" alt="@Model.Title"
+                        class="w-full h-full object-cover">
                 </div>
-                
+
                 @if (Model.Images.Count > 1)
                 {
                     <div class="p-2 flex space-x-2 overflow-x-auto">
                         @foreach (var img in Model.Images)
                         {
-                            <img src="@img.Url" alt="Product thumbnail" class="h-20 w-20 object-cover rounded cursor-pointer thumb-image" onclick="setMainImage('@img.Url')">
+                            <img src="@img.Url" alt="Product thumbnail"
+                                class="h-20 w-20 object-cover rounded cursor-pointer thumb-image"
+                                onclick="setMainImage('@img.Url')">
                         }
                     </div>
                 }
@@ -31,21 +34,38 @@
                 </div>
             }
         </div>
-        
+
         <!-- Product Details Section -->
         <div class="lg:w-1/2 p-6">
             <div class="flex justify-between items-start">
                 <h1 class="text-3xl font-bold mb-2">@Model.Title</h1>
                 <div class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">Buy Now</div>
             </div>
-            
-            <p class="text-gray-500 mb-4">Category: @(Model.Category?.Name ?? "Uncategorized") • Condition: @(Model.Condition?.Name ?? "Unknown")</p>
-            
+
+            <p class="text-gray-500 mb-4">
+                Category: @(Model.Category?.Name ?? "Uncategorized") •
+                Condition: @(Model.Condition?.Name ?? "Unknown")
+            </p>
+
             <div class="text-2xl font-bold text-blue-600 mb-4">$@Model.Price.ToString("N2")</div>
-            
+
             <h2 class="text-xl font-semibold mb-2">Description</h2>
             <p class="text-gray-700 mb-6">@(Model.Description ?? "No description available")</p>
-            
+
+            <h2 class="text-xl font-semibold mb-2">Seller</h2>
+            @{
+                var sellerName = "Unknown seller";
+                if (Model.Seller != null)
+                {
+                    var user = Model.Seller as MarketMinds.Shared.Models.User;
+                    if (user != null)
+                    {
+                        sellerName = user.Username ?? sellerName;
+                    }
+                }
+            }
+            <p class="text-gray-700 mb-6">@sellerName</p>
+
             @if (Model.Tags != null && Model.Tags.Any())
             {
                 <div class="mb-6">
@@ -58,34 +78,23 @@
                     </div>
                 </div>
             }
-            
-            <div class="flex space-x-4 mt-6">
-                <form asp-controller="Basket" asp-action="AddItem" method="post">
-                    @Html.AntiForgeryToken()
+
+            <div class="space-y-4">
+                <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post">
                     <input type="hidden" name="productId" value="@Model.Id" />
                     <input type="hidden" name="quantity" value="1" />
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
+                    <button type="submit"
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
                         Add to Cart
                     </button>
                 </form>
-            </div>
-            
-            <div class="mt-6 text-gray-600">
-                <p>Seller: @(Model.Seller?.Username ?? "Unknown seller")</p>
-                <a href="/Reviews/Create?sellerId=@Model.Seller?.Id" class="inline-block mt-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">
-                    Review Seller
+
+                <a href="javascript:history.back()"
+                    class="block text-center w-full border border-blue-600 text-blue-600 py-3 rounded-lg hover:bg-blue-50 transition">
+                    Back to List
                 </a>
             </div>
         </div>
-    </div>
-    
-    <div class="mt-8 flex justify-between">
-        <a asp-action="Index" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded">
-            Back to List
-        </a>
     </div>
 </div>
 
@@ -95,4 +104,4 @@
             document.getElementById('mainImage').src = url;
         }
     </script>
-} 
+}
