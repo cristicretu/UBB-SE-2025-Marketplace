@@ -1,46 +1,350 @@
+@model MarketMinds.Web.Models.HomeViewModel
+
 @{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="text-4xl font-bold mb-4">Welcome to MarketMinds</h1>
-    <p class="text-xl mb-6">Your ultimate marketplace for buying, selling, borrowing, and auctioning products.</p>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
-        <a href="@Url.Action("Index", "AuctionProducts")" class="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
-            <div class="text-blue-600 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-            </div>
-            <h2 class="text-xl font-bold mb-2">Auction Products</h2>
-            <p class="text-gray-600">Browse and bid on available auction items.</p>
-        </a>
+<div class="flex flex-col md:flex-row">
+    <!-- Sidebar with filters (collapsible) -->
+    <div id="filterSidebar" class="w-full md:w-64 bg-white p-4 rounded-lg shadow-md md:mr-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Filters</h3>
+            <button id="toggleFilters" class="md:hidden text-gray-500 hover:text-gray-700">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
         
-        <a href="@Url.Action("Index", "BuyProducts")" class="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
-            <div class="text-green-600 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
+        <div id="filterContent" class="filter-content">
+            <!-- Placeholder filters - will be replaced with actual filters later -->
+            <div class="mb-4">
+                <h4 class="font-medium mb-2">Price Range</h4>
+                <div class="space-y-2">
+                    <div>
+                        <input type="range" class="w-full" min="0" max="1000" step="10">
+                        <div class="flex justify-between text-xs text-gray-600">
+                            <span>$0</span>
+                            <span>$1000</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h2 class="text-xl font-bold mb-2">Buy Products</h2>
-            <p class="text-gray-600">Purchase items directly at fixed prices.</p>
-        </a>
-        
-        <a href="@Url.Action("Index", "BorrowProducts")" class="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
-            <div class="text-purple-600 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
+            
+            <div class="mb-4">
+                <h4 class="font-medium mb-2">Categories</h4>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>Electronics</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>Clothing</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>Home & Garden</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>Books</span>
+                    </label>
+                </div>
             </div>
-            <h2 class="text-xl font-bold mb-2">Borrow Products</h2>
-            <p class="text-gray-600">Borrow items for a period of time.</p>
-        </a>
+            
+            <div class="mb-4">
+                <h4 class="font-medium mb-2">Rating</h4>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>4★ & above</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>3★ & above</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="font-medium mb-2">Condition</h4>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>New</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>Used - Like New</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>Used - Good</span>
+                    </label>
+                </div>
+            </div>
+            
+            <button class="w-full bg-primary text-white py-2 rounded-md hover:bg-primary-dark">
+                Apply Filters
+            </button>
+        </div>
     </div>
 
-    <div class="mt-12">
-        <a href="@Url.Action("Create", "Home")" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg">
-            Create New Product
-        </a>
+    <!-- Main content area -->
+    <div class="flex-1">
+        <!-- Product Type Tabs -->
+        <div class="mb-6">
+            <div class="flex border-b">
+                <button id="buyTab" class="tab-btn active py-2 px-4 border-b-2 border-primary font-medium text-primary">
+                    Buy Products
+                </button>
+                <button id="auctionTab" class="tab-btn py-2 px-4 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700">
+                    Auction Products
+                </button>
+                <button id="borrowTab" class="tab-btn py-2 px-4 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700">
+                    Rent Products
+                </button>
+            </div>
+            
+            <!-- Tab descriptions -->
+            <div class="mt-2 mb-4">
+                <p id="buyDescription" class="tab-description">Purchase products directly at fixed prices.</p>
+                <p id="auctionDescription" class="tab-description hidden">Bid on products in our online auctions.</p>
+                <p id="borrowDescription" class="tab-description hidden">Rent items for a specified period of time.</p>
+            </div>
+        </div>
+        
+        <!-- Products Grid - Buy Products (default view) -->
+        <div id="buyProducts" class="tab-content">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @foreach (var item in Model.BuyProducts)
+                {
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                        <div class="h-48 bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-300 flex items-center justify-center">
+                            @if (item.Images != null && item.Images.Any())
+                            {
+                                <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
+                            }
+                            else
+                            {
+                                <div class="text-white text-lg">No Image</div>
+                            }
+                        </div>
+                        <div class="p-4">
+                            <div class="bg-gray-100 p-3 rounded-b-lg">
+                                <h3 class="font-semibold text-lg mb-1 truncate">@item.Title</h3>
+                                <p class="text-sm text-gray-500 mb-1">
+                                    @if (item.Category != null)
+                                    {
+                                        <span>@(item.Category.Name ?? "Uncategorized")</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Uncategorized</span>
+                                    }
+                                    •
+                                    @if (item.Condition != null)
+                                    {
+                                        <span>@(item.Condition.Name ?? "Unknown condition")</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Unknown condition</span>
+                                    }
+                                </p>
+                                <p class="text-sm text-gray-500 mb-2">
+                                    @if (item.Seller != null)
+                                    {
+                                        <span>Seller: @item.Seller.Username</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Unknown seller</span>
+                                    }
+                                </p>
+                                <div class="flex justify-between items-center">
+                                    <div class="font-bold text-blue-600">$@item.Price.ToString("N2")</div>
+                                    <a asp-controller="BuyProducts" asp-action="Details" asp-route-id="@item.Id"
+                                        class="inline-block bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Products Grid - Auction Products (hidden initially) -->
+        <div id="auctionProducts" class="tab-content hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @foreach (var item in Model.AuctionProducts)
+                {
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                        <div class="h-48 bg-gradient-to-r from-blue-300 via-purple-300 to-orange-300 flex items-center justify-center">
+                            @if (item.Images != null && item.Images.Any())
+                            {
+                                <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
+                            }
+                            else
+                            {
+                                <div class="text-white text-lg">No Image</div>
+                            }
+                        </div>
+                        <div class="p-4">
+                            <h2 class="text-xl font-semibold">@item.Title</h2>
+                            <p class="text-gray-600 mb-1">@(item.Category?.Name ?? "Uncategorized")</p>
+                            
+                            @if (!string.IsNullOrEmpty(item.Description) && item.Description.Length > 50)
+                            {
+                                <p class="text-gray-700 text-sm mb-3">@(item.Description.Substring(0, 50))...</p>
+                            }
+                            else
+                            {
+                                <p class="text-gray-700 text-sm mb-3">@(item.Description ?? "No description")</p>
+                            }
+                            
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-blue-600 font-bold text-xl">$@item.CurrentPrice.ToString("N2")</span>
+                                <span class="text-gray-600 text-sm">Starting: $@item.StartPrice.ToString("N2")</span>
+                            </div>
+                            
+                            <div class="text-orange-600 font-medium mb-3" data-countdown="@item.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                Time left: 
+                                @{
+                                    var timeLeft = item.EndTime - DateTime.Now;
+                                    if (timeLeft > TimeSpan.Zero)
+                                    {
+                                        @($"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-red-600">Auction Ended</span>
+                                    }
+                                }
+                            </div>
+                            
+                            <a asp-controller="AuctionProducts" asp-action="Details" asp-route-id="@item.Id" class="block text-center bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">View Details</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Products Grid - Borrow Products (hidden initially) -->
+        <div id="borrowProducts" class="tab-content hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="relative pb-3/4 mb-3">
+                        <img src="https://via.placeholder.com/300" class="absolute h-full w-full object-cover rounded-md" alt="Rent Product">
+                    </div>
+                    <h3 class="font-semibold">Rent Item 1</h3>
+                    <p class="text-purple-600 font-semibold">$15/day</p>
+                    <p class="text-xs text-gray-500">Available: Jan 15 - Feb 28</p>
+                    <button class="mt-2 w-full bg-primary text-white py-1 px-2 rounded hover:bg-primary-dark">
+                        Rent Now
+                    </button>
+                </div>
+                
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="relative pb-3/4 mb-3">
+                        <img src="https://via.placeholder.com/300" class="absolute h-full w-full object-cover rounded-md" alt="Rent Product">
+                    </div>
+                    <h3 class="font-semibold">Rent Item 2</h3>
+                    <p class="text-purple-600 font-semibold">$25/day</p>
+                    <p class="text-xs text-gray-500">Available: Now</p>
+                    <button class="mt-2 w-full bg-primary text-white py-1 px-2 rounded hover:bg-primary-dark">
+                        Rent Now
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab functionality
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const tabDescriptions = document.querySelectorAll('.tab-description');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Deactivate all tabs
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active', 'border-primary', 'text-primary');
+                        btn.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    
+                    // Hide all content
+                    tabContents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    
+                    // Hide all descriptions
+                    tabDescriptions.forEach(desc => {
+                        desc.classList.add('hidden');
+                    });
+                    
+                    // Activate clicked tab
+                    this.classList.add('active', 'border-primary', 'text-primary');
+                    this.classList.remove('border-transparent', 'text-gray-500');
+                    
+                    // Show corresponding content
+                    const contentId = this.id.replace('Tab', 'Products');
+                    document.getElementById(contentId).classList.remove('hidden');
+                    
+                    // Show corresponding description
+                    const descriptionId = this.id.replace('Tab', 'Description');
+                    document.getElementById(descriptionId).classList.remove('hidden');
+                });
+            });
+            
+            // Mobile filter toggle
+            const toggleFiltersBtn = document.getElementById('toggleFilters');
+            const filterContent = document.getElementById('filterContent');
+            
+            if (toggleFiltersBtn && filterContent) {
+                toggleFiltersBtn.addEventListener('click', function() {
+                    filterContent.classList.toggle('hidden');
+                    const icon = this.querySelector('i');
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+                });
+                
+                // Show filters by default on desktop, hide on mobile
+                function handleResize() {
+                    if (window.innerWidth < 768) {
+                        filterContent.classList.add('hidden');
+                    } else {
+                        filterContent.classList.remove('hidden');
+                    }
+                }
+                
+                // Initial check and event listener for resize
+                handleResize();
+                window.addEventListener('resize', handleResize);
+            }
+        });
+    </script>
+}
+
+<style>
+    .pb-3\/4 {
+        padding-bottom: 75%;
+    }
+    
+    /* Override container styling from the partial views */
+    #buyProducts .container,
+    #auctionProducts .container {
+        width: 100%;
+        max-width: none;
+        padding: 0;
+    }
+    
+    /* Hide the title from the partial views */
+    #buyProducts h1,
+    #auctionProducts h1 {
+        display: none;
+    }
+</style> 
