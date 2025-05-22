@@ -10,7 +10,10 @@
     <!-- Sidebar with filters (collapsible) -->
     <div id="filterSidebar" class="w-full md:w-72 bg-white p-5 rounded-lg shadow-sm md:mr-5 mb-5 md:mb-0 border border-gray-200">
         <div class="flex justify-between items-center mb-5">
-            <h3 class="text-lg font-semibold text-gray-800">Filters</h3>
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <i class="fas fa-filter mr-2 text-gray-600"></i>
+                Filters
+            </h3>
             <button id="toggleFilters" class="md:hidden text-gray-500 hover:text-gray-700">
                 <i class="fas fa-chevron-down"></i>
             </button>
@@ -27,6 +30,8 @@
                 </div>
             </div>
             
+            <hr class="my-4 border-t border-gray-200" />
+            
             <!-- Price Range -->
             <div class="mb-5">
                 <h4 class="font-medium mb-3 text-gray-700">Price Range</h4>
@@ -42,34 +47,41 @@
                 </div>
             </div>
             
+            <hr class="my-4 border-t border-gray-200" />
+            
             <!-- Categories -->
             <div class="mb-5">
                 <h4 class="font-medium mb-3 text-gray-700">Categories</h4>
-                <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1">
                     @foreach (var category in ViewBag.Categories)
                     {
-                        <label class="flex items-center">
-                            <input type="checkbox" class="category-filter mr-2 h-4 w-4 text-primary focus:ring-primary rounded" value="@category.Id">
-                            <span class="text-gray-700">@category.Name</span>
-                        </label>
+                        <button class="category-pill px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 text-sm transition-colors" 
+                                data-category-id="@category.Id">
+                            @category.Name
+                        </button>
                     }
                 </div>
             </div>
+            
+            <hr class="my-4 border-t border-gray-200" />
             
             <!-- Conditions -->
             <div class="mb-5">
                 <h4 class="font-medium mb-3 text-gray-700">Condition</h4>
-                <div class="space-y-2">
+                <div class="flex flex-wrap gap-2">
                     @foreach (var condition in ViewBag.Conditions)
                     {
-                        <label class="flex items-center">
-                            <input type="checkbox" class="condition-filter mr-2 h-4 w-4 text-primary focus:ring-primary rounded" value="@condition.Id">
-                            <span class="text-gray-700">@condition.Name</span>
-                        </label>
+                        <button class="condition-pill px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 text-sm transition-colors" 
+                                data-condition-id="@condition.Id">
+                            @condition.Name
+                        </button>
                     }
                 </div>
             </div>
             
+            <hr class="my-4 border-t border-gray-200" />
+            
+            <!-- if there are any filters applied, show the clear filters button -->
             <button id="clearFilters" class="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 transition mb-2 border border-gray-300">
                 <i class="fas fa-times mr-2"></i>Clear Filters
             </button>
@@ -80,24 +92,22 @@
     <div class="flex-1">
         <!-- Product Type Tabs -->
         <div class="mb-6">
-            <div class="flex border-b">
-                <button id="buyTab" class="tab-btn active py-2 px-4 border-b-2 border-primary font-medium text-primary">
+            <div class="flex gap-3">
+                <button id="buyTab" class="tab-btn active py-2 px-4 rounded-lg font-medium text-white bg-primary border border-primary shadow-sm hover:shadow-md transition-all flex items-center">
+                    <i class="fas fa-shopping-bag mr-2"></i>
                     Buy Products
                 </button>
-                <button id="auctionTab" class="tab-btn py-2 px-4 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700">
+                <button id="auctionTab" class="tab-btn py-2 px-4 rounded-lg font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:shadow-md transition-all flex items-center">
+                    <i class="fas fa-gavel mr-2"></i>
                     Auction Products
                 </button>
-                <button id="borrowTab" class="tab-btn py-2 px-4 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700">
+                <button id="borrowTab" class="tab-btn py-2 px-4 rounded-lg font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:shadow-md transition-all flex items-center">
+                    <i class="fas fa-calendar-alt mr-2"></i>
                     Rent Products
                 </button>
             </div>
             
-            <!-- Tab descriptions -->
-            <div class="mt-2 mb-4">
-                <p id="buyDescription" class="tab-description">Purchase products directly at fixed prices.</p>
-                <p id="auctionDescription" class="tab-description hidden">Bid on products in our online auctions.</p>
-                <p id="borrowDescription" class="tab-description hidden">Rent items for a specified period of time.</p>
-            </div>
+            <hr class="mt-4 mb-6 border-t border-gray-200" />
         </div>
         
         <!-- Products Grid - Buy Products (default view) -->
@@ -123,7 +133,7 @@
                                 }
                             </div>
                             <div class="p-4">
-                                <div class="bg-gray-50 p-3 rounded-lg">
+                                <div class="">
                                     <h3 class="font-semibold text-lg mb-1 truncate">@item.Title</h3>
                                     <p class="text-sm text-gray-500 mb-1">
                                         @if (item.Category != null)
@@ -282,7 +292,6 @@
             // Tab functionality
             const tabButtons = document.querySelectorAll('.tab-btn');
             const tabContents = document.querySelectorAll('.tab-content');
-            const tabDescriptions = document.querySelectorAll('.tab-description');
             
             // Favorite buttons functionality
             const favoriteButtons = document.querySelectorAll('.favorite-btn');
@@ -314,8 +323,9 @@
                 button.addEventListener('click', function() {
                     // Deactivate all tabs
                     tabButtons.forEach(btn => {
-                        btn.classList.remove('active', 'border-primary', 'text-primary');
-                        btn.classList.add('border-transparent', 'text-gray-500');
+                        btn.classList.remove('active', 'text-white');
+                        btn.classList.add('text-gray-700', 'bg-white', 'border-gray-300');
+                        btn.classList.remove('bg-primary', 'bg-purple-600', 'bg-green-600', 'border-primary', 'border-purple-600', 'border-green-600');
                     });
                     
                     // Hide all content
@@ -323,22 +333,21 @@
                         content.classList.add('hidden');
                     });
                     
-                    // Hide all descriptions
-                    tabDescriptions.forEach(desc => {
-                        desc.classList.add('hidden');
-                    });
+                    // Activate clicked tab with appropriate color
+                    this.classList.add('active', 'text-white');
+                    this.classList.remove('text-gray-700', 'bg-white', 'border-gray-300');
                     
-                    // Activate clicked tab
-                    this.classList.add('active', 'border-primary', 'text-primary');
-                    this.classList.remove('border-transparent', 'text-gray-500');
+                    if (this.id === 'buyTab') {
+                        this.classList.add('bg-primary', 'border-primary');
+                    } else if (this.id === 'auctionTab') {
+                        this.classList.add('bg-purple-600', 'border-purple-600');
+                    } else if (this.id === 'borrowTab') {
+                        this.classList.add('bg-green-600', 'border-green-600');
+                    }
                     
                     // Show corresponding content
                     const contentId = this.id.replace('Tab', 'Products');
                     document.getElementById(contentId).classList.remove('hidden');
-                    
-                    // Show corresponding description
-                    const descriptionId = this.id.replace('Tab', 'Description');
-                    document.getElementById(descriptionId).classList.remove('hidden');
                     
                     // Apply filters to the newly shown tab
                     applyFilters();
@@ -376,8 +385,8 @@
             const currentPriceValue = document.getElementById('currentPriceValue');
             const clearFiltersBtn = document.getElementById('clearFilters');
             const searchInput = document.getElementById('searchInput');
-            const categoryFilters = document.querySelectorAll('.category-filter');
-            const conditionFilters = document.querySelectorAll('.condition-filter');
+            const categoryPills = document.querySelectorAll('.category-pill');
+            const conditionPills = document.querySelectorAll('.condition-pill');
             
             // Price range slider
             if (priceRange && currentPriceValue) {
@@ -395,15 +404,31 @@
             }
             
             // Category filters
-            categoryFilters.forEach(filter => {
-                filter.addEventListener('change', function() {
+            categoryPills.forEach(pill => {
+                pill.addEventListener('click', function() {
+                    // Toggle active state
+                    this.classList.toggle('bg-primary');
+                    this.classList.toggle('text-white');
+                    this.classList.toggle('border-primary');
+                    this.classList.toggle('bg-gray-100');
+                    this.classList.toggle('text-gray-700');
+                    this.classList.toggle('border-gray-200');
+                    
                     applyFilters();
                 });
             });
             
             // Condition filters
-            conditionFilters.forEach(filter => {
-                filter.addEventListener('change', function() {
+            conditionPills.forEach(pill => {
+                pill.addEventListener('click', function() {
+                    // Toggle active state
+                    this.classList.toggle('bg-primary');
+                    this.classList.toggle('text-white');
+                    this.classList.toggle('border-primary');
+                    this.classList.toggle('bg-gray-100');
+                    this.classList.toggle('text-gray-700');
+                    this.classList.toggle('border-gray-200');
+                    
                     applyFilters();
                 });
             });
@@ -420,14 +445,16 @@
                         currentPriceValue.textContent = priceRange.min;
                     }
                     
-                    // Uncheck all category filters
-                    categoryFilters.forEach(filter => {
-                        filter.checked = false;
+                    // Reset all category pills
+                    categoryPills.forEach(pill => {
+                        pill.classList.remove('bg-primary', 'text-white', 'border-primary');
+                        pill.classList.add('bg-gray-100', 'text-gray-700', 'border-gray-200');
                     });
                     
-                    // Uncheck all condition filters
-                    conditionFilters.forEach(filter => {
-                        filter.checked = false;
+                    // Reset all condition pills
+                    conditionPills.forEach(pill => {
+                        pill.classList.remove('bg-primary', 'text-white', 'border-primary');
+                        pill.classList.add('bg-gray-100', 'text-gray-700', 'border-gray-200');
                     });
                     
                     // Apply filters (show all)
@@ -444,13 +471,13 @@
                 const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
                 const maxPrice = priceRange ? parseInt(priceRange.value) : Number.MAX_SAFE_INTEGER;
                 
-                const selectedCategories = Array.from(categoryFilters)
-                    .filter(filter => filter.checked)
-                    .map(filter => parseInt(filter.value));
+                const selectedCategories = Array.from(categoryPills)
+                    .filter(pill => pill.classList.contains('bg-primary'))
+                    .map(pill => parseInt(pill.getAttribute('data-category-id')));
                 
-                const selectedConditions = Array.from(conditionFilters)
-                    .filter(filter => filter.checked)
-                    .map(filter => parseInt(filter.value));
+                const selectedConditions = Array.from(conditionPills)
+                    .filter(pill => pill.classList.contains('bg-primary'))
+                    .map(pill => parseInt(pill.getAttribute('data-condition-id')));
                 
                 productItems.forEach(item => {
                     const price = parseFloat(item.dataset.price);
