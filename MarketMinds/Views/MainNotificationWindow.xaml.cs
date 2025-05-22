@@ -13,16 +13,17 @@ namespace MarketMinds.Views
         /// <summary>
         /// The page for the main notification window
         /// </summary>
-        private const int CurrentUserId = 1;
-
-        public NotificationViewModel ViewModel = new NotificationViewModel(CurrentUserId);
+        public NotificationViewModel ViewModel { get; set; }
+        private int CurrentUserId { get; set; }
 
         public MainNotificationWindow()
         {
             this.InitializeComponent();
-            this.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(400, 200, 1080, 600));
+            this.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(400, 200, 1000, 800));
 
-            RootPanel.DataContext = ViewModel;
+            CurrentUserId = UserSession.CurrentUserId ?? 0;
+            ViewModel = new NotificationViewModel(CurrentUserId);
+            RootGrid.DataContext = ViewModel;
 
             Activated += MainNotificationWindow_Activated;
         }
@@ -34,9 +35,11 @@ namespace MarketMinds.Views
         /// <param name="args"></param>
         private async void MainNotificationWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
+            System.Diagnostics.Debug.WriteLine($"Window activation state: {args.WindowActivationState}");
+
             if (args.WindowActivationState != WindowActivationState.Deactivated)
             {
-                await ViewModel.LoadNotificationsAsync(CurrentUserId);
+                await ViewModel.LoadUnreadNotificationsAsync(CurrentUserId);
             }
         }
 

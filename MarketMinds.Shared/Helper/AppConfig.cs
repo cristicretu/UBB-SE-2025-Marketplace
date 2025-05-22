@@ -27,7 +27,8 @@ namespace MarketMinds.Shared.Helper
 
         private static string authorizationToken = "NOT SET";
 
-        public static string AuthorizationToken {
+        public static string AuthorizationToken
+        {
             get
             {
                 return authorizationToken;
@@ -54,6 +55,7 @@ namespace MarketMinds.Shared.Helper
         {
             // string? baseUrl = "http://172.30.247.110:80/";
             // take the url from the appsettings.json file
+
             string? baseUrl = Configuration?["ApiSettings:BaseUrl"];
 
             if (string.IsNullOrEmpty(baseUrl))
@@ -83,13 +85,16 @@ namespace MarketMinds.Shared.Helper
         {
             try
             {
-                // Use AppContext.BaseDirectory instead of Directory.GetCurrentDirectory()
-                string baseDirectory = AppContext.BaseDirectory;
-                Debug.WriteLine($"Base directory: {baseDirectory}");
+                Debug.WriteLine("LMAOOOOO - Loading Configuration from AppConfig.cs :3");
 
-                string jsonFilePath = Path.Combine(baseDirectory, "appsettings.json");
-                Debug.WriteLine($"Looking for config at: {jsonFilePath}");
-                Debug.WriteLine($"File exists: {File.Exists(jsonFilePath)}");
+                // Had to change the path to the appsettings.json file to be relative to the project directory, other wise I got a weird path 
+                // Like C:\WINDOWS\system32\appsettings.json
+                string baseDirectory = AppContext.BaseDirectory;
+
+                // THIS MAY OR MAY NOT BREAK THE WHOLE APP BUT I DONT THINK IT WILLLLL
+                string jsonFilePath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+                Debug.WriteLine(jsonFilePath);
+
 
                 var builder = new ConfigurationBuilder()
                     .SetBasePath(baseDirectory)

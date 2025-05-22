@@ -6,6 +6,7 @@ namespace MarketMinds.Views
 {
     using MarketMinds.ViewModels;
     using Microsoft.UI.Xaml.Controls;
+    using Microsoft.UI.Xaml.Input;
     using Microsoft.UI.Xaml.Navigation;
 
     /// <summary>
@@ -32,6 +33,19 @@ namespace MarketMinds.Views
             if (e.Parameter is ISignUpViewModel signUpViewModel)
             {
                 this.DataContext = signUpViewModel;
+            }
+        }
+
+        /// <summary>
+        /// Event handler for the login link.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void LoginButtonTextBlock_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (this.DataContext is ISignUpViewModel viewModel)
+            {
+                viewModel.NavigateToLogin?.Invoke();
             }
         }
     }

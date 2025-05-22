@@ -8,19 +8,20 @@ namespace MarketMinds.Shared.Services
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
+    using MarketMinds.Shared.ProxyRepository;
 
     /// <summary>
     /// Provides administrative operations related to user management.
     /// </summary>
     public class AdminService : IAdminService
     {
-        private readonly IUserRepository userRepository;
+        private readonly UserProxyRepository userRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AdminService"/> class.
         /// </summary>
         /// <param name="userRepository">The user repository to be used by the service.</param>
-        public AdminService(IUserRepository userRepository)
+        public AdminService(UserProxyRepository userRepository)
         {
             this.userRepository = userRepository;
         }

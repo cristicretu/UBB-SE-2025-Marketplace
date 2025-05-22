@@ -1,11 +1,10 @@
-﻿USE MarketEF
-GO
+﻿GO
 
 SELECT * FROM Buyers
 
 -- set to your seller id
 DECLARE @sellerID int;
-SET @sellerID = 10
+SET @sellerID = 3
 
 SELECT * FROM PredefinedContracts
 
@@ -124,6 +123,8 @@ UPDATE Buyers
 SET FirstName = 'Barbos', LastName = 'Andrada'
 
 GO
+DECLARE @buyerID int;
+SET @buyerID = 9
 DECLARE @sellerID int;
 SET @sellerID = 10
 INSERT INTO BuyProducts (title, [description], price, stock, category_id, seller_id, condition_id)
@@ -146,11 +147,11 @@ SET Subtotal=350, WarrantyTax=3, DeliveryFee=7.99, FinalTotal=360.99, [Address]=
 SELECT * FROM Orders
 SELECT * FROM Buyers
 
-INSERT INTO Orders (ProductID, BuyProductId, [Name], BuyerID, SellerId, Cost, ProductType, PaymentMethod, OrderSummaryID, OrderDate, OrderHistoryID)
+INSERT INTO Orders (ProductID, [Name], BuyerID, SellerId, Cost, ProductType, PaymentMethod, OrderSummaryID, OrderDate, OrderHistoryID)
 VALUES
-    (1, 1, 'Order1', 9, 10, 1, 'Digital', 'card', 1, '2024-03-15', 1),
-    (2, 2, 'Order2', 9, 10, 10, 'Type 0', 'wallet', 1, '2024-03-20', 2),
-    (3, 3, 'Order3', 9, 10, 100, 'Type sheet', 'cash', 1, '2024-03-25', 3);
+    (1, 'Order1', @buyerID, @sellerID, 1, 'Digital', 'card', 1, '2024-03-15', 1),
+    (2, 'Order2', @buyerID, @sellerID, 10, 'Type 0', 'wallet', 1, '2024-03-20', 2),
+    (3, 'Order3', @buyerID, @sellerID, 100, 'Type sheet', 'cash', 1, '2024-03-25', 3);
 
 SELECT * FROM Contracts
 SELECT * FROM PDFs

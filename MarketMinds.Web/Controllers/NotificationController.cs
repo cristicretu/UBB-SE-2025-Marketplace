@@ -25,7 +25,7 @@ namespace WebMarketplace.Controllers
         [HttpGet]
         public async Task<IActionResult> Notifications()
         {
-            int userId = 1; // Replace with actual user ID logic
+            int userId = UserSession.CurrentUserId ?? 0; // Replace with actual user ID logic
             var notifications = await _notificationService.GetNotificationsForUser(userId);
             Debug.WriteLine($"Notifications count: {notifications.Count}");
 
@@ -60,7 +60,7 @@ namespace WebMarketplace.Controllers
         [HttpGet("Count")]
         public async Task<IActionResult> GetUnreadCount()
         {
-            int userId = 1; // Replace with actual user logic
+            int userId = UserSession.CurrentUserId ?? 0; // Replace with actual user logic
             var notifications = await _notificationService.GetNotificationsForUser(userId);
             var unreadCount = notifications.Count(n => !n.IsRead);
             return Json(new { count = unreadCount });
@@ -76,14 +76,14 @@ namespace WebMarketplace.Controllers
         [HttpPost("MarkAllAsRead")]
         public async Task<IActionResult> MarkAllAsRead()
         {
-            int userId = 1; // Replace with your actual user identity method
+            int userId = UserSession.CurrentUserId ?? 0; // Replace with your actual user identity method
             var notifications = await _notificationService.GetNotificationsForUser(userId);
 
             foreach (var notification in notifications)
             {
                 if (!notification.IsRead)
                 {
-                    _notificationService.MarkAsRead(notification.NotificationID);
+                    _notificationService.MarkAllAsRead(notification.NotificationID);
                 }
             }
 
@@ -95,8 +95,6 @@ namespace WebMarketplace.Controllers
             ViewData["UnreadCountText"] = unreadCountText;
             return PartialView("_NotificationListPartial", notifications);
         }
-
-
     }
 
 }

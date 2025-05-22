@@ -36,8 +36,8 @@ namespace MarketMinds.ViewModels.Admin
             this.User = user;
             this.adminService = adminService;
             this.adminViewModel = adminViewModel;
-            this.BanUserCommand = new RelayCommand(this.BanUser);
-            this.SetAdminCommand = new RelayCommand(this.SetAdmin);
+            this.BanUserCommand = new RelayCommand(_ => this.BanUser());
+            this.SetAdminCommand = new RelayCommand(_ => this.SetAdmin());
         }
 
         /// <summary>
@@ -49,6 +49,8 @@ namespace MarketMinds.ViewModels.Admin
         /// Gets the user id.
         /// </summary>
         public int UserId => this.User.Id;
+
+        public string PhoneNumber => this.User.PhoneNumber;
 
         /// <summary>
         /// Gets the username.
@@ -63,7 +65,7 @@ namespace MarketMinds.ViewModels.Admin
         /// <summary>
         /// Gets the role.
         /// </summary>
-        public string Role => this.User.UserType.ToString();
+        public string Role => ((UserRole)this.User.UserType).ToString();
 
         /// <summary>
         /// Gets the failed logins.
@@ -93,7 +95,7 @@ namespace MarketMinds.ViewModels.Admin
         /// <summary>
         /// Method to "ban" the user.
         /// </summary>
-        private async Task BanUser()
+        private async void BanUser()
         {
             await this.adminService.ToggleUserBanStatus(this.User);
             this.adminViewModel.RefreshUsers();
@@ -102,7 +104,7 @@ namespace MarketMinds.ViewModels.Admin
         /// <summary>
         /// Method to set the user as admin.
         /// </summary>
-        private async Task SetAdmin()
+        private async void SetAdmin()
         {
             await this.adminService.SetUserAdmin(this.User);
             this.adminViewModel.RefreshUsers();

@@ -54,7 +54,7 @@ namespace MarketMinds.Shared.Services
         private const decimal MaxBadgeProgress = 100.0m;
 
         private readonly IBuyerRepository buyerRepo;
-        private readonly IUserRepository userRepo;
+        private readonly IAccountRepository userRepo;
         private IUserValidator userValidator;
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace MarketMinds.Shared.Services
         /// </summary>
         /// <param name="buyerRepo">The repository used to access buyer data.</param>
         /// <param name="userRepo">The repository used to access user data.</param>
-        public BuyerService(IBuyerRepository buyerRepo, IUserRepository userRepo)
+        public BuyerService(IBuyerRepository buyerRepo, IAccountRepository userRepo)
         {
             this.buyerRepo = buyerRepo;
             this.userRepo = userRepo;

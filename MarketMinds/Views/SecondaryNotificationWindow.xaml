@@ -9,13 +9,13 @@
     xmlns:Domain="using:MarketMinds.Shared.Models"
     mc:Ignorable="d">
 
-    <Grid Background="WhiteSmoke">
+    <Grid Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="LightGray" Padding="15,10">
+        <Border Grid.Row="0" Background="{ThemeResource SystemAccentColorLight3}" Padding="15,10">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Button x:Name="BackButton" 
                         Content="" 
@@ -23,42 +23,40 @@
                         FontSize="16"
                         Margin="0,0,15,0"
                         Padding="10,5"
-                        Foreground="Black"
+                        Foreground="{ThemeResource SystemControlForegroundAltHighBrush}"
                         Click="BackButton_Click"
                         ToolTipService.ToolTip="Back to notifications"/>
 
                 <TextBlock Text="Notification Details" 
                            FontSize="18"
-                           FontWeight="SemiBold"/>
+                           FontWeight="SemiBold"
+                           Foreground="{ThemeResource SystemControlForegroundAltHighBrush}"/>
             </StackPanel>
         </Border>
 
         <Border Grid.Row="1" Padding="20">
-            <Border Background="White" 
-                    BorderBrush="DarkGray" 
+            <Border Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" 
+                    BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}" 
                     BorderThickness="1"
                     Padding="20"
                     CornerRadius="8">
                 <StackPanel>
                     <TextBlock x:Name="selectedNotificationTitle"
-                        Foreground="Black"
+                        Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
                         FontWeight="Bold"
                         FontSize="22"
                         Margin="0,0,0,8"/>
 
-                    <Border BorderBrush="#FFEEEEEE"
+                    <Border BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
                             BorderThickness="0,1,0,0"
                             Margin="0,0,0,12"
                             Padding="0,12,0,0"/>
 
                     <TextBlock x:Name="selectedNotificationContent" 
-                               Foreground="Black"
+                               Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
                                FontSize="16"
                                TextWrapping="Wrap"
                                LineHeight="24"/>
-                    <Button x:Name="contractFileButton" VerticalAlignment="Bottom" HorizontalAlignment="Center" Click="GoToContractFile" Foreground="Black" Background="LightGray">
-                        Get Contract
-                    </Button>
                 </StackPanel>
             </Border>
         </Border>

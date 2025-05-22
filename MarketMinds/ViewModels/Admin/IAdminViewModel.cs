@@ -5,6 +5,7 @@
 namespace MarketMinds.ViewModels.Admin
 {
     using System.Collections.ObjectModel;
+    using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
 
     /// <summary>
@@ -27,6 +28,8 @@ namespace MarketMinds.ViewModels.Admin
         /// </summary>
         /// <param name="user">The user to ban.</param>
         void BanUser(User user);
+
+        Task LoadDataAsync();
 
         /// <summary>
         /// Refresh the users.

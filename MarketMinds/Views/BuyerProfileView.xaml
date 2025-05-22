@@ -12,86 +12,87 @@
     <Page.Resources>
         <converters:BoolCollapsedConverter x:Key="BoolCollapsedConverter" />
     </Page.Resources>
-    <Grid RowSpacing="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="150" />
-            <RowDefinition Height="380" />
-            <RowDefinition Height="50" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
-            <!-- Main Content (e.g., Title and Profile) -->
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Buyer Profile" FontSize="42" FontWeight="Bold" TextAlignment="Center"
-                           Foreground="#0D47A1" FontFamily="Segoe UI Black" />
-                <TextBlock Text="View and edit your profile details below" FontSize="24" Margin="0,5"
-                           TextAlignment="Center" Foreground="#1976D2" FontFamily="Segoe UI Semibold" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10">
-                <local:BuyerBadgeControl ViewModel="{x:Bind ViewModel.BuyerBadge, Mode=OneWay}" />
-            </StackPanel>
-        </Grid>
-        <StackPanel Grid.Row="1">
-            <Grid ColumnSpacing="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="150" />
+                <RowDefinition Height="380" />
+                <RowDefinition Height="50" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
+                <!-- Main Content (e.g., Title and Profile) -->
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Personal Information" Style="{StaticResource PrimaryLabel}" Height="28" />
-                    <StackPanel Spacing="25">
-                        <local:LabeledTextFieldControl
+                    <TextBlock Text="Buyer Profile" FontSize="42" FontWeight="Bold" TextAlignment="Center"
+                           Foreground="#0D47A1" FontFamily="Segoe UI Black" />
+                    <TextBlock Text="View and edit your profile details below" FontSize="24" Margin="0,5"
+                           TextAlignment="Center" Foreground="#1976D2" FontFamily="Segoe UI Semibold" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10">
+                    <local:BuyerBadgeControl ViewModel="{x:Bind ViewModel.BuyerBadge, Mode=OneWay}" />
+                </StackPanel>
+            </Grid>
+            <StackPanel Grid.Row="1">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Personal Information" Style="{StaticResource PrimaryLabel}" Height="28" />
+                        <StackPanel Spacing="25">
+                            <local:LabeledTextFieldControl
                             Label="First Name"
                             TextValue="{x:Bind ViewModel.Buyer.FirstName, Mode=TwoWay}" />
-                        <local:LabeledTextFieldControl
+                            <local:LabeledTextFieldControl
                             Label="Last Name"
                             TextValue="{x:Bind ViewModel.Buyer.LastName, Mode=TwoWay}" />
-                        <local:LabeledTextFieldControl
+                            <local:LabeledTextFieldControl
                             Label="Email"
                             TextValue="{x:Bind ViewModel.Buyer.Email, Mode=TwoWay}"
                             IsReadOnly="True" />
-                        <local:LabeledTextFieldControl
+                            <local:LabeledTextFieldControl
                             Label="Phone"
                             TextValue="{x:Bind ViewModel.Buyer.PhoneNumber, Mode=TwoWay}" />
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-                <StackPanel Grid.Column="1">
-                    <TextBlock Text="Billing Address" Style="{StaticResource PrimaryLabel}" Height="28" />
-                    <local:BuyerAddressFormControl ViewModel="{x:Bind ViewModel.BillingAddress, Mode=OneWay}" />
-                </StackPanel>
-                <StackPanel Grid.Column="2">
-                    <Grid Height="28">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Shipping Address"
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Billing Address" Style="{StaticResource PrimaryLabel}" Height="28" />
+                        <local:BuyerAddressFormControl ViewModel="{x:Bind ViewModel.BillingAddress, Mode=OneWay}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <Grid Height="28">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Shipping Address"
                                    Style="{StaticResource PrimaryLabel}" />
-                        <CheckBox Grid.Column="1" Content=" Same Address as Billing"
+                            <CheckBox Grid.Column="1" Content=" Same Address as Billing"
                                   IsChecked="{x:Bind ViewModel.ShippingAddressDisabled, Mode=TwoWay}"
                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Grid>
-                    <local:BuyerAddressFormControl ViewModel="{x:Bind ViewModel.ShippingAddress, Mode=OneWay}"
+                        </Grid>
+                        <local:BuyerAddressFormControl ViewModel="{x:Bind ViewModel.ShippingAddress, Mode=OneWay}"
                                                    IsEnabled="{x:Bind ViewModel.ShippingAddressEnabled, Mode=OneWay}" />
-                </StackPanel>
-            </Grid>
-        </StackPanel>
-        <StackPanel Grid.Row="2">
-            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="5">
-                <Button Click="{x:Bind ViewModel.SaveInfo}"
-                        Style="{StaticResource PrimaryButton}">
-                    <StackPanel Orientation="Horizontal" Spacing="5">
-                        <Image Width="25" Height="25">
-                            <Image.Source>
-                                <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/save.svg" />
-                            </Image.Source>
-                        </Image>
-                        <TextBlock Text="Save" VerticalAlignment="Center" FontSize="16" />
                     </StackPanel>
-                </Button>
-                <!-- <Button Click="{x:Bind ViewModel.ResetInfo}"
+                </Grid>
+            </StackPanel>
+            <StackPanel Grid.Row="2">
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="5">
+                    <Button Click="{x:Bind ViewModel.SaveInfo}"
+                        Style="{StaticResource PrimaryButton}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <Image Width="25" Height="25">
+                                <Image.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/save.svg" />
+                                </Image.Source>
+                            </Image>
+                            <TextBlock Text="Save" VerticalAlignment="Center" FontSize="16" />
+                        </StackPanel>
+                    </Button>
+                    <!-- <Button Click="{x:Bind ViewModel.ResetInfo}"
                         Visibility="{x:Bind ViewModel.CreationMode, Mode=OneWay, Converter={StaticResource BoolCollapsedConverter}}"
                         Style="{StaticResource PrimaryButton}">
                     <StackPanel Orientation="Horizontal" Spacing="5">
@@ -103,37 +104,42 @@
                         <TextBlock Text="Reset" VerticalAlignment="Center" FontSize="16" />
                     </StackPanel>
                 </Button> -->
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
 
-        <!-- New Basic Action Buttons -->
-        <StackPanel Grid.Row="3" Margin="0,10,0,10">
-            <TextBlock Text="Quick Actions" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" HorizontalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
-                <Button x:Name="bidProductButton" Content="Bid Product" Click="BidProductButton_Clicked" Margin="5"/>
-                <Button x:Name="walletrefillButton" Content="Refill Wallet" Click="WalletRefillButton_Clicked" Margin="5"/>
-                <Button x:Name="generateContractButton" Content="Generate Contract" Click="GenerateContractButton_Clicked" Margin="5"/>
-                <Button x:Name="borrowButton" Content="Borrow Product" Click="BorrowButton_Clicked" Margin="5"/>
+            <!-- New Basic Action Buttons -->
+            <StackPanel Grid.Row="3" Margin="0,10,0,10">
+                <TextBlock Text="Quick Actions" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
+                    <Button x:Name="bidProductButton" Content="Bid Product" Click="BidProductButton_Clicked" Margin="5"/>
+                    <Button x:Name="walletrefillButton" Content="Refill Wallet" Click="WalletRefillButton_Clicked" Margin="5"/>
+                    <Button x:Name="borrowButton" Content="Borrow Product" Click="BorrowButton_Clicked" Margin="5"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
+                    <Button x:Name="notificationButton" Content="Notifications" Click="NotificationButton_Clicked" Margin="5"/>
+                    <Button x:Name="OrderHistoryButton" Content="Order History" Click="OrderHistoryButton_Clicked" Margin="5"/>
+                    <Button x:Name="renewContractButton" Content="Renew Contract" Click="RenewContractButton_Clicked" Margin="5"/>
+                    <Button x:Name="trackOrderButton" Content="Track Order" Click="TrackOrderButton_Clicked" Margin="5"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
+                    <TextBlock Text="Contract ID:"></TextBlock>
+                    <TextBox x:Name="contractID" Width="30" InputScope="Number" Text="1" Margin="5" />
+                    <Button x:Name="generateContractButton" Content="Generate Contract" Click="GenerateContractButton_Clicked" Margin="5"/>
+                </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
-                <Button x:Name="notificationButton" Content="Notifications" Click="NotificationButton_Clicked" Margin="5"/>
-                <Button x:Name="OrderHistoryButton" Content="Order History" Click="OrderHistoryButton_Clicked" Margin="5"/>
-                <Button x:Name="renewContractButton" Content="Renew Contract" Click="RenewContractButton_Clicked" Margin="5"/>
-                <Button x:Name="trackOrderButton" Content="Track Order" Click="TrackOrderButton_Clicked" Margin="5"/>
-            </StackPanel>
-        </StackPanel>
 
-        <Grid Grid.Row="4" Margin="0,30,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3.5*" />
-                <ColumnDefinition Width="1.5*" />
-            </Grid.ColumnDefinitions>
-            <local:BuyerWishlistControl ViewModel="{x:Bind ViewModel.Wishlist, Mode=OneWay}" />
-            <StackPanel Grid.Column="1">
-                <local:BuyerFamilySyncControl ViewModel="{x:Bind ViewModel.FamilySync, Mode=OneWay}" />
-                <local:BuyerMockAddPurchase ViewModel="{x:Bind ViewModel, Mode=OneWay}" VerticalAlignment="Center"
+            <Grid Grid.Row="4" Margin="0,30,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3.5*" />
+                    <ColumnDefinition Width="1.5*" />
+                </Grid.ColumnDefinitions>
+                <local:BuyerWishlistControl ViewModel="{x:Bind ViewModel.Wishlist, Mode=OneWay}" />
+                <StackPanel Grid.Column="1">
+                    <local:BuyerFamilySyncControl ViewModel="{x:Bind ViewModel.FamilySync, Mode=OneWay}" />
+                    <local:BuyerMockAddPurchase ViewModel="{x:Bind ViewModel, Mode=OneWay}" VerticalAlignment="Center"
                                             Margin="20" />
-            </StackPanel>
+                </StackPanel>
+            </Grid>
         </Grid>
-    </Grid>
+    </ScrollViewer>
 </Page>

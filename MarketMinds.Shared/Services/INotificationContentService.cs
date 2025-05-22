@@ -6,7 +6,9 @@ namespace MarketMinds.Shared.Services
     {
         string GetUnreadNotificationsCountText(int unreadCount);
         Task<List<Notification>> GetNotificationsForUser(int recipientId);
-        void MarkAsRead(int notificationId);
-        void AddNotification(Notification notification);
+
+        Task<List<Notification>> GetUnreadNotificationsForUser(int recipientId);
+        Task MarkAllAsRead(int notificationId);
+        Task AddNotification(Notification notification);
     }
 }

@@ -58,12 +58,13 @@ namespace Server.Repository
         /// </summary>
         /// <param name="notificationId">Notification ID of the notification to be marked as read.</param>
         /// <exception cref="ArgumentException">Thrown when the notification is not found.</exception>
-        public async void MarkAsRead(int notificationId)
+        public async Task MarkAsRead(int userId)
         {
-            OrderNotificationEntity notification = await this.dbContext.OrderNotifications.FindAsync(notificationId)
-                                                        ?? throw new ArgumentException("MarkAsRead: Notification not found");
-            notification.IsRead = true;
-            await this.dbContext.SaveChangesAsync();
+            int affected = await dbContext.Database.ExecuteSqlRawAsync(
+                "UPDATE OrderNotifications SET IsRead = 1 WHERE RecipientID = {0}", userId);
+
+            if (affected == 0)
+                throw new ArgumentException("MarkAsRead: Notification not found or not updated");
         }
 
         /// <summary>
@@ -71,7 +72,7 @@ namespace Server.Repository
         /// </summary>
         /// <param name="notification">Notification to be added to the database.</param>
         /// <exception cref="ArgumentNullException">When the notification is null.</exception>
-        public async void AddNotification(Notification notification)
+        public async Task AddNotification(Notification notification)
         {
             ArgumentNullException.ThrowIfNull(notification);
 
@@ -99,7 +100,7 @@ namespace Server.Repository
 
             switch (category)
             {
-                case "CONTRACT_RENEWAL_ACCEPTED":
+                case "CONTRACT_RENEWAL_ANS":
                     if (orderNotification.ContractID == null)
                     {
                         throw new ArgumentException("CreateFromOrderNotificationEntity: Contract ID is null");
@@ -166,7 +167,7 @@ namespace Server.Repository
                     int productIdAvailable = (int)orderNotification.ProductID;
                     return new ProductAvailableNotification(recipientId, timestamp, productIdAvailable, isRead, notificationId);
 
-                case "CONTRACT_RENEWAL_REQUEST":
+                case "CONTRACT_RENEWAL_REQ":
                     if (orderNotification.ContractID == null)
                     {
                         throw new ArgumentException("CreateFromOrderNotificationEntity: Contract ID is null");
