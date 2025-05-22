@@ -4,6 +4,12 @@
     ViewData["Title"] = "Home Page";
     var minPrice = ViewBag.MinPrice ?? 0;
     var maxPrice = ViewBag.MaxPrice ?? 1000;
+    
+    // Ensure we have sensible values
+    if (maxPrice <= minPrice)
+    {
+        maxPrice = minPrice + 100;
+    }
 }
 
 <div class="flex flex-col md:flex-row">
@@ -53,12 +59,19 @@
             <div class="mb-5">
                 <h4 class="font-medium mb-3 text-gray-700">Categories</h4>
                 <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1">
-                    @foreach (var category in ViewBag.Categories)
+                    @if (ViewBag.Categories != null)
                     {
-                        <button class="category-pill px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 text-sm transition-colors" 
-                                data-category-id="@category.Id">
-                            @category.Name
-                        </button>
+                        @foreach (var category in ViewBag.Categories)
+                        {
+                            <button class="category-pill px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 text-sm transition-colors" 
+                                    data-category-id="@category.Id">
+                                @category.Name
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-gray-500">No categories available</span>
                     }
                 </div>
             </div>
@@ -69,12 +82,19 @@
             <div class="mb-5">
                 <h4 class="font-medium mb-3 text-gray-700">Condition</h4>
                 <div class="flex flex-wrap gap-2">
-                    @foreach (var condition in ViewBag.Conditions)
+                    @if (ViewBag.Conditions != null)
                     {
-                        <button class="condition-pill px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 text-sm transition-colors" 
-                                data-condition-id="@condition.Id">
-                            @condition.Name
-                        </button>
+                        @foreach (var condition in ViewBag.Conditions)
+                        {
+                            <button class="condition-pill px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 text-sm transition-colors" 
+                                    data-condition-id="@condition.Id">
+                                @condition.Name
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-gray-500">No conditions available</span>
                     }
                 </div>
             </div>
@@ -82,7 +102,7 @@
             <hr class="my-4 border-t border-gray-200" />
             
             <!-- if there are any filters applied, show the clear filters button -->
-            <button id="clearFilters" class="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 transition mb-2 border border-gray-300">
+            <button id="clearFilters" class="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 transition mb-2 border border-gray-300 opacity-50 cursor-not-allowed" disabled>
                 <i class="fas fa-times mr-2"></i>Clear Filters
             </button>
         </div>
@@ -404,34 +424,38 @@
             }
             
             // Category filters
-            categoryPills.forEach(pill => {
-                pill.addEventListener('click', function() {
-                    // Toggle active state
-                    this.classList.toggle('bg-primary');
-                    this.classList.toggle('text-white');
-                    this.classList.toggle('border-primary');
-                    this.classList.toggle('bg-gray-100');
-                    this.classList.toggle('text-gray-700');
-                    this.classList.toggle('border-gray-200');
-                    
-                    applyFilters();
+            if (categoryPills && categoryPills.length > 0) {
+                categoryPills.forEach(pill => {
+                    pill.addEventListener('click', function() {
+                        // Toggle active state
+                        this.classList.toggle('bg-primary');
+                        this.classList.toggle('text-white');
+                        this.classList.toggle('border-primary');
+                        this.classList.toggle('bg-gray-100');
+                        this.classList.toggle('text-gray-700');
+                        this.classList.toggle('border-gray-200');
+                        
+                        applyFilters();
+                    });
                 });
-            });
+            }
             
             // Condition filters
-            conditionPills.forEach(pill => {
-                pill.addEventListener('click', function() {
-                    // Toggle active state
-                    this.classList.toggle('bg-primary');
-                    this.classList.toggle('text-white');
-                    this.classList.toggle('border-primary');
-                    this.classList.toggle('bg-gray-100');
-                    this.classList.toggle('text-gray-700');
-                    this.classList.toggle('border-gray-200');
-                    
-                    applyFilters();
+            if (conditionPills && conditionPills.length > 0) {
+                conditionPills.forEach(pill => {
+                    pill.addEventListener('click', function() {
+                        // Toggle active state
+                        this.classList.toggle('bg-primary');
+                        this.classList.toggle('text-white');
+                        this.classList.toggle('border-primary');
+                        this.classList.toggle('bg-gray-100');
+                        this.classList.toggle('text-gray-700');
+                        this.classList.toggle('border-gray-200');
+                        
+                        applyFilters();
+                    });
                 });
-            });
+            }
             
             // Clear filters
             if (clearFiltersBtn) {
@@ -464,67 +488,99 @@
             
             // Apply all filters
             function applyFilters() {
-                const activeTab = document.querySelector('.tab-btn.active').id;
-                const activeGridId = activeTab.replace('Tab', 'ProductsGrid');
-                const productItems = document.querySelectorAll(`#${activeGridId} .product-item`);
-                
-                const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
-                const maxPrice = priceRange ? parseInt(priceRange.value) : Number.MAX_SAFE_INTEGER;
-                
-                const selectedCategories = Array.from(categoryPills)
-                    .filter(pill => pill.classList.contains('bg-primary'))
-                    .map(pill => parseInt(pill.getAttribute('data-category-id')));
-                
-                const selectedConditions = Array.from(conditionPills)
-                    .filter(pill => pill.classList.contains('bg-primary'))
-                    .map(pill => parseInt(pill.getAttribute('data-condition-id')));
-                
-                productItems.forEach(item => {
-                    const price = parseFloat(item.dataset.price);
-                    const categoryId = parseInt(item.dataset.category);
-                    const conditionId = parseInt(item.dataset.condition);
-                    const title = item.dataset.title;
-                    const seller = item.dataset.seller;
+                try {
+                    const activeTab = document.querySelector('.tab-btn.active');
+                    if (!activeTab) return;
                     
-                    // Check all filter conditions
-                    const matchesSearch = searchValue === '' || 
-                                           title.includes(searchValue) || 
-                                           seller.includes(searchValue);
+                    const activeGridId = activeTab.id.replace('Tab', 'ProductsGrid');
+                    const activeGrid = document.getElementById(activeGridId);
+                    if (!activeGrid) return;
                     
-                    const matchesPrice = price <= maxPrice;
+                    const productItems = document.querySelectorAll(`#${activeGridId} .product-item`);
+                    if (!productItems || productItems.length === 0) return;
                     
-                    const matchesCategory = selectedCategories.length === 0 || 
-                                           selectedCategories.includes(categoryId);
+                    const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
+                    const maxPrice = priceRange ? parseInt(priceRange.value) : Number.MAX_SAFE_INTEGER;
                     
-                    const matchesCondition = selectedConditions.length === 0 || 
-                                            selectedConditions.includes(conditionId);
+                    const selectedCategories = categoryPills ? Array.from(categoryPills)
+                        .filter(pill => pill.classList.contains('bg-primary'))
+                        .map(pill => parseInt(pill.getAttribute('data-category-id') || '0')) : [];
                     
-                    // Show or hide based on filter match
-                    if (matchesSearch && matchesPrice && matchesCategory && matchesCondition) {
-                        item.classList.remove('hidden');
+                    const selectedConditions = conditionPills ? Array.from(conditionPills)
+                        .filter(pill => pill.classList.contains('bg-primary'))
+                        .map(pill => parseInt(pill.getAttribute('data-condition-id') || '0')) : [];
+                    
+                    productItems.forEach(item => {
+                        if (!item) return;
+                        
+                        const price = parseFloat(item.dataset.price || '0');
+                        const categoryId = parseInt(item.dataset.category || '0');
+                        const conditionId = parseInt(item.dataset.condition || '0');
+                        const title = (item.dataset.title || '').toLowerCase();
+                        const seller = (item.dataset.seller || '').toLowerCase();
+                        
+                        // Check all filter conditions
+                        const matchesSearch = !searchValue || 
+                                             title.includes(searchValue) || 
+                                             seller.includes(searchValue);
+                        
+                        const matchesPrice = !maxPrice || price <= maxPrice;
+                        
+                        const matchesCategory = !selectedCategories.length || 
+                                             selectedCategories.includes(categoryId);
+                        
+                        const matchesCondition = !selectedConditions.length || 
+                                              selectedConditions.includes(conditionId);
+                        
+                        // Show or hide based on filter match
+                        if (matchesSearch && matchesPrice && matchesCategory && matchesCondition) {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    });
+                    
+                    // Check if no products are visible
+                    const visibleProducts = activeGrid.querySelectorAll('.product-item:not(.hidden)');
+                    
+                    if (!visibleProducts.length) {
+                        let noResultsElement = activeGrid.querySelector('.no-results');
+                        
+                        if (!noResultsElement) {
+                            noResultsElement = document.createElement('div');
+                            noResultsElement.className = 'no-results col-span-full py-10 text-center text-gray-500';
+                            noResultsElement.innerHTML = '<i class="fas fa-search mb-3 text-3xl"></i><p>No products match your filters.</p>';
+                            activeGrid.appendChild(noResultsElement);
+                        }
                     } else {
-                        item.classList.add('hidden');
+                        const noResultsElement = activeGrid.querySelector('.no-results');
+                        if (noResultsElement) {
+                            noResultsElement.remove();
+                        }
                     }
-                });
-                
-                // Check if no products are visible
-                const activeGrid = document.getElementById(activeGridId);
-                const visibleProducts = activeGrid.querySelectorAll('.product-item:not(.hidden)');
-                
-                if (visibleProducts.length === 0) {
-                    let noResultsElement = activeGrid.querySelector('.no-results');
                     
-                    if (!noResultsElement) {
-                        noResultsElement = document.createElement('div');
-                        noResultsElement.className = 'no-results col-span-full py-10 text-center text-gray-500';
-                        noResultsElement.innerHTML = '<i class="fas fa-search mb-3 text-3xl"></i><p>No products match your filters.</p>';
-                        activeGrid.appendChild(noResultsElement);
-                    }
+                    // Update clear filters button visibility
+                    updateClearFiltersVisibility();
+                } catch (error) {
+                    console.error("Error applying filters:", error);
+                }
+            }
+            
+            // Update clear filters button visibility
+            function updateClearFiltersVisibility() {
+                if (!clearFiltersBtn) return;
+                
+                const hasActiveSearch = searchInput && searchInput.value.trim().length > 0;
+                const hasActivePrice = priceRange && parseInt(priceRange.value) > parseInt(priceRange.min);
+                const hasActiveCategories = categoryPills && Array.from(categoryPills).some(pill => pill.classList.contains('bg-primary'));
+                const hasActiveConditions = conditionPills && Array.from(conditionPills).some(pill => pill.classList.contains('bg-primary'));
+                
+                if (hasActiveSearch || hasActivePrice || hasActiveCategories || hasActiveConditions) {
+                    clearFiltersBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    clearFiltersBtn.disabled = false;
                 } else {
-                    const noResultsElement = activeGrid.querySelector('.no-results');
-                    if (noResultsElement) {
-                        noResultsElement.remove();
-                    }
+                    clearFiltersBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    clearFiltersBtn.disabled = true;
                 }
             }
             
