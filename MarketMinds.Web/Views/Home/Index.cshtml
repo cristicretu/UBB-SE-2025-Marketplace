@@ -10,6 +10,36 @@
     {
         maxPrice = minPrice + 100;
     }
+
+       
+    // Add user role check similar to _Layout.cshtml
+    bool isAuthenticated = User.Identity?.IsAuthenticated == true && UserSession.CurrentUserId.HasValue;
+    
+    int userType = 0;
+    if (isAuthenticated && !string.IsNullOrEmpty(UserSession.CurrentUserRole))
+    {
+        if (int.TryParse(UserSession.CurrentUserRole, out int parsedType))
+        {
+            userType = parsedType;
+        }
+        else
+        {
+            switch (UserSession.CurrentUserRole)
+            {
+                case "Admin": userType = 1; break;
+                case "Buyer": userType = 2; break;
+                case "Seller": userType = 3; break;
+                default: userType = 0; break;
+            }
+        }
+    }
+    
+    bool isAdmin = isAuthenticated && userType == 1;
+    bool isBuyer = isAuthenticated && userType == 2;
+    bool isSeller = isAuthenticated && userType == 3;
+    
+    // Check if user can make purchases (admins and buyers)
+    bool canPurchase = isAdmin || isBuyer;
 }
 
 <div class="flex flex-col md:flex-row">
@@ -194,7 +224,7 @@
                             </div>
                         </a>
                         <div class="px-4 pb-4">
-                            @if (User.Identity.IsAuthenticated)
+                            @if (User.Identity.IsAuthenticated && canPurchase)
                             {
                                 <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post">
                                     <input type="hidden" name="productId" value="@item.Id" />
@@ -204,6 +234,9 @@
                                         Add to Cart
                                     </button>
                                 </form>
+                            }
+                            else if (isSeller)
+                            {
                             }
                             else
                             {

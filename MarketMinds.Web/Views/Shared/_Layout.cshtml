@@ -94,8 +94,21 @@
                                         class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Account</a>
                                     <a asp-controller="Order" asp-action="OrderHistory" 
                                         class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Orders</a>
-                                    <a asp-controller="Review" asp-action="MyReviews" 
-                                        class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
+                                    @if (isBuyer)
+                                    {
+                                        <a href="http://localhost:3000/Reviews/ReviewsGiven" 
+                                            class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
+                                    }
+                                    else if (isSeller)
+                                    {
+                                        <a href="http://localhost:3000/Reviews/ReviewsReceived" 
+                                            class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Review" asp-action="MyReviews" 
+                                            class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
+                                    }
                                     <div class="border-t border-gray-100"></div>
                                     <form asp-controller="Account" asp-action="Logout" method="post">
                                         @Html.AntiForgeryToken()
