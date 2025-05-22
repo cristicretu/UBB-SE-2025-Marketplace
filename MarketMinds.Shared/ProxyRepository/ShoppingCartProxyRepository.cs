@@ -1,19 +1,65 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using System.Net.Http.Json;
-
+using Microsoft.Extensions.Configuration;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MarketMinds.Shared.ProxyRepository
 {
     public class ShoppingCartProxyRepository : IShoppingCartRepository
     {
-        private const string ApiBaseRoute = "api/shoppingcart";
+        private const string ApiBaseRoute = "shoppingcart";
         private readonly HttpClient httpClient;
+        private readonly JsonSerializerOptions jsonOptions;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShoppingCartProxyRepository"/> class with a base API URL.
+        /// </summary>
+        /// <param name="baseApiUrl">The base URL of the API.</param>
         public ShoppingCartProxyRepository(string baseApiUrl)
         {
             this.httpClient = new HttpClient();
             this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
+
+            // Configure JSON options
+            jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            // Add a converter to handle Product deserialization
+            jsonOptions.Converters.Add(new JsonStringEnumConverter());
+            jsonOptions.Converters.Add(new ProductJsonConverter());
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShoppingCartProxyRepository"/> class with configuration.
+        /// </summary>
+        /// <param name="configuration">The configuration containing API settings.</param>
+        public ShoppingCartProxyRepository(IConfiguration configuration)
+        {
+            this.httpClient = new HttpClient();
+            var baseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
+            if (!baseUrl.EndsWith("/"))
+            {
+                baseUrl += "/";
+            }
+            this.httpClient.BaseAddress = new System.Uri(baseUrl + "api/");
+
+            // Configure JSON options
+            jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            // Add a converter to handle Product deserialization
+            jsonOptions.Converters.Add(new JsonStringEnumConverter());
+            jsonOptions.Converters.Add(new ProductJsonConverter());
         }
 
         public async Task AddProductToCartAsync(int buyerId, int productId, int quantity)
@@ -44,13 +90,9 @@ namespace MarketMinds.Shared.ProxyRepository
             var response = await this.httpClient.GetAsync(requestUri);
             await this.ThrowOnError(nameof(GetCartItemsAsync), response);
 
-            var result = await response.Content.ReadFromJsonAsync<List<Product>>();
-            if (result == null)
-            {
-                result = new List<Product>();
-            }
-
-            return result;
+            var json = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<List<Product>>(json, jsonOptions);
+            return result ?? new List<Product>();
         }
 
         public async Task<int> GetProductQuantityAsync(int buyerId, int productId)
@@ -93,6 +135,32 @@ namespace MarketMinds.Shared.ProxyRepository
                     errorMessage = response.ReasonPhrase;
                 }
                 throw new Exception($"{methodName}: {errorMessage}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// JSON converter for handling Product deserialization
+    /// </summary>
+    public class ProductJsonConverter : JsonConverter<Product>
+    {
+        public override Product Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            // Create a BuyProduct instance since that's what we expect from the server
+            return JsonSerializer.Deserialize<BuyProduct>(ref reader, options) ??
+                throw new JsonException("Failed to deserialize BuyProduct");
+        }
+
+        public override void Write(Utf8JsonWriter writer, Product value, JsonSerializerOptions options)
+        {
+            // Serialize as BuyProduct since that's what we're using
+            if (value is BuyProduct buyProduct)
+            {
+                JsonSerializer.Serialize(writer, buyProduct, options);
+            }
+            else
+            {
+                throw new JsonException($"Cannot serialize {value.GetType()} as Product");
             }
         }
     }

@@ -11,6 +11,7 @@
             <h2 class="text-2xl font-semibold text-gray-800">Billing Information</h2>
             
             <form asp-action="BillingInfo" method="post" class="space-y-4">
+                @Html.ValidationSummary(false, "", new { @class = "text-red-500 mb-4 p-3 border border-red-300 bg-red-50 rounded" })
                 <input type="hidden" asp-for="OrderHistoryID" />
                 
                 <div class="space-y-4">
@@ -98,7 +99,14 @@
                     {
                         <div class="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
                             <p class="font-semibold text-gray-800">Product name: <span class="font-normal">@product.Title</span></p>
-                            <p class="font-semibold text-gray-800">Price: <span class="font-normal">@product.Price.ToString("C")</span></p>
+                            @if (product is MarketMinds.Shared.Models.BuyProduct buyProduct)
+                            {
+                                <p class="font-semibold text-gray-800">Price: <span class="font-normal">@((buyProduct.Price * buyProduct.Stock).ToString("0.00") + " €")</span></p>
+                            }
+                            else
+                            {
+                                <p class="font-semibold text-gray-800">Price: <span class="font-normal">@(product.Price.ToString("0.00") + " €")</span></p>
+                            }
                             
                             @if (product.SellerId > 0)
                             {

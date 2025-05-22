@@ -1,4 +1,4 @@
-﻿// <copyright file="TrackedOrderProxyRepository.cs" company="PlaceholderCompany">
+// <copyright file="TrackedOrderProxyRepository.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -140,6 +140,23 @@ namespace MarketMinds.Shared.ProxyRepository
 
             var response = await this.httpClient.PutAsJsonAsync($"{ApiBaseRoute}/{trackedOrderID}", updateRequest);
             await this.ThrowOnError(nameof(UpdateTrackedOrderAsync), response);
+        }
+
+        /// <inheritdoc />
+        public async Task<TrackedOrder> GetTrackedOrderByOrderIdAsync(int orderId)
+        {
+            // Fix: use the correct API endpoint that matches the server's routing
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/byorder/{orderId}");
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                throw new Exception($"No TrackedOrder with order id: {orderId}");
+            }
+
+            await this.ThrowOnError(nameof(GetTrackedOrderByOrderIdAsync), response);
+            
+            var trackedOrder = await response.Content.ReadFromJsonAsync<TrackedOrder>();
+            return trackedOrder;
         }
 
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)

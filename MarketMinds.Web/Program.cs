@@ -37,13 +37,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // Register shared service clients
 builder.Services.AddHttpClient("ApiClient", client =>
 {
-    // Get base URL from configuration
     var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
     if (string.IsNullOrEmpty(baseUrl))
     {
         baseUrl = "http://localhost:5001";
     }
-    // Make sure URL ends with slash
     if (!baseUrl.EndsWith("/"))
     {
         baseUrl += "/";
@@ -66,6 +64,22 @@ builder.Services.AddSingleton<ConversationProxyRepository>();
 builder.Services.AddSingleton<MessageProxyRepository>();
 builder.Services.AddSingleton<ReviewProxyRepository>();
 
+// Merged: Register all unique proxy repositories from both branches
+builder.Services.AddSingleton<OrderProxyRepository>(sp =>
+    new OrderProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<OrderSummaryProxyRepository>(sp =>
+    new OrderSummaryProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<TrackedOrderProxyRepository>(sp =>
+    new TrackedOrderProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<ShoppingCartProxyRepository>(sp =>
+    new ShoppingCartProxyRepository(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton<DummyWalletProxyRepository>(sp =>
+    new DummyWalletProxyRepository(
+        sp.GetRequiredService<IConfiguration>()["ApiSettings:BaseUrl"] ?? "http://localhost:5001"));
+
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
 builder.Services.AddTransient<IBorrowProductsService, MarketMinds.Shared.Services.BorrowProductsService.BorrowProductsService>();
@@ -73,6 +87,7 @@ builder.Services.AddTransient<IBorrowProductsService, MarketMinds.Shared.Service
 // Use the same instance for both interfaces
 builder.Services.AddTransient<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
 builder.Services.AddTransient<IBuyProductsService>(sp => sp.GetRequiredService<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>());
+builder.Services.AddTransient<IProductService>(sp => sp.GetRequiredService<MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>());
 
 builder.Services.AddTransient<IProductCategoryService, ProductCategoryService>();
 builder.Services.AddTransient<IProductConditionService, ProductConditionService>();
@@ -86,6 +101,14 @@ builder.Services.AddTransient<IConversationService, ConversationService>();
 builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();
 
+// Merged: Register all unique services from both branches
+builder.Services.AddTransient<IOrderService, OrderService>();
+builder.Services.AddTransient<ITrackedOrderService, TrackedOrderService>();
+builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
+builder.Services.AddTransient<IOrderSummaryService, OrderSummaryService>();
+builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
+builder.Services.AddTransient<IDummyWalletService, DummyWalletService>();
+
 // Register repository interfaces
 builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());
 builder.Services.AddTransient<IProductConditionRepository>(sp => sp.GetRequiredService<ProductConditionProxyRepository>());
@@ -97,6 +120,14 @@ builder.Services.AddTransient<MarketMinds.Shared.IRepository.IChatbotRepository>
 builder.Services.AddTransient<IConversationRepository>(sp => sp.GetRequiredService<ConversationProxyRepository>());
 builder.Services.AddTransient<IMessageRepository>(sp => sp.GetRequiredService<MessageProxyRepository>());
 builder.Services.AddTransient<IReviewRepository>(sp => sp.GetRequiredService<ReviewProxyRepository>());
+
+// Merged: Register all unique repository interfaces from both branches
+builder.Services.AddTransient<IOrderHistoryRepository>(sp => sp.GetRequiredService<OrderHistoryProxyRepository>());
+builder.Services.AddTransient<IOrderRepository>(sp => sp.GetRequiredService<OrderProxyRepository>());
+builder.Services.AddTransient<IOrderSummaryRepository>(sp => sp.GetRequiredService<OrderSummaryProxyRepository>());
+builder.Services.AddTransient<ITrackedOrderRepository>(sp => sp.GetRequiredService<TrackedOrderProxyRepository>());
+builder.Services.AddTransient<IShoppingCartRepository>(sp => sp.GetRequiredService<ShoppingCartProxyRepository>());
+builder.Services.AddTransient<IDummyWalletRepository>(sp => sp.GetRequiredService<DummyWalletProxyRepository>());
 
 var app = builder.Build();
 

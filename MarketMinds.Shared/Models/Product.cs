@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 // TODO: Define or import ProductCondition, ProductCategory, User if they are needed by the server
 namespace MarketMinds.Shared.Models // Adjusted namespace to server.Models
@@ -29,7 +30,8 @@ namespace MarketMinds.Shared.Models // Adjusted namespace to server.Models
 
         // merge-nicusor
         [Column("price")]
-        public int Price { get; set; }
+        [JsonPropertyName("price")]
+        public virtual double Price { get; set; }
 
         [Column("stock")]
         public int Stock { get; set; }
@@ -53,11 +55,23 @@ namespace MarketMinds.Shared.Models // Adjusted namespace to server.Models
         public virtual IEnumerable<Image> Images { get; set; } = new List<Image>();
 
         // Default constructor for JSON serialization/deserialization
-        protected Product()
+        [JsonConstructor]
+        public Product()
         {
             Id = 0;
             Title = string.Empty;
             Description = string.Empty;
+            Condition = null;
+            Category = null;
+            Seller = null;
+        }
+
+        // Protected constructor for derived classes
+        protected Product(int id, string title, string description)
+        {
+            Id = id;
+            Title = title;
+            Description = description;
             Condition = null;
             Category = null;
             Seller = null;
