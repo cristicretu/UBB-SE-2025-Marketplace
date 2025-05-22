@@ -167,16 +167,22 @@
 
         private async void GenerateContractButton_Clicked(object sender, RoutedEventArgs e)
         {
-            await contractViewModel.GenerateAndSaveContractAsync(Convert.ToInt64(this.contractID.Text));
-
-            var successDialog = new ContentDialog
+            if (long.TryParse(this.contractID.Text, out long contractId))
             {
-                Title = "Success",
-                Content = "Contract generated and saved successfully.",
-                CloseButtonText = "OK",
-                XamlRoot = this.Content.XamlRoot
-            };
-            await successDialog.ShowAsync();
+                await contractViewModel.GenerateAndSaveContractAsync(contractId);
+                var successDialog = new ContentDialog
+                {
+                    Title = "Success",
+                    Content = "Contract generated and saved successfully.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.Content.XamlRoot
+                };
+                await successDialog.ShowAsync();
+            }
+            else
+            {
+                await ShowErrorDialogAsync("Invalid Input", "The contract ID must be a valid number.");
+            }
         }
 
         private async void BorrowButton_Clicked(object sender, RoutedEventArgs e)
