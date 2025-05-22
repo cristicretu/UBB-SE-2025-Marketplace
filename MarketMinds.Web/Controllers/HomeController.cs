@@ -9,6 +9,7 @@ using MarketMinds.Shared.Services.ProductConditionService;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.BorrowProductsService;
 using Microsoft.AspNetCore.Authorization;
+using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace MarketMinds.Web.Controllers
 {
@@ -22,6 +23,7 @@ namespace MarketMinds.Web.Controllers
         private readonly IProductConditionService _conditionService;
         private readonly IImageUploadService _imageUploadService;
         private readonly IBorrowProductsService _borrowProductsService;
+        private readonly IBuyProductsService _buyProductsService;
 
         public HomeController(
             ILogger<HomeController> logger,
@@ -30,7 +32,8 @@ namespace MarketMinds.Web.Controllers
             IProductCategoryService categoryService,
             IProductConditionService conditionService,
             IImageUploadService imageUploadService,
-            IBorrowProductsService borrowProductsService)
+            IBorrowProductsService borrowProductsService,
+            IBuyProductsService buyProductsService)
         {
             _logger = logger;
             _auctionProductService = auctionProductService;
@@ -39,12 +42,56 @@ namespace MarketMinds.Web.Controllers
             _conditionService = conditionService;
             _imageUploadService = imageUploadService;
             _borrowProductsService = borrowProductsService;
+            _buyProductsService = buyProductsService;
         }
 
         [AllowAnonymous]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            try
+            {
+                // Work around the missing GetProducts method by creating an empty list initially
+                List<BuyProduct> buyProducts = new List<BuyProduct>();
+                
+                // Try to access the concrete implementation if possible
+                if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService concreteService)
+                {
+                    // Use reflection to call the GetProducts method
+                    var methodInfo = concreteService.GetType().GetMethod("GetProducts", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    if (methodInfo != null)
+                    {
+                        buyProducts = (List<BuyProduct>)methodInfo.Invoke(concreteService, null);
+                    }
+                }
+                
+                var auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
+                
+                // Get categories and conditions for filters
+                var categories = _categoryService.GetAllProductCategories();
+                var conditions = _conditionService.GetAllProductConditions();
+                
+                // Pass data to ViewBag for filters
+                ViewBag.Categories = categories;
+                ViewBag.Conditions = conditions;
+                
+                // Get min and max prices for the price filter
+                ViewBag.MinPrice = buyProducts.Any() ? (int)Math.Floor(buyProducts.Min(p => p.Price)) : 0;
+                ViewBag.MaxPrice = buyProducts.Any() ? (int)Math.Ceiling(buyProducts.Max(p => p.Price)) : 1000;
+                
+                var viewModel = new HomeViewModel
+                {
+                    BuyProducts = buyProducts,
+                    AuctionProducts = auctionProducts
+                };
+                
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading products for home page");
+                TempData["ErrorMessage"] = "Error loading products. Please try again later.";
+                return View(new HomeViewModel());
+            }
         }
 
         [AllowAnonymous]
