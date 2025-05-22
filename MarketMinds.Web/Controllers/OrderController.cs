@@ -160,7 +160,8 @@ namespace WebMarketplace.Controllers
         {
             try
             {
-                var trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(trackedOrderId);
+                // Fixed: Use GetTrackedOrderByIDAsync since we already have the tracked order ID
+                var trackedOrder = await _trackedOrderService.GetTrackedOrderByIDAsync(trackedOrderId);
                 if (trackedOrder == null)
                 {
                     return Json(new { success = false, message = "Tracked order not found" });
@@ -169,9 +170,10 @@ namespace WebMarketplace.Controllers
                 await _trackedOrderService.RevertToPreviousCheckpointAsync(trackedOrder);
                 return Json(new { success = true });
             }
-            catch
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error reverting checkpoint" });
+                _logger.LogError(ex, $"Error reverting checkpoint for tracked order ID {trackedOrderId}");
+                return Json(new { success = false, message = $"Error reverting checkpoint: {ex.Message}" });
             }
         }
 
@@ -203,12 +205,14 @@ namespace WebMarketplace.Controllers
             try
             {
                 checkpoint.TrackedOrderID = trackedOrderId;
+                _logger.LogInformation($"Adding checkpoint with status {checkpoint.Status} to tracked order {trackedOrderId}");
                 await _trackedOrderService.AddOrderCheckpointAsync(checkpoint);
                 return Json(new { success = true });
             }
-            catch
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error adding checkpoint" });
+                _logger.LogError(ex, $"Error adding checkpoint to tracked order {trackedOrderId}");
+                return Json(new { success = false, message = $"Error adding checkpoint: {ex.Message}" });
             }
         }
 
@@ -218,6 +222,7 @@ namespace WebMarketplace.Controllers
         {
             try
             {
+                _logger.LogInformation($"Updating checkpoint {checkpoint.CheckpointID} with status {checkpoint.Status} for tracked order {trackedOrderId}");
                 await _trackedOrderService.UpdateOrderCheckpointAsync(
                     checkpoint.CheckpointID,
                     checkpoint.Timestamp,
@@ -226,9 +231,10 @@ namespace WebMarketplace.Controllers
                     checkpoint.Status);
                 return Json(new { success = true });
             }
-            catch
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error updating checkpoint" });
+                _logger.LogError(ex, $"Error updating checkpoint {checkpoint.CheckpointID} for tracked order {trackedOrderId}");
+                return Json(new { success = false, message = $"Error updating checkpoint: {ex.Message}" });
             }
         }
 

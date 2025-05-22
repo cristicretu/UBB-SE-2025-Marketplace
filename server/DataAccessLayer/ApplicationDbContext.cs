@@ -524,9 +524,14 @@ namespace Server.DataAccessLayer
                     .IsRequired(); // to respect Maria's DB design
 
                 entity.Property(orderCheckpoint => orderCheckpoint.Status)
-                    .IsRequired(); // to respect Maria's DB design
+                    .IsRequired() // to respect Maria's DB design
+                    .HasColumnType("int"); // Explicitly specify that the Status enum is stored as an integer
 
-                entity.ToTable(orderCheckpoint => orderCheckpoint.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')"));
+                // Remove the string-based constraint since we're now using integer values
+                // entity.ToTable(orderCheckpoint => orderCheckpoint.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')"));
+                
+                // Add a new constraint with integer values if needed
+                entity.ToTable(orderCheckpoint => orderCheckpoint.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN (0, 1, 2, 3, 4, 5)"));
             });
 
             // --- UserWaitList Configuration --- merge-nicusor
