@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MarketMinds.Web.Controllers
 {
-    [Authorize]
+    // [Authorize] // Temporarily commented out for testing
     [Route("Reviews")]
     public class ReviewsController : Controller
     {
@@ -96,9 +96,11 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Reviews/Create/{sellerId:int}
+        // [Authorize] // Temporarily commented out for testing
         [HttpGet("Create/{sellerId:int}")]
         public async Task<IActionResult> Create(int sellerId)
         {
+            _logger.LogInformation("GET /Reviews/Create/{SellerId} action entered", sellerId);
             _logger.LogInformation("Create method called with seller ID: {SellerId}", sellerId);
             try
             {

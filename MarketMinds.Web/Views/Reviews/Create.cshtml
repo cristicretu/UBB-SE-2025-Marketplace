@@ -26,7 +26,7 @@ else
             <h1 class="text-3xl font-bold mb-6">Write a Review for @seller.Username</h1>
             
             <div class="bg-white rounded-lg shadow-md p-6">
-                <form asp-action="Create" method="post">
+                <form asp-controller="Reviews" asp-action="Create" asp-route-sellerId="" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
                     <input type="hidden" asp-for="SellerId" value="@seller.Id" />
                     
