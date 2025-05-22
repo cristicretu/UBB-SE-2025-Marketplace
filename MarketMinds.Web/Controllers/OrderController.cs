@@ -109,7 +109,8 @@ namespace WebMarketplace.Controllers
                     if (order == null)
                     {
                         _logger.LogError($"Order not found for orderId: {orderId}");
-                        return Json(new { success = false, message = "Order not found" });
+                        ViewBag.ErrorMessage = $"Order with ID {orderId} could not be found. Please check the order ID and try again.";
+                        return View("TrackOrder"); // Return to the tracking form with an error
                     }
                     
                     var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(order.OrderSummaryID);
@@ -125,7 +126,8 @@ namespace WebMarketplace.Controllers
                 }
                 catch (Exception ex) {
                     _logger.LogError(ex, $"Error creating tracked order for orderId: {orderId}");
-                    return Json(new { success = false, message = "Error creating tracked order" });
+                    ViewBag.ErrorMessage = $"Error creating tracked order: {ex.Message}. Please try again later.";
+                    return View("TrackOrder"); // Return to the tracking form with an error
                 }
                 
                 _logger.LogInformation($"Creating new tracked order for orderId: {orderId}");
@@ -133,7 +135,8 @@ namespace WebMarketplace.Controllers
                 if (trackedOrder == null)
                 {
                     _logger.LogError($"Failed to create tracked order for orderId: {orderId}");
-                    return Json(new { success = false, message = "Failed to create tracked order" });
+                    ViewBag.ErrorMessage = "Failed to create tracked order. Please try again later.";
+                    return View("TrackOrder"); // Return to the tracking form with an error
                 }
                 _logger.LogInformation($"Created new tracked order for orderId: {orderId}");
                 return View("TrackedOrder", trackedOrder);
