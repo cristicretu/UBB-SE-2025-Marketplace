@@ -17,73 +17,88 @@
                 <RowDefinition Height="Auto"/>
                 <!-- Seller Info -->
                 <RowDefinition Height="Auto"/>
-                <!-- Controls (Search, Filter, etc.) -->
+                <!-- Controls -->
                 <RowDefinition Height="*"/>
                 <!-- Products Grid -->
             </Grid.RowDefinitions>
 
-            <!-- Seller Profile Section -->
-            <Border Background="#0D47A1">
-                <StackPanel Orientation="Horizontal" >
-                    <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
-                        <!--" Profile Picture doesn't show right-->
-                        <PersonPicture x:Name="ProfilePicture" DisplayName="{Binding StoreName}" Margin="180,0,40,0" Foreground="#0D47A1" Background="AliceBlue"/>
-                        <StackPanel MaxWidth="300">
-                            <TextBlock x:Name="DisplayName" Text="{Binding StoreName}" FontSize="36" FontWeight="Bold" TextWrapping="Wrap" Margin="0,20,0,10" Foreground="AliceBlue" />
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Email:" FontWeight="Bold" Foreground="AliceBlue" />
-                                <TextBlock x:Name="Email" Text="{Binding Email}" Margin="5,0,0,0" TextWrapping="Wrap" Foreground="AliceBlue" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Phone:" FontWeight="Bold" Foreground="AliceBlue" />
-                                <TextBlock x:Name="PhoneNumber" Text="{Binding PhoneNumber}" Margin="5,0,0,0" TextWrapping="Wrap" Foreground="AliceBlue" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Address:" FontWeight="Bold" Foreground="AliceBlue" />
-                                <TextBlock x:Name="Address" Text="{Binding Address}" Margin="5,0,0,0" TextWrapping="Wrap" Foreground="AliceBlue" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Description: " FontWeight="Bold" Foreground="AliceBlue" />
-                                <TextBlock x:Name="Description" Text="{Binding Description}" Margin="5,0,0,40" TextWrapping="Wrap" Foreground="AliceBlue" />
-                            </StackPanel>
+            <!-- Seller Profile Header Section -->
+            <Border Background="#0D47A1" Padding="20">
+                <StackPanel Orientation="Horizontal">
+                    <!-- Profile Picture -->
+                    <PersonPicture x:Name="ProfilePicture" DisplayName="{Binding StoreName}" 
+                                   Width="90" Height="90" Margin="0,0,30,0"
+                                   Foreground="#0D47A1" Background="AliceBlue"/>
+
+                    <!-- Profile Info -->
+                    <StackPanel MaxWidth="350">
+                        <TextBlock Text="{Binding StoreName}" FontSize="32" FontWeight="Bold" Foreground="AliceBlue" Margin="0,0,0,10" />
+
+                        <!-- Email -->
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Email:" FontWeight="Bold" Foreground="AliceBlue" />
+                            <TextBlock Text="{Binding Email}" Margin="5,0,0,0" Foreground="AliceBlue" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
-                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="90,0,0,0">
-                            <StackPanel Orientation="Horizontal" Margin="22,0,0,0">
-                                <TextBlock Text="Followers:" FontWeight="Bold" FontSize="18" Foreground="AliceBlue" />
-                                <TextBlock x:Name="Followers" Text="{Binding FollowersCount}" Margin="5,0,0,0" FontSize="18" Foreground="AliceBlue" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
-                                <TextBlock Text="Trust Score:" FontWeight="Bold" FontSize="18" Foreground="AliceBlue"/>
-                                <ProgressBar x:Name="TrustScore" Value="{Binding TrustScore}" Maximum="100" Width="100" Height="20" Margin="5,0,0,0" Foreground="AliceBlue" />
-                            </StackPanel>
+
+                        <!-- Phone -->
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Phone:" FontWeight="Bold" Foreground="AliceBlue" />
+                            <TextBlock Text="{Binding PhoneNumber}" Margin="5,0,0,0" Foreground="AliceBlue" />
                         </StackPanel>
-                        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="50,0,0,0">
-                            <Button Content="Update Profile" Click="OnUpdateProfileButtonClick" Width="180" Height="55" Margin="10,0,0,10" Style="{StaticResource UpdateButton}"/>
+
+                        <!-- Address -->
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Address:" FontWeight="Bold" Foreground="AliceBlue" />
+                            <TextBlock Text="{Binding StoreAddress}" Margin="5,0,0,0" Foreground="AliceBlue" TextWrapping="Wrap" />
                         </StackPanel>
+
+                        <!-- Description -->
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Description:" FontWeight="Bold" Foreground="AliceBlue" />
+                            <TextBlock Text="{Binding StoreDescription}" Margin="5,0,0,0" Foreground="AliceBlue" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Stats -->
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="50,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Followers:" FontWeight="Bold" FontSize="18" Foreground="AliceBlue" />
+                            <TextBlock Text="{Binding FollowersCount}" Margin="5,0,0,0" FontSize="18" Foreground="AliceBlue" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <TextBlock Text="Trust Score:" FontWeight="Bold" FontSize="18" Foreground="AliceBlue" />
+                            <ProgressBar Value="{Binding TrustScore}" Maximum="100" Width="100" Height="20" Margin="5,0,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Update Profile Button -->
+                    <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="50,0,0,0">
+                        <Button Content="Update Profile" Click="OnUpdateProfileButtonClick" 
+                                Width="180" Height="55" Margin="10,0,0,10"
+                                Style="{StaticResource UpdateButton}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
 
-            <!-- Search & Controls Section -->
+            <!-- Search & Sort Controls -->
             <Grid Grid.Row="1" Margin="0,10,0,10">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1025"/>
-                    <!-- Search Box -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- Buttons -->
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Search Box -->
-                <TextBox PlaceholderText="Search" Grid.Column="0" Margin="180,0,10,0" Height="40" HorizontalAlignment="Stretch" TextChanged="OnSearchTextChanged" Background="#0D47A1" />
+                <TextBox Grid.Column="0" PlaceholderText="Search" Height="40"
+                         Margin="0,0,10,0" TextChanged="OnSearchTextChanged"
+                         Background="#0D47A1" Foreground="White"
+                         BorderBrush="Gray" Padding="10" />
 
-                <!-- Buttons -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <Button Content="Sort" Margin="5" MinWidth="120" Width="Auto" Style="{StaticResource PrimaryButton}" Click="OnSortButtonClick"/>
-                </StackPanel>
+                <Button Grid.Column="1" Content="Sort" Width="120" Height="40" 
+                        Click="OnSortButtonClick" 
+                        Style="{StaticResource PrimaryButton}" />
             </Grid>
 
-            <!-- Product Grid (Using Only Grid) -->
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="180,0,0,0">
+            <!-- Product Grid -->
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding FilteredProducts}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -93,38 +108,40 @@
 
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="AliceBlue" Padding="10" CornerRadius="10" Margin="5" BorderBrush="#0D47A1" BorderThickness="1">
+                            <Border Background="AliceBlue" Padding="10" CornerRadius="10" Margin="5"
+                                    BorderBrush="#0D47A1" BorderThickness="1">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="$" FontSize="20" FontWeight="ExtraBold" Foreground="Green" Margin="0,0,0,0"/>
-                                        <TextBlock Text="{Binding Price}" FontSize="20" FontWeight="ExtraBold" Foreground="Green" Margin="0,0,0,0" TextAlignment="Right"/>
+                                        <TextBlock Text="$" FontSize="20" FontWeight="ExtraBold" Foreground="Green"/>
+                                        <TextBlock Text="{Binding Price}" FontSize="20" FontWeight="ExtraBold" Foreground="Green"/>
                                     </StackPanel>
-                                    <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Bold" Foreground="#0D47A1" Margin="0,0,0,0"/>
-                                    <TextBlock Text="{Binding Description}" FontSize="16" Margin="0,0,0,5" Foreground="#0D47A1"/>
-                                    <TextBlock Text="{Binding Stock}" FontSize="16" Foreground="{Binding Stock, Converter={StaticResource StockToColorConverter}}" Margin="0,0,0,5"/>
+                                    <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Bold" Foreground="#0D47A1"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="16" Foreground="#0D47A1" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Stock}" FontSize="16"
+                                               Foreground="{Binding Stock, Converter={StaticResource StockToColorConverter}}" />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-            
         </Grid>
-        
-        <!-- Notifications Panel (Fixed to the Right) -->
 
-        <StackPanel  Grid.Column="1" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10,30,30,30" Padding="10">
+        <!-- Notifications Panel (Floating Right Panel) -->
+        <StackPanel Grid.Column="1" Width="Auto" Height="Auto" 
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="10,30,30,30" Padding="10">
             <Expander
-                 IsExpanded="{Binding IsExpanderExpanded, Mode=TwoWay}"
-                 ExpandDirection="Down"
-                 VerticalAlignment="Top"
-                 Header="🔔 Notifications"
-                 Width="300"
-                 MaxHeight="200">       
+                IsExpanded="{Binding IsExpanderExpanded, Mode=TwoWay}"
+                ExpandDirection="Down"
+                VerticalAlignment="Top"
+                Header="🔔 Notifications"
+                Width="300"
+                MaxHeight="200">
                 <ListBox ItemsSource="{Binding Notifications}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" />
+                            <TextBlock Text="{Binding}" TextWrapping="Wrap" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -132,4 +149,3 @@
         </StackPanel>
     </Grid>
 </Page>
-    

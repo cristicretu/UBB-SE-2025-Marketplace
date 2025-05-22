@@ -100,9 +100,46 @@ namespace MarketMinds
         private static HttpClient httpClient;
         public static void ShowSellerProfile()
         {
-            var sellerProfileWindow = new Window();
-            sellerProfileWindow.Content = new MarketMinds.Views.SellerProfileView();
-            sellerProfileWindow.Activate();
+            Debug.WriteLine("ShowSellerProfile called");
+
+            try
+            {
+                // Create a new window
+                var sellerProfileWindow = new Window();
+
+                // First initialize the SellerService
+                // Change this line in ShowSellerProfile()
+                var sellerRepository = new SellerProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/");
+
+                var sellerService = new SellerService(sellerRepository);
+
+                // Initialize the ViewModel with the service and current user
+                if (CurrentUser == null)
+                {
+                    Debug.WriteLine("ERROR: CurrentUser is null in ShowSellerProfile");
+                    throw new InvalidOperationException("Cannot show seller profile: Current user is null");
+                }
+
+                // Create a frame to handle the navigation
+                var frame = new Microsoft.UI.Xaml.Controls.Frame();
+                sellerProfileWindow.Content = frame;
+
+                // Create and configure the view model
+                var viewModel = new SellerProfileViewModel(sellerService, CurrentUser);
+
+                // Navigate to the page with the ViewModel as parameter
+                frame.Navigate(typeof(MarketMinds.Views.SellerProfileView), viewModel);
+
+                // Now show the window
+                sellerProfileWindow.Activate();
+                Debug.WriteLine("Seller profile window activated with ViewModel");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ERROR showing seller profile: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+                ShowErrorDialog($"Could not open seller profile: {ex.Message}");
+            }
         }
 
         public static void ShowBuyerProfile()
@@ -151,6 +188,7 @@ namespace MarketMinds
                 }
             }
         }
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -213,64 +251,23 @@ namespace MarketMinds
             }
         }
 
-        private void ShowErrorDialog(string message)
+        // Helper method to show error dialogs from static methods
+        private static void ShowErrorDialog(string message)
         {
-            try
+            Debug.WriteLine($"Error dialog: {message}");
+
+            // Try to use MainWindow if it exists
+            if (MainWindow?.Content?.XamlRoot != null)
             {
-                Debug.WriteLine($"Attempting to show error dialog: {message}");
-
-                // We need to get the dispatcher queue for the UI thread
-                if (MainWindow != null)
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
                 {
-                    // For WinUI 3, we need to get the dispatcher from the window
-                    DispatcherQueue dispatcherQueue = MainWindow.DispatcherQueue;
+                    Title = "Error",
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = MainWindow.Content.XamlRoot
+                };
 
-                    if (dispatcherQueue != null)
-                    {
-                        bool queued = dispatcherQueue.TryEnqueue(() =>
-                        {
-                            try
-                            {
-                                Debug.WriteLine("Running dialog code on UI thread");
-
-                                if (MainWindow?.Content?.XamlRoot == null)
-                                {
-                                    Debug.WriteLine("Cannot show dialog: XamlRoot is null");
-                                    return;
-                                }
-
-                                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog()
-                                {
-                                    Title = "Application Error",
-                                    Content = message,
-                                    CloseButtonText = "OK",
-                                    XamlRoot = MainWindow.Content.XamlRoot
-                                };
-
-                                _ = dialog.ShowAsync();
-                                Debug.WriteLine("Error dialog queued for display");
-                            }
-                            catch (Exception dialogEx)
-                            {
-                                Debug.WriteLine($"Error showing error dialog: {dialogEx}");
-                            }
-                        });
-
-                        Debug.WriteLine($"Task queued to dispatcher: {queued}");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Could not get dispatcher queue from window");
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine("Cannot show error dialog: main window is null");
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error dispatching error dialog: {ex}");
+                _ = dialog.ShowAsync();
             }
         }
 

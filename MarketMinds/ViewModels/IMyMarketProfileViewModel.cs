@@ -17,12 +17,12 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Gets or sets the address.
         /// </summary>
-        string Address { get; set; }
+        string StoreAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the description.
         /// </summary>
-        string Description { get; set; }
+        string StoreDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the display name.
