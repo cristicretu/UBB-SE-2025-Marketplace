@@ -96,7 +96,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Reviews/Create/{sellerId:int}
-        // [Authorize] // Temporarily commented out for testing
+        [Authorize] // Re-enabled for proper authentication
         [HttpGet("Create/{sellerId:int}")]
         public async Task<IActionResult> Create(int sellerId)
         {
@@ -123,6 +123,14 @@ namespace MarketMinds.Web.Controllers
                 {
                     _logger.LogWarning("User not authenticated when trying to create review");
                     return RedirectToAction("Login", "Account");
+                }
+
+                // Prevent users from reviewing themselves
+                if (currentUser.Id == sellerId)
+                {
+                    _logger.LogWarning("User attempted to review themselves: {UserId}", currentUser.Id);
+                    TempData["ErrorMessage"] = "You cannot review yourself";
+                    return RedirectToAction("Index", "Home");
                 }
 
                 // Check if user has already reviewed this seller
