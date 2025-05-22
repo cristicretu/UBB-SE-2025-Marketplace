@@ -97,20 +97,17 @@ namespace WebMarketplace.Controllers
         {
             _logger.LogInformation($"TrackOrder action called with orderId: {orderId}");
             
+            hasControl &= IsUserSeller();
+            
             var trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(orderId);
             if (trackedOrder == null)
             {
-                _logger.LogWarning($"Tracked order not found for orderId: {orderId}");
-                
-                // Try to get the order details to get a proper delivery address
-                try {
-                    // Get the order first and then get its order summary
+                try
+                {
                     var order = await _orderService.GetOrderByIdAsync(orderId);
                     if (order == null)
                     {
-                        _logger.LogError($"Order not found for orderId: {orderId}");
-                        ViewBag.ErrorMessage = $"Order with ID {orderId} could not be found. Please check the order ID and try again.";
-                        return View("TrackOrder"); // Return to the tracking form with an error
+                        return ReturnErrorView("Order not found. Please check the order ID and try again.");
                     }
                     
                     var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(order.OrderSummaryID);
@@ -118,40 +115,37 @@ namespace WebMarketplace.Controllers
                     
                     await _trackedOrderService.CreateTrackedOrderForOrderAsync(
                         orderId, 
-                        DateOnly.FromDateTime(DateTime.Now.AddDays(7)), // Better estimate for delivery
+                        DateOnly.FromDateTime(DateTime.Now.AddDays(7)),
                         deliveryAddress,
                         OrderStatus.PROCESSING,
                         "Order received"
                     );
+                    
+                    trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(orderId);
+                    if (trackedOrder == null)
+                    {
+                        return ReturnErrorView("Failed to create tracked order. Please try again later.");
+                    }
                 }
-                catch (Exception ex) {
-                    _logger.LogError(ex, $"Error creating tracked order for orderId: {orderId}");
-                    ViewBag.ErrorMessage = $"Error creating tracked order: {ex.Message}. Please try again later.";
-                    return View("TrackOrder"); // Return to the tracking form with an error
-                }
-                
-                _logger.LogInformation($"Creating new tracked order for orderId: {orderId}");
-                trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(orderId);
-                if (trackedOrder == null)
+                catch (Exception ex)
                 {
-                    _logger.LogError($"Failed to create tracked order for orderId: {orderId}");
-                    ViewBag.ErrorMessage = "Failed to create tracked order. Please try again later.";
-                    return View("TrackOrder"); // Return to the tracking form with an error
+                    return ReturnErrorView($"Error creating tracked order: {ex.Message}. Please try again later.");
                 }
-                _logger.LogInformation($"Created new tracked order for orderId: {orderId}");
-                return View("TrackedOrder", trackedOrder);
             }
 
-            if (hasControl)
-            {
-                _logger.LogInformation($"Rendering TrackedOrderControl view for orderId: {orderId}");
-                return View("TrackedOrderControl", trackedOrder);
-            }
-            else
-            {
-                _logger.LogInformation($"Rendering TrackedOrder view for orderId: {orderId}");
-                return View("TrackedOrder", trackedOrder);
-            }
+            return hasControl ? View("TrackedOrderControl", trackedOrder) : View("TrackedOrder", trackedOrder);
+        }
+
+        private bool IsUserSeller()
+        {
+            return UserSession.CurrentUserRole == "3" || UserSession.CurrentUserRole == "Seller";
+        }
+
+        private IActionResult ReturnErrorView(string errorMessage)
+        {
+            _logger.LogError(errorMessage);
+            ViewBag.ErrorMessage = errorMessage;
+            return View("TrackOrder");
         }
 
         // POST: Order/RevertCheckpoint

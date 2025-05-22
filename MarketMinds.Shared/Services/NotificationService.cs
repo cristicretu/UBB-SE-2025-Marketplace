@@ -1,12 +1,26 @@
+using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.ProxyRepository;
+using Microsoft.Extensions.Configuration;
+
 namespace MarketMinds.Shared.Services
 {
     /// <summary>
-    /// Service for managing notifications
+    /// Service for managing notifications -> THIS ISN'T BEING USED !! GO TO NotificationContentService
     /// </summary>
     public class NotificationService : INotificationService
     {
         // This is a placeholder implementation. In a real app, this would use a database
         private static readonly Dictionary<int, List<NotificationModel>> UserNotifications = new();
+        private readonly INotificationRepository notificationRepository;
+
+        public NotificationService()
+        {
+            // change back to the original line when deploying
+
+            // this.notificationRepository = new NotificationProxyRepository(AppConfig.GetBaseApiUrl());
+            this.notificationRepository = new NotificationProxyRepository("http://localhost:5001");
+        }
 
         /// <summary>
         /// Gets the number of unread notifications for a user
