@@ -43,7 +43,7 @@ namespace MarketMinds.Shared.ProxyRepository
         // Raw data access methods
         public async Task<string> GetUserByIdRawAsync(int userId)
         {
-            var response = await httpClient.GetAsync($"account/{userId}");
+            var response = await httpClient.GetAsync($"users/{userId}");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
         }

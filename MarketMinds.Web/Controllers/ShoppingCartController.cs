@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Services;
-using MarketMinds.Shared.Services.Interfaces;
-using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services.BuyProductsService;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace WebMarketplace.Controllers
 {
-    // [Authorize]
+    [Authorize]
     public class ShoppingCartController : Controller
     {
         private readonly IShoppingCartService _shoppingCartService;
@@ -101,6 +100,7 @@ namespace WebMarketplace.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
         {
             try
@@ -268,17 +268,15 @@ namespace WebMarketplace.Controllers
         private int GetCurrentBuyerId()
         {
             // In a real application, you would get the current user's ID from claims
-            //var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-            //{
-            //    // If not logged in or ID not available, redirect to login
-            //    throw new InvalidOperationException("User is not authenticated or buyer ID not available");
-            //}
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                // If not logged in or ID not available, redirect to login
+                throw new InvalidOperationException("User is not authenticated or buyer ID not available");
+            }
 
-            //return userId;
-
-            return UserSession.CurrentUserId ?? 1; // For testing purposes, return a hardcoded buyer ID
+            return userId;
         }
     }
 }

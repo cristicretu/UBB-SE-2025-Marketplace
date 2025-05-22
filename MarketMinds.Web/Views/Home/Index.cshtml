@@ -1,46 +1,652 @@
+@model MarketMinds.Web.Models.HomeViewModel
+
 @{
     ViewData["Title"] = "Home Page";
+    var minPrice = ViewBag.MinPrice ?? 0;
+    var maxPrice = ViewBag.MaxPrice ?? 1000;
+    
+    // Ensure we have sensible values
+    if (maxPrice <= minPrice)
+    {
+        maxPrice = minPrice + 100;
+    }
+
+       
+    // Add user role check similar to _Layout.cshtml
+    bool isAuthenticated = User.Identity?.IsAuthenticated == true && UserSession.CurrentUserId.HasValue;
+    
+    int userType = 0;
+    if (isAuthenticated && !string.IsNullOrEmpty(UserSession.CurrentUserRole))
+    {
+        if (int.TryParse(UserSession.CurrentUserRole, out int parsedType))
+        {
+            userType = parsedType;
+        }
+        else
+        {
+            switch (UserSession.CurrentUserRole)
+            {
+                case "Admin": userType = 1; break;
+                case "Buyer": userType = 2; break;
+                case "Seller": userType = 3; break;
+                default: userType = 0; break;
+            }
+        }
+    }
+    
+    bool isAdmin = isAuthenticated && userType == 1;
+    bool isBuyer = isAuthenticated && userType == 2;
+    bool isSeller = isAuthenticated && userType == 3;
+    
+    // Check if user can make purchases (admins and buyers)
+    bool canPurchase = isAdmin || isBuyer;
 }
 
-<div class="text-center">
-    <h1 class="text-4xl font-bold mb-4">Welcome to MarketMinds</h1>
-    <p class="text-xl mb-6">Your ultimate marketplace for buying, selling, borrowing, and auctioning products.</p>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
-        <a href="@Url.Action("Index", "AuctionProducts")" class="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
-            <div class="text-blue-600 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-            </div>
-            <h2 class="text-xl font-bold mb-2">Auction Products</h2>
-            <p class="text-gray-600">Browse and bid on available auction items.</p>
-        </a>
+<div class="flex flex-col md:flex-row">
+    <!-- Sidebar with filters (collapsible) -->
+    <div id="filterSidebar" class="w-full md:w-72 bg-white p-5 rounded-lg shadow-sm md:mr-5 mb-5 md:mb-0 border border-gray-200">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <i class="fas fa-filter mr-2 text-gray-600"></i>
+                Filters
+            </h3>
+            <button id="toggleFilters" class="md:hidden text-gray-500 hover:text-gray-700">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
         
-        <a href="@Url.Action("Index", "BuyProducts")" class="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
-            <div class="text-green-600 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
+        <div id="filterContent" class="filter-content">
+            <!-- Search bar -->
+            <div class="mb-5">
+                <div class="relative">
+                    <input type="text" id="searchInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition" placeholder="Search products...">
+                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
             </div>
-            <h2 class="text-xl font-bold mb-2">Buy Products</h2>
-            <p class="text-gray-600">Purchase items directly at fixed prices.</p>
-        </a>
-        
-        <a href="@Url.Action("Index", "BorrowProducts")" class="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
-            <div class="text-purple-600 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
+            
+            <hr class="my-4 border-t border-gray-200" />
+            
+            <!-- Price Range -->
+            <div class="mb-5">
+                <h4 class="font-medium mb-3 text-gray-700">Price Range</h4>
+                <div class="space-y-3">
+                    <div>
+                        <input type="range" id="priceRange" class="w-full accent-primary" min="@minPrice" max="@maxPrice" step="10" value="@minPrice">
+                        <div class="flex justify-between text-sm text-gray-600 mt-1">
+                            <span>$<span id="minPriceValue">@minPrice</span></span>
+                            <span>$<span id="currentPriceValue">@minPrice</span></span>
+                            <span>$<span id="maxPriceValue">@maxPrice</span></span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h2 class="text-xl font-bold mb-2">Borrow Products</h2>
-            <p class="text-gray-600">Borrow items for a period of time.</p>
-        </a>
+            
+            <hr class="my-4 border-t border-gray-200" />
+            
+            <!-- Categories -->
+            <div class="mb-5">
+                <h4 class="font-medium mb-3 text-gray-700">Categories</h4>
+                <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1">
+                    @if (ViewBag.Categories != null)
+                    {
+                        @foreach (var category in ViewBag.Categories)
+                        {
+                            <button class="category-pill px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 text-sm transition-colors" 
+                                    data-category-id="@category.Id">
+                                @category.Name
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-gray-500">No categories available</span>
+                    }
+                </div>
+            </div>
+            
+            <hr class="my-4 border-t border-gray-200" />
+            
+            <!-- Conditions -->
+            <div class="mb-5">
+                <h4 class="font-medium mb-3 text-gray-700">Condition</h4>
+                <div class="flex flex-wrap gap-2">
+                    @if (ViewBag.Conditions != null)
+                    {
+                        @foreach (var condition in ViewBag.Conditions)
+                        {
+                            <button class="condition-pill px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 text-sm transition-colors" 
+                                    data-condition-id="@condition.Id">
+                                @condition.Name
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-gray-500">No conditions available</span>
+                    }
+                </div>
+            </div>
+            
+            <hr class="my-4 border-t border-gray-200" />
+            
+            <!-- if there are any filters applied, show the clear filters button -->
+            <button id="clearFilters" class="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 transition mb-2 border border-gray-300 opacity-50 cursor-not-allowed" disabled>
+                <i class="fas fa-times mr-2"></i>Clear Filters
+            </button>
+        </div>
     </div>
 
-    <div class="mt-12">
-        <a href="@Url.Action("Create", "Home")" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg">
-            Create New Product
-        </a>
+    <!-- Main content area -->
+    <div class="flex-1">
+        <!-- Product Type Tabs -->
+        <div class="mb-6">
+            <div class="flex gap-3">
+                <button id="buyTab" class="tab-btn active py-2 px-4 rounded-lg font-medium text-white bg-primary border border-primary shadow-sm hover:shadow-md transition-all flex items-center">
+                    <i class="fas fa-shopping-bag mr-2"></i>
+                    Buy Products
+                </button>
+                <button id="auctionTab" class="tab-btn py-2 px-4 rounded-lg font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:shadow-md transition-all flex items-center">
+                    <i class="fas fa-gavel mr-2"></i>
+                    Auction Products
+                </button>
+                <button id="borrowTab" class="tab-btn py-2 px-4 rounded-lg font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:shadow-md transition-all flex items-center">
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    Rent Products
+                </button>
+            </div>
+            
+            <hr class="mt-4 mb-6 border-t border-gray-200" />
+        </div>
+        
+        <!-- Products Grid - Buy Products (default view) -->
+        <div id="buyProducts" class="tab-content">
+            <div id="buyProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @foreach (var item in Model.BuyProducts)
+                {
+                    <div class="product-item bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:shadow-md border border-gray-200"
+                         data-price="@item.Price" 
+                         data-category="@(item.Category?.Id ?? 0)" 
+                         data-condition="@(item.Condition?.Id ?? 0)"
+                         data-title="@item.Title.ToLower()"
+                         data-seller="@(item.Seller?.Username?.ToLower() ?? "")">
+                        <a href="@Url.Action("Details", "BuyProducts", new { id = item.Id })" class="block">
+                            <div class="h-48 bg-gradient-to-r from-blue-50 to-blue-100 flex items-center justify-center">
+                                @if (item.Images != null && item.Images.Any())
+                                {
+                                    <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
+                                }
+                                else
+                                {
+                                    <div class="text-gray-400 text-lg">No Image</div>
+                                }
+                            </div>
+                            <div class="p-4">
+                                <div class="">
+                                    <h3 class="font-semibold text-lg mb-1 truncate">@item.Title</h3>
+                                    <p class="text-sm text-gray-500 mb-1">
+                                        @if (item.Category != null)
+                                        {
+                                            <span>@(item.Category.Name ?? "Uncategorized")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Uncategorized</span>
+                                        }
+                                        •
+                                        @if (item.Condition != null)
+                                        {
+                                            <span>@(item.Condition.Name ?? "Unknown condition")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Unknown condition</span>
+                                        }
+                                    </p>
+                                    <p class="text-sm text-gray-500 mb-2">
+                                        @if (item.Seller != null)
+                                        {
+                                            <span>Seller: @item.Seller.Username</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Unknown seller</span>
+                                        }
+                                    </p>
+                                    <div class="flex justify-between items-center">
+                                        <div class="font-bold text-primary">$@item.Price.ToString("N2")</div>
+                                        <button class="favorite-btn text-gray-400 hover:text-red-500 transition" data-product-id="@item.Id" onclick="event.stopPropagation();">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                        <div class="px-4 pb-4">
+                            @if (User.Identity.IsAuthenticated && canPurchase)
+                            {
+                                <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post">
+                                    <input type="hidden" name="productId" value="@item.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <button type="submit" class="w-full bg-primary text-white py-2 px-3 rounded-lg hover:bg-primary-dark transition flex items-center justify-center">
+                                        <i class="fas fa-shopping-cart mr-2"></i>
+                                        Add to Cart
+                                    </button>
+                                </form>
+                            }
+                            else if (isSeller)
+                            {
+                            }
+                            else
+                            {
+                                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" class="w-full bg-primary text-white py-2 px-3 rounded-lg hover:bg-primary-dark transition flex items-center justify-center inline-block text-center">
+                                    <i class="fas fa-shopping-cart mr-2"></i>
+                                    Add to Cart
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Products Grid - Auction Products (hidden initially) -->
+        <div id="auctionProducts" class="tab-content hidden">
+            <div id="auctionProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @foreach (var item in Model.AuctionProducts)
+                {
+                    <div class="product-item bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:shadow-md border border-gray-200"
+                         data-price="@item.CurrentPrice" 
+                         data-category="@(item.Category?.Id ?? 0)" 
+                         data-condition="@(item.Condition?.Id ?? 0)"
+                         data-title="@item.Title.ToLower()"
+                         data-seller="@(item.Seller?.Username?.ToLower() ?? "")">
+                        <a href="@Url.Action("Details", "AuctionProducts", new { id = item.Id })" class="block">
+                            <div class="h-48 bg-gradient-to-r from-purple-50 to-blue-50 flex items-center justify-center">
+                                @if (item.Images != null && item.Images.Any())
+                                {
+                                    <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
+                                }
+                                else
+                                {
+                                    <div class="text-gray-400 text-lg">No Image</div>
+                                }
+                            </div>
+                            <div class="p-4">
+                                <h2 class="text-xl font-semibold">@item.Title</h2>
+                                <p class="text-gray-600 mb-1">@(item.Category?.Name ?? "Uncategorized")</p>
+                                
+                                @if (!string.IsNullOrEmpty(item.Description) && item.Description.Length > 50)
+                                {
+                                    <p class="text-gray-700 text-sm mb-3">@(item.Description.Substring(0, 50))...</p>
+                                }
+                                else
+                                {
+                                    <p class="text-gray-700 text-sm mb-3">@(item.Description ?? "No description")</p>
+                                }
+                                
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-primary font-bold text-xl">$@item.CurrentPrice.ToString("N2")</span>
+                                    <span class="text-gray-600 text-sm">Starting: $@item.StartPrice.ToString("N2")</span>
+                                </div>
+                                
+                                <div class="text-orange-600 font-medium mb-3" data-countdown="@item.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                    Time left: 
+                                    @{
+                                        var timeLeft = item.EndTime - DateTime.Now;
+                                        if (timeLeft > TimeSpan.Zero)
+                                        {
+                                            @($"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-red-600">Auction Ended</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </a>
+                        <div class="px-4 pb-4">
+                            <button class="w-full bg-primary text-white py-2 rounded hover:bg-primary-dark transition flex items-center justify-center">
+                                <i class="fas fa-gavel mr-2"></i>
+                                Place Bid
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Products Grid - Borrow Products (hidden initially) -->
+        <div id="borrowProducts" class="tab-content hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                    <div class="relative pb-3/4 mb-3">
+                        <img src="https://via.placeholder.com/300" class="absolute h-full w-full object-cover rounded-md" alt="Rent Product">
+                    </div>
+                    <h3 class="font-semibold">Rent Item 1</h3>
+                    <p class="text-purple-600 font-semibold">$15/day</p>
+                    <p class="text-xs text-gray-500">Available: Jan 15 - Feb 28</p>
+                    <button class="mt-2 w-full bg-primary text-white py-1 px-2 rounded hover:bg-primary-dark">
+                        Rent Now
+                    </button>
+                </div>
+                
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                    <div class="relative pb-3/4 mb-3">
+                        <img src="https://via.placeholder.com/300" class="absolute h-full w-full object-cover rounded-md" alt="Rent Product">
+                    </div>
+                    <h3 class="font-semibold">Rent Item 2</h3>
+                    <p class="text-purple-600 font-semibold">$25/day</p>
+                    <p class="text-xs text-gray-500">Available: Now</p>
+                    <button class="mt-2 w-full bg-primary text-white py-1 px-2 rounded hover:bg-primary-dark">
+                        Rent Now
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab functionality
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Favorite buttons functionality
+            const favoriteButtons = document.querySelectorAll('.favorite-btn');
+            favoriteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const icon = this.querySelector('i');
+                    if (icon.classList.contains('far')) {
+                        // Add to favorites (change to solid heart)
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        icon.classList.add('text-red-500');
+                    } else {
+                        // Remove from favorites (change to outline heart)
+                        icon.classList.remove('fas');
+                        icon.classList.remove('text-red-500');
+                        icon.classList.add('far');
+                    }
+                    
+                    // Here you would typically make an AJAX call to update favorites in the backend
+                    const productId = this.getAttribute('data-product-id');
+                    console.log(`Toggled favorite for product ID: ${productId}`);
+                    
+                    // Prevent default behavior
+                    event.preventDefault();
+                });
+            });
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Deactivate all tabs
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active', 'text-white');
+                        btn.classList.add('text-gray-700', 'bg-white', 'border-gray-300');
+                        btn.classList.remove('bg-primary', 'bg-purple-600', 'bg-green-600', 'border-primary', 'border-purple-600', 'border-green-600');
+                    });
+                    
+                    // Hide all content
+                    tabContents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    
+                    // Activate clicked tab with appropriate color
+                    this.classList.add('active', 'text-white');
+                    this.classList.remove('text-gray-700', 'bg-white', 'border-gray-300');
+                    
+                    if (this.id === 'buyTab') {
+                        this.classList.add('bg-primary', 'border-primary');
+                    } else if (this.id === 'auctionTab') {
+                        this.classList.add('bg-purple-600', 'border-purple-600');
+                    } else if (this.id === 'borrowTab') {
+                        this.classList.add('bg-green-600', 'border-green-600');
+                    }
+                    
+                    // Show corresponding content
+                    const contentId = this.id.replace('Tab', 'Products');
+                    document.getElementById(contentId).classList.remove('hidden');
+                    
+                    // Apply filters to the newly shown tab
+                    applyFilters();
+                });
+            });
+            
+            // Mobile filter toggle
+            const toggleFiltersBtn = document.getElementById('toggleFilters');
+            const filterContent = document.getElementById('filterContent');
+            
+            if (toggleFiltersBtn && filterContent) {
+                toggleFiltersBtn.addEventListener('click', function() {
+                    filterContent.classList.toggle('hidden');
+                    const icon = this.querySelector('i');
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+                });
+                
+                // Show filters by default on desktop, hide on mobile
+                function handleResize() {
+                    if (window.innerWidth < 768) {
+                        filterContent.classList.add('hidden');
+                    } else {
+                        filterContent.classList.remove('hidden');
+                    }
+                }
+                
+                // Initial check and event listener for resize
+                handleResize();
+                window.addEventListener('resize', handleResize);
+            }
+            
+            // Filter functionality
+            const priceRange = document.getElementById('priceRange');
+            const currentPriceValue = document.getElementById('currentPriceValue');
+            const clearFiltersBtn = document.getElementById('clearFilters');
+            const searchInput = document.getElementById('searchInput');
+            const categoryPills = document.querySelectorAll('.category-pill');
+            const conditionPills = document.querySelectorAll('.condition-pill');
+            
+            // Price range slider
+            if (priceRange && currentPriceValue) {
+                priceRange.addEventListener('input', function() {
+                    currentPriceValue.textContent = this.value;
+                    applyFilters();
+                });
+            }
+            
+            // Search functionality
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    applyFilters();
+                });
+            }
+            
+            // Category filters
+            if (categoryPills && categoryPills.length > 0) {
+                categoryPills.forEach(pill => {
+                    pill.addEventListener('click', function() {
+                        // Toggle active state
+                        this.classList.toggle('bg-primary');
+                        this.classList.toggle('text-white');
+                        this.classList.toggle('border-primary');
+                        this.classList.toggle('bg-gray-100');
+                        this.classList.toggle('text-gray-700');
+                        this.classList.toggle('border-gray-200');
+                        
+                        applyFilters();
+                    });
+                });
+            }
+            
+            // Condition filters
+            if (conditionPills && conditionPills.length > 0) {
+                conditionPills.forEach(pill => {
+                    pill.addEventListener('click', function() {
+                        // Toggle active state
+                        this.classList.toggle('bg-primary');
+                        this.classList.toggle('text-white');
+                        this.classList.toggle('border-primary');
+                        this.classList.toggle('bg-gray-100');
+                        this.classList.toggle('text-gray-700');
+                        this.classList.toggle('border-gray-200');
+                        
+                        applyFilters();
+                    });
+                });
+            }
+            
+            // Clear filters
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', function() {
+                    // Reset search
+                    if (searchInput) searchInput.value = '';
+                    
+                    // Reset price range
+                    if (priceRange) {
+                        priceRange.value = priceRange.min;
+                        currentPriceValue.textContent = priceRange.min;
+                    }
+                    
+                    // Reset all category pills
+                    categoryPills.forEach(pill => {
+                        pill.classList.remove('bg-primary', 'text-white', 'border-primary');
+                        pill.classList.add('bg-gray-100', 'text-gray-700', 'border-gray-200');
+                    });
+                    
+                    // Reset all condition pills
+                    conditionPills.forEach(pill => {
+                        pill.classList.remove('bg-primary', 'text-white', 'border-primary');
+                        pill.classList.add('bg-gray-100', 'text-gray-700', 'border-gray-200');
+                    });
+                    
+                    // Apply filters (show all)
+                    applyFilters();
+                });
+            }
+            
+            // Apply all filters
+            function applyFilters() {
+                try {
+                    const activeTab = document.querySelector('.tab-btn.active');
+                    if (!activeTab) return;
+                    
+                    const activeGridId = activeTab.id.replace('Tab', 'ProductsGrid');
+                    const activeGrid = document.getElementById(activeGridId);
+                    if (!activeGrid) return;
+                    
+                    const productItems = document.querySelectorAll(`#${activeGridId} .product-item`);
+                    if (!productItems || productItems.length === 0) return;
+                    
+                    const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
+                    const maxPrice = priceRange ? parseInt(priceRange.value) : Number.MAX_SAFE_INTEGER;
+                    
+                    const selectedCategories = categoryPills ? Array.from(categoryPills)
+                        .filter(pill => pill.classList.contains('bg-primary'))
+                        .map(pill => parseInt(pill.getAttribute('data-category-id') || '0')) : [];
+                    
+                    const selectedConditions = conditionPills ? Array.from(conditionPills)
+                        .filter(pill => pill.classList.contains('bg-primary'))
+                        .map(pill => parseInt(pill.getAttribute('data-condition-id') || '0')) : [];
+                    
+                    productItems.forEach(item => {
+                        if (!item) return;
+                        
+                        const price = parseFloat(item.dataset.price || '0');
+                        const categoryId = parseInt(item.dataset.category || '0');
+                        const conditionId = parseInt(item.dataset.condition || '0');
+                        const title = (item.dataset.title || '').toLowerCase();
+                        const seller = (item.dataset.seller || '').toLowerCase();
+                        
+                        // Check all filter conditions
+                        const matchesSearch = !searchValue || 
+                                             title.includes(searchValue) || 
+                                             seller.includes(searchValue);
+                        
+                        const matchesPrice = !maxPrice || price <= maxPrice;
+                        
+                        const matchesCategory = !selectedCategories.length || 
+                                             selectedCategories.includes(categoryId);
+                        
+                        const matchesCondition = !selectedConditions.length || 
+                                              selectedConditions.includes(conditionId);
+                        
+                        // Show or hide based on filter match
+                        if (matchesSearch && matchesPrice && matchesCategory && matchesCondition) {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    });
+                    
+                    // Check if no products are visible
+                    const visibleProducts = activeGrid.querySelectorAll('.product-item:not(.hidden)');
+                    
+                    if (!visibleProducts.length) {
+                        let noResultsElement = activeGrid.querySelector('.no-results');
+                        
+                        if (!noResultsElement) {
+                            noResultsElement = document.createElement('div');
+                            noResultsElement.className = 'no-results col-span-full py-10 text-center text-gray-500';
+                            noResultsElement.innerHTML = '<i class="fas fa-search mb-3 text-3xl"></i><p>No products match your filters.</p>';
+                            activeGrid.appendChild(noResultsElement);
+                        }
+                    } else {
+                        const noResultsElement = activeGrid.querySelector('.no-results');
+                        if (noResultsElement) {
+                            noResultsElement.remove();
+                        }
+                    }
+                    
+                    // Update clear filters button visibility
+                    updateClearFiltersVisibility();
+                } catch (error) {
+                    console.error("Error applying filters:", error);
+                }
+            }
+            
+            // Update clear filters button visibility
+            function updateClearFiltersVisibility() {
+                if (!clearFiltersBtn) return;
+                
+                const hasActiveSearch = searchInput && searchInput.value.trim().length > 0;
+                const hasActivePrice = priceRange && parseInt(priceRange.value) > parseInt(priceRange.min);
+                const hasActiveCategories = categoryPills && Array.from(categoryPills).some(pill => pill.classList.contains('bg-primary'));
+                const hasActiveConditions = conditionPills && Array.from(conditionPills).some(pill => pill.classList.contains('bg-primary'));
+                
+                if (hasActiveSearch || hasActivePrice || hasActiveCategories || hasActiveConditions) {
+                    clearFiltersBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    clearFiltersBtn.disabled = false;
+                } else {
+                    clearFiltersBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    clearFiltersBtn.disabled = true;
+                }
+            }
+            
+            // Initial filter application
+            applyFilters();
+        });
+    </script>
+}
+
+<style>
+    .pb-3\/4 {
+        padding-bottom: 75%;
+    }
+    
+    /* Custom styling for range slider */
+    input[type=range] {
+        height: 6px;
+        border-radius: 5px;
+    }
+    
+    input[type=range]::-webkit-slider-thumb {
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+    }
+</style> 

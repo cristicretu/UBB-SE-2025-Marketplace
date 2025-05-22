@@ -7,7 +7,14 @@
     <h1 class="text-3xl font-bold text-red-600 mb-4">Error</h1>
     <h2 class="text-xl mb-4">An error occurred while processing your request.</h2>
 
-    @if (Model.ShowRequestId)
+    @if (!string.IsNullOrEmpty(Model?.ErrorMessage))
+    {
+        <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md mb-4">
+            <p class="font-medium">@Model.ErrorMessage</p>
+        </div>
+    }
+
+    @if (Model?.ShowRequestId == true && !string.IsNullOrEmpty(Model.RequestId))
     {
         <p class="text-gray-700">
             <strong>Request ID:</strong> <code>@Model.RequestId</code>
