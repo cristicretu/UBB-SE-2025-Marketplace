@@ -66,14 +66,29 @@ namespace MarketMinds.Repositories.BuyProductsRepository
         {
             try
             {
-                return context.BuyProducts
-                    .Include(p => p.Seller)
+                var products = context.BuyProducts
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
                     .Include(p => p.Images)
                     .Include(p => p.ProductTags)
                         .ThenInclude(pt => pt.Tag)
                     .ToList();
+
+                // Manually load seller data for each product
+                foreach (var product in products)
+                {
+                    var seller = context.Sellers
+                        .Include(s => s.User)
+                        .FirstOrDefault(s => s.Id == product.SellerId);
+
+                    if (seller != null)
+                    {
+                        // Set the seller as the User (this workaround preserves compatibility with existing code)
+                        product.Seller = seller.User;
+                    }
+                }
+
+                return products;
             }
             catch (Exception ex)
             {
@@ -86,14 +101,29 @@ namespace MarketMinds.Repositories.BuyProductsRepository
         {
             try
             {
-                return context.BuyProducts
-                    .Include(p => p.Seller)
+                var product = context.BuyProducts
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
                     .Include(p => p.Images)
                     .Include(p => p.ProductTags)
                         .ThenInclude(pt => pt.Tag)
                     .FirstOrDefault(p => p.Id == productId);
+
+                if (product != null)
+                {
+                    // Manually load seller data
+                    var seller = context.Sellers
+                        .Include(s => s.User)
+                        .FirstOrDefault(s => s.Id == product.SellerId);
+
+                    if (seller != null)
+                    {
+                        // Set the seller as the User (this workaround preserves compatibility with existing code)
+                        product.Seller = seller.User;
+                    }
+                }
+
+                return product;
             }
             catch (Exception ex)
             {
@@ -111,7 +141,21 @@ namespace MarketMinds.Repositories.BuyProductsRepository
 
             try
             {
-                context.Entry(product).State = EntityState.Modified;
+                var existingProduct = context.BuyProducts.Find(product.Id);
+                if (existingProduct == null)
+                {
+                    throw new KeyNotFoundException($"BuyProduct with ID {product.Id} not found for update.");
+                }
+
+                // Update all fields including stock
+                existingProduct.Title = product.Title;
+                existingProduct.Description = product.Description;
+                existingProduct.Price = product.Price;
+                existingProduct.SellerId = product.SellerId;
+                existingProduct.CategoryId = product.CategoryId;
+                existingProduct.ConditionId = product.ConditionId;
+                existingProduct.Stock = product.Stock;
+
                 context.SaveChanges();
             }
             catch (DbUpdateConcurrencyException ex)

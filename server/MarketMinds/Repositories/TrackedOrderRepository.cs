@@ -36,8 +36,8 @@ namespace Server.Repository
         /// <returns>The ID of the newly created checkpoint.</returns>
         public async Task<int> AddOrderCheckpointAsync(OrderCheckpoint checkpoint)
         {
-            await this.dbContext.OrderCheckpoints.AddAsync(checkpoint);
-            await this.dbContext.SaveChangesAsync();
+            await dbContext.OrderCheckpoints.AddAsync(checkpoint);
+            await dbContext.SaveChangesAsync();
             return checkpoint.CheckpointID;
         }
 
@@ -49,8 +49,8 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the tracked order cannot be added.</exception>
         public async Task<int> AddTrackedOrderAsync(TrackedOrder order)
         {
-            await this.dbContext.TrackedOrders.AddAsync(order);
-            await this.dbContext.SaveChangesAsync();
+            await dbContext.TrackedOrders.AddAsync(order);
+            await dbContext.SaveChangesAsync();
             return order.TrackedOrderID;
         }
 
@@ -62,10 +62,10 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the checkpoint cannot be deleted.</exception>
         public async Task<bool> DeleteOrderCheckpointAsync(int checkpointID)
         {
-            OrderCheckpoint checkpoint = await this.dbContext.OrderCheckpoints.FindAsync(checkpointID)
+            OrderCheckpoint checkpoint = await dbContext.OrderCheckpoints.FindAsync(checkpointID)
                                             ?? throw new Exception($"DeleteOrderCheckpointAsync: No OrderCheckpoint with id: {checkpointID}");
-            this.dbContext.OrderCheckpoints.Remove(checkpoint);
-            await this.dbContext.SaveChangesAsync();
+            dbContext.OrderCheckpoints.Remove(checkpoint);
+            await dbContext.SaveChangesAsync();
             return true;
         }
 
@@ -77,10 +77,10 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the tracked order cannot be deleted.</exception>
         public async Task<bool> DeleteTrackedOrderAsync(int trackOrderID)
         {
-            TrackedOrder order = await this.dbContext.TrackedOrders.FindAsync(trackOrderID)
+            TrackedOrder order = await dbContext.TrackedOrders.FindAsync(trackOrderID)
                                         ?? throw new Exception($"DeleteTrackedOrderAsync: No TrackedOrder with id: {trackOrderID}");
-            this.dbContext.TrackedOrders.Remove(order);
-            await this.dbContext.SaveChangesAsync();
+            dbContext.TrackedOrders.Remove(order);
+            await dbContext.SaveChangesAsync();
             return true;
         }
 
@@ -91,7 +91,7 @@ namespace Server.Repository
         /// <returns>List of order checkpoints.</returns>
         public async Task<List<OrderCheckpoint>> GetAllOrderCheckpointsAsync(int trackedOrderID)
         {
-            return await this.dbContext.OrderCheckpoints.Where(checkpoint => checkpoint.TrackedOrderID == trackedOrderID).ToListAsync();
+            return await dbContext.OrderCheckpoints.Where(checkpoint => checkpoint.TrackedOrderID == trackedOrderID).ToListAsync();
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Server.Repository
         /// <returns>List of all tracked orders.</returns>
         public async Task<List<TrackedOrder>> GetAllTrackedOrdersAsync()
         {
-            return await this.dbContext.TrackedOrders.ToListAsync();
+            return await dbContext.TrackedOrders.ToListAsync();
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the checkpoint is not found.</exception>
         public async Task<OrderCheckpoint> GetOrderCheckpointByIdAsync(int checkpointID)
         {
-            return await this.dbContext.OrderCheckpoints.FindAsync(checkpointID)
+            return await dbContext.OrderCheckpoints.FindAsync(checkpointID)
                             ?? throw new Exception($"GetOrderCheckpointByIdAsync: No OrderCheckpoint with id: {checkpointID}");
         }
 
@@ -123,8 +123,27 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the tracked order is not found.</exception>
         public async Task<TrackedOrder> GetTrackedOrderByIdAsync(int trackOrderID)
         {
-            return await this.dbContext.TrackedOrders.FindAsync(trackOrderID)
+            return await dbContext.TrackedOrders.FindAsync(trackOrderID)
                             ?? throw new Exception($"GetTrackedOrderByIdAsync: No TrackedOrder with id: {trackOrderID}");
+        }
+
+        /// <summary>
+        /// Retrieves a tracked order associated with a specific order ID.
+        /// </summary>
+        /// <param name="orderId">The order ID to find the tracked order for.</param>
+        /// <returns>The tracked order associated with the specified order ID.</returns>
+        /// <exception cref="Exception">Thrown when no tracked order is found for the given order ID.</exception>
+        public async Task<TrackedOrder> GetTrackedOrderByOrderIdAsync(int orderId)
+        {
+            TrackedOrder? trackedOrder = await dbContext.TrackedOrders
+                .FirstOrDefaultAsync(order => order.OrderID == orderId);
+                
+            if (trackedOrder == null)
+            {
+                throw new Exception($"GetTrackedOrderByOrderIdAsync: No TrackedOrder found for OrderID: {orderId}");
+            }
+            
+            return trackedOrder;
         }
 
         /// <summary>
@@ -139,13 +158,13 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the checkpoint is not found.</exception>
         public async Task UpdateOrderCheckpointAsync(int checkpointID, DateTime timestamp, string? location, string description, OrderStatus status)
         {
-            OrderCheckpoint checkpoint = await this.dbContext.OrderCheckpoints.FindAsync(checkpointID)
+            OrderCheckpoint checkpoint = await dbContext.OrderCheckpoints.FindAsync(checkpointID)
                                                 ?? throw new Exception($"UpdateOrderCheckpointAsync: No OrderCheckpoint with id: {checkpointID}");
             checkpoint.Timestamp = timestamp;
             checkpoint.Location = location;
             checkpoint.Description = description;
             checkpoint.Status = status;
-            await this.dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -158,11 +177,11 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the tracked order is not found.</exception>
         public async Task UpdateTrackedOrderAsync(int trackedOrderID, DateOnly estimatedDeliveryDate, OrderStatus currentStatus)
         {
-            TrackedOrder trackedOrder = await this.dbContext.TrackedOrders.FindAsync(trackedOrderID)
+            TrackedOrder trackedOrder = await dbContext.TrackedOrders.FindAsync(trackedOrderID)
                                             ?? throw new Exception($"UpdateTrackedOrderAsync: No TrackedOrder with id: {trackedOrderID}");
             trackedOrder.CurrentStatus = currentStatus;
             trackedOrder.EstimatedDeliveryDate = estimatedDeliveryDate;
-            await this.dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
     }
 }
