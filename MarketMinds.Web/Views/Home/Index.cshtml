@@ -111,54 +111,67 @@
                          data-condition="@(item.Condition?.Id ?? 0)"
                          data-title="@item.Title.ToLower()"
                          data-seller="@(item.Seller?.Username?.ToLower() ?? "")">
-                        <div class="h-48 bg-gradient-to-r from-blue-50 to-blue-100 flex items-center justify-center">
-                            @if (item.Images != null && item.Images.Any())
-                            {
-                                <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
-                            }
-                            else
-                            {
-                                <div class="text-gray-400 text-lg">No Image</div>
-                            }
-                        </div>
-                        <div class="p-4">
-                            <div class="bg-gray-50 p-3 rounded-lg">
-                                <h3 class="font-semibold text-lg mb-1 truncate">@item.Title</h3>
-                                <p class="text-sm text-gray-500 mb-1">
-                                    @if (item.Category != null)
-                                    {
-                                        <span>@(item.Category.Name ?? "Uncategorized")</span>
-                                    }
-                                    else
-                                    {
-                                        <span>Uncategorized</span>
-                                    }
-                                    •
-                                    @if (item.Condition != null)
-                                    {
-                                        <span>@(item.Condition.Name ?? "Unknown condition")</span>
-                                    }
-                                    else
-                                    {
-                                        <span>Unknown condition</span>
-                                    }
-                                </p>
-                                <p class="text-sm text-gray-500 mb-2">
-                                    @if (item.Seller != null)
-                                    {
-                                        <span>Seller: @item.Seller.Username</span>
-                                    }
-                                    else
-                                    {
-                                        <span>Unknown seller</span>
-                                    }
-                                </p>
-                                <div class="flex justify-between items-center">
-                                    <div class="font-bold text-primary">$@item.Price.ToString("N2")</div>
-                                    <a asp-controller="BuyProducts" asp-action="Details" asp-route-id="@item.Id"
-                                        class="inline-block bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary-dark transition">View</a>
+                        <a href="@Url.Action("Details", "BuyProducts", new { id = item.Id })" class="block">
+                            <div class="h-48 bg-gradient-to-r from-blue-50 to-blue-100 flex items-center justify-center">
+                                @if (item.Images != null && item.Images.Any())
+                                {
+                                    <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
+                                }
+                                else
+                                {
+                                    <div class="text-gray-400 text-lg">No Image</div>
+                                }
+                            </div>
+                            <div class="p-4">
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <h3 class="font-semibold text-lg mb-1 truncate">@item.Title</h3>
+                                    <p class="text-sm text-gray-500 mb-1">
+                                        @if (item.Category != null)
+                                        {
+                                            <span>@(item.Category.Name ?? "Uncategorized")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Uncategorized</span>
+                                        }
+                                        •
+                                        @if (item.Condition != null)
+                                        {
+                                            <span>@(item.Condition.Name ?? "Unknown condition")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Unknown condition</span>
+                                        }
+                                    </p>
+                                    <p class="text-sm text-gray-500 mb-2">
+                                        @if (item.Seller != null)
+                                        {
+                                            <span>Seller: @item.Seller.Username</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Unknown seller</span>
+                                        }
+                                    </p>
+                                    <div class="flex justify-between items-center">
+                                        <div class="font-bold text-primary">$@item.Price.ToString("N2")</div>
+                                        <button class="favorite-btn text-gray-400 hover:text-red-500 transition" data-product-id="@item.Id" onclick="event.stopPropagation();">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+                        </a>
+                        <div class="px-4 pb-4">
+                            <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post">
+                                <input type="hidden" name="productId" value="@item.Id" />
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="w-full bg-primary text-white py-2 px-3 rounded-lg hover:bg-primary-dark transition flex items-center justify-center">
+                                    <i class="fas fa-shopping-cart mr-2"></i>
+                                    Add to Cart
+                                </button>
+                            </form>
                         </div>
                     </div>
                 }
@@ -176,50 +189,56 @@
                          data-condition="@(item.Condition?.Id ?? 0)"
                          data-title="@item.Title.ToLower()"
                          data-seller="@(item.Seller?.Username?.ToLower() ?? "")">
-                        <div class="h-48 bg-gradient-to-r from-purple-50 to-blue-50 flex items-center justify-center">
-                            @if (item.Images != null && item.Images.Any())
-                            {
-                                <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
-                            }
-                            else
-                            {
-                                <div class="text-gray-400 text-lg">No Image</div>
-                            }
-                        </div>
-                        <div class="p-4">
-                            <h2 class="text-xl font-semibold">@item.Title</h2>
-                            <p class="text-gray-600 mb-1">@(item.Category?.Name ?? "Uncategorized")</p>
-                            
-                            @if (!string.IsNullOrEmpty(item.Description) && item.Description.Length > 50)
-                            {
-                                <p class="text-gray-700 text-sm mb-3">@(item.Description.Substring(0, 50))...</p>
-                            }
-                            else
-                            {
-                                <p class="text-gray-700 text-sm mb-3">@(item.Description ?? "No description")</p>
-                            }
-                            
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-primary font-bold text-xl">$@item.CurrentPrice.ToString("N2")</span>
-                                <span class="text-gray-600 text-sm">Starting: $@item.StartPrice.ToString("N2")</span>
-                            </div>
-                            
-                            <div class="text-orange-600 font-medium mb-3" data-countdown="@item.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")">
-                                Time left: 
-                                @{
-                                    var timeLeft = item.EndTime - DateTime.Now;
-                                    if (timeLeft > TimeSpan.Zero)
-                                    {
-                                        @($"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m")
-                                    }
-                                    else
-                                    {
-                                        <span class="text-red-600">Auction Ended</span>
-                                    }
+                        <a href="@Url.Action("Details", "AuctionProducts", new { id = item.Id })" class="block">
+                            <div class="h-48 bg-gradient-to-r from-purple-50 to-blue-50 flex items-center justify-center">
+                                @if (item.Images != null && item.Images.Any())
+                                {
+                                    <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
+                                }
+                                else
+                                {
+                                    <div class="text-gray-400 text-lg">No Image</div>
                                 }
                             </div>
-                            
-                            <a asp-controller="AuctionProducts" asp-action="Details" asp-route-id="@item.Id" class="block text-center bg-primary text-white py-2 rounded hover:bg-primary-dark transition">View Details</a>
+                            <div class="p-4">
+                                <h2 class="text-xl font-semibold">@item.Title</h2>
+                                <p class="text-gray-600 mb-1">@(item.Category?.Name ?? "Uncategorized")</p>
+                                
+                                @if (!string.IsNullOrEmpty(item.Description) && item.Description.Length > 50)
+                                {
+                                    <p class="text-gray-700 text-sm mb-3">@(item.Description.Substring(0, 50))...</p>
+                                }
+                                else
+                                {
+                                    <p class="text-gray-700 text-sm mb-3">@(item.Description ?? "No description")</p>
+                                }
+                                
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-primary font-bold text-xl">$@item.CurrentPrice.ToString("N2")</span>
+                                    <span class="text-gray-600 text-sm">Starting: $@item.StartPrice.ToString("N2")</span>
+                                </div>
+                                
+                                <div class="text-orange-600 font-medium mb-3" data-countdown="@item.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                    Time left: 
+                                    @{
+                                        var timeLeft = item.EndTime - DateTime.Now;
+                                        if (timeLeft > TimeSpan.Zero)
+                                        {
+                                            @($"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-red-600">Auction Ended</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </a>
+                        <div class="px-4 pb-4">
+                            <button class="w-full bg-primary text-white py-2 rounded hover:bg-primary-dark transition flex items-center justify-center">
+                                <i class="fas fa-gavel mr-2"></i>
+                                Place Bid
+                            </button>
                         </div>
                     </div>
                 }
@@ -264,6 +283,32 @@
             const tabButtons = document.querySelectorAll('.tab-btn');
             const tabContents = document.querySelectorAll('.tab-content');
             const tabDescriptions = document.querySelectorAll('.tab-description');
+            
+            // Favorite buttons functionality
+            const favoriteButtons = document.querySelectorAll('.favorite-btn');
+            favoriteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const icon = this.querySelector('i');
+                    if (icon.classList.contains('far')) {
+                        // Add to favorites (change to solid heart)
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        icon.classList.add('text-red-500');
+                    } else {
+                        // Remove from favorites (change to outline heart)
+                        icon.classList.remove('fas');
+                        icon.classList.remove('text-red-500');
+                        icon.classList.add('far');
+                    }
+                    
+                    // Here you would typically make an AJAX call to update favorites in the backend
+                    const productId = this.getAttribute('data-product-id');
+                    console.log(`Toggled favorite for product ID: ${productId}`);
+                    
+                    // Prevent default behavior
+                    event.preventDefault();
+                });
+            });
             
             tabButtons.forEach(button => {
                 button.addEventListener('click', function() {
