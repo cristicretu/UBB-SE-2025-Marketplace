@@ -113,7 +113,6 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
                     <Button x:Name="bidProductButton" Content="Bid Product" Click="BidProductButton_Clicked" Margin="5"/>
                     <Button x:Name="walletrefillButton" Content="Refill Wallet" Click="WalletRefillButton_Clicked" Margin="5"/>
-                    <Button x:Name="generateContractButton" Content="Generate Contract" Click="GenerateContractButton_Clicked" Margin="5"/>
                     <Button x:Name="borrowButton" Content="Borrow Product" Click="BorrowButton_Clicked" Margin="5"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
@@ -121,6 +120,11 @@
                     <Button x:Name="OrderHistoryButton" Content="Order History" Click="OrderHistoryButton_Clicked" Margin="5"/>
                     <Button x:Name="renewContractButton" Content="Renew Contract" Click="RenewContractButton_Clicked" Margin="5"/>
                     <Button x:Name="trackOrderButton" Content="Track Order" Click="TrackOrderButton_Clicked" Margin="5"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
+                    <TextBlock Text="Contract ID:"></TextBlock>
+                    <TextBox x:Name="contractID" Width="30" InputScope="Number" Text="1" Margin="5" />
+                    <Button x:Name="generateContractButton" Content="Generate Contract" Click="GenerateContractButton_Clicked" Margin="5"/>
                 </StackPanel>
             </StackPanel>
 

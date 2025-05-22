@@ -361,6 +361,15 @@ namespace MarketMinds.ViewModels
                 fieldReplacements["DueDate"] = "N/A";
             }
 
+            foreach (var orderSummaryTuple in orderSummaryData)
+            {
+                if (fieldReplacements.ContainsKey(orderSummaryTuple.Key))
+                {
+                    continue;
+                }
+                fieldReplacements.Add(orderSummaryTuple.Key, orderSummaryTuple.Value.ToString());
+            }
+
             return fieldReplacements;
         }
 
@@ -370,9 +379,10 @@ namespace MarketMinds.ViewModels
         /// <param name="contract" type="Contract">The contract to generate and save</param>
         /// <param name="contractType" type="PredefinedContractType">The type of the predefined contract</param>
         /// <returns The task></returns>
-        public async Task GenerateAndSaveContractAsync()
+        public async Task GenerateAndSaveContractAsync(long contractID)
         {
             IContract contract = new Contract();
+            contract.ContractID = contractID;
             PredefinedContractType contractType = PredefinedContractType.BorrowingContract; // Example contract type
             // Check if the contract is null.
             if (contract == null)
