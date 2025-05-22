@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MarketMinds.Web.Controllers
 {
-    // [Authorize] // Temporarily commented out for testing
+    [Authorize] // Re-enabled to enforce authentication
     [Route("Reviews")]
     public class ReviewsController : Controller
     {
