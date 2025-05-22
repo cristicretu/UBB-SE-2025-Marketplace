@@ -31,7 +31,6 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using MarketMinds.Views;
 using MarketMinds.ViewModels.Admin;
-using MarketMinds.ViewModels.ContractRenewViewModel;
 using static MarketMinds.ViewModels.ContractRenewViewModel;
 
 namespace MarketMinds
