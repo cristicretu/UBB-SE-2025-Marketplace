@@ -184,6 +184,15 @@ namespace Server.DataAccessLayer
                 entity.ToTable("AuctionProducts");
                 entity.HasKey(auctionProducts => auctionProducts.Id);
                 
+                // Add explicit debug logging for price fields
+                entity.Property(p => p.StartPrice)
+                    .HasColumnName("starting_price")
+                    .HasColumnType("float");
+                
+                entity.Property(p => p.CurrentPrice)
+                    .HasColumnName("current_price")
+                    .HasColumnType("float");
+                
                 // Configure relationship with Seller instead of User
                 entity.HasOne<Seller>()
                     .WithMany(s => s.AuctionProducts)
@@ -213,6 +222,11 @@ namespace Server.DataAccessLayer
             {
                 entity.ToTable("Bids");
                 entity.HasKey(bid => bid.Id);
+                
+                // Add explicit debug logging for price field
+                entity.Property(b => b.Price)
+                    .HasColumnName("price")
+                    .HasColumnType("float");
                 
                 // Change relationship from User to Buyer
                 entity.HasOne<Buyer>()

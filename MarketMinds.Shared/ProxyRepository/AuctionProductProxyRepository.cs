@@ -193,10 +193,12 @@ namespace MarketMinds.Shared.ProxyRepository
                     PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
                 };
+                serializerOptions.Converters.Add(new AuctionProductJsonConverter());
                 serializerOptions.Converters.Add(new UserJsonConverter());
                 serializerOptions.Converters.Add(new CategoryJsonConverter());
                 serializerOptions.Converters.Add(new ConditionJsonConverter());
                 serializerOptions.Converters.Add(new SellerJsonConverter());
+                serializerOptions.Converters.Add(new BidJsonConverter());
 
                 var response = httpClient.GetAsync("auctionproducts").Result;
                 
@@ -248,10 +250,12 @@ namespace MarketMinds.Shared.ProxyRepository
                     PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
                 };
+                serializerOptions.Converters.Add(new AuctionProductJsonConverter());
                 serializerOptions.Converters.Add(new UserJsonConverter());
                 serializerOptions.Converters.Add(new CategoryJsonConverter());
                 serializerOptions.Converters.Add(new ConditionJsonConverter());
                 serializerOptions.Converters.Add(new SellerJsonConverter());
+                serializerOptions.Converters.Add(new BidJsonConverter());
 
                 var response = httpClient.GetAsync($"auctionproducts/{id}").Result;
                 

@@ -46,7 +46,7 @@ namespace Server.Repository
                 Id = 0,
                 Title = name,
                 Description = string.Empty,
-                Price = (int)price,
+                Price = price,
                 SellerId = sellerId,
                 Stock = 0
             };
@@ -73,7 +73,7 @@ namespace Server.Repository
                     ?? throw new Exception($"UpdateProductAsync:Product not found for the product id: {id}");
 
             productToUpdate.Title = name;
-            productToUpdate.Price = (int)price;
+            productToUpdate.Price = price;
             productToUpdate.SellerId = sellerId;
 
             await this.dbContext.SaveChangesAsync();

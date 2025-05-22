@@ -106,7 +106,7 @@ namespace MarketMinds.Web.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         [Route("AuctionProducts/PlaceBid")]
-        public async Task<IActionResult> PlaceBid(int id, int bidAmount)
+        public async Task<IActionResult> PlaceBid(int id, double bidAmount)
         {
             try
             {

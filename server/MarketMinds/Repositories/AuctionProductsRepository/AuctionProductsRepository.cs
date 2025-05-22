@@ -19,12 +19,30 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
         {
             try
             {
+                Console.WriteLine("DEBUG: AuctionProductsRepository.GetProducts - Starting to fetch products");
+                
                 var products = context.AuctionProducts
                     .Include(product => product.Condition)
                     .Include(product => product.Category)
                     .Include(product => product.Bids)
                     .Include(product => product.Images)
                     .ToList();
+                
+                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Fetched {products.Count} products");
+                
+                // Log price information for debugging
+                foreach (var product in products)
+                {
+                    Console.WriteLine($"DEBUG: AuctionProduct {product.Id}: StartPrice={product.StartPrice} (type: {product.StartPrice.GetType().Name}), CurrentPrice={product.CurrentPrice} (type: {product.CurrentPrice.GetType().Name})");
+                    
+                    if (product.Bids != null && product.Bids.Any())
+                    {
+                        foreach (var bid in product.Bids)
+                        {
+                            Console.WriteLine($"DEBUG: Bid {bid.Id} on product {product.Id}: Price={bid.Price} (type: {bid.Price.GetType().Name})");
+                        }
+                    }
+                }
                 
                 // Load the bidder information for each product's bids
                 foreach (var product in products)
@@ -68,6 +86,11 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             }
             catch (Exception exception)
             {
+                Console.WriteLine($"ERROR: GetProducts exception: {exception.Message}");
+                if (exception.InnerException != null)
+                {
+                    Console.WriteLine($"ERROR: Inner exception: {exception.InnerException.Message}");
+                }
                 throw new Exception($"Failed to retrieve auction products: {exception.Message}", exception);
             }
         }
