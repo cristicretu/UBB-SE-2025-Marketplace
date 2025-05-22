@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Services;
 
 namespace WebMarketplace.Controllers
@@ -27,9 +27,21 @@ namespace WebMarketplace.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
         {
-            int buyerId = GetCurrentBuyerId();
-            await _shoppingCartService.AddProductToCartAsync(buyerId, productId, quantity);
-            return RedirectToAction("Index");
+            try
+            {
+                if (UserSession.CurrentUserRole == "Seller")
+                {
+                    return NoContent();
+                }
+
+                int buyerId = GetCurrentBuyerId();
+                await _shoppingCartService.AddProductToCartAsync(buyerId, productId, quantity);
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
 
         [HttpPost]
