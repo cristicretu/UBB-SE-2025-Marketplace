@@ -27,7 +27,7 @@ namespace MarketMinds.Shared.Models
         [Column("reviewer_id")]
         public int BuyerId { get; set; }
 
-        [Column("score")]
+        [NotMapped]
         public int Score { get; set; }
 
         [NotMapped]
