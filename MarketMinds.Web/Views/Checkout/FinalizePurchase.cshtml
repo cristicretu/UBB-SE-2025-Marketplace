@@ -75,15 +75,15 @@
             <div class="space-y-2 bg-gray-50 p-4 rounded-lg">
                 <div class="flex justify-between">
                     <span class="text-gray-700">Subtotal:</span>
-                    <span class="text-gray-800">@Model.Subtotal.ToString("C")</span>
+                    <span class="text-gray-800">@Model.Subtotal.ToString("0.00") €</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-700">Delivery fee:</span>
-                    <span class="text-gray-800">@Model.DeliveryFee.ToString("C")</span>
+                    <span class="text-gray-800">@Model.DeliveryFee.ToString("0.00") €</span>
                 </div>
                 <div class="flex justify-between font-semibold">
                     <span class="text-gray-800">Total:</span>
-                    <span class="text-gray-800">@Model.Total.ToString("C")</span>
+                    <span class="text-gray-800">@Model.Total.ToString("0.00") €</span>
                 </div>
             </div>
             

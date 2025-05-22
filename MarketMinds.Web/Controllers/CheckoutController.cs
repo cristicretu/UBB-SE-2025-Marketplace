@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
+using System.Text.Json;
 
 namespace WebMarketplace.Controllers
 {
@@ -76,13 +77,13 @@ namespace WebMarketplace.Controllers
 
             if (!ModelState.IsValid)
             {
-                model.CalculateOrderTotal(); 
+                model.CalculateOrderTotal();
                 return View(model);
             }
 
             if (model.SelectedPaymentMethod == "wallet")
             {
-                model.CalculateOrderTotal(); 
+                model.CalculateOrderTotal();
                 await ProcessWalletRefill(model);
             }
             else
@@ -92,12 +93,12 @@ namespace WebMarketplace.Controllers
 
             try
             {
-                var userId = UserSession.CurrentUserId ?? 1; 
-                
+                var userId = UserSession.CurrentUserId ?? 1;
+
                 if (cartItems == null || !cartItems.Any())
                 {
                     ModelState.AddModelError(string.Empty, "Your cart is empty. Please add items before proceeding.");
-                    return View(model); 
+                    return View(model);
                 }
 
                 var orderRequestDto = new OrderCreationRequestDto { /* ... (mapping) ... */ }; // Assume mapping is correct as before
@@ -115,14 +116,40 @@ namespace WebMarketplace.Controllers
                 orderRequestDto.SelectedPaymentMethod = model.SelectedPaymentMethod;
 
                 var newOrderHistoryId = await _orderService.CreateOrderFromCartAsync(orderRequestDto, userId, cartItems);
-                model.OrderHistoryID = newOrderHistoryId; 
+                model.OrderHistoryID = newOrderHistoryId;
+
+                // Save this data in TempData so the next request can access it
+                TempData["OrderFullName"] = model.FullName;
+                TempData["OrderEmail"] = model.Email;
+                TempData["OrderPhone"] = model.PhoneNumber;
+                TempData["OrderAddress"] = model.Address;
+                TempData["OrderPaymentMethod"] = model.SelectedPaymentMethod;
+                TempData["OrderSubtotal"] = model.Subtotal.ToString();
+                TempData["OrderDeliveryFee"] = model.DeliveryFee.ToString();
+                TempData["OrderTotal"] = model.Total.ToString();
+
+                // Store the cart items - create a simplified list of product info that can be serialized
+                var productList = new List<Dictionary<string, string>>();
+                foreach (var item in cartItems)
+                {
+                    productList.Add(new Dictionary<string, string> {
+                        { "Id", item.Id.ToString() },
+                        { "Title", item.Title },
+                        { "Price", item.Price.ToString() },
+                        { "SellerId", item.SellerId.ToString() }
+                    });
+                }
+
+                // Store serialized product info
+                TempData["OrderProducts"] = JsonSerializer.Serialize(productList);
+                TempData["HasOrderData"] = "true";
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error creating order (FULL EXCEPTION): {ex.ToString()}"); // Log full exception
                 ModelState.AddModelError(string.Empty, "An error occurred while creating your order. Please try again.");
                 ModelState.AddModelError(string.Empty, $"DEBUG: {ex.ToString()}"); // ADD FULL EXCEPTION TO MODELSTATE
-                model.CalculateOrderTotal(); 
+                model.CalculateOrderTotal();
                 return View(model);
             }
 
@@ -151,66 +178,166 @@ namespace WebMarketplace.Controllers
         {
             var model = new FinalizePurchaseViewModel(orderHistoryId);
 
-            // Fetch cart items and populate the model
+            // Debug info
+            System.Diagnostics.Debug.WriteLine($"FinalizePurchase action called with orderHistoryId: {orderHistoryId}");
+
             try
             {
-                var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
-                model.ProductList = cartItems;
-
-                // Calculate totals (assuming a similar logic to BillingInfoViewModel's CalculateOrderTotal)
-                if (cartItems != null && cartItems.Any())
+                // First check if we have order data from TempData (from the same request flow)
+                if (TempData["HasOrderData"]?.ToString() == "true")
                 {
-                    double subtotalProducts = 0;
-                    foreach (var product in cartItems)
+                    // Use the data we just stored in TempData
+                    model.FullName = TempData["OrderFullName"]?.ToString();
+                    model.Email = TempData["OrderEmail"]?.ToString();
+                    model.PhoneNumber = TempData["OrderPhone"]?.ToString();
+                    model.Address = TempData["OrderAddress"]?.ToString();
+                    model.PaymentMethod = TempData["OrderPaymentMethod"]?.ToString();
+                    model.OrderStatus = "Completed";
+
+                    if (double.TryParse(TempData["OrderSubtotal"]?.ToString(), out double subtotal))
+                        model.Subtotal = subtotal;
+
+                    if (double.TryParse(TempData["OrderDeliveryFee"]?.ToString(), out double deliveryFee))
+                        model.DeliveryFee = deliveryFee;
+
+                    if (double.TryParse(TempData["OrderTotal"]?.ToString(), out double total))
+                        model.Total = total;
+
+                    // Recover product list from TempData
+                    if (TempData["OrderProducts"] != null)
                     {
-                        if (product is BuyProduct buyProduct)
+                        try
                         {
-                            subtotalProducts += buyProduct.Price;
+                            string productsJson = TempData["OrderProducts"]?.ToString();
+                            var productDictList = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(productsJson);
+
+                            List<Product> orderProducts = new List<Product>();
+                            foreach (var productDict in productDictList)
+                            {
+                                var product = new BuyProduct(); // Using concrete BuyProduct instead of abstract Product
+
+                                if (productDict.TryGetValue("Id", out string idStr) && int.TryParse(idStr, out int id))
+                                    product.Id = id;
+
+                                if (productDict.TryGetValue("Title", out string title))
+                                    product.Title = title;
+
+                                if (productDict.TryGetValue("Price", out string priceStr) && double.TryParse(priceStr, out double price))
+                                    product.Price = price;
+
+                                if (productDict.TryGetValue("SellerId", out string sellerIdStr) && int.TryParse(sellerIdStr, out int sellerId))
+                                    product.SellerId = sellerId;
+
+                                orderProducts.Add(product);
+                            }
+
+                            model.ProductList = orderProducts;
+                            System.Diagnostics.Debug.WriteLine($"Recovered {orderProducts.Count} products from TempData");
                         }
-                        else if (product is BorrowProduct borrowProduct)
+                        catch (Exception ex)
                         {
-                            // Handle borrow product pricing if different
-                            subtotalProducts += product.Price; // Use base price as fallback
-                        }
-                        else
-                        {
-                            subtotalProducts += product.Price;
+                            System.Diagnostics.Debug.WriteLine($"Error deserializing product list: {ex.Message}");
                         }
                     }
 
-                    model.Subtotal = subtotalProducts;
-
-                    // Determine product type for delivery fee calculation (assuming same logic)
-                    bool hasSpecialType = cartItems.Any(p =>
-                         (p is BorrowProduct) ||
-                         (p.GetType().Name.Contains("Refill")) ||
-                         (p.GetType().Name.Contains("Auction")));
-
-                    if (subtotalProducts >= 200 || hasSpecialType)
+                    // Don't try to get products from cart as it might have been cleared already
+                    if (model.ProductList == null || !model.ProductList.Any())
                     {
-                        model.Total = subtotalProducts;
-                        model.DeliveryFee = 0;
-                    }
-                    else
-                    {
-                        model.DeliveryFee = 13.99;
-                        model.Total = subtotalProducts + model.DeliveryFee;
+                        model.ProductList = new List<Product>();
+                        // Try to get from cart as a last resort
+                        try
+                        {
+                            var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+                            if (cartItems != null && cartItems.Any())
+                            {
+                                model.ProductList = cartItems;
+                            }
+                        }
+                        catch
+                        {
+                            // Ignore cart errors here
+                        }
                     }
                 }
                 else
                 {
-                    model.Subtotal = 0;
-                    model.DeliveryFee = 0;
-                    model.Total = 0;
+                    // Try to get from database as before
+                    var orders = await _orderService.GetOrdersFromOrderHistoryAsync(orderHistoryId);
+                    System.Diagnostics.Debug.WriteLine($"Orders found: {orders?.Count ?? 0}");
+
+                    // Get products from order history
+                    var orderProducts = await _orderHistoryService.GetProductsFromOrderHistoryAsync(orderHistoryId);
+                    if (orderProducts != null && orderProducts.Any())
+                    {
+                        model.ProductList = orderProducts;
+                        System.Diagnostics.Debug.WriteLine($"Products found: {model.ProductList?.Count ?? 0}");
+                    }
+                    else
+                    {
+                        // Fallback to cart
+                        var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+                        model.ProductList = cartItems ?? new List<Product>();
+                    }
+
+                    // Only try to get order data if we have orders
+                    if (orders != null && orders.Any())
+                    {
+                        // Get first order to extract basic info
+                        var firstOrder = orders.FirstOrDefault();
+                        if (firstOrder != null)
+                        {
+                            // Get order summary
+                            var orderSummary = await _orderService.GetOrderSummaryAsync(firstOrder.OrderSummaryID);
+
+                            if (orderSummary != null)
+                            {
+                                // Populate model with order summary data
+                                model.FullName = orderSummary.FullName;
+                                model.Email = orderSummary.Email;
+                                model.PhoneNumber = orderSummary.PhoneNumber;
+                                model.Address = orderSummary.Address;
+                                model.PaymentMethod = firstOrder.PaymentMethod;
+                                model.OrderStatus = "Completed"; // Default status
+
+                                // Set financial values
+                                model.Subtotal = orderSummary.Subtotal;
+                                model.DeliveryFee = orderSummary.DeliveryFee;
+                                model.Total = orderSummary.FinalTotal;
+                            }
+                        }
+                    }
+                }
+
+                // If we couldn't get values from the order summary, calculate them
+                if (model.Subtotal == 0 && model.ProductList.Any())
+                {
+                    model.CalculateOrderTotal();
+                }
+
+                // Clear the shopping cart after successful order display
+                if (UserSession.CurrentUserId.HasValue && !string.IsNullOrEmpty(model.FullName))
+                {
+                    await _shoppingCartService.ClearCartAsync(UserSession.CurrentUserId.Value);
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading cart items for FinalizePurchase: {ex.Message}");
-                model.ProductList = new List<Product>();
-                model.Subtotal = 0;
-                model.DeliveryFee = 0;
-                model.Total = 0;
+                System.Diagnostics.Debug.WriteLine($"Error processing order data for FinalizePurchase: {ex.Message}");
+                // Instead of showing empty data, try to recover with cart items as a fallback
+                try
+                {
+                    var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+                    model.ProductList = cartItems;
+                    model.CalculateOrderTotal();
+                }
+                catch (Exception innerEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Inner error: {innerEx.Message}");
+                    model.ProductList = new List<Product>();
+                    model.Subtotal = 0;
+                    model.DeliveryFee = 0;
+                    model.Total = 0;
+                }
             }
 
             return View(model);
@@ -240,7 +367,7 @@ namespace WebMarketplace.Controllers
 
                 double warrantyTaxRate = 0.2; // Example: 20% warranty tax
                 double originalPrice = product.Price; // Assuming product.Price is the base price per month for borrowable items
-                
+
                 double totalBorrowPrice = originalPrice * monthsBorrowed;
                 double calculatedWarrantyTax = totalBorrowPrice * warrantyTaxRate;
                 double finalPriceWithTax = totalBorrowPrice + calculatedWarrantyTax;
@@ -254,9 +381,9 @@ namespace WebMarketplace.Controllers
                 // The actual order creation (CreateOrderFromCartAsync) will use the values present in the cart items and BillingInfoViewModel/DTO at that time.
                 // If this tax needs to be stored before finalizing purchase, more logic would be needed here or in a service.
 
-                return Json(new 
+                return Json(new
                 {
-                    success = true, 
+                    success = true,
                     productId = productId,
                     originalItemPrice = originalPrice, // Price per period (e.g. month)
                     monthsBorrowed = monthsBorrowed,
