@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MarketMinds"
+    xmlns:converters="using:MarketMinds.Converters"
     xmlns:uilayer="using:MarketMinds">
     <Application.Resources>
         <ResourceDictionary>
@@ -12,6 +13,10 @@
                 <ResourceDictionary Source="ms-appx:///Styles.xaml"/>
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Converters -->
+            <converters:StockToColorConverter x:Key="StockToColorConverter"/>
+            
             <!-- Other app resources here -->
         </ResourceDictionary>
     </Application.Resources>

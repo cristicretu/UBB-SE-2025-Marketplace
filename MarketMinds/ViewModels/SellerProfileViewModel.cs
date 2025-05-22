@@ -21,7 +21,7 @@ namespace MarketMinds.ViewModels
     /// <summary>
     /// View model for the seller profile page.
     /// </summary>
-    public class SellerProfileViewModel : INotifyPropertyChanged
+    public class SellerProfileViewModel : ISellerProfileViewModel
     {
         private readonly ISellerService sellerService;
         private readonly User user;
@@ -30,6 +30,15 @@ namespace MarketMinds.ViewModels
         private ObservableCollection<Product> filteredProducts;
         private bool isExpanderExpanded = false;
         private const double MultiplierForTrustScoreFromAverageReview = 20.0;
+        // Add products property to fulfill interface
+        public ObservableCollection<Product> Products { get; set; }
+        // Add validation properties to fulfill interface
+        public string StoreNameError { get; set; }
+        public string EmailError { get; set; }
+        public string PhoneNumberError { get; set; }
+        public string AddressError { get; set; }
+        public string DescriptionError { get; set; }
+        public string DisplayName { get; set; }
         public Seller Seller => this.seller;
         public SellerProfileViewModel(ISellerService sellerService, User user)
         {
@@ -48,6 +57,7 @@ namespace MarketMinds.ViewModels
             this.TrustScore = 0;
 
             this.allProducts = new ObservableCollection<Product>();
+            this.Products = new ObservableCollection<Product>();
             this.FilteredProducts = new ObservableCollection<Product>();
             this.Notifications = new ObservableCollection<string>();
 
@@ -64,7 +74,6 @@ namespace MarketMinds.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public string DisplayName { get; private set; }
         public string StoreName { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
@@ -202,6 +211,10 @@ namespace MarketMinds.ViewModels
                 try
                 {
                     await this.sellerService.UpdateSeller(this.seller);
+                    // Reload the seller data from the database to ensure we have the latest values
+                    this.seller = await this.sellerService.GetSellerByUser(this.user);
+                    // Reload the profile data to update all UI bindings
+                    await LoadSellerProfile();
                     await ShowDialog("Success", "Your profile has been updated successfully.");
                 }
                 catch (Exception ex)
@@ -221,13 +234,39 @@ namespace MarketMinds.ViewModels
         public void FilterProducts(string searchText)
         {
             Debug.WriteLine($"FilterProducts called with search text: '{searchText}'");
-            // You can implement actual filtering here
+            // Clear the current filtered products
+            this.FilteredProducts.Clear();
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                // If no search text, show all products
+                foreach (var product in this.allProducts)
+                {
+                    this.FilteredProducts.Add(product);
+                }
+                Debug.WriteLine($"No search text provided. Showing all {this.FilteredProducts.Count} products.");
+                return;
+            }
+            // Case insensitive search
+            searchText = searchText.ToLower();
+            // Filter products based on Title, Description, or Price containing the search text
+            var filteredList = this.allProducts.Where(p =>
+                (p.Title?.ToLower().Contains(searchText) == true) ||
+                (p.Description?.ToLower().Contains(searchText) == true) ||
+                p.Price.ToString().Contains(searchText)).ToList();
+            // Add the filtered products to the observable collection
+            foreach (var product in filteredList)
+            {
+                this.FilteredProducts.Add(product);
+            }
+            Debug.WriteLine($"Found {this.FilteredProducts.Count} products matching '{searchText}'");
+            // Notify UI that the filtered products have changed
+            this.OnPropertyChanged(nameof(this.FilteredProducts));
         }
 
         /// <summary>
         /// Loads notifications for the seller.
         /// </summary>
-        private async Task LoadNotifications()
+        public async Task LoadNotifications()
         {
             try
             {
@@ -268,6 +307,7 @@ namespace MarketMinds.ViewModels
 
                     this.allProducts.Clear();
                     this.FilteredProducts.Clear();
+                    this.Products.Clear();
 
                     if (products != null && products.Count > 0)
                     {
@@ -275,6 +315,7 @@ namespace MarketMinds.ViewModels
                         {
                             this.allProducts.Add(product);
                             this.FilteredProducts.Add(product);
+                            this.Products.Add(product);
                         }
 
                         this.Notifications.Add($"Loaded {products.Count} products");
@@ -292,19 +333,79 @@ namespace MarketMinds.ViewModels
         }
 
         /// <summary>
+        /// Sorts the currently filtered products by price.
+        /// </summary>
+        public void SortProducts()
+        {
+            Debug.WriteLine("SortProducts called");
+            // Static variable to remember sort order (toggles between ascending and descending)
+            bool sortAscending = true;
+            // Toggle sort order
+            sortAscending = !sortAscending;
+            Debug.WriteLine($"Sorting products by price: {(sortAscending ? "ascending" : "descending")}");
+            // Create a temporary list to hold all products
+            var tempList = new List<Product>(this.FilteredProducts);
+            // Sort by price
+            if (sortAscending)
+            {
+                tempList = tempList.OrderBy(p => p.Price).ToList();
+            }
+            else
+            {
+                tempList = tempList.OrderByDescending(p => p.Price).ToList();
+            }
+            // Clear the collection and repopulate with sorted items
+            this.FilteredProducts.Clear();
+            foreach (var product in tempList)
+            {
+                this.FilteredProducts.Add(product);
+            }
+            // Notify UI that the filtered products have changed
+            this.OnPropertyChanged(nameof(this.FilteredProducts));
+        }
+
+        /// <summary>
+        /// Validates all input fields in the seller profile.
+        /// </summary>
+        public List<string> ValidateFields()
+        {
+            var errors = new List<string>();
+            // Add validation logic as needed
+            return errors;
+        }
+
+        /// <summary>
         /// Shows a content dialog message.
         /// </summary>
         private async Task ShowDialog(string title, string message)
         {
-            ContentDialog dialog = new ContentDialog
+            try
             {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = App.MainWindow.Content.XamlRoot,
-            };
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK"
+                };
 
-            await dialog.ShowAsync();
+                // Safely set XamlRoot only if it's available
+                if (App.MainWindow?.Content?.XamlRoot != null)
+                {
+                    dialog.XamlRoot = App.MainWindow.Content.XamlRoot;
+                }
+                else
+                {
+                    Debug.WriteLine("Warning: XamlRoot is null, dialog might not display properly");
+                }
+
+                // Use ConfigureAwait(true) to ensure we stay on the UI thread
+                await dialog.ShowAsync().AsTask().ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error showing dialog: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+            }
         }
     }
 }
