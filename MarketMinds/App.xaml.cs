@@ -29,8 +29,10 @@ using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using MarketMinds.ViewModels.ContractRenewViewModel;
 using MarketMinds.Views;
 using MarketMinds.ViewModels.Admin;
+using static MarketMinds.ViewModels.ContractRenewViewModel;
 
 namespace MarketMinds
 {
@@ -74,6 +76,10 @@ namespace MarketMinds
         public static IConversationService ConversationService;
         public static IMessageService MessageService;
         public static MarketMinds.Shared.Services.DreamTeam.ChatbotService.IChatbotService NewChatbotService;
+        public static IContractService ContractService;
+        public static IPDFService PDFService;
+        public static IContractRenewalService ContractRenewalService;
+        public static IFileSystem FileSystem;
 
         // ViewModel declarations
         public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
@@ -98,6 +104,7 @@ namespace MarketMinds
         public static LoginViewModel LoginViewModel { get; private set; }
         public static RegisterViewModel RegisterViewModel { get; private set; }
         public static MarketMinds.Shared.Models.User CurrentUser { get; set; }
+        public static ContractRenewViewModel ContractRenewViewModel { get; private set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -339,6 +346,11 @@ namespace MarketMinds
             ChatBotService = new ChatbotService(ChatbotRepository);
             ChatService = new MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService(ChatRepository);
             NewChatbotService = new MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
+            ContractService = new ContractService();
+            PDFService = new PDFService();
+            ContractRenewalService = new ContractRenewalService();
+            FileSystem = new FileSystemWrapper();
+
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
@@ -353,6 +365,7 @@ namespace MarketMinds
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
+            ContractRenewViewModel = new ContractRenewViewModel(ContractService, PDFService, ContractRenewalService, UserService, FileSystem);
             BuyerProfileViewModel = new BuyerProfileViewModel()
             {
                 BuyerService = BuyerService,
