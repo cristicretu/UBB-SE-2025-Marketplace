@@ -66,6 +66,18 @@ namespace MarketMinds.Web.Controllers
                 
                 var auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
                 
+                // Get categories and conditions for filters
+                var categories = _categoryService.GetAllProductCategories();
+                var conditions = _conditionService.GetAllProductConditions();
+                
+                // Pass data to ViewBag for filters
+                ViewBag.Categories = categories;
+                ViewBag.Conditions = conditions;
+                
+                // Get min and max prices for the price filter
+                ViewBag.MinPrice = buyProducts.Any() ? (int)Math.Floor(buyProducts.Min(p => p.Price)) : 0;
+                ViewBag.MaxPrice = buyProducts.Any() ? (int)Math.Ceiling(buyProducts.Max(p => p.Price)) : 1000;
+                
                 var viewModel = new HomeViewModel
                 {
                     BuyProducts = buyProducts,
