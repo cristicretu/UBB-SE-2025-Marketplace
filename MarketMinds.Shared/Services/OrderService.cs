@@ -18,6 +18,15 @@ namespace MarketMinds.Shared.Services
         private readonly IOrderSummaryService _orderSummaryService;
         private readonly IShoppingCartService _shoppingCartService;
 
+        public OrderService()
+        {
+            this.orderRepository = new OrderProxyRepository(AppConfig.GetBaseApiUrl());
+            this._orderHistoryService = new OrderHistoryService();
+            this._orderSummaryService = new OrderSummaryService();
+            this._shoppingCartService = new ShoppingCartService();
+        }
+
+
         public OrderService(
             IOrderRepository orderRepository,
             IOrderHistoryService orderHistoryService,
