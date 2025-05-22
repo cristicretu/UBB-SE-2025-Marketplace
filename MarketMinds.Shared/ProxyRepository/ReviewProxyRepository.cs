@@ -57,10 +57,19 @@ namespace MarketMinds.Shared.ProxyRepository
             response.EnsureSuccessStatusCode();
         }
 
-        public void EditReviewRaw(object updateRequest)
+        public void EditReviewRaw(Review review)
         {
-            var response = httpClient.PutAsJsonAsync("review", updateRequest, jsonOptions).Result;
-            response.EnsureSuccessStatusCode();
+            if (review == null)
+            {
+                throw new ArgumentNullException(nameof(review));
+            }
+
+            var response = httpClient.PutAsJsonAsync("review", review, jsonOptions).Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = response.Content.ReadAsStringAsync().Result;
+                throw new Exception($"Failed to edit review: {error}");
+            }
         }
 
         public void DeleteReviewRaw(object deleteRequest)

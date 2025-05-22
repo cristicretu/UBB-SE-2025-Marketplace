@@ -213,26 +213,28 @@ namespace MarketMinds.Shared.Services.ReviewService
                 // Ensure the new rating is within the expected range (0-5)
                 double validRating = Math.Max(0, Math.Min(5, newRating));
 
-                // Create a shared Review object
-                var sharedReview = new MarketMinds.Shared.Models.Review
+                // Get the review ID from the repository
+                var reviews = repository.GetReviewsByBuyerRaw(buyerId);
+                var sharedReviews = JsonSerializer.Deserialize<List<MarketMinds.Shared.Models.Review>>(reviews, jsonOptions);
+                var reviewToEdit = sharedReviews?.FirstOrDefault(r => r.SellerId == sellerId && r.BuyerId == buyerId);
+
+                if (reviewToEdit == null)
                 {
-                    Description = description,
-                    Images = ConvertToSharedImages(images ?? new List<Image>()),
-                    Rating = rating,
+                    throw new ArgumentException("Review not found.");
+                }
+
+                // Create a shared Review object with updated values
+                var updatedReview = new MarketMinds.Shared.Models.Review
+                {
+                    Id = reviewToEdit.Id,
+                    Description = newDescription,
+                    Images = images ?? new List<Image>(),
+                    Rating = validRating,
                     SellerId = sellerId,
                     BuyerId = buyerId
                 };
 
-                var updateRequest = new
-                {
-                    ReviewId = sharedReview.Id,
-                    SellerId = sharedReview.SellerId,
-                    BuyerId = sharedReview.BuyerId,
-                    Description = newDescription,
-                    Rating = validRating
-                };
-
-                repository.EditReviewRaw(updateRequest);
+                repository.EditReviewRaw(updatedReview);
                 userCache.Clear();
             }
             catch (Exception ex)

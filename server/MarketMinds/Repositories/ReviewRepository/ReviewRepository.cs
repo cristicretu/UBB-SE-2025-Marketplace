@@ -84,9 +84,29 @@ namespace MarketMinds.Repositories.ReviewRepository
 
             try
             {
-                review.Rating = rating;
-                review.Description = description;
-                context.Entry(review).State = EntityState.Modified;
+                var reviewToEdit = context.Reviews
+                    .Include(r => r.ReviewImages)
+                    .FirstOrDefault(r => r.Id == review.Id && r.SellerId == review.SellerId && r.BuyerId == review.BuyerId);
+
+                if (reviewToEdit == null)
+                {
+                    throw new KeyNotFoundException($"Review with ID {review.Id} not found.");
+                }
+
+                // Update review properties
+                reviewToEdit.Rating = rating;
+                reviewToEdit.Description = description;
+
+                // Update images
+                if (review.ReviewImages != null)
+                {
+                    // Remove existing images
+                    context.ReviewImages.RemoveRange(reviewToEdit.ReviewImages);
+                    
+                    // Add new images
+                    reviewToEdit.ReviewImages = review.ReviewImages;
+                }
+
                 context.SaveChanges();
             }
             catch (DbUpdateConcurrencyException ex)

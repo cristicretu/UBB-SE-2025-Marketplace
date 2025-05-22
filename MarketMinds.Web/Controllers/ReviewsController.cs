@@ -256,43 +256,39 @@ namespace MarketMinds.Web.Controllers
             }
         }
 
-        // POST: Reviews/Edit/5
-        [HttpPost("Edit")]
+        // POST: Reviews/Edit/{id}/{sellerId}/{buyerId}
+        [HttpPost("Edit/{id:int}/{sellerId:int}/{buyerId:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Review review, string imageUrls)
+        public async Task<IActionResult> Edit(int id, int sellerId, int buyerId, Review review, string imageUrls)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
                     User currentUser = await GetCurrentUserAsync();
-                    if (currentUser == null || currentUser.Id != review.BuyerId)
+                    if (currentUser == null || currentUser.Id != buyerId)
                     {
                         return RedirectToAction("Login", "Account");
                     }
 
-                    // Process image URLs if provided
-                    var reviewImages = new List<Image>();
-                    if (!string.IsNullOrEmpty(imageUrls))
-                    {
-                        reviewImages = _imageUploadService.ParseImagesString(imageUrls);
-                    }
+                    // Get the current review first
+                    var currentReview = _reviewsService.GetReviewsByBuyer(currentUser)
+                        .FirstOrDefault(r => r.SellerId == review.SellerId && r.BuyerId == review.BuyerId);
 
-                    // Validate rating range
-                    if (review.Rating < 0 || review.Rating > 5)
+                    if (currentReview == null)
                     {
-                        ModelState.AddModelError("Rating", "Rating must be between 0 and 5");
+                        ModelState.AddModelError("", "Review not found");
                         var sellerData = await _userService.GetUserByIdAsync(review.SellerId);
                         ViewBag.Seller = sellerData;
                         return View(review);
                     }
 
                     _reviewsService.EditReview(
-                        review.Description,
-                        reviewImages,
-                        review.Rating,
-                        review.SellerId,
-                        review.BuyerId,
+                        currentReview.Description,
+                        currentReview.Images.ToList(),
+                        currentReview.Rating,
+                        currentReview.SellerId,
+                        currentReview.BuyerId,
                         review.Description,
                         review.Rating);
 
