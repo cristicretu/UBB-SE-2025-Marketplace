@@ -1,4 +1,4 @@
-﻿@model List<MarketMinds.Shared.Models.Product>
+@model List<MarketMinds.Shared.Models.Product>
 @{
     ViewData["Title"] = "My Cart";
 }
@@ -47,14 +47,18 @@
                                     <div class="flex items-center justify-center">
                                         <button class="quantity-btn minus-btn px-2 py-1 bg-gray-200 rounded-l"
                                             data-product-id="@item.Id">-</button>
+                                        @{
+                                            var quantity = ViewBag.Quantities != null && ViewBag.Quantities.ContainsKey(item.Id) ? 
+                                                ViewBag.Quantities[item.Id] : 1;
+                                        }
                                         <input type="number" class="quantity-input w-12 text-center border-0 bg-gray-100"
-                                            value="@item.Stock" min="1" data-product-id="@item.Id">
+                                            value="@quantity" min="1" max="@item.Stock" data-product-id="@item.Id">
                                         <button class="quantity-btn plus-btn px-2 py-1 bg-gray-200 rounded-r"
                                             data-product-id="@item.Id">+</button>
                                     </div>
                                 </td>
                                 <td class="py-4 text-right item-total" data-product-id="@item.Id">
-                                    @(((item.Price * item.Stock)).ToString("0.00") + " €")
+                                    @((item.Price * quantity).ToString("0.00") + " €")
                                 </td>
                                 <td class="py-4 text-right">
                                     <button type="button"

@@ -20,7 +20,16 @@ namespace WebMarketplace.Controllers
             var cartItems = await _shoppingCartService.GetCartItemsAsync(buyerId);
             var total = await _shoppingCartService.GetCartTotalAsync(buyerId);
 
+            // Create a dictionary to store quantities for each product
+            var quantities = new Dictionary<int, int>();
+            foreach (var item in cartItems)
+            {
+                var quantity = await _shoppingCartService.GetProductQuantityAsync(buyerId, item.Id);
+                quantities[item.Id] = quantity;
+            }
+
             ViewBag.CartTotal = total;
+            ViewBag.Quantities = quantities;
             return View(cartItems);
         }
 

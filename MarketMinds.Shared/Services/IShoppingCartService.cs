@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 // <copyright file="IShoppingCartService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
@@ -95,5 +95,14 @@ namespace MarketMinds.Shared.Services
         /// <param name="productId">The ID of the product to check.</param>
         /// <returns>A task that represents the asynchronous operation. The task result is true if the product is in the cart, otherwise false.</returns>
         Task<bool> IsProductInCartAsync(int buyerId, int productId);
+
+        /// <summary>
+        /// Gets the quantity of a specific product in the buyer's cart.
+        /// </summary>
+        /// <param name="buyerId">The ID of the buyer.</param>
+        /// <param name="productId">The ID of the product to check.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the quantity of the product in the cart.</returns>
+        /// <exception cref="Exception">Thrown when buyer cart item is not found.</exception>
+        Task<int> GetProductQuantityAsync(int buyerId, int productId);
     }
 }
