@@ -14,7 +14,6 @@ using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Services;
-using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -138,19 +137,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler(errorApp =>
-    {
-        errorApp.Run(async context =>
-        {
-            context.Response.StatusCode = 500;
-            var error = context.Features.Get<IExceptionHandlerFeature>();
-            if (error != null)
-            {
-                context.Items["ErrorMessage"] = error.Error.Message;
-            }
-            await context.Response.CompleteAsync();
-        });
-    });
+    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
