@@ -20,6 +20,8 @@ namespace Server.Repository
     {
         private readonly ApplicationDbContext dbContext;
 
+        private const int END_DATE_NUMBER_MONTHS_TO_ADD_PRODUCT_DETAILS = 3;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ContractRepository"/> class.
         /// </summary>
@@ -280,7 +282,7 @@ namespace Server.Repository
                 .FirstOrDefaultAsync() ?? throw new Exception("GetProductDetailsByContractIdAsync: Product not found for product ID: " + order.ProductID);
 
             // Return the product details
-            return (DateTime.Now, DateTime.Now.AddMonths(3), product.Price, product.Title);
+            return (DateTime.Now, DateTime.Now.AddMonths(END_DATE_NUMBER_MONTHS_TO_ADD_PRODUCT_DETAILS), product.Price, product.Title);
         }
 
         /// <summary>
