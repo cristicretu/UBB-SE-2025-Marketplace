@@ -59,8 +59,10 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/buyer");
             await this.ThrowOnError(nameof(GetContractBuyerAsync), response);
-            var buyerInfo = await response.Content.ReadFromJsonAsync<(int, string)>();
-            return buyerInfo;
+            
+            // Create a temporary class to deserialize the tuple properly
+            var buyerInfo = await response.Content.ReadFromJsonAsync<BuyerInfo>();
+            return buyerInfo != null ? (buyerInfo.BuyerId, buyerInfo.BuyerName) : (0, string.Empty);
         }
 
         /// <inheritdoc />
@@ -86,8 +88,15 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/buyer/{buyerId}");
             await this.ThrowOnError(nameof(GetContractsByBuyerAsync), response);
-            var contracts = await response.Content.ReadFromJsonAsync<List<Contract>>();
-            return contracts?.ConvertAll(c => (IContract)c) ?? new List<IContract>();
+            
+            try {
+                var contracts = await response.Content.ReadFromJsonAsync<List<Contract>>();
+                return contracts?.ConvertAll(c => (IContract)c) ?? new List<IContract>();
+            }
+            catch (JsonException ex)
+            {
+                return new List<IContract>();
+            }
         }
 
         /// <inheritdoc />
@@ -95,8 +104,10 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/seller");
             await this.ThrowOnError(nameof(GetContractSellerAsync), response);
-            var sellerInfo = await response.Content.ReadFromJsonAsync<(int, string)>();
-            return sellerInfo;
+            
+            var sellerInfo = await response.Content.ReadFromJsonAsync<SellerInfo>();
+
+            return sellerInfo != null ? (sellerInfo.SellerId, sellerInfo.SellerName) : (0, string.Empty);
         }
 
         /// <inheritdoc />
@@ -120,8 +131,9 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/order-details");
             await this.ThrowOnError(nameof(GetOrderDetailsAsync), response);
-            var orderDetails = await response.Content.ReadFromJsonAsync<(string, DateTime)>();
-            return orderDetails;
+            
+            var orderDetails = await response.Content.ReadFromJsonAsync<OrderDetails>();
+            return orderDetails != null ? (orderDetails.PaymentMethod, orderDetails.OrderDate) : (string.Empty, DateTime.Now);
         }
 
         /// <inheritdoc />
@@ -129,8 +141,24 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/order-summary");
             await this.ThrowOnError(nameof(GetOrderSummaryInformationAsync), response);
-            var orderSummary = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
-            return orderSummary ?? new Dictionary<string, object>();
+            
+            try {
+                var orderSummary = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>();
+                if (orderSummary == null) return new Dictionary<string, object>();
+                
+                // convert JsonElement values to appropriate .NET types
+                var result = new Dictionary<string, object>();
+                foreach (var item in orderSummary)
+                {
+                    result[item.Key] = ConvertJsonElement(item.Value);
+                }
+                
+                return result;
+            }
+            catch (JsonException ex)
+            {
+                return new Dictionary<string, object>();
+            }
         }
 
         /// <inheritdoc />
@@ -148,7 +176,7 @@
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/predefined/{(int)predefinedContractType}");
             await this.ThrowOnError(nameof(GetPredefinedContractByPredefineContractTypeAsync), response);
             var contract = await response.Content.ReadFromJsonAsync<PredefinedContract>();
-            return contract ?? new PredefinedContract { ContractID = 0, ContractContent = string.Empty };
+            return contract ?? new PredefinedContract { ContractID = 1, ContractContent = string.Empty };
         }
 
         /// <inheritdoc />
@@ -158,10 +186,12 @@
             await this.ThrowOnError(nameof(GetProductDetailsByContractIdAsync), response);
             try
             {
-                var productDetails = await response.Content.ReadFromJsonAsync<(DateTime?, DateTime?, double, string)?>();
-                return productDetails;
+                var productDetails = await response.Content.ReadFromJsonAsync<ProductDetails>();
+                if (productDetails == null) return null;
+                
+                return (productDetails.StartDate, productDetails.EndDate, productDetails.Price, productDetails.Name);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
                 return null;
             }
@@ -177,6 +207,58 @@
                     errorMessage = response.ReasonPhrase;
                 }
                 throw new Exception($"{methodName}: {errorMessage}");
+            }
+        }
+
+        private class BuyerInfo
+        {
+            public int BuyerId { get; set; }
+            public string BuyerName { get; set; } = string.Empty;
+        }
+
+        private class SellerInfo
+        {
+            public int SellerId { get; set; }
+            public string SellerName { get; set; } = string.Empty;
+        }
+
+        private class OrderDetails
+        {
+            public string PaymentMethod { get; set; } = string.Empty;
+            public DateTime OrderDate { get; set; }
+        }
+
+        private class ProductDetails
+        {
+            public DateTime? StartDate { get; set; }
+            public DateTime? EndDate { get; set; }
+            public double Price { get; set; }
+            public string Name { get; set; } = string.Empty;
+        }
+
+        // Helper method to convert JsonElement to appropriate .NET type
+        private object ConvertJsonElement(JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.String:
+                    return element.GetString() ?? string.Empty;
+                case JsonValueKind.Number:
+                    if (element.TryGetInt32(out int intValue))
+                        return intValue;
+                    if (element.TryGetInt64(out long longValue))
+                        return longValue;
+                    if (element.TryGetDouble(out double doubleValue))
+                        return doubleValue;
+                    return 0;
+                case JsonValueKind.True:
+                    return true;
+                case JsonValueKind.False:
+                    return false;
+                case JsonValueKind.Null:
+                    return null;
+                default:
+                    return element.ToString();
             }
         }
     }

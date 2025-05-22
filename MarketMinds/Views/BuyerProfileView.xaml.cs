@@ -2,6 +2,7 @@
 {
     using System;
     using System.Configuration;
+    using System.Diagnostics;
     using System.Threading.Tasks;
 
     using MarketMinds.ViewModels;
@@ -166,8 +167,9 @@
 
         private async void GenerateContractButton_Clicked(object sender, RoutedEventArgs e)
         {
-                await contractViewModel.GenerateAndSaveContractAsync();
-
+            if (long.TryParse(this.contractID.Text, out long contractId))
+            {
+                await contractViewModel.GenerateAndSaveContractAsync(contractId);
                 var successDialog = new ContentDialog
                 {
                     Title = "Success",
@@ -176,6 +178,11 @@
                     XamlRoot = this.Content.XamlRoot
                 };
                 await successDialog.ShowAsync();
+            }
+            else
+            {
+                await ShowErrorDialogAsync("Invalid Input", "The contract ID must be a valid number.");
+            }
         }
 
         private async void BorrowButton_Clicked(object sender, RoutedEventArgs e)
