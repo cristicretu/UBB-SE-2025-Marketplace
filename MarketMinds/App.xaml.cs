@@ -29,9 +29,9 @@ using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
-using MarketMinds.ViewModels.ContractRenewViewModel;
 using MarketMinds.Views;
 using MarketMinds.ViewModels.Admin;
+using MarketMinds.ViewModels.ContractRenewViewModel;
 using static MarketMinds.ViewModels.ContractRenewViewModel;
 
 namespace MarketMinds
@@ -406,6 +406,12 @@ namespace MarketMinds
             {
                 Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
             }
+        }
+
+        public static void ResetLoginState()
+        {
+            LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
+            CurrentUser = null;
         }
     }
 }
