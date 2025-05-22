@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.BuyProductsService;
 using WebMarketplace.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace WebMarketplace.Controllers
         private readonly IProductService _productService;
         private readonly IDummyWalletService _dummyWalletService;
         private readonly IShoppingCartService _shoppingCartService;
+        private readonly IBuyProductsService _buyProductsService;
 
         public CheckoutController(
             IOrderHistoryService orderHistoryService,
@@ -26,7 +28,8 @@ namespace WebMarketplace.Controllers
             IOrderService orderService,
             IProductService productService,
             IDummyWalletService dummyWalletService,
-            IShoppingCartService shoppingCartService)
+            IShoppingCartService shoppingCartService,
+            IBuyProductsService buyProductsService)
         {
             _orderHistoryService = orderHistoryService;
             _orderSummaryService = orderSummaryService;
@@ -34,6 +37,7 @@ namespace WebMarketplace.Controllers
             _productService = productService;
             _dummyWalletService = dummyWalletService;
             _shoppingCartService = shoppingCartService;
+            _buyProductsService = buyProductsService;
         }
 
         public async Task<IActionResult> BillingInfo(int orderHistoryId)
@@ -64,20 +68,45 @@ namespace WebMarketplace.Controllers
         public async Task<IActionResult> BillingInfo(BillingInfoViewModel model)
         {
             List<Product> cartItems = new List<Product>();
+            Dictionary<int, int> quantities = new Dictionary<int, int>();
+            System.Diagnostics.Debug.WriteLine("BillingInfo POST action initiated");
+
             try
             {
-                cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
+                // Get cart items and quantities
+                int userId = UserSession.CurrentUserId ?? 1;
+                cartItems = await _shoppingCartService.GetCartItemsAsync(userId);
+                System.Diagnostics.Debug.WriteLine($"Retrieved {cartItems?.Count ?? 0} cart items for user {userId}");
+
+                // Store quantities separately
+                foreach (var item in cartItems)
+                {
+                    var quantity = await _shoppingCartService.GetProductQuantityAsync(userId, item.Id);
+                    quantities[item.Id] = quantity;
+                    System.Diagnostics.Debug.WriteLine($"Product {item.Id} ({item.Title}) quantity: {quantity}");
+
+                    // Log the product type
+                    if (item is BuyProduct buyProduct)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Product {item.Id} is BuyProduct with stock: {buyProduct.Stock}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Product {item.Id} is of type: {item.GetType().Name}");
+                    }
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading cart items initially: {ex.Message}");
-                // Potentially add a model error here if cart loading is critical before validation
             }
+
             model.ProductList = cartItems;
 
             if (!ModelState.IsValid)
             {
                 model.CalculateOrderTotal();
+                System.Diagnostics.Debug.WriteLine("Model state is invalid, returning to form");
                 return View(model);
             }
 
@@ -85,10 +114,12 @@ namespace WebMarketplace.Controllers
             {
                 model.CalculateOrderTotal();
                 await ProcessWalletRefill(model);
+                System.Diagnostics.Debug.WriteLine("Wallet payment processed");
             }
             else
             {
                 model.CalculateOrderTotal();
+                System.Diagnostics.Debug.WriteLine($"Payment method: {model.SelectedPaymentMethod}, Total: {model.Total}");
             }
 
             try
@@ -98,10 +129,11 @@ namespace WebMarketplace.Controllers
                 if (cartItems == null || !cartItems.Any())
                 {
                     ModelState.AddModelError(string.Empty, "Your cart is empty. Please add items before proceeding.");
+                    System.Diagnostics.Debug.WriteLine("Cart is empty, returning to form");
                     return View(model);
                 }
 
-                var orderRequestDto = new OrderCreationRequestDto { /* ... (mapping) ... */ }; // Assume mapping is correct as before
+                var orderRequestDto = new OrderCreationRequestDto(); // Assume mapping is correct as before
                 // Mapping DTO from ViewModel
                 orderRequestDto.Subtotal = model.Subtotal;
                 orderRequestDto.WarrantyTax = model.WarrantyTax;
@@ -114,9 +146,11 @@ namespace WebMarketplace.Controllers
                 orderRequestDto.ZipCode = model.ZipCode;
                 orderRequestDto.AdditionalInfo = model.AdditionalInfo;
                 orderRequestDto.SelectedPaymentMethod = model.SelectedPaymentMethod;
+                System.Diagnostics.Debug.WriteLine("Created order request DTO");
 
                 var newOrderHistoryId = await _orderService.CreateOrderFromCartAsync(orderRequestDto, userId, cartItems);
                 model.OrderHistoryID = newOrderHistoryId;
+                System.Diagnostics.Debug.WriteLine($"Created order with history ID: {newOrderHistoryId}");
 
                 // Save this data in TempData so the next request can access it
                 TempData["OrderFullName"] = model.FullName;
@@ -127,22 +161,78 @@ namespace WebMarketplace.Controllers
                 TempData["OrderSubtotal"] = model.Subtotal.ToString();
                 TempData["OrderDeliveryFee"] = model.DeliveryFee.ToString();
                 TempData["OrderTotal"] = model.Total.ToString();
+                TempData["OrderHistoryID"] = newOrderHistoryId.ToString();
+                System.Diagnostics.Debug.WriteLine("Stored order details in TempData");
 
                 // Store the cart items - create a simplified list of product info that can be serialized
                 var productList = new List<Dictionary<string, string>>();
+
+                // Update stock for each product in the cart
                 foreach (var item in cartItems)
                 {
-                    productList.Add(new Dictionary<string, string> {
-                        { "Id", item.Id.ToString() },
-                        { "Title", item.Title },
-                        { "Price", item.Price.ToString() },
-                        { "SellerId", item.SellerId.ToString() }
-                    });
+                    try
+                    {
+                        // Get quantity for this product
+                        int quantity = quantities.ContainsKey(item.Id) ? quantities[item.Id] : 1;
+
+                        // Log the product info for debugging
+                        System.Diagnostics.Debug.WriteLine($"Processing product: ID={item.Id}, Title={item.Title}, Type={item.GetType().Name}, Quantity={quantity}");
+
+                        // Only decrease stock for BuyProducts
+                        if (item is BuyProduct buyProduct)
+                        {
+                            // Log stock before update
+                            System.Diagnostics.Debug.WriteLine($"Current stock for product {item.Id}: {buyProduct.Stock}");
+
+                            try
+                            {
+                                // IMPORTANT: Pass the actual quantity to decrease by
+                                await _buyProductsService.DecreaseProductStockAsync(item.Id, quantity);
+
+                                // Log confirmation
+                                System.Diagnostics.Debug.WriteLine($"Stock update called for product {item.Id}: decreased by {quantity}");
+                            }
+                            catch (Exception stockEx)
+                            {
+                                // Log any errors when updating stock
+                                System.Diagnostics.Debug.WriteLine($"ERROR updating stock: {stockEx.Message}");
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Skipping stock update for non-BuyProduct: {item.Id} ({item.GetType().Name})");
+                        }
+
+                        // Add to product list for serialization with quantity information
+                        var productDict = new Dictionary<string, string> {
+                            { "Id", item.Id.ToString() },
+                            { "Title", item.Title },
+                            { "Price", item.Price.ToString() },
+                            { "Quantity", quantity.ToString() },
+                            { "SellerId", item.SellerId.ToString() }
+                        };
+
+                        productList.Add(productDict);
+                        System.Diagnostics.Debug.WriteLine($"Added product to serialized list: {item.Id} ({item.Title})");
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log but continue with other products
+                        System.Diagnostics.Debug.WriteLine($"Error processing product {item.Id}: {ex.Message}");
+                    }
                 }
 
                 // Store serialized product info
-                TempData["OrderProducts"] = JsonSerializer.Serialize(productList);
+                var serializedProducts = System.Text.Json.JsonSerializer.Serialize(productList);
+                TempData["OrderProducts"] = serializedProducts;
                 TempData["HasOrderData"] = "true";
+
+                // Debug logging
+                System.Diagnostics.Debug.WriteLine($"Saved {productList.Count} products to TempData");
+                System.Diagnostics.Debug.WriteLine($"Serialized data: {serializedProducts.Substring(0, Math.Min(100, serializedProducts.Length))}...");
+
+                // Directly pass products to FinalizePurchase to ensure they're available
+                TempData["ProductCount"] = cartItems.Count.ToString();
             }
             catch (Exception ex)
             {
@@ -181,6 +271,10 @@ namespace WebMarketplace.Controllers
             // Debug info
             System.Diagnostics.Debug.WriteLine($"FinalizePurchase action called with orderHistoryId: {orderHistoryId}");
 
+            // Force TempData persistence
+            TempData.Keep("OrderProducts");
+            TempData.Keep("HasOrderData");
+
             try
             {
                 // First check if we have order data from TempData (from the same request flow)
@@ -203,36 +297,45 @@ namespace WebMarketplace.Controllers
                     if (double.TryParse(TempData["OrderTotal"]?.ToString(), out double total))
                         model.Total = total;
 
+                    if (int.TryParse(TempData["OrderHistoryID"]?.ToString(), out int historyId))
+                        model.OrderHistoryID = historyId;
+
                     // Recover product list from TempData
-                    if (TempData["OrderProducts"] != null)
+                    string productsJson = TempData["OrderProducts"]?.ToString();
+                    System.Diagnostics.Debug.WriteLine($"Products JSON: {(productsJson?.Length > 0 ? $"{productsJson.Substring(0, Math.Min(100, productsJson.Length))}..." : "empty")}");
+
+                    if (!string.IsNullOrEmpty(productsJson))
                     {
                         try
                         {
-                            string productsJson = TempData["OrderProducts"]?.ToString();
-                            var productDictList = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(productsJson);
+                            var productDictList = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, string>>>(productsJson);
+                            TempData.Keep("OrderProducts"); // Keep it for the view
 
-                            List<Product> orderProducts = new List<Product>();
-                            foreach (var productDict in productDictList)
+                            if (productDictList != null && productDictList.Any())
                             {
-                                var product = new BuyProduct(); // Using concrete BuyProduct instead of abstract Product
+                                List<Product> orderProducts = new List<Product>();
+                                foreach (var productDict in productDictList)
+                                {
+                                    var product = new BuyProduct();
 
-                                if (productDict.TryGetValue("Id", out string idStr) && int.TryParse(idStr, out int id))
-                                    product.Id = id;
+                                    if (productDict.TryGetValue("Id", out string idStr) && int.TryParse(idStr, out int id))
+                                        product.Id = id;
 
-                                if (productDict.TryGetValue("Title", out string title))
-                                    product.Title = title;
+                                    if (productDict.TryGetValue("Title", out string title))
+                                        product.Title = title;
 
-                                if (productDict.TryGetValue("Price", out string priceStr) && double.TryParse(priceStr, out double price))
-                                    product.Price = price;
+                                    if (productDict.TryGetValue("Price", out string priceStr) && double.TryParse(priceStr, out double price))
+                                        product.Price = price;
 
-                                if (productDict.TryGetValue("SellerId", out string sellerIdStr) && int.TryParse(sellerIdStr, out int sellerId))
-                                    product.SellerId = sellerId;
+                                    if (productDict.TryGetValue("SellerId", out string sellerIdStr) && int.TryParse(sellerIdStr, out int sellerId))
+                                        product.SellerId = sellerId;
 
-                                orderProducts.Add(product);
+                                    orderProducts.Add(product);
+                                }
+
+                                model.ProductList = orderProducts;
+                                System.Diagnostics.Debug.WriteLine($"Successfully recovered {orderProducts.Count} products from TempData");
                             }
-
-                            model.ProductList = orderProducts;
-                            System.Diagnostics.Debug.WriteLine($"Recovered {orderProducts.Count} products from TempData");
                         }
                         catch (Exception ex)
                         {
@@ -240,22 +343,22 @@ namespace WebMarketplace.Controllers
                         }
                     }
 
-                    // Don't try to get products from cart as it might have been cleared already
+                    // Make sure we have products
                     if (model.ProductList == null || !model.ProductList.Any())
                     {
-                        model.ProductList = new List<Product>();
-                        // Try to get from cart as a last resort
+                        // Try to get products directly from order history
                         try
                         {
-                            var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
-                            if (cartItems != null && cartItems.Any())
+                            var orderProducts = await _orderHistoryService.GetProductsFromOrderHistoryAsync(orderHistoryId);
+                            if (orderProducts != null && orderProducts.Any())
                             {
-                                model.ProductList = cartItems;
+                                model.ProductList = orderProducts;
+                                System.Diagnostics.Debug.WriteLine($"Retrieved {orderProducts.Count} products from order history");
                             }
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            // Ignore cart errors here
+                            System.Diagnostics.Debug.WriteLine($"Error getting products from order history: {ex.Message}");
                         }
                     }
                 }
@@ -271,12 +374,6 @@ namespace WebMarketplace.Controllers
                     {
                         model.ProductList = orderProducts;
                         System.Diagnostics.Debug.WriteLine($"Products found: {model.ProductList?.Count ?? 0}");
-                    }
-                    else
-                    {
-                        // Fallback to cart
-                        var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId ?? 1);
-                        model.ProductList = cartItems ?? new List<Product>();
                     }
 
                     // Only try to get order data if we have orders
@@ -305,6 +402,24 @@ namespace WebMarketplace.Controllers
                                 model.Total = orderSummary.FinalTotal;
                             }
                         }
+                    }
+                }
+
+                // If we still don't have products, try the cart as a final fallback
+                if ((model.ProductList == null || !model.ProductList.Any()) && UserSession.CurrentUserId.HasValue)
+                {
+                    try
+                    {
+                        var cartItems = await _shoppingCartService.GetCartItemsAsync(UserSession.CurrentUserId.Value);
+                        if (cartItems != null && cartItems.Any())
+                        {
+                            model.ProductList = cartItems;
+                            System.Diagnostics.Debug.WriteLine($"Using cart items as fallback: {cartItems.Count} products");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error getting cart items as fallback: {ex.Message}");
                     }
                 }
 
@@ -338,6 +453,12 @@ namespace WebMarketplace.Controllers
                     model.DeliveryFee = 0;
                     model.Total = 0;
                 }
+            }
+
+            // Ensure we have a non-null ProductList
+            if (model.ProductList == null)
+            {
+                model.ProductList = new List<Product>();
             }
 
             return View(model);
@@ -405,6 +526,66 @@ namespace WebMarketplace.Controllers
             double walletBalance = await _dummyWalletService.GetWalletBalanceAsync(1);
             double newBalance = walletBalance - model.Total;
             await _dummyWalletService.UpdateWalletBalance(1, newBalance);
+        }
+
+        [HttpPost]
+        [Route("api/checkout/updatestock")]
+        public async Task<IActionResult> UpdateStock([FromBody] StockUpdateModel model)
+        {
+            try
+            {
+                if (model == null || model.ProductId <= 0 || model.Quantity <= 0)
+                {
+                    return BadRequest(new { Message = "Invalid product data" });
+                }
+
+                // Get product to check current stock
+                var product = await _buyProductsService.GetProductByIdAsync(model.ProductId);
+
+                if (product == null)
+                {
+                    return NotFound(new { Message = $"Product with ID {model.ProductId} not found" });
+                }
+
+                if (product is BuyProduct buyProduct)
+                {
+                    // Log initial stock
+                    System.Diagnostics.Debug.WriteLine($"Current stock for product {model.ProductId}: {buyProduct.Stock}");
+
+                    // Calculate new stock
+                    int newStock = Math.Max(0, buyProduct.Stock - model.Quantity);
+                    int oldStock = buyProduct.Stock;
+
+                    // Update using service as intended
+                    await _buyProductsService.UpdateProductStockAsync(model.ProductId, newStock);
+
+                    // Log the results
+                    System.Diagnostics.Debug.WriteLine($"Stock updated: Product {model.ProductId} decreased by {model.Quantity}, new stock: {newStock}");
+
+                    return Ok(new
+                    {
+                        Message = $"Stock updated successfully for product {model.ProductId}",
+                        ProductId = model.ProductId,
+                        OldStock = oldStock,
+                        NewStock = newStock
+                    });
+                }
+                else
+                {
+                    return BadRequest(new { Message = "Product is not a buyable product" });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error updating stock: {ex.Message}");
+                return StatusCode(500, new { Message = $"Error updating stock: {ex.Message}" });
+            }
+        }
+
+        public class StockUpdateModel
+        {
+            public int ProductId { get; set; }
+            public int Quantity { get; set; }
         }
     }
 }

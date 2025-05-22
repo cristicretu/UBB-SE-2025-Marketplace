@@ -142,19 +142,19 @@
             <div class="space-y-2">
                 <div class="flex justify-between">
                     <span class="text-gray-800">Subtotal:</span>
-                    <span class="text-gray-800">@Model.Subtotal.ToString("C")</span>
+                    <span class="text-gray-800">@Model.Subtotal.ToString("0.00") €</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-800">Warranty Tax:</span>
-                    <span class="text-gray-800">@Model.WarrantyTax.ToString("C")</span>
+                    <span class="text-gray-800">@Model.WarrantyTax.ToString("0.00") €</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-800">Delivery fee:</span>
-                    <span class="text-gray-800">@Model.DeliveryFee.ToString("C")</span>
+                    <span class="text-gray-800">@Model.DeliveryFee.ToString("0.00") €</span>
                 </div>
                 <div class="flex justify-between font-semibold">
                     <span class="text-gray-800">Total:</span>
-                    <span class="text-gray-800">@Model.Total.ToString("C")</span>
+                    <span class="text-gray-800">@Model.Total.ToString("0.00") €</span>
                 </div>
             </div>
         </div>

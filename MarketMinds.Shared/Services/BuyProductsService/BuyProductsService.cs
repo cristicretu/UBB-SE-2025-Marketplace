@@ -256,5 +256,76 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Updates the stock quantity for a product
+        /// </summary>
+        /// <param name="productId">Product ID</param>
+        /// <param name="newStockQuantity">New stock quantity</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task UpdateProductStockAsync(int productId, int newStockQuantity)
+        {
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be a positive number.", nameof(productId));
+            }
+
+            if (newStockQuantity < 0)
+            {
+                throw new ArgumentException("Stock quantity cannot be negative.", nameof(newStockQuantity));
+            }
+
+            try
+            {
+                // Get current product to check current stock
+                var product = GetProductById(productId);
+
+                // Calculate how much to decrease by
+                int decreaseAmount = product.Stock - newStockQuantity;
+                if (decreaseAmount < 0)
+                {
+                    // We're actually increasing stock
+                    decreaseAmount = 0;
+                }
+
+                // Call the repository with the decrease amount
+                await buyProductsRepository.UpdateProductStockAsync(productId, decreaseAmount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating product stock: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Decreases the stock quantity for a product by the specified amount
+        /// </summary>
+        /// <param name="productId">Product ID</param>
+        /// <param name="decreaseAmount">Amount to decrease stock by</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task DecreaseProductStockAsync(int productId, int decreaseAmount)
+        {
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be a positive number.", nameof(productId));
+            }
+
+            if (decreaseAmount <= 0)
+            {
+                throw new ArgumentException("Decrease amount must be positive.", nameof(decreaseAmount));
+            }
+
+            try
+            {
+                // Directly call the repository with the decrease amount
+                await buyProductsRepository.UpdateProductStockAsync(productId, decreaseAmount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error decreasing product stock: {ex.Message}");
+                throw;
+            }
+        }
     }
 }

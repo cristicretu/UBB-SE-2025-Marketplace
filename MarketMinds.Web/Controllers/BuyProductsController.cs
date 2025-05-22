@@ -33,7 +33,7 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogInformation("Fetching all buy products");
                 var products = _productService.GetSortedFilteredProducts(null, null, null, null, null);
                 var buyProducts = new List<BuyProduct>();
-                
+
                 foreach (var product in products)
                 {
                     if (product is BuyProduct buyProduct)
@@ -41,7 +41,7 @@ namespace MarketMinds.Web.Controllers
                         buyProducts.Add(buyProduct);
                     }
                 }
-                
+
                 return View(buyProducts);
             }
             catch (Exception ex)
@@ -62,7 +62,7 @@ namespace MarketMinds.Web.Controllers
                 // We need to get the product from the products list and cast it to BuyProduct
                 var products = _productService.GetSortedFilteredProducts(null, null, null, null, null);
                 BuyProduct buyProduct = null;
-                
+
                 foreach (var product in products)
                 {
                     if (product is BuyProduct bp && bp.Id == id)
@@ -71,13 +71,13 @@ namespace MarketMinds.Web.Controllers
                         break;
                     }
                 }
-                
+
                 if (buyProduct == null)
                 {
                     _logger.LogWarning($"Buy product with ID {id} not found");
                     return NotFound();
                 }
-                
+
                 return View(buyProduct);
             }
             catch (Exception ex)
@@ -93,4 +93,4 @@ namespace MarketMinds.Web.Controllers
             return RedirectToAction("Create", "Home");
         }
     }
-} 
+}
