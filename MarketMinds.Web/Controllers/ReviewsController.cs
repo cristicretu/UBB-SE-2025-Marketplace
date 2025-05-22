@@ -95,17 +95,11 @@ namespace MarketMinds.Web.Controllers
             }
         }
 
-        // GET: Reviews/Create
-        [HttpGet("Create")]
-        public IActionResult Create()
-        {
-            return RedirectToAction("Index");
-        }
-
-        // GET: Reviews/Create/{sellerId}
+        // GET: Reviews/Create/{sellerId:int}
         [HttpGet("Create/{sellerId:int}")]
         public async Task<IActionResult> Create(int sellerId)
         {
+            _logger.LogInformation("Create method called with seller ID: {SellerId}", sellerId);
             try
             {
                 if (sellerId <= 0)
@@ -137,8 +131,9 @@ namespace MarketMinds.Web.Controllers
                     return BadRequest("You have already reviewed this seller");
                 }
 
+                _logger.LogInformation("Preparing review creation view for seller {SellerId}", sellerId);
                 ViewBag.Seller = seller;
-                return View(new Review { SellerId = sellerId });
+                return View("Create", new Review { SellerId = sellerId });
             }
             catch (Exception ex)
             {
