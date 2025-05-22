@@ -361,6 +361,15 @@ namespace MarketMinds.ViewModels
                 fieldReplacements["DueDate"] = "N/A";
             }
 
+            foreach (var orderSummaryTuple in orderSummaryData)
+            {
+                if (fieldReplacements.ContainsKey(orderSummaryTuple.Key))
+                {
+                    continue;
+                }
+                fieldReplacements.Add(orderSummaryTuple.Key, orderSummaryTuple.Value.ToString());
+            }
+
             return fieldReplacements;
         }
 
@@ -373,6 +382,7 @@ namespace MarketMinds.ViewModels
         public async Task GenerateAndSaveContractAsync()
         {
             IContract contract = new Contract();
+            contract.ContractID = 1;
             PredefinedContractType contractType = PredefinedContractType.BorrowingContract; // Example contract type
             // Check if the contract is null.
             if (contract == null)
