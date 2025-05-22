@@ -23,7 +23,7 @@ namespace MarketMinds.Shared.Services
             int orderId,
             DateOnly estimatedDeliveryDate,
             string deliveryAddress,
-            OrderStatus initialStatus = OrderStatus.Pending,
+            OrderStatus initialStatus = OrderStatus.PROCESSING,
             string initialDescription = "Order received");
         Task<List<TrackedOrder>> GetTrackedOrdersByBuyerIdAsync(int buyerId);
         Task<int> CalculateDeliveryProgressPercentageAsync(int trackedOrderId);

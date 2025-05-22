@@ -97,11 +97,49 @@ namespace WebMarketplace.Controllers
         {
             _logger.LogInformation($"TrackOrder action called with orderId: {orderId}");
             
-            var trackedOrder = await _trackedOrderService.GetTrackedOrderByIDAsync(orderId);
+            var trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(orderId);
             if (trackedOrder == null)
             {
                 _logger.LogWarning($"Tracked order not found for orderId: {orderId}");
-                return NotFound();
+                
+                // Try to get the order details to get a proper delivery address
+                try {
+                    // Get the order first and then get its order summary
+                    var order = await _orderService.GetOrderByIdAsync(orderId);
+                    if (order == null)
+                    {
+                        _logger.LogError($"Order not found for orderId: {orderId}");
+                        ViewBag.ErrorMessage = $"Order with ID {orderId} could not be found. Please check the order ID and try again.";
+                        return View("TrackOrder"); // Return to the tracking form with an error
+                    }
+                    
+                    var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(order.OrderSummaryID);
+                    string deliveryAddress = orderSummary?.Address ?? "No delivery address provided";
+                    
+                    await _trackedOrderService.CreateTrackedOrderForOrderAsync(
+                        orderId, 
+                        DateOnly.FromDateTime(DateTime.Now.AddDays(7)), // Better estimate for delivery
+                        deliveryAddress,
+                        OrderStatus.PROCESSING,
+                        "Order received"
+                    );
+                }
+                catch (Exception ex) {
+                    _logger.LogError(ex, $"Error creating tracked order for orderId: {orderId}");
+                    ViewBag.ErrorMessage = $"Error creating tracked order: {ex.Message}. Please try again later.";
+                    return View("TrackOrder"); // Return to the tracking form with an error
+                }
+                
+                _logger.LogInformation($"Creating new tracked order for orderId: {orderId}");
+                trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(orderId);
+                if (trackedOrder == null)
+                {
+                    _logger.LogError($"Failed to create tracked order for orderId: {orderId}");
+                    ViewBag.ErrorMessage = "Failed to create tracked order. Please try again later.";
+                    return View("TrackOrder"); // Return to the tracking form with an error
+                }
+                _logger.LogInformation($"Created new tracked order for orderId: {orderId}");
+                return View("TrackedOrder", trackedOrder);
             }
 
             if (hasControl)
@@ -122,6 +160,7 @@ namespace WebMarketplace.Controllers
         {
             try
             {
+                // Fixed: Use GetTrackedOrderByIDAsync since we already have the tracked order ID
                 var trackedOrder = await _trackedOrderService.GetTrackedOrderByIDAsync(trackedOrderId);
                 if (trackedOrder == null)
                 {
@@ -131,9 +170,10 @@ namespace WebMarketplace.Controllers
                 await _trackedOrderService.RevertToPreviousCheckpointAsync(trackedOrder);
                 return Json(new { success = true });
             }
-            catch
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error reverting checkpoint" });
+                _logger.LogError(ex, $"Error reverting checkpoint for tracked order ID {trackedOrderId}");
+                return Json(new { success = false, message = $"Error reverting checkpoint: {ex.Message}" });
             }
         }
 
@@ -165,12 +205,14 @@ namespace WebMarketplace.Controllers
             try
             {
                 checkpoint.TrackedOrderID = trackedOrderId;
+                _logger.LogInformation($"Adding checkpoint with status {checkpoint.Status} to tracked order {trackedOrderId}");
                 await _trackedOrderService.AddOrderCheckpointAsync(checkpoint);
                 return Json(new { success = true });
             }
-            catch
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error adding checkpoint" });
+                _logger.LogError(ex, $"Error adding checkpoint to tracked order {trackedOrderId}");
+                return Json(new { success = false, message = $"Error adding checkpoint: {ex.Message}" });
             }
         }
 
@@ -180,6 +222,7 @@ namespace WebMarketplace.Controllers
         {
             try
             {
+                _logger.LogInformation($"Updating checkpoint {checkpoint.CheckpointID} with status {checkpoint.Status} for tracked order {trackedOrderId}");
                 await _trackedOrderService.UpdateOrderCheckpointAsync(
                     checkpoint.CheckpointID,
                     checkpoint.Timestamp,
@@ -188,9 +231,10 @@ namespace WebMarketplace.Controllers
                     checkpoint.Status);
                 return Json(new { success = true });
             }
-            catch
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error updating checkpoint" });
+                _logger.LogError(ex, $"Error updating checkpoint {checkpoint.CheckpointID} for tracked order {trackedOrderId}");
+                return Json(new { success = false, message = $"Error updating checkpoint: {ex.Message}" });
             }
         }
 
