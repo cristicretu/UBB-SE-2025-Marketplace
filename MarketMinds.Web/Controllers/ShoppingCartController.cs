@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace WebMarketplace.Controllers
 {
@@ -7,10 +10,13 @@ namespace WebMarketplace.Controllers
     public class ShoppingCartController : Controller
     {
         private readonly IShoppingCartService _shoppingCartService;
+        private readonly IBuyProductsService _buyProductsService;
 
-        public ShoppingCartController(IShoppingCartService shoppingCartService)
+        // Only have one constructor that accepts both services
+        public ShoppingCartController(IShoppingCartService shoppingCartService, IBuyProductsService buyProductsService)
         {
             _shoppingCartService = shoppingCartService ?? throw new ArgumentNullException(nameof(shoppingCartService));
+            _buyProductsService = buyProductsService ?? throw new ArgumentNullException(nameof(buyProductsService));
         }
 
         [HttpGet]
@@ -23,19 +29,75 @@ namespace WebMarketplace.Controllers
             var quantities = new Dictionary<int, int>();
             double calculatedTotal = 0;
 
+            // Transform the product list to ensure BuyProducts with correct Stock values
+            var enhancedCartItems = new List<Product>();
+
             foreach (var item in cartItems)
             {
-                var quantity = await _shoppingCartService.GetProductQuantityAsync(buyerId, item.Id);
-                quantities[item.Id] = quantity;
+                // Try to get the actual BuyProduct with stock information
+                BuyProduct buyProduct = null;
+                try
+                {
+                    // Use sync version for immediate results
+                    buyProduct = _buyProductsService.GetProductById(item.Id);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error getting buy product: {ex.Message}");
+                }
 
-                // Calculate the item total and add to cart total
-                calculatedTotal += item.Price * quantity;
+                if (buyProduct != null)
+                {
+                    enhancedCartItems.Add(buyProduct);
+
+                    var quantity = await _shoppingCartService.GetProductQuantityAsync(buyerId, item.Id);
+
+                    // Ensure the quantity doesn't exceed stock
+                    if (quantity > buyProduct.Stock)
+                    {
+                        quantity = buyProduct.Stock;
+                        // Update the quantity in the cart
+                        await _shoppingCartService.UpdateProductQuantityAsync(buyerId, item.Id, quantity);
+                    }
+
+                    quantities[item.Id] = quantity;
+                    calculatedTotal += buyProduct.Price * quantity;
+                }
+                else
+                {
+                    // If we can't get a BuyProduct, still add the original product
+                    enhancedCartItems.Add(item);
+                    var quantity = await _shoppingCartService.GetProductQuantityAsync(buyerId, item.Id);
+                    quantities[item.Id] = quantity;
+                    calculatedTotal += item.Price * quantity;
+                }
             }
 
             // Use the calculated total instead of relying solely on the service
             ViewBag.CartTotal = calculatedTotal;
             ViewBag.Quantities = quantities;
-            return View(cartItems);
+            return View(enhancedCartItems);
+        }
+
+        // Helper method to get a product with stock information
+        private async Task<BuyProduct> GetProductWithStockAsync(int productId)
+        {
+            try
+            {
+                // Use the dedicated buy products service
+                var product = await _buyProductsService.GetProductByIdAsync(productId);
+                if (product is BuyProduct buyProduct)
+                {
+                    return buyProduct;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting product: {ex.Message}");
+                return null;
+            }
         }
 
         [HttpPost]
@@ -95,6 +157,28 @@ namespace WebMarketplace.Controllers
                 if (quantity <= 0)
                 {
                     return BadRequest(new { success = false, message = "Quantity must be greater than zero." });
+                }
+
+                // Get product to check stock
+                BuyProduct buyProduct = null;
+                try
+                {
+                    // Try direct sync access first
+                    buyProduct = _buyProductsService.GetProductById(productId);
+                }
+                catch
+                {
+                    // Fall back to async if needed
+                    buyProduct = await GetProductWithStockAsync(productId);
+                }
+
+                if (buyProduct != null && quantity > buyProduct.Stock)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = $"Cannot add more than the available stock ({buyProduct.Stock})."
+                    });
                 }
 
                 int buyerId = GetCurrentBuyerId();
