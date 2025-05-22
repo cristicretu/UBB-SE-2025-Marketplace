@@ -18,17 +18,22 @@ namespace WebMarketplace.Controllers
         {
             int buyerId = GetCurrentBuyerId();
             var cartItems = await _shoppingCartService.GetCartItemsAsync(buyerId);
-            var total = await _shoppingCartService.GetCartTotalAsync(buyerId);
 
             // Create a dictionary to store quantities for each product
             var quantities = new Dictionary<int, int>();
+            double calculatedTotal = 0;
+
             foreach (var item in cartItems)
             {
                 var quantity = await _shoppingCartService.GetProductQuantityAsync(buyerId, item.Id);
                 quantities[item.Id] = quantity;
+
+                // Calculate the item total and add to cart total
+                calculatedTotal += item.Price * quantity;
             }
 
-            ViewBag.CartTotal = total;
+            // Use the calculated total instead of relying solely on the service
+            ViewBag.CartTotal = calculatedTotal;
             ViewBag.Quantities = quantities;
             return View(cartItems);
         }
@@ -86,17 +91,36 @@ namespace WebMarketplace.Controllers
         {
             try
             {
+                // Validate quantity
+                if (quantity <= 0)
+                {
+                    return BadRequest(new { success = false, message = "Quantity must be greater than zero." });
+                }
+
                 int buyerId = GetCurrentBuyerId();
                 await _shoppingCartService.UpdateProductQuantityAsync(buyerId, productId, quantity);
-                var total = await _shoppingCartService.GetCartTotalAsync(buyerId);
+
+                // Calculate total manually
+                var cartItems = await _shoppingCartService.GetCartItemsAsync(buyerId);
+                double calculatedTotal = 0;
+
+                foreach (var item in cartItems)
+                {
+                    var itemQuantity = await _shoppingCartService.GetProductQuantityAsync(buyerId, item.Id);
+                    calculatedTotal += item.Price * itemQuantity;
+                }
+
+                // Get the specific product price for this item total
+                var productPrice = await _shoppingCartService.GetProductPriceAsync(buyerId, productId);
+                var itemTotal = productPrice * quantity;
 
                 // Return JSON with Ok status code
                 return Ok(new
                 {
                     success = true,
                     message = "Quantity updated successfully",
-                    total = total.ToString("C"),
-                    itemTotal = (await _shoppingCartService.GetProductPriceAsync(buyerId, productId) * quantity).ToString("C")
+                    total = calculatedTotal.ToString("C"),
+                    itemTotal = itemTotal.ToString("C")
                 });
             }
             catch (Exception ex)
@@ -136,8 +160,18 @@ namespace WebMarketplace.Controllers
             try
             {
                 int buyerId = GetCurrentBuyerId();
-                var total = await _shoppingCartService.GetCartTotalAsync(buyerId);
-                return Content(total.ToString("C"), "text/plain");
+
+                // Calculate total manually
+                var cartItems = await _shoppingCartService.GetCartItemsAsync(buyerId);
+                double calculatedTotal = 0;
+
+                foreach (var item in cartItems)
+                {
+                    var itemQuantity = await _shoppingCartService.GetProductQuantityAsync(buyerId, item.Id);
+                    calculatedTotal += item.Price * itemQuantity;
+                }
+
+                return Content(calculatedTotal.ToString("C"), "text/plain");
             }
             catch (Exception)
             {
@@ -160,7 +194,7 @@ namespace WebMarketplace.Controllers
 
             //return userId;
 
-           return UserSession.CurrentUserId ?? 1; // For testing purposes, return a hardcoded buyer ID
+            return UserSession.CurrentUserId ?? 1; // For testing purposes, return a hardcoded buyer ID
         }
     }
 }

@@ -54,7 +54,7 @@
                             }
                         </p>
                         <div class="flex justify-between items-center">
-                            <div class="font-bold text-blue-600">$@item.Price.ToString("N2")</div>
+                            <div class="font-bold text-blue-600">$@item.Price.ToString("0.00") €</div>
                             <a asp-action="Details" asp-route-id="@item.Id"
                                 class="inline-block bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition">View</a>
                         </div>
