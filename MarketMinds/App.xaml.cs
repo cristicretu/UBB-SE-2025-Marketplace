@@ -378,5 +378,11 @@ namespace MarketMinds
                 Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
             }
         }
+
+        public static void ResetLoginState()
+        {
+            LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
+            CurrentUser = null;
+        }
     }
 }
