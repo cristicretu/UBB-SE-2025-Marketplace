@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MarketMinds.Web.Controllers
 {
-    [Authorize]
+    [Authorize] // Re-enabled to enforce authentication
+    [Route("Reviews")]
     public class ReviewsController : Controller
     {
         private readonly ILogger<ReviewsController> _logger;
@@ -29,12 +30,11 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Reviews/Index
+        [HttpGet("Index")]
         public async Task<IActionResult> Index()
         {
             try
             {
-                // Default to showing the current user's reviews received
-                // In a real implementation, you would get the current user from authentication
                 User currentUser = await GetCurrentUserAsync();
                 if (currentUser == null)
                 {
@@ -52,6 +52,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Reviews/ReviewsReceived
+        [HttpGet("ReviewsReceived")]
         public async Task<IActionResult> ReviewsReceived()
         {
             try
@@ -73,6 +74,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Reviews/ReviewsGiven
+        [HttpGet("ReviewsGiven")]
         public async Task<IActionResult> ReviewsGiven()
         {
             try
@@ -93,29 +95,57 @@ namespace MarketMinds.Web.Controllers
             }
         }
 
-        // GET: Reviews/Create
+        // GET: Reviews/Create/{sellerId:int}
+        // [Authorize] // Temporarily commented out for testing
+        [HttpGet("Create/{sellerId:int}")]
         public async Task<IActionResult> Create(int sellerId)
         {
+            _logger.LogInformation("GET /Reviews/Create/{SellerId} action entered", sellerId);
+            _logger.LogInformation("Create method called with seller ID: {SellerId}", sellerId);
             try
             {
+                if (sellerId <= 0)
+                {
+                    _logger.LogWarning("Invalid seller ID provided: {SellerId}", sellerId);
+                    return BadRequest("Invalid seller ID");
+                }
+
                 var seller = await _userService.GetUserByIdAsync(sellerId);
                 if (seller == null)
                 {
-                    return NotFound();
+                    _logger.LogWarning("Seller not found with ID: {SellerId}", sellerId);
+                    return NotFound($"Seller with ID {sellerId} not found");
                 }
 
+                // Check if user is authenticated
+                User currentUser = await GetCurrentUserAsync();
+                if (currentUser == null)
+                {
+                    _logger.LogWarning("User not authenticated when trying to create review");
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Check if user has already reviewed this seller
+                var existingReviews = _reviewsService.GetReviewsByBuyer(currentUser);
+                if (existingReviews.Any(r => r.SellerId == sellerId))
+                {
+                    _logger.LogWarning("User {UserId} has already reviewed seller {SellerId}", currentUser.Id, sellerId);
+                    return BadRequest("You have already reviewed this seller");
+                }
+
+                _logger.LogInformation("Preparing review creation view for seller {SellerId}", sellerId);
                 ViewBag.Seller = seller;
-                return View(new Review { SellerId = sellerId });
+                return View("Create", new Review { SellerId = sellerId });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error preparing review creation");
+                _logger.LogError(ex, "Error preparing review creation for seller {SellerId}", sellerId);
                 return View("Error");
             }
         }
 
         // POST: Reviews/Create
-        [HttpPost]
+        [HttpPost("Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Review review, string imageUrls)
         {
@@ -182,13 +212,21 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Reviews/Edit/5
+        [HttpGet("Edit/{id:int}/{sellerId:int}/{buyerId:int}")]
         public async Task<IActionResult> Edit(int id, int sellerId, int buyerId)
         {
             try
             {
+                if (id <= 0 || sellerId <= 0 || buyerId <= 0)
+                {
+                    _logger.LogWarning("Invalid parameters provided for Edit: id={Id}, sellerId={SellerId}, buyerId={BuyerId}", id, sellerId, buyerId);
+                    return BadRequest("Invalid parameters");
+                }
+
                 User currentUser = await GetCurrentUserAsync();
                 if (currentUser == null || currentUser.Id != buyerId)
                 {
+                    _logger.LogWarning("Unauthorized edit attempt: currentUser={CurrentUser}, buyerId={BuyerId}", currentUser?.Id, buyerId);
                     return RedirectToAction("Login", "Account");
                 }
 
@@ -197,58 +235,60 @@ namespace MarketMinds.Web.Controllers
 
                 if (review == null)
                 {
-                    return NotFound();
+                    _logger.LogWarning("Review not found: sellerId={SellerId}, buyerId={BuyerId}", sellerId, buyerId);
+                    return NotFound("Review not found");
                 }
 
                 var seller = await _userService.GetUserByIdAsync(review.SellerId);
-                ViewBag.Seller = seller;
+                if (seller == null)
+                {
+                    _logger.LogWarning("Seller not found for review: sellerId={SellerId}", review.SellerId);
+                    return NotFound("Seller not found");
+                }
 
+                ViewBag.Seller = seller;
                 return View(review);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving review for editing");
+                _logger.LogError(ex, "Error retrieving review for editing: id={Id}, sellerId={SellerId}, buyerId={BuyerId}", id, sellerId, buyerId);
                 return View("Error");
             }
         }
 
-        // POST: Reviews/Edit/5
-        [HttpPost]
+        // POST: Reviews/Edit/{id}/{sellerId}/{buyerId}
+        [HttpPost("Edit/{id:int}/{sellerId:int}/{buyerId:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Review review, string imageUrls)
+        public async Task<IActionResult> Edit(int id, int sellerId, int buyerId, Review review, string imageUrls)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
                     User currentUser = await GetCurrentUserAsync();
-                    if (currentUser == null || currentUser.Id != review.BuyerId)
+                    if (currentUser == null || currentUser.Id != buyerId)
                     {
                         return RedirectToAction("Login", "Account");
                     }
 
-                    // Process image URLs if provided
-                    var reviewImages = new List<Image>();
-                    if (!string.IsNullOrEmpty(imageUrls))
-                    {
-                        reviewImages = _imageUploadService.ParseImagesString(imageUrls);
-                    }
+                    // Get the current review first
+                    var currentReview = _reviewsService.GetReviewsByBuyer(currentUser)
+                        .FirstOrDefault(r => r.SellerId == review.SellerId && r.BuyerId == review.BuyerId);
 
-                    // Validate rating range
-                    if (review.Rating < 0 || review.Rating > 5)
+                    if (currentReview == null)
                     {
-                        ModelState.AddModelError("Rating", "Rating must be between 0 and 5");
+                        ModelState.AddModelError("", "Review not found");
                         var sellerData = await _userService.GetUserByIdAsync(review.SellerId);
                         ViewBag.Seller = sellerData;
                         return View(review);
                     }
 
                     _reviewsService.EditReview(
-                        review.Description,
-                        reviewImages,
-                        review.Rating,
-                        review.SellerId,
-                        review.BuyerId,
+                        currentReview.Description,
+                        currentReview.Images.ToList(),
+                        currentReview.Rating,
+                        currentReview.SellerId,
+                        currentReview.BuyerId,
                         review.Description,
                         review.Rating);
 
@@ -267,13 +307,21 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Reviews/Delete/5
+        [HttpGet("Delete/{id:int}/{sellerId:int}/{buyerId:int}")]
         public async Task<IActionResult> Delete(int id, int sellerId, int buyerId)
         {
             try
             {
+                if (id <= 0 || sellerId <= 0 || buyerId <= 0)
+                {
+                    _logger.LogWarning("Invalid parameters provided for Delete: id={Id}, sellerId={SellerId}, buyerId={BuyerId}", id, sellerId, buyerId);
+                    return BadRequest("Invalid parameters");
+                }
+
                 User currentUser = await GetCurrentUserAsync();
                 if (currentUser == null || currentUser.Id != buyerId)
                 {
+                    _logger.LogWarning("Unauthorized delete attempt: currentUser={CurrentUser}, buyerId={BuyerId}", currentUser?.Id, buyerId);
                     return RedirectToAction("Login", "Account");
                 }
 
@@ -282,20 +330,35 @@ namespace MarketMinds.Web.Controllers
 
                 if (review == null)
                 {
-                    return NotFound();
+                    _logger.LogWarning("Review not found for deletion: sellerId={SellerId}, buyerId={BuyerId}", sellerId, buyerId);
+                    return NotFound("Review not found");
+                }
+
+                // Get seller and buyer information
+                var seller = await _userService.GetUserByIdAsync(sellerId);
+                var buyer = await _userService.GetUserByIdAsync(buyerId);
+
+                if (seller != null)
+                {
+                    review.SellerUsername = seller.Username;
+                }
+
+                if (buyer != null)
+                {
+                    review.BuyerUsername = buyer.Username;
                 }
 
                 return View(review);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving review for deletion");
+                _logger.LogError(ex, "Error retrieving review for deletion: id={Id}, sellerId={SellerId}, buyerId={BuyerId}", id, sellerId, buyerId);
                 return View("Error");
             }
         }
 
         // POST: Reviews/DeleteConfirmed
-        [HttpPost, ActionName("DeleteConfirmed")]
+        [HttpPost("DeleteConfirmed")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id, int sellerId, int buyerId)
         {

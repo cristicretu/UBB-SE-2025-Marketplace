@@ -845,16 +845,11 @@ namespace MarketMinds.Web.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            var errorModel = new ErrorViewModel
-            {
+            return View(new ErrorViewModel 
+            { 
                 RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
-                ErrorMessage = TempData["ErrorMessage"] as string ?? "An unexpected error occurred"
-            };
-
-            _logger.LogInformation("Displaying error page. RequestId: {RequestId}, Message: {Message}",
-                errorModel.RequestId, errorModel.ErrorMessage);
-
-            return View(errorModel);
+                ErrorMessage = HttpContext.Items["ErrorMessage"]?.ToString()
+            });
         }
     }
 }

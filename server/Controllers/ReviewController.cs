@@ -122,11 +122,25 @@ namespace MarketMinds.Controllers
             try
             {
                 var review = ReviewMapper.ToModel(reviewDto);
-                review.SyncImagesBeforeSave();
+                
+                // Load existing review to ensure it exists
+                var existingReview = _reviewRepository.GetAllReviewsByBuyer(new User { Id = review.BuyerId })
+                    .FirstOrDefault(r => r.Id == review.Id && r.SellerId == review.SellerId && r.BuyerId == review.BuyerId);
 
-                _reviewRepository.EditReview(review, review.Rating, review.Description);
+                if (existingReview == null)
+                {
+                    return NotFound("Review not found.");
+                }
 
-                var updatedReviewDto = ReviewMapper.ToDto(review);
+                // Update the review properties
+                existingReview.Description = review.Description;
+                existingReview.Rating = review.Rating;
+                existingReview.Images = review.Images;
+                existingReview.SyncImagesBeforeSave();
+
+                _reviewRepository.EditReview(existingReview, existingReview.Rating, existingReview.Description);
+
+                var updatedReviewDto = ReviewMapper.ToDto(existingReview);
                 return Ok(updatedReviewDto);
             }
             catch (KeyNotFoundException ex)
@@ -148,16 +162,16 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult DeleteReview([FromBody] ReviewDTO reviewDto)
+        public IActionResult DeleteReview([FromQuery] int reviewId, [FromQuery] int sellerId, [FromQuery] int buyerId)
         {
-            if (reviewDto == null)
+            if (reviewId <= 0 || sellerId <= 0 || buyerId <= 0)
             {
-                return BadRequest("Review cannot be null.");
+                return BadRequest("Invalid review, seller, or buyer ID.");
             }
 
             try
             {
-                var review = ReviewMapper.ToModel(reviewDto);
+                var review = new Review { Id = reviewId, SellerId = sellerId, BuyerId = buyerId };
                 _reviewRepository.DeleteReview(review);
                 return NoContent();
             }

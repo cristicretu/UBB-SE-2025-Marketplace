@@ -55,16 +55,26 @@
             <h2 class="text-xl font-semibold mb-2">Seller</h2>
             @{
                 var sellerName = "Unknown seller";
+                var sellerId = 0;
                 if (Model.Seller != null)
                 {
                     var user = Model.Seller as MarketMinds.Shared.Models.User;
                     if (user != null)
                     {
                         sellerName = user.Username ?? sellerName;
+                        sellerId = user.Id;
                     }
                 }
             }
             <p class="text-gray-700 mb-6">@sellerName</p>
+
+            @if (sellerId > 0)
+            {
+                <a asp-controller="Reviews" asp-action="Create" asp-route-sellerId="@sellerId" 
+                   class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition mb-6">
+                    Leave a Review
+                </a>
+            }
 
             @if (Model.Tags != null && Model.Tags.Any())
             {
@@ -93,6 +103,8 @@
                     class="block text-center w-full border border-blue-600 text-blue-600 py-3 rounded-lg hover:bg-blue-50 transition">
                     Back to List
                 </a>
+
+                
             </div>
         </div>
     </div>

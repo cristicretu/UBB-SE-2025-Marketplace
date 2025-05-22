@@ -10,7 +10,7 @@
         <h1 class="text-3xl font-bold mb-6">Edit Review for @seller?.Username</h1>
         
         <div class="bg-white rounded-lg shadow-md p-6">
-            <form asp-action="Edit" method="post">
+            <form asp-action="Edit" asp-route-id="@Model.Id" asp-route-sellerId="@Model.SellerId" asp-route-buyerId="@Model.BuyerId" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
                 <input type="hidden" asp-for="Id" />
                 <input type="hidden" asp-for="SellerId" />
