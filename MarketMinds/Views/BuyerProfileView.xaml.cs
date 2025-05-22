@@ -2,6 +2,7 @@
 {
     using System;
     using System.Configuration;
+    using System.Diagnostics;
     using System.Threading.Tasks;
 
     using MarketMinds.ViewModels;
@@ -166,16 +167,16 @@
 
         private async void GenerateContractButton_Clicked(object sender, RoutedEventArgs e)
         {
-                await contractViewModel.GenerateAndSaveContractAsync();
+            await contractViewModel.GenerateAndSaveContractAsync(Convert.ToInt64(this.contractID.Text));
 
-                var successDialog = new ContentDialog
-                {
-                    Title = "Success",
-                    Content = "Contract generated and saved successfully.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.Content.XamlRoot
-                };
-                await successDialog.ShowAsync();
+            var successDialog = new ContentDialog
+            {
+                Title = "Success",
+                Content = "Contract generated and saved successfully.",
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+            await successDialog.ShowAsync();
         }
 
         private async void BorrowButton_Clicked(object sender, RoutedEventArgs e)
