@@ -338,6 +338,20 @@ namespace MarketMinds.Web.Controllers
                     return NotFound("Review not found");
                 }
 
+                // Get seller and buyer information
+                var seller = await _userService.GetUserByIdAsync(sellerId);
+                var buyer = await _userService.GetUserByIdAsync(buyerId);
+
+                if (seller != null)
+                {
+                    review.SellerUsername = seller.Username;
+                }
+
+                if (buyer != null)
+                {
+                    review.BuyerUsername = buyer.Username;
+                }
+
                 return View(review);
             }
             catch (Exception ex)

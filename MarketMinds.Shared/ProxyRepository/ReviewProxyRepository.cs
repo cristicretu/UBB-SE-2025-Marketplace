@@ -65,16 +65,10 @@ namespace MarketMinds.Shared.ProxyRepository
 
         public void DeleteReviewRaw(object deleteRequest)
         {
-            var requestContent = new StringContent(
-                JsonSerializer.Serialize(deleteRequest, jsonOptions),
-                System.Text.Encoding.UTF8,
-                "application/json");
-
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Delete,
-                RequestUri = new Uri(httpClient.BaseAddress + "review"),
-                Content = requestContent
+                RequestUri = new Uri($"{httpClient.BaseAddress}review?reviewId={((dynamic)deleteRequest).ReviewId}&sellerId={((dynamic)deleteRequest).SellerId}&buyerId={((dynamic)deleteRequest).BuyerId}")
             };
 
             var response = httpClient.SendAsync(request).Result;

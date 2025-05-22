@@ -256,21 +256,21 @@ namespace MarketMinds.Shared.Services.ReviewService
 
             try
             {
-                // Create a shared Review object
-                var sharedReview = new MarketMinds.Shared.Models.Review
+                // Get the review ID from the repository
+                var reviews = repository.GetReviewsByBuyerRaw(buyerId);
+                var sharedReviews = JsonSerializer.Deserialize<List<MarketMinds.Shared.Models.Review>>(reviews, jsonOptions);
+                var reviewToDelete = sharedReviews?.FirstOrDefault(r => r.SellerId == sellerId && r.BuyerId == buyerId);
+
+                if (reviewToDelete == null)
                 {
-                    Description = description,
-                    Images = ConvertToSharedImages(images ?? new List<Image>()),
-                    Rating = rating,
-                    SellerId = sellerId,
-                    BuyerId = buyerId
-                };
+                    throw new ArgumentException("Review not found.");
+                }
 
                 var deleteRequest = new
                 {
-                    ReviewId = sharedReview.Id,
-                    SellerId = sharedReview.SellerId,
-                    BuyerId = sharedReview.BuyerId
+                    ReviewId = reviewToDelete.Id,
+                    SellerId = sellerId,
+                    BuyerId = buyerId
                 };
 
                 repository.DeleteReviewRaw(deleteRequest);

@@ -115,7 +115,16 @@ namespace MarketMinds.Repositories.ReviewRepository
 
             try
             {
-                context.Reviews.Remove(review);
+                var reviewToDelete = context.Reviews
+                    .Include(r => r.ReviewImages)
+                    .FirstOrDefault(r => r.Id == review.Id && r.SellerId == review.SellerId && r.BuyerId == review.BuyerId);
+
+                if (reviewToDelete == null)
+                {
+                    throw new KeyNotFoundException($"Review with ID {review.Id} not found.");
+                }
+
+                context.Reviews.Remove(reviewToDelete);
                 context.SaveChanges();
             }
             catch (DbUpdateException ex)

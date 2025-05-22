@@ -148,16 +148,16 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult DeleteReview([FromBody] ReviewDTO reviewDto)
+        public IActionResult DeleteReview([FromQuery] int reviewId, [FromQuery] int sellerId, [FromQuery] int buyerId)
         {
-            if (reviewDto == null)
+            if (reviewId <= 0 || sellerId <= 0 || buyerId <= 0)
             {
-                return BadRequest("Review cannot be null.");
+                return BadRequest("Invalid review, seller, or buyer ID.");
             }
 
             try
             {
-                var review = ReviewMapper.ToModel(reviewDto);
+                var review = new Review { Id = reviewId, SellerId = sellerId, BuyerId = buyerId };
                 _reviewRepository.DeleteReview(review);
                 return NoContent();
             }
