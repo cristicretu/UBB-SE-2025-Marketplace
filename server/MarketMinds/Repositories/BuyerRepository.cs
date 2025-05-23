@@ -209,8 +209,17 @@ namespace Server.Repository
         /// <inheritdoc/>
         public async Task<List<Buyer>> FindBuyersWithShippingAddress(Address shippingAddress)
         {
+            if (shippingAddress == null || string.IsNullOrEmpty(shippingAddress.Country))
+            {
+                return new List<Buyer>();
+            }
+
             return await this.dbContext.Buyers
-                .Where(buyer => buyer.ShippingAddress.Id == shippingAddress.Id)
+                .Where(buyer => 
+                    buyer.ShippingAddress.Country == shippingAddress.Country &&
+                    buyer.ShippingAddress.City == shippingAddress.City &&
+                    buyer.ShippingAddress.StreetLine == shippingAddress.StreetLine &&
+                    buyer.ShippingAddress.PostalCode == shippingAddress.PostalCode)
                 .ToListAsync();
         }
 

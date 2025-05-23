@@ -140,7 +140,12 @@ namespace MarketMinds.Shared.Services.BuyProductsService
 
             try
             {
-                var json = buyProductsRepository.GetProductById(id);
+                var json = buyProductsRepository.GetProductByIdAsync(id).GetAwaiter().GetResult();
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    throw new KeyNotFoundException($"Buy product with ID {id} not found.");
+                }
+
                 Console.WriteLine($"Received JSON for product {id} from server:");
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 
@@ -223,9 +228,22 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         {
             try
             {
-                // Convert BuyProduct to Product when returning
-                BuyProduct buyProduct = GetProductById(productId);
-                return buyProduct; // BuyProduct should inherit from Product, so this should work
+                var productJson = await buyProductsRepository.GetProductByIdAsync(productId);
+                if (string.IsNullOrWhiteSpace(productJson))
+                {
+                    return null;
+                }
+
+                // First deserialize to DTO
+                var productDTO = JsonSerializer.Deserialize<BuyProductDTO>(productJson, jsonOptions);
+                if (productDTO == null)
+                {
+                    return null;
+                }
+
+                // Then map DTO to domain model
+                var product = BuyProductMapper.FromDTO(productDTO);
+                return product;
             }
             catch (Exception ex)
             {
