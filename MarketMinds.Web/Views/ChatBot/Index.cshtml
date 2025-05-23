@@ -7,6 +7,163 @@
     var currentUserId = User.GetCurrentUserId();
 }
 
+@* Added this to make it prettier (vibe code all the way) *@
+@* works if you remove (just not as pretty) *@
+<style>
+    /* Markdown styling */
+    .markdown-content {
+        line-height: 1.5;
+    }
+    
+    /* Bot message markdown styles */
+    .bg-gray-100 .markdown-content {
+        color: #333;
+    }
+    
+    /* User message markdown styles - lighter colors for dark background */
+    .bg-primary .markdown-content {
+        color: #fff;
+    }
+    
+    /* Common Markdown element styles */
+    .markdown-content h1 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content h2 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content h3, .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content p {
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content ul, .markdown-content ol {
+        margin-left: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content ul {
+        list-style-type: disc;
+    }
+    
+    .markdown-content ol {
+        list-style-type: decimal;
+    }
+    
+    .markdown-content li {
+        margin-bottom: 0.25rem;
+    }
+    
+    .markdown-content code {
+        font-family: monospace;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+    }
+    
+    .bg-gray-100 .markdown-content code {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .bg-primary .markdown-content code {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .markdown-content pre {
+        padding: 0.5rem;
+        border-radius: 5px;
+        overflow-x: auto;
+        margin-bottom: 0.5rem;
+    }
+    
+    .bg-gray-100 .markdown-content pre {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .bg-primary .markdown-content pre {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+    
+    .markdown-content pre code {
+        background-color: transparent;
+        padding: 0;
+    }
+    
+    .markdown-content blockquote {
+        border-left: 3px solid;
+        padding-left: 0.5rem;
+        margin-left: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .bg-gray-100 .markdown-content blockquote {
+        border-color: #cbd5e0;
+    }
+    
+    .bg-primary .markdown-content blockquote {
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .markdown-content a {
+        text-decoration: underline;
+    }
+    
+    .bg-gray-100 .markdown-content a {
+        color: #3B82F6;
+    }
+    
+    .bg-primary .markdown-content a {
+        color: #fff;
+        font-weight: bold;
+    }
+    
+    .markdown-content table {
+        border-collapse: collapse;
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+    
+    .markdown-content th, .markdown-content td {
+        padding: 0.25rem 0.5rem;
+        border: 1px solid;
+    }
+    
+    .bg-gray-100 .markdown-content th, .bg-gray-100 .markdown-content td {
+        border-color: #cbd5e0;
+    }
+    
+    .bg-primary .markdown-content th, .bg-primary .markdown-content td {
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .markdown-content hr {
+        margin: 0.5rem 0;
+        border: 0;
+        height: 1px;
+    }
+    
+    .bg-gray-100 .markdown-content hr {
+        background-color: #cbd5e0;
+    }
+    
+    .bg-primary .markdown-content hr {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+</style>
+
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-6">ChatBot Assistant</h1>
     
@@ -77,7 +234,8 @@
                             <!-- User Message -->
                             <div class="flex justify-end mb-2">
                                 <div class="bg-primary text-white p-3 rounded-lg max-w-[80%]">
-                                    <p>@message.Content</p>
+                                    @* This is the user message *@
+                                    <div class="markdown-content" data-content="@message.Content"></div>
                                 </div>
                             </div>
                         }
@@ -86,7 +244,7 @@
                             <!-- Bot Message -->
                             <div class="flex justify-start mb-2">
                                 <div class="bg-gray-100 p-3 rounded-lg max-w-[80%]">
-                                    <p>@message.Content</p>
+                                    <div class="markdown-content" data-content="@message.Content"></div>
                                 </div>
                             </div>
                         }
@@ -159,6 +317,34 @@
             if (messageInput) {
                 messageInput.focus();
             }
+            
+            // Process all markdown content
+            const markdownElements = document.querySelectorAll('.markdown-content');
+            markdownElements.forEach(function(element) {
+                const content = element.getAttribute('data-content');
+                
+                // Set up custom renderer for Marked
+                const renderer = new marked.Renderer();
+                
+                // Sanitize content to prevent XSS attacks
+                const sanitizeOutput = function(html) {
+                    // Use DOMPurify to sanitize the HTML
+                    return DOMPurify.sanitize(html);
+                };
+                
+                // Render Markdown to HTML with custom options
+                const html = marked.parse(content, {
+                    renderer: renderer,
+                    gfm: true, // GitHub Flavored Markdown
+                    breaks: true, // Translate newlines to <br>
+                    sanitize: false, // Don't sanitize here, we'll use DOMPurify
+                    smartLists: true,
+                    smartypants: true
+                });
+                
+                // Apply sanitized HTML to element
+                element.innerHTML = sanitizeOutput(html);
+            });
         });
     </script>
 } 
