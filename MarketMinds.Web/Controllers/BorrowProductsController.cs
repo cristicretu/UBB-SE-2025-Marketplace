@@ -158,29 +158,6 @@ namespace MarketMinds.Web.Controllers
             return View(productDTO);
         }
 
-        // GET: BorrowProducts/Edit/5
-        public async Task<IActionResult> Edit(int id)
-        {
-            try
-            {
-                var borrowProduct = await _borrowProductsService.GetBorrowProductByIdAsync(id);
-                if (borrowProduct == null || borrowProduct.Id == 0)
-                {
-                    return NotFound();
-                }
-                return View(borrowProduct);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error fetching borrow product {id} for edit");
-                return RedirectToAction(nameof(Index));
-            }
-        }
-
         // POST: BorrowProducts/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
