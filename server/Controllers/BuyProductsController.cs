@@ -108,13 +108,38 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult UpdateBuyProduct(int id, [FromBody] BuyProduct product)
         {
-            if (product == null || id != product.Id || !ModelState.IsValid)
+            if (product == null || !ModelState.IsValid)
             {
-                return BadRequest("Product data is invalid or ID mismatch.");
+                return BadRequest("Product data is invalid.");
             }
 
             try
             {
+                // Check if this is a partial update with just stock info
+                if (product.Id == id && product.Stock < 0)
+                {
+                    // This is a stock decrease operation
+                    var existingProduct = _buyProductsRepository.GetProductByID(id);
+                    int decreaseAmount = -product.Stock; // Convert negative to positive
+
+                    // Calculate new stock, ensuring it doesn't go below 0
+                    existingProduct.Stock = Math.Max(0, existingProduct.Stock - decreaseAmount);
+
+                    // Update the product
+                    _buyProductsRepository.UpdateProduct(existingProduct);
+                    return Ok(new
+                    {
+                        Message = $"Stock decreased by {decreaseAmount}",
+                        ProductId = id,
+                        NewStock = existingProduct.Stock
+                    });
+                }
+                else if (id != product.Id)
+                {
+                    return BadRequest("ID mismatch.");
+                }
+
+                // Standard full update
                 _buyProductsRepository.UpdateProduct(product);
                 return NoContent();
             }
@@ -165,6 +190,68 @@ namespace MarketMinds.Controllers
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the product.");
             }
+        }
+
+        /// <summary>
+        /// Updates the stock quantity for a product
+        /// </summary>
+        [HttpPost("stock/{id}")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult UpdateStock(int id, [FromBody] StockUpdateRequest request)
+        {
+            try
+            {
+                if (request == null || id <= 0 || request.Quantity < 0)
+                {
+                    return BadRequest(new { Message = "Invalid product data" });
+                }
+
+                // Get the product
+                var product = _buyProductsRepository.GetProductByID(id);
+
+                // Store old stock value for reporting
+                int oldStock = product.Stock;
+
+                // Calculate new stock (ensuring it doesn't go below 0)
+                int newStock = Math.Max(0, product.Stock - request.Quantity);
+
+                // Update the product's stock
+                product.Stock = newStock;
+                _buyProductsRepository.UpdateProduct(product);
+
+                return Ok(new
+                {
+                    Message = $"Stock updated successfully for product {id}",
+                    ProductId = id,
+                    OldStock = oldStock,
+                    NewStock = newStock,
+                    DecreasedBy = request.Quantity
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"An error occurred while updating stock: {ex.Message}");
+            }
+        }
+
+        public class StockUpdateRequest
+        {
+            public int Quantity { get; set; }
         }
     }
 }
