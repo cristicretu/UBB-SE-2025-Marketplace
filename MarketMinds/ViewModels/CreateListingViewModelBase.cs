@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ImagineUploadService;
+using MarketMinds.Shared.Helper;
 
 namespace ViewModelLayer.ViewModel
 {
@@ -16,7 +17,7 @@ namespace ViewModelLayer.ViewModel
 
         public CreateListingViewModelBase()
         {
-            imageService = new ImageUploadService();
+            imageService = new ImageUploadService(AppConfig.Configuration);
             Images = new List<Image>();
         }
 

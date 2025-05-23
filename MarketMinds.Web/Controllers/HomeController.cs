@@ -190,6 +190,7 @@ namespace MarketMinds.Web.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage);
                 _logger.LogWarning("All ModelState validation errors: {Errors}", string.Join(", ", allErrors));
+
             }
 
             if (auctionProduct.StartTime == default)
