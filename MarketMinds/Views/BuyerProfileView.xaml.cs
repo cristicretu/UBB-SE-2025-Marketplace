@@ -189,11 +189,8 @@
         {
             try
             {
-                // merge-nicusor FIX :)
-                int productId = 1;
-
-                var borrowWindow = new BorrowProductWindow(productId);
-                borrowWindow.Activate();
+                var borrowProductListView = MarketMinds.Helpers.ViewFactory.CreateBorrowProductListView();
+                borrowProductListView.Activate();
             }
             catch (Exception ex)
             {

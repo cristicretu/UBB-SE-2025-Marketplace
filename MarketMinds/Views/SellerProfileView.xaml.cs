@@ -430,11 +430,5 @@ namespace MarketMinds.Views
             // Simple regex for phone validation
             return System.Text.RegularExpressions.Regex.IsMatch(phoneNumber, @"^\+?[0-9\s\-\(\)]{6,20}$");
         }
-
-        private void OnBorrowProductsButtonClick(object sender, RoutedEventArgs e)
-        {
-            var borrowProductListView = MarketMinds.Helpers.ViewFactory.CreateBorrowProductListView();
-            borrowProductListView.Activate();
-        }
     }
 }
