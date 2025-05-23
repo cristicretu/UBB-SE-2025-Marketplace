@@ -38,12 +38,13 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         /// <param name="productId">The product ID</param>
         /// <returns>The product, or null if not found</returns>
         Task<Product> GetProductByIdAsync(int productId);
-    /// <summary>
-    /// Gets a product by ID
-    /// </summary>
-    /// <param name="productId">The product ID</param>
-    /// <returns>The product, or null if not found</returns>
-    BuyProduct GetProductById(int productId);
+
+        /// <summary>
+        /// Gets a product by ID
+        /// </summary>
+        /// <param name="productId">The product ID</param>
+        /// <returns>The product, or null if not found</returns>
+        BuyProduct GetProductById(int productId);
 
         /// <summary>
         /// Gets a seller's name by ID
@@ -51,5 +52,21 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         /// <param name="sellerId">The seller ID</param>
         /// <returns>The seller name</returns>
         Task<string> GetSellerNameAsync(int sellerId);
+
+        /// <summary>
+        /// Updates the stock quantity for a product
+        /// </summary>
+        /// <param name="productId">Product ID</param>
+        /// <param name="newStockQuantity">New stock quantity</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        Task UpdateProductStockAsync(int productId, int newStockQuantity);
+
+        /// <summary>
+        /// Decreases the stock quantity for a product by the specified amount
+        /// </summary>
+        /// <param name="productId">Product ID</param>
+        /// <param name="decreaseAmount">Amount to decrease stock by</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        Task DecreaseProductStockAsync(int productId, int decreaseAmount);
     }
 }

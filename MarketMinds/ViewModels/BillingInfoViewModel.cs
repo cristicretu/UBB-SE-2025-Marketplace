@@ -654,7 +654,7 @@ namespace MarketMinds.ViewModels
 
             this.WarrantyTax = (double)this.warrantyTax;
 
-            borrowProduct.Price = (int)(finalPrice + this.WarrantyTax);
+            borrowProduct.Price = finalPrice + this.WarrantyTax;
 
             this.CalculateOrderTotal(this.orderHistoryID);
 

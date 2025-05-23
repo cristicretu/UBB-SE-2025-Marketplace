@@ -1,7 +1,23 @@
 @model WebMarketplace.Models.FinalizePurchaseViewModel
+@inject MarketMinds.Shared.Services.BuyProductsService.IBuyProductsService BuyProductsService
 
 @{
     ViewData["Title"] = "Order Confirmation";
+    
+    // Get products from TempData if available
+    List<Dictionary<string, string>> productDictList = null;
+    if (TempData["OrderProducts"] != null)
+    {
+        try
+        {
+            productDictList = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, string>>>(TempData["OrderProducts"]?.ToString());
+        }
+        catch (Exception ex)
+        {
+            // Log but continue
+            <text><!-- Error deserializing products: @ex.Message --></text>
+        }
+    }
 }
 
 <div class="container mx-auto px-4 py-8">
@@ -56,12 +72,28 @@
                     {
                         <div class="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
                             <p class="font-semibold text-gray-800">Product name: <span class="font-normal">@product.Title</span></p>
-                            <p class="font-semibold text-gray-800">Price: <span class="font-normal">@product.Price.ToString("C")</span></p>
+                            <p class="font-semibold text-gray-800">Price: <span class="font-normal">@product.Price.ToString("0.00") €</span></p>
                             
                             @if (product.SellerId > 0)
                             {
                                 <p class="font-semibold text-gray-800">Seller ID: <span class="font-normal">@product.SellerId</span></p>
                             }
+                        </div>
+                    }
+                }
+                else if (productDictList != null && productDictList.Any())
+                {
+                    <!-- Fallback to TempData serialized products -->
+                    foreach (var productDict in productDictList)
+                    {
+                        string title = productDict.ContainsKey("Title") ? productDict["Title"] : "Unknown";
+                        string price = productDict.ContainsKey("Price") ? productDict["Price"] : "0";
+                        string quantity = productDict.ContainsKey("Quantity") ? productDict["Quantity"] : "1";
+                        
+                        <div class="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
+                            <p class="font-semibold text-gray-800">Product name: <span class="font-normal">@title</span></p>
+                            <p class="font-semibold text-gray-800">Price: <span class="font-normal">@(Double.Parse(price).ToString("0.00")) €</span></p>
+                            <p class="font-semibold text-gray-800">Quantity: <span class="font-normal">@quantity</span></p>
                         </div>
                     }
                 }
@@ -75,15 +107,15 @@
             <div class="space-y-2 bg-gray-50 p-4 rounded-lg">
                 <div class="flex justify-between">
                     <span class="text-gray-700">Subtotal:</span>
-                    <span class="text-gray-800">@Model.Subtotal.ToString("C")</span>
+                    <span class="text-gray-800">@Model.Subtotal.ToString("0.00") €</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-700">Delivery fee:</span>
-                    <span class="text-gray-800">@Model.DeliveryFee.ToString("C")</span>
+                    <span class="text-gray-800">@Model.DeliveryFee.ToString("0.00") €</span>
                 </div>
                 <div class="flex justify-between font-semibold">
                     <span class="text-gray-800">Total:</span>
-                    <span class="text-gray-800">@Model.Total.ToString("C")</span>
+                    <span class="text-gray-800">@Model.Total.ToString("0.00") €</span>
                 </div>
             </div>
             
@@ -95,4 +127,4 @@
             </div>
         </div>
     </div>
-</div> 
+</div>

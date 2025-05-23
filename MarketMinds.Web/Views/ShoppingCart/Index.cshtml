@@ -1,4 +1,4 @@
-﻿@model List<MarketMinds.Shared.Models.Product>
+@model List<MarketMinds.Shared.Models.Product>
 @{
     ViewData["Title"] = "My Cart";
 }
@@ -47,14 +47,33 @@
                                     <div class="flex items-center justify-center">
                                         <button class="quantity-btn minus-btn px-2 py-1 bg-gray-200 rounded-l"
                                             data-product-id="@item.Id">-</button>
+                                        @{
+                                            var quantity = ViewBag.Quantities != null && ViewBag.Quantities.ContainsKey(item.Id) ?
+                                            ViewBag.Quantities[item.Id] : 1;
+
+                                            var stock = 0;
+                                            var productType = "Unknown";
+
+                                            if (item is MarketMinds.Shared.Models.BuyProduct buyProduct)
+                                            {
+                                                stock = buyProduct.Stock;
+                                                productType = "BuyProduct";
+                                            }
+                                            else
+                                            {
+                                                productType = item.GetType().Name;
+                                            }
+                                        }
                                         <input type="number" class="quantity-input w-12 text-center border-0 bg-gray-100"
-                                            value="@item.Stock" min="1" data-product-id="@item.Id">
+                                            value="@quantity" min="1" max="@stock" data-product-id="@item.Id"
+                                            data-product-type="@productType" data-product-stock="@stock">
                                         <button class="quantity-btn plus-btn px-2 py-1 bg-gray-200 rounded-r"
                                             data-product-id="@item.Id">+</button>
                                     </div>
+                                    <small class="text-xs text-gray-500">Stock: @stock</small>
                                 </td>
                                 <td class="py-4 text-right item-total" data-product-id="@item.Id">
-                                    @(((item.Price * item.Stock)).ToString("0.00") + " €")
+                                    @((item.Price * quantity).ToString("0.00") + " €")
                                 </td>
                                 <td class="py-4 text-right">
                                     <button type="button"
@@ -88,8 +107,14 @@
                 const productId = $(this).data("product-id");
                 const input = $(`input.quantity-input[data-product-id="${productId}"]`);
                 let quantity = parseInt(input.val());
+                const maxStock = parseInt(input.attr("max"));
 
                 if ($(this).hasClass("plus-btn")) {
+                    // Don't increment if already at or above max stock
+                    if (maxStock !== undefined && quantity >= maxStock) {
+                        alert(`Cannot add more than the available stock ${maxStock}.`);
+                        return;
+                    }
                     quantity += 1;
                 } else if ($(this).hasClass("minus-btn")) {
                     if (quantity > 1) quantity -= 1;
@@ -103,10 +128,15 @@
             $(".quantity-input").change(function () {
                 const productId = $(this).data("product-id");
                 let quantity = parseInt($(this).val());
+                const maxStock = parseInt($(this).attr("max"));
 
                 if (isNaN(quantity) || quantity < 1) {
                     quantity = 1;
                     $(this).val(1);
+                } else if (maxStock !== undefined && quantity > maxStock) {
+                    quantity = maxStock;
+                    $(this).val(maxStock);
+                    alert(`Cannot add more than the available stock (${maxStock}).`);
                 }
 
                 updateCartItemQuantity(productId, quantity);
@@ -153,6 +183,10 @@
 
             // Function to update cart item quantity via AJAX
             function updateCartItemQuantity(productId, quantity) {
+                // Store the current input value
+                const input = $(`input.quantity-input[data-product-id="${productId}"]`);
+                const originalValue = input.val();
+
                 $.ajax({
                     url: '@Url.Action("UpdateQuantity", "ShoppingCart")',
                     type: 'POST',
@@ -163,11 +197,26 @@
                             $(`td.item-total[data-product-id="${productId}"]`).text(response.itemTotal.replace("lei", "€"));
                             $("#cart-total").text(response.total.replace("lei", "€"));
                         } else {
+                            // Alert the error message and restore original value
                             alert(response.message);
+                            input.val(originalValue);
                         }
                     },
-                    error: function () {
-                        alert('An error occurred while updating the quantity.');
+                    error: function (xhr) {
+                        // Try to get the error message from the response
+                        let errorMessage = 'An error occurred while updating the quantity.';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response && response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            // If we can't parse the error, just use the default message
+                        }
+
+                        // Alert the error and restore original value
+                        alert(errorMessage);
+                        input.val(originalValue);
                     }
                 });
             }

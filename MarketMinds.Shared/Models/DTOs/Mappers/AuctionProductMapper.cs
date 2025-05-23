@@ -13,7 +13,22 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 return null;
             }
 
-            return new AuctionProductDTO
+            // Debug statement for mapping
+            Console.WriteLine("========== DEBUG: AuctionProductMapper.ToDTO ==========");
+            Console.WriteLine($"Product ID: {entity.Id}, Title: {entity.Title}");
+            Console.WriteLine($"ConditionId: {entity.ConditionId}, Condition object: {(entity.Condition != null ? "Loaded" : "NULL")}");
+            if (entity.Condition != null)
+            {
+                Console.WriteLine($"Condition Id: {entity.Condition.Id}, Name: {entity.Condition.Name}, Description: {entity.Condition.Description}");
+            }
+            
+            Console.WriteLine($"Category ID: {entity.CategoryId}, Category object: {(entity.Category != null ? "Loaded" : "NULL")}");
+            if (entity.Category != null)
+            {
+                Console.WriteLine($"Category Name: {entity.Category.Name}, Description: {entity.Category.Description}");
+            }
+
+            var dto = new AuctionProductDTO
             {
                 Id = entity.Id,
                 Title = entity.Title,
@@ -43,7 +58,7 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 {
                     Id = entity.Condition.Id,
                     DisplayTitle = entity.Condition.Name,
-                    Description = null
+                    Description = entity.Condition.Description
                 }
                 : null,
                 Category = entity.Category != null ? new CategoryDTO
@@ -70,6 +85,16 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 }
                 : null
             };
+
+            // Debug statement for DTO
+            Console.WriteLine($"DTO Category: {(dto.Category != null ? "Set" : "NULL")}");
+            if (dto.Category != null)
+            {
+                Console.WriteLine($"DTO Category ID: {dto.Category.Id}, DisplayTitle: {dto.Category.DisplayTitle}");
+            }
+            Console.WriteLine("==================================================");
+
+            return dto;
         }
 
         public static List<AuctionProductDTO> ToDTOList(IEnumerable<AuctionProduct> entities)

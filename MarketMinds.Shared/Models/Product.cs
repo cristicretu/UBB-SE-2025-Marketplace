@@ -30,7 +30,6 @@ namespace MarketMinds.Shared.Models // Adjusted namespace to server.Models
 
         // merge-nicusor
         [Column("price")]
-        [JsonPropertyName("price")]
         public virtual double Price { get; set; }
 
         [Column("stock")]

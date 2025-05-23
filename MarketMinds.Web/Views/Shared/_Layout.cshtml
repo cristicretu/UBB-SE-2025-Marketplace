@@ -62,49 +62,26 @@
             <div class="container mx-auto px-4 flex justify-between items-center">
                 <a class="font-bold text-2xl" asp-area="" asp-controller="Home" asp-action="Index">MarketMinds</a>
                 <div>
-                    <ul class="flex space-x-6">
-                        <li>
-                            <a class="hover:text-primary-light transition" asp-area="" asp-controller="Home"
-                                asp-action="Index">Home</a>
-                        </li>
+                    <ul class="flex space-x-6 items-center">
                         @if (isAuthenticated)
                         {
-                            <li>
-                                <a class="hover:text-primary-light transition" asp-area="" asp-controller="Account"
-                                    asp-action="Index">Account</a>
-                            </li>
-                            @if (isSeller || isAdmin)
+                            @if (isBuyer || isAdmin)
                             {
                                 <li>
-                                    <a class="hover:text-primary-light transition" asp-area="" asp-controller="Home"
-                                        asp-action="Create">Create</a>
+                                    <a class="hover:text-primary-light transition" asp-area="" asp-controller="ChatBot"
+                                        asp-action="Index"><i class="far fa-comments"></i> Chat</a>
                                 </li>
-                            }
-                            <li>
-                                <a class="hover:text-primary-light transition" asp-area="" asp-controller="ChatBot"
-                                    asp-action="Index">ChatBot</a>
-                            </li>
-                            <li>
-                                <a class="hover:text-primary-light transition" asp-area="" asp-controller="ShoppingCart"
-                                    asp-action="Index">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </a>
-                            </li>
-                            @if (userType == 1)
-                            {
                                 <li>
-                                    <a class="hover:text-primary-light transition" asp-controller="Admin"
-                                        asp-action="Index">Admin</a>
+                                    <a class="hover:text-primary-light transition cursor-pointer">
+                                        <i class="far fa-bell"></i>
+                                    </a>
                                 </li>
                             }
+                            
                             <li class="relative dropdown-container">
                                 <a class="hover:text-primary-light transition flex items-center cursor-pointer"
                                     id="userDropdown">
-                                    <span>@username (@(string.IsNullOrEmpty(sessionRole) ? "Guest" : sessionRole))</span>
+                                    <span>@username</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -113,6 +90,25 @@
                                 </a>
                                 <div id="userDropdownContent"
                                     class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-10">
+                                    <a asp-controller="Account" asp-action="Index" 
+                                        class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Account</a>
+                                    <a asp-controller="Order" asp-action="OrderHistory" 
+                                        class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Orders</a>
+                                    @if (isBuyer)
+                                    {
+                                        <a href="http://localhost:3000/Reviews/ReviewsGiven" 
+                                            class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
+                                    }
+                                    else if (isSeller)
+                                    {
+                                        <a href="http://localhost:3000/Reviews/ReviewsReceived" 
+                                            class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Review" asp-action="MyReviews" 
+                                            class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
+                                    }
                                     <div class="border-t border-gray-100"></div>
                                     <form asp-controller="Account" asp-action="Logout" method="post">
                                         @Html.AntiForgeryToken()
@@ -121,6 +117,40 @@
                                     </form>
                                 </div>
                             </li>
+                            
+                            @if (isSeller || isAdmin)
+                            {
+                                @if (isAdmin)
+                                {
+                                    <li>
+                                        <a class="hover:text-primary-light transition" asp-controller="Admin"
+                                            asp-action="Index">Admin</a>
+                                    </li>
+                                }
+                                <li>
+                                    <a class="hover:text-primary-light transition" asp-area="" asp-controller="Home"
+                                        asp-action="Create">Create</a>
+                                </li>
+                            }
+                            
+                            @if (isBuyer || isAdmin)
+                            {
+                                <li>
+                                    <a class="hover:text-primary-light transition cursor-pointer">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="hover:text-primary-light transition" asp-area="" asp-controller="ShoppingCart"
+                                        asp-action="Index">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </a>
+                                </li>
+                            }
                         }
                         else
                         {

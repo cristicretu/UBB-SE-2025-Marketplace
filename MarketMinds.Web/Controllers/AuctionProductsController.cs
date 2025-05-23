@@ -81,6 +81,17 @@ namespace MarketMinds.Web.Controllers
                     return NotFound();
                 }
                 
+                // Log condition information
+                _logger.LogInformation($"WEB: Details - ConditionId: {auctionProduct.ConditionId}");
+                if (auctionProduct.Condition != null)
+                {
+                    _logger.LogInformation($"WEB: Details - Condition loaded: Id={auctionProduct.Condition.Id}, Name={auctionProduct.Condition.Name}, Description={auctionProduct.Condition.Description}");
+                }
+                else
+                {
+                    _logger.LogWarning($"WEB: Details - Condition is NULL despite ConditionId={auctionProduct.ConditionId}");
+                }
+                
                 return View(auctionProduct);
             }
             catch (Exception ex)
@@ -95,7 +106,7 @@ namespace MarketMinds.Web.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         [Route("AuctionProducts/PlaceBid")]
-        public async Task<IActionResult> PlaceBid(int id, int bidAmount)
+        public async Task<IActionResult> PlaceBid(int id, double bidAmount)
         {
             try
             {
@@ -106,7 +117,7 @@ namespace MarketMinds.Web.Controllers
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out userId))
                 {
-                    // Continue with the bid
+                    _logger.LogInformation($"User ID from claim: {userId}");
                 }
                 else
                 {
@@ -114,7 +125,7 @@ namespace MarketMinds.Web.Controllers
                     var customIdClaim = User.FindFirst("UserId");
                     if (customIdClaim != null && int.TryParse(customIdClaim.Value, out userId))
                     {
-                        // Continue with the bid
+                        _logger.LogInformation($"User ID from custom claim: {userId}");
                     }
                     else
                     {
@@ -134,6 +145,8 @@ namespace MarketMinds.Web.Controllers
                     return RedirectToAction(nameof(Index));
                 }
                 
+                _logger.LogInformation($"Retrieved auction: ID={auction.Id}, CurrentPrice={auction.CurrentPrice}, EndTime={auction.EndTime}");
+                
                 // Validate bid is positive
                 if (bidAmount <= 0)
                 {
@@ -142,7 +155,24 @@ namespace MarketMinds.Web.Controllers
                     return RedirectToAction(nameof(Details), new { id });
                 }
                 
+                // Check minimum bid
+                if (bidAmount <= auction.CurrentPrice)
+                {
+                    _logger.LogWarning($"Bid amount {bidAmount} is not higher than current price {auction.CurrentPrice}");
+                    TempData["ErrorMessage"] = $"Your bid must be higher than the current price (${auction.CurrentPrice}).";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+                
+                // Check if auction ended
+                if (_auctionProductService.IsAuctionEnded(auction))
+                {
+                    _logger.LogWarning($"Attempted to bid on ended auction {id}. EndTime={auction.EndTime}, Now={DateTime.Now}");
+                    TempData["ErrorMessage"] = "This auction has already ended.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
                 // Place the bid
+                _logger.LogInformation($"Calling PlaceBidAsync with auctionId={id}, userId={userId}, bidAmount={bidAmount}");
                 bool success = await _auctionProductService.PlaceBidAsync(id, userId, bidAmount);
                 
                 if (success)
@@ -156,6 +186,12 @@ namespace MarketMinds.Web.Controllers
                     TempData["ErrorMessage"] = "Failed to place bid. It may be too low or the auction has ended.";
                 }
                 
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Exception ex) when (ex.Message.Contains("permission") || ex.Message.Contains("buyer"))
+            {
+                _logger.LogWarning($"User account type error when bidding: {ex.Message}");
+                TempData["ErrorMessage"] = "Your account doesn't have permission to place bids. Only buyer accounts can place bids.";
                 return RedirectToAction(nameof(Details), new { id });
             }
             catch (Exception ex)

@@ -1,18 +1,19 @@
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.ReviewService;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Shared.Services.ReviewCreationService
 {
     public class ReviewCreationService : IReviewCreationService
     {
         private readonly ReviewsService reviewsService;
-        private readonly ImageUploadService imageService;
+        private readonly IImageUploadService imageService;
 
-        public ReviewCreationService(ReviewsService reviewsService)
+        public ReviewCreationService(ReviewsService reviewsService, IConfiguration configuration)
         {
             this.reviewsService = reviewsService;
-            imageService = new ImageUploadService();
+            this.imageService = new ImageUploadService(configuration);
         }
 
         public Review CreateReview(string description, List<Image> images, double rating, User seller, User buyer)
