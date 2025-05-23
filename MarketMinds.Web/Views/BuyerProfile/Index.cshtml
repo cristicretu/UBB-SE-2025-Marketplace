@@ -433,22 +433,22 @@
 
         @if (canEdit)
         {
-            <!-- Quick Actions (only for own profile) -->
+            <!-- Contract Actions (only for own profile) -->
             <div class="quick-actions">
-                <h3 class="quick-actions-title">Quick Actions</h3>
-                <div class="d-flex justify-content-center flex-wrap">
-                    <a href="@Url.Action("Index", "BidProduct")" class="action-btn">Bid Product</a>
-                    <a href="@Url.Action("Index", "WalletRefill")" class="action-btn">Refill Wallet</a>
-                    <a asp-area="" asp-controller="Order" asp-action="OrderHistory" asp-route-userId="@UserId" class="action-btn">Order History</a>
-                    <a href="@Url.Action("Index", "RenewContract")" class="action-btn">Renew Contract</a>
-                </div>
+                <h3 class="quick-actions-title">Contract Management</h3>
                 
                 <div class="contract-section">
-                    <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="d-flex align-items-center justify-content-center gap-3">
-                        <label for="contractId" class="form-label mb-0">Contract ID:</label>
-                        <input type="number" class="form-control" id="contractId" name="contractId" required style="width: 150px;">
-                        <button type="submit" class="generate-btn">Generate Contract</button>
-                    </form>
+                    <div class="d-flex justify-content-center flex-wrap gap-3 align-items-center">
+                        <!-- Renew Contract -->
+                        <a href="@Url.Action("Index", "RenewContract")" class="action-btn">Renew Contract</a>
+                        
+                        <!-- Generate Contract Form -->
+                        <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="d-flex align-items-center gap-3">
+                            <label for="contractId" class="form-label mb-0">Contract ID:</label>
+                            <input type="number" class="form-control" id="contractId" name="contractId" required style="width: 150px;">
+                            <button type="submit" class="generate-btn">Generate Contract</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         }
