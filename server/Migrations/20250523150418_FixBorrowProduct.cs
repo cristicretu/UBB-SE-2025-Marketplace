@@ -10,31 +10,33 @@ namespace server.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "score",
-                table: "Reviews");
+            // Remove the attempt to drop the 'score' column since it doesn't exist
+            // migrationBuilder.DropColumn(
+            //     name: "score",
+            //     table: "Reviews");
 
-            migrationBuilder.DropColumn(
-                name: "price",
-                table: "BorrowProducts");
+            // migrationBuilder.DropColumn(
+            //     name: "price",
+            //     table: "BorrowProducts");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "score",
-                table: "Reviews",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
+            // Remove the attempt to add back the 'score' column
+            // migrationBuilder.AddColumn<int>(
+            //     name: "score",
+            //     table: "Reviews",
+            //     type: "int",
+            //     nullable: false,
+            //     defaultValue: 0);
 
-            migrationBuilder.AddColumn<double>(
-                name: "price",
-                table: "BorrowProducts",
-                type: "float",
-                nullable: false,
-                defaultValue: 0.0);
+            // migrationBuilder.AddColumn<double>(
+            //     name: "price",
+            //     table: "BorrowProducts",
+            //     type: "float",
+            //     nullable: false,
+            //     defaultValue: 0.0);
         }
     }
 }
