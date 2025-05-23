@@ -52,7 +52,7 @@ namespace MarketMinds.Web.Controllers
             {
                 // Work around the missing GetProducts method by creating an empty list initially
                 List<BuyProduct> buyProducts = new List<BuyProduct>();
-                
+
                 // Try to access the concrete implementation if possible
                 if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService concreteService)
                 {
@@ -61,29 +61,32 @@ namespace MarketMinds.Web.Controllers
                     if (methodInfo != null)
                     {
                         buyProducts = (List<BuyProduct>)methodInfo.Invoke(concreteService, null);
+
+                        // Filter out products with zero stock
+                        buyProducts = buyProducts.Where(p => p.Stock > 0).ToList();
                     }
                 }
-                
+
                 var auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
-                
+
                 // Get categories and conditions for filters
                 var categories = _categoryService.GetAllProductCategories();
                 var conditions = _conditionService.GetAllProductConditions();
-                
+
                 // Pass data to ViewBag for filters
                 ViewBag.Categories = categories;
                 ViewBag.Conditions = conditions;
-                
+
                 // Get min and max prices for the price filter
                 ViewBag.MinPrice = buyProducts.Any() ? (int)Math.Floor(buyProducts.Min(p => p.Price)) : 0;
                 ViewBag.MaxPrice = buyProducts.Any() ? (int)Math.Ceiling(buyProducts.Max(p => p.Price)) : 1000;
-                
+
                 var viewModel = new HomeViewModel
                 {
                     BuyProducts = buyProducts,
                     AuctionProducts = auctionProducts
                 };
-                
+
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -845,8 +848,8 @@ namespace MarketMinds.Web.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel 
-            { 
+            return View(new ErrorViewModel
+            {
                 RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
                 ErrorMessage = HttpContext.Items["ErrorMessage"]?.ToString()
             });
