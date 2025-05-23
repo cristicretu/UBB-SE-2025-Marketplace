@@ -256,6 +256,12 @@
                                         <p class="text-sm text-gray-900">${summary.contractDetails || ''}</p>
                                     </div>
                                 </div>
+                                <div class="pt-4">
+                                    <button onclick="downloadContractPdf(${summary.id})"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                        Download Contract PDF
+                                    </button>
+                                </div>
                             </div>`;
                         document.getElementById('orderDetailsContent').innerHTML = content;
                     } else {
@@ -278,5 +284,23 @@
                 closeOrderDetailsModal();
             }
         });
+
+        function downloadContractPdf(orderSummaryId) {
+            $.ajax({
+                url: '/Contract/GetContractIdByOrderSummaryId',
+                type: 'GET',
+                data: { orderSummaryId: orderSummaryId },
+                success: function(response) {
+                    if (response.success && response.contractId) {
+                        window.location.href = '/Contract/DownloadPdf?contractId=' + response.contractId;
+                    } else {
+                        alert('No contract found for this order.');
+                    }
+                },
+                error: function() {
+                    alert('Error fetching contract for this order.');
+                }
+            });
+        }
     </script>
 } 
