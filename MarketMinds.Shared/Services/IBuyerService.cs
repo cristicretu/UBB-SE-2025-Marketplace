@@ -133,6 +133,14 @@ namespace MarketMinds.Shared.Services
         Task RemoveWishilistItem(Buyer buyer, int productId);
 
         /// <summary>
+        /// Adds an item to a buyer's wishlist.
+        /// </summary>
+        /// <param name="buyer">The buyer whose wishlist to modify.</param>
+        /// <param name="productId">The ID of the product to add.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task AddWishlistItem(Buyer buyer, int productId);
+
+        /// <summary>
         /// Gets products for a seller's profile view.
         /// </summary>
         /// <param name="sellerId">The ID of the seller.</param>
@@ -182,7 +190,7 @@ namespace MarketMinds.Shared.Services
         /// </summary>
         /// <param name="buyerId">The ID of the buyer.</param>
         /// <returns>A task containing a list of wishlist items with product details.</returns>
-        
+
 
     }
 }

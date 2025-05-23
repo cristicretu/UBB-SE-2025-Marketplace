@@ -136,7 +136,8 @@
                             @if (isBuyer || isAdmin)
                             {
                                 <li>
-                                    <a class="hover:text-primary-light transition cursor-pointer">
+                                    <a href="@Url.Action("Index", "BuyerWishlist")"
+                                        class="hover:text-primary-light transition cursor-pointer">
                                         <i class="far fa-heart"></i>
                                     </a>
                                 </li>

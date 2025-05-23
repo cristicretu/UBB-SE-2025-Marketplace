@@ -216,8 +216,12 @@
                                     </p>
                                     <div class="flex justify-between items-center">
                                         <div class="font-bold text-primary">$@item.Price.ToString("N2")</div>
+                                        @{
+                                            var isInWishlist = ViewBag.WishlistProductIds != null && ((List<int>)ViewBag.WishlistProductIds).Contains(item.Id);
+                                            var heartIconClass = isInWishlist ? "fas fa-heart text-red-500" : "far fa-heart text-gray-400";
+                                        }
                                         <button class="favorite-btn text-gray-400 hover:text-red-500 transition" data-product-id="@item.Id" onclick="event.stopPropagation();">
-                                            <i class="far fa-heart"></i>
+                                            <i class="@heartIconClass"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -389,26 +393,32 @@
             // Favorite buttons functionality
             const favoriteButtons = document.querySelectorAll('.favorite-btn');
             favoriteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const icon = this.querySelector('i');
-                    if (icon.classList.contains('far')) {
-                        // Add to favorites (change to solid heart)
-                        icon.classList.remove('far');
-                        icon.classList.add('fas');
-                        icon.classList.add('text-red-500');
-                    } else {
-                        // Remove from favorites (change to outline heart)
-                        icon.classList.remove('fas');
-                        icon.classList.remove('text-red-500');
-                        icon.classList.add('far');
-                    }
-                    
-                    // Here you would typically make an AJAX call to update favorites in the backend
-                    const productId = this.getAttribute('data-product-id');
-                    console.log(`Toggled favorite for product ID: ${productId}`);
-                    
-                    // Prevent default behavior
+                button.addEventListener('click', async function(event) {
                     event.preventDefault();
+                    event.stopPropagation();
+
+                    const icon = this.querySelector('i');
+                    const productId = this.getAttribute('data-product-id');
+
+                    try {
+                        const response = await fetch(`@Url.Action("AddToWishlist", "BuyerWishlist")?productId=${productId}`, {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                            }
+                        });
+
+                        if (response.ok) {
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            icon.classList.add('text-red-500');
+                            console.log(`Product ID: ${productId} processed for wishlist.`);
+                        } else {
+                            console.error(`Failed to add product ID: ${productId} to wishlist. Status: ${response.status}`);
+                        }
+                    } catch (error) {
+                        console.error('Error processing wishlist action:', error);
+                    }
                 });
             });
             
