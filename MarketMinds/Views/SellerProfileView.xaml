@@ -76,6 +76,9 @@
                         <Button Content="Update Profile" Click="OnUpdateProfileButtonClick" 
                                 Width="180" Height="55" Margin="10,0,0,10"
                                 Style="{StaticResource UpdateButton}" />
+                        <Button Content="Borrow Products" Click="OnBorrowProductsButtonClick"
+                            Width="180" Height="55" Margin="10,0,0,10"
+                            Style="{StaticResource PrimaryButton}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
