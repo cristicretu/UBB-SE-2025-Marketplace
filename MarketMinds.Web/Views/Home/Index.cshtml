@@ -399,9 +399,17 @@
 
                     const icon = this.querySelector('i');
                     const productId = this.getAttribute('data-product-id');
+                    const isFavorited = icon.classList.contains('fas'); // Check if already favorited (filled heart)
+
+                    let targetUrl;
+                    if (isFavorited) {
+                        targetUrl = `@Url.Action("RemoveFromWishlist", "BuyerWishlist")?productId=${productId}`;
+                    } else {
+                        targetUrl = `@Url.Action("AddToWishlist", "BuyerWishlist")?productId=${productId}`;
+                    }
 
                     try {
-                        const response = await fetch(`@Url.Action("AddToWishlist", "BuyerWishlist")?productId=${productId}`, {
+                        const response = await fetch(targetUrl, {
                             method: 'POST',
                             headers: {
                                 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
@@ -409,15 +417,24 @@
                         });
 
                         if (response.ok) {
-                            icon.classList.remove('far');
-                            icon.classList.add('fas');
-                            icon.classList.add('text-red-500');
-                            console.log(`Product ID: ${productId} processed for wishlist.`);
+                            if (isFavorited) {
+                                icon.classList.remove('fas', 'text-red-500');
+                                icon.classList.add('far', 'text-gray-400');
+                                console.log(`Product ID: ${productId} removed from wishlist.`);
+                                // Optionally, display a TempData-like message or update UI further
+                            } else {
+                                icon.classList.remove('far', 'text-gray-400');
+                                icon.classList.add('fas', 'text-red-500');
+                                console.log(`Product ID: ${productId} added to wishlist.`);
+                                // Optionally, display a TempData-like message or update UI further
+                            }
                         } else {
-                            console.error(`Failed to add product ID: ${productId} to wishlist. Status: ${response.status}`);
+                            console.error(`Failed to process wishlist action for product ID: ${productId}. Status: ${response.status}`);
+                            // Optionally, inform the user of the failure
                         }
                     } catch (error) {
                         console.error('Error processing wishlist action:', error);
+                        // Optionally, inform the user of the failure
                     }
                 });
             });
