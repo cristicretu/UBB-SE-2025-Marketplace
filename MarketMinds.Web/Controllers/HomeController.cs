@@ -74,9 +74,33 @@ namespace MarketMinds.Web.Controllers
                 ViewBag.Categories = categories;
                 ViewBag.Conditions = conditions;
                 
-                // Get min and max prices for the price filter
-                ViewBag.MinPrice = buyProducts.Any() ? (int)Math.Floor(buyProducts.Min(p => p.Price)) : 0;
-                ViewBag.MaxPrice = buyProducts.Any() ? (int)Math.Ceiling(buyProducts.Max(p => p.Price)) : 1000;
+                // Calculate min and max prices based on BOTH buy products and auction products
+                var allPrices = new List<double>();
+                
+                // Add buy product prices
+                if (buyProducts.Any())
+                {
+                    allPrices.AddRange(buyProducts.Select(p => p.Price));
+                }
+                
+                // Add auction product current prices
+                if (auctionProducts.Any())
+                {
+                    allPrices.AddRange(auctionProducts.Select(p => p.CurrentPrice));
+                }
+                
+                // Set price range based on all products
+                ViewBag.MinPrice = allPrices.Any() ? (int)Math.Floor(allPrices.Min()) : 0;
+                ViewBag.MaxPrice = allPrices.Any() ? (int)Math.Ceiling(allPrices.Max()) : 1000;
+                
+                // Debug logging to verify price range calculation
+                _logger.LogInformation($"HOME: Calculated price range - Min: {ViewBag.MinPrice}, Max: {ViewBag.MaxPrice}");
+                _logger.LogInformation($"HOME: Buy products count: {buyProducts.Count}, Auction products count: {auctionProducts.Count}");
+                if (auctionProducts.Any())
+                {
+                    var auctionPriceRange = $"{auctionProducts.Min(p => p.CurrentPrice):F2} - {auctionProducts.Max(p => p.CurrentPrice):F2}";
+                    _logger.LogInformation($"HOME: Auction products price range: {auctionPriceRange}");
+                }
                 
                 var viewModel = new HomeViewModel
                 {
@@ -140,13 +164,33 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogInformation("Setting default SellerId to 1");
             }
 
+            // Set the Price property from StartPrice to fix validation
+            // AuctionProduct inherits from Product which has a required Price property
+            auctionProduct.Price = auctionProduct.StartPrice;
+            _logger.LogInformation("Setting Price property to StartPrice value: {Price}", auctionProduct.Price);
+
+            // Clear the ModelState error for Price since we've now set it properly
+            ModelState.Remove("Price");
+            _logger.LogInformation("Cleared ModelState error for Price field");
+
             // Log ModelState errors if any
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) });
+                
+                foreach (var error in errors)
+                {
+                    _logger.LogWarning("ModelState validation error for field '{Field}': {Errors}", 
+                        error.Field, string.Join(", ", error.Errors));
+                }
+                
+                var allErrors = ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage);
-                _logger.LogWarning("ModelState validation errors: {Errors}", string.Join(", ", errors));
+                _logger.LogWarning("All ModelState validation errors: {Errors}", string.Join(", ", allErrors));
+
             }
 
             if (auctionProduct.StartTime == default)
