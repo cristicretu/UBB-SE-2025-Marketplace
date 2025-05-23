@@ -34,6 +34,9 @@
     bool canPurchase = isAdmin || isBuyer;
 }
 
+<!-- Add anti-forgery token for AJAX requests -->
+@Html.AntiForgeryToken()
+
 <div class="container mx-auto px-4 py-8 max-w-5xl">
     <div class="flex flex-col lg:flex-row bg-white rounded-lg shadow-lg overflow-hidden">
         <!-- Product Images Section -->
@@ -122,14 +125,26 @@
             <div class="space-y-4">
                 @if (canPurchase)
                 {
-                    <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post">
-                        <input type="hidden" name="productId" value="@Model.Id" />
-                        <input type="hidden" name="quantity" value="1" />
-                        <button type="submit"
-                            class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
-                            Add to Cart
+                    <div class="flex space-x-4">
+                        <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post" class="flex-1">
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <input type="hidden" name="quantity" value="1" />
+                            <button type="submit"
+                                class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+                                Add to Cart
+                            </button>
+                        </form>
+                        
+                        @{
+                            var isInWishlist = ViewBag.WishlistProductIds != null && ((List<int>)ViewBag.WishlistProductIds).Contains(Model.Id);
+                            var heartIconClass = isInWishlist ? "fas fa-heart text-red-500" : "far fa-heart text-gray-400";
+                        }
+                        <button class="favorite-btn bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-red-500 py-3 px-4 rounded-lg transition border border-gray-300" 
+                                data-product-id="@Model.Id" 
+                                title="@(isInWishlist ? "Remove from Wishlist" : "Add to Wishlist")">
+                            <i class="@heartIconClass text-xl"></i>
                         </button>
-                    </form>
+                    </div>
                 }
 
                 <a href="javascript:history.back()"
@@ -146,5 +161,76 @@
         function setMainImage(url) {
             document.getElementById('mainImage').src = url;
         }
+
+        // Wishlist functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const favoriteButton = document.querySelector('.favorite-btn');
+            
+            if (favoriteButton) {
+                favoriteButton.addEventListener('click', async function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const icon = this.querySelector('i');
+                    const productId = this.getAttribute('data-product-id');
+                    const isFavorited = icon.classList.contains('fas'); // Check if already favorited (filled heart)
+
+                    let targetUrl;
+                    if (isFavorited) {
+                        targetUrl = `@Url.Action("RemoveFromWishlist", "BuyerWishlist")?productId=${productId}`;
+                    } else {
+                        targetUrl = `@Url.Action("AddToWishlist", "BuyerWishlist")?productId=${productId}`;
+                    }
+
+                    // Get anti-forgery token
+                    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                    const token = tokenInput ? tokenInput.value : '';
+
+                    console.log('Making wishlist request to:', targetUrl);
+                    console.log('Product ID:', productId);
+                    console.log('Is favorited:', isFavorited);
+                    console.log('Token found:', !!token);
+
+                    try {
+                        const headers = {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        };
+                        
+                        if (token) {
+                            headers['RequestVerificationToken'] = token;
+                        }
+
+                        const response = await fetch(targetUrl, {
+                            method: 'POST',
+                            headers: headers,
+                            body: token ? `__RequestVerificationToken=${encodeURIComponent(token)}` : ''
+                        });
+
+                        console.log('Response status:', response.status);
+
+                        if (response.ok) {
+                            if (isFavorited) {
+                                icon.classList.remove('fas', 'text-red-500');
+                                icon.classList.add('far', 'text-gray-400');
+                                this.title = 'Add to Wishlist';
+                                console.log(`Product ID: ${productId} removed from wishlist.`);
+                            } else {
+                                icon.classList.remove('far', 'text-gray-400');
+                                icon.classList.add('fas', 'text-red-500');
+                                this.title = 'Remove from Wishlist';
+                                console.log(`Product ID: ${productId} added to wishlist.`);
+                            }
+                        } else {
+                            const responseText = await response.text();
+                            console.error(`Failed to process wishlist action for product ID: ${productId}. Status: ${response.status}`, responseText);
+                        }
+                    } catch (error) {
+                        console.error('Error processing wishlist action:', error);
+                    }
+                });
+            } else {
+                console.log('Favorite button not found');
+            }
+        });
     </script>
 }
