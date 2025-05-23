@@ -7,6 +7,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.ReviewCreationService;
+using MarketMinds.Shared.Helper;
 
 namespace ViewModelLayer.ViewModel
 {
@@ -34,8 +35,8 @@ namespace ViewModelLayer.ViewModel
             ReviewsService = reviewsService;
             Buyer = buyer;
             Seller = seller;
-            reviewCreationService = new ReviewCreationService(reviewsService);
-            imageUploadService = new ImageUploadService();
+            reviewCreationService = new ReviewCreationService(reviewsService, AppConfig.Configuration);
+            imageUploadService = new ImageUploadService(AppConfig.Configuration);
             Images = new List<Image>();
             StatusMessage = string.Empty;
         }

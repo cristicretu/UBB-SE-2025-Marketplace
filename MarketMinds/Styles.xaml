@@ -21,13 +21,13 @@
 
     <!-- Button Style -->
     <Style x:Key="UpdateButton" TargetType="Button">
-        <Setter Property="FontSize" Value="18" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="#0D47A1" />
-        <Setter Property="Background" Value="AliceBlue" />
-        <Setter Property="Padding" Value="10" />
-        <Setter Property="BorderBrush" Value="#0D47A1" />
-        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Background" Value="#0D47A1"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="PrimaryButton" TargetType="Button">

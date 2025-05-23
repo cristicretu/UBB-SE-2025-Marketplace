@@ -3,6 +3,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.Services.ReviewCalculationService;
 using MarketMinds.Shared.Services.ReviewCreationService;
+using MarketMinds.Shared.Helper;
 
 namespace BusinessLogicLayer.ViewModel
 {
@@ -22,7 +23,7 @@ namespace BusinessLogicLayer.ViewModel
             this.User = user;
             this.ReviewsService = reviewsService;
             this.reviewCalculationService = new ReviewCalculationService();
-            this.reviewCreationService = new ReviewCreationService(reviewsService);
+            this.reviewCreationService = new ReviewCreationService(reviewsService, AppConfig.Configuration);
             Reviews = reviewsService.GetReviewsByBuyer(user);
             ReviewCount = reviewCalculationService.GetReviewCount(Reviews);
             Rating = reviewCalculationService.CalculateAverageRating(Reviews);

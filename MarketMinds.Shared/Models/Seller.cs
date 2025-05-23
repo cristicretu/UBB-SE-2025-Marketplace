@@ -11,7 +11,7 @@ namespace MarketMinds.Shared.Models
     public class Seller
     {
         // Add this private parameterless constructor for Entity Framework Core
-        public Seller() 
+        public Seller()
         {
             this.User = new User();
             this.StoreName = string.Empty;

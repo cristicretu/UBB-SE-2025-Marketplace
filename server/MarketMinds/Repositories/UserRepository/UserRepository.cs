@@ -153,7 +153,6 @@ namespace Server.MarketMinds.Repositories.UserRepository
         /// <returns>A <see cref="Task{User?}"/> representing the result of the asynchronous operation. The task result contains the user if found or null if no user is found with the specified email address.</returns>
         public async Task<User?> GetUserByEmail(string email)
         {
-            Debug.WriteLine("MAMA \n MAMA \n MAMA \n MAMA \n");
             return await this._context.Users.FirstOrDefaultAsync(user => user.Email == email);
         }
 

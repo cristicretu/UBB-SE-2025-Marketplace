@@ -161,6 +161,13 @@ namespace MarketMinds.Shared.IRepository
         /// <returns>A task representing the asynchronous operation.</returns>
         Task RemoveWishilistItem(int buyerId, int productId);
 
+        /// <summary>
+        /// Adds an item to a buyer's wishlist.
+        /// </summary>
+        /// <param name="buyerId">The ID of the buyer.</param>
+        /// <param name="productId">The ID of the product to add.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task AddItemToWishlist(int buyerId, int productId);
 
         /// <summary>
         /// Retrieves all addresses from the database.

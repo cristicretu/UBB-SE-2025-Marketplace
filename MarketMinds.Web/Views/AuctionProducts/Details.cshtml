@@ -86,10 +86,10 @@
                             <form action="/AuctionProducts/PlaceBid" method="post" class="flex gap-2">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@Model.Id" />
-                                <input type="number" name="bidAmount" min="@((int)Model.CurrentPrice + 1)" step="1" class="form-control w-full" placeholder="Enter your bid amount (minimum @((int)Model.CurrentPrice + 1))" required />
+                                <input type="number" name="bidAmount" min="@(Model.CurrentPrice + 0.01)" step="0.01" class="form-control w-full" placeholder="Enter your bid amount (minimum @(Model.CurrentPrice + 0.01))" required />
                                 <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition">Bid</button>
                             </form>
-                            <p class="text-sm text-gray-500 mt-2">Your bid must be at least $@((int)Model.CurrentPrice + 1)</p>
+                            <p class="text-sm text-gray-500 mt-2">Your bid must be at least $@(Model.CurrentPrice + 0.01)</p>
                         </div>
                     }
                     else

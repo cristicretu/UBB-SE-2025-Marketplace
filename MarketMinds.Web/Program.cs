@@ -49,6 +49,18 @@ builder.Services.AddHttpClient("ApiClient", client =>
     client.BaseAddress = new Uri(baseUrl + "api/");
 });
 
+// Register ImageUploadService with configuration
+builder.Services.AddSingleton<IImageUploadService>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var clientId = configuration["ImgurSettings:ClientId"];
+    if (string.IsNullOrEmpty(clientId))
+    {
+        throw new InvalidOperationException("Imgur Client ID is not configured in appsettings.json");
+    }
+    return new ImageUploadService(configuration);
+});
+
 // Register repositories
 builder.Services.AddSingleton<AuctionProductsProxyRepository>();
 builder.Services.AddSingleton<BorrowProductsProxyRepository>();
@@ -108,6 +120,10 @@ builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
 builder.Services.AddTransient<IOrderSummaryService, OrderSummaryService>();
 builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddTransient<IDummyWalletService, DummyWalletService>();
+
+// Register IBuyerRepository and IBuyerService
+builder.Services.AddTransient<IBuyerRepository, BuyerProxyRepository>();
+builder.Services.AddTransient<IBuyerService, BuyerService>();
 
 // Register repository interfaces
 builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());

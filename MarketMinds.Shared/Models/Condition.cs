@@ -13,6 +13,7 @@ namespace MarketMinds.Shared.Models
         [Column("title")]
         public string Name { get; set; }
 
+        [Required]
         [Column("description")]
         public string Description { get; set; }
 

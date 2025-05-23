@@ -190,7 +190,7 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Gets or sets the address of the seller's store.
         /// </summary>
-        public string Address { get; set; } = string.Empty;
+        public string StoreAddress { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the trust score of the seller.
@@ -200,7 +200,7 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Gets or sets the description of the seller's store.
         /// </summary>
-        public string Description { get; set; } = string.Empty;
+        public string StoreDescription { get; set; } = string.Empty;
 
         /// <summary>
         /// Filters products based on a search query.
@@ -300,20 +300,20 @@ namespace MarketMinds.ViewModels
                 this.Username = this.seller.Username;
                 this.Email = this.seller.Email;
                 this.PhoneNumber = this.seller.PhoneNumber;
-                this.Address = this.seller.StoreAddress;
+                this.StoreAddress = this.seller.StoreAddress;
                 this.FollowersCount = this.seller.FollowersCount.ToString();
                 this.TrustScore = this.seller.TrustScore * 100.0 / 5.0;
-                this.Description = this.seller.StoreDescription;
+                this.StoreDescription = this.seller.StoreDescription;
 
                 // Notify the UI of property changes
                 this.OnPropertyChanged(nameof(this.StoreName));
                 this.OnPropertyChanged(nameof(this.Username));
                 this.OnPropertyChanged(nameof(this.Email));
                 this.OnPropertyChanged(nameof(this.PhoneNumber));
-                this.OnPropertyChanged(nameof(this.Address));
+                this.OnPropertyChanged(nameof(this.StoreAddress));
                 this.OnPropertyChanged(nameof(this.FollowersCount));
                 this.OnPropertyChanged(nameof(this.TrustScore));
-                this.OnPropertyChanged(nameof(this.Description));
+                this.OnPropertyChanged(nameof(this.StoreDescription));
             }
         }
 

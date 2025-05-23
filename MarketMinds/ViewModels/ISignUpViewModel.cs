@@ -38,6 +38,11 @@ namespace MarketMinds.ViewModels
         string Password { get; set; }
 
         /// <summary>
+        /// Gets or sets ConfirmPassword property.
+        /// </summary>
+        string ConfirmPassword { get; set; }
+
+        /// <summary>
         /// Gets or sets Role property.
         /// </summary>
         int Role { get; set; }
