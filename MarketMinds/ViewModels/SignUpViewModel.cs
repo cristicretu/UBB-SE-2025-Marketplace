@@ -178,7 +178,8 @@ namespace MarketMinds.ViewModels
         {
             try
             {
-                if (this.Password != this.ConfirmPassword) {
+                if (this.Password != this.ConfirmPassword)
+                {
                     throw new Exception("Passwords do not match.");
                 } // put this here so that I do not change the user service implementation + this is frontend validation
                 await this.userService.RegisterUser(this.Username, this.Password, this.Email, this.PhoneNumber, this.Role);
