@@ -19,38 +19,49 @@
     <h1 class="text-3xl font-bold mb-6">Create a Listing</h1>
 
     <div class="bg-white rounded-lg shadow p-6">
-        <form asp-action="Create" method="post" id="listingForm" enctype="multipart/form-data" onsubmit="console.log('Form onsubmit triggered for action: ' + this.action);">
+        <form asp-action="Create" method="post" id="listingForm" enctype="multipart/form-data"
+            onsubmit="console.log('Form onsubmit triggered for action: ' + this.action);">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            
+
             <div class="mb-5">
                 <label class="block text-gray-700 mb-2 font-medium">What type of listing do you wish to create?</label>
-                <select id="productType" name="productType" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <select id="productType" name="productType"
+                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <option value="auction" selected>Auction</option>
                     <option value="buy">Buy</option>
                     <option value="borrow">Borrow</option>
                 </select>
-                
+
                 <!-- Product type indicators -->
-                <div id="auctionTypeIndicator" class="auction-field mt-2 px-3 py-1 bg-blue-100 text-blue-800 inline-block rounded-full text-sm">
+                <div id="auctionTypeIndicator"
+                    class="auction-field mt-2 px-3 py-1 bg-blue-100 text-blue-800 inline-block rounded-full text-sm">
                     <span class="font-medium">Auction Mode</span> - Set a starting price and end date for bidding
                 </div>
-                <div id="buyTypeIndicator" class="buy-field mt-2 px-3 py-1 bg-green-100 text-green-800 inline-block rounded-full text-sm" style="display: none;">
+                <div id="buyTypeIndicator"
+                    class="buy-field mt-2 px-3 py-1 bg-green-100 text-green-800 inline-block rounded-full text-sm"
+                    style="display: none;">
                     <span class="font-medium">Buy Mode</span> - Set a fixed price for immediate purchase
                 </div>
-                <div id="borrowTypeIndicator" class="borrow-field mt-2 px-3 py-1 bg-purple-100 text-purple-800 inline-block rounded-full text-sm" style="display: none;">
+                <div id="borrowTypeIndicator"
+                    class="borrow-field mt-2 px-3 py-1 bg-purple-100 text-purple-800 inline-block rounded-full text-sm"
+                    style="display: none;">
                     <span class="font-medium">Borrow Mode</span> - Set availability dates and daily rates
                 </div>
             </div>
-            
+
             <div class="mb-5">
                 <label asp-for="Title" class="block text-gray-700 mb-2 font-medium">Title *</label>
-                <input asp-for="Title" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                <input asp-for="Title"
+                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required />
                 <span asp-validation-for="Title" class="text-red-500 text-sm mt-1"></span>
             </div>
-            
+
             <div class="mb-5">
                 <label class="block text-gray-700 mb-2 font-medium">Select Category *</label>
-                <select asp-for="CategoryId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                <select asp-for="CategoryId"
+                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required>
                     <option value="">-- Select Category --</option>
                     @foreach (var category in categories)
                     {
@@ -59,18 +70,23 @@
                 </select>
                 <span asp-validation-for="CategoryId" class="text-red-500 text-sm mt-1"></span>
             </div>
-            
+
             <div class="mb-5">
                 <label asp-for="Description" class="block text-gray-700 mb-2 font-medium">Description</label>
-                <textarea asp-for="Description" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="4"></textarea>
+                <textarea asp-for="Description"
+                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows="4"></textarea>
                 <span asp-validation-for="Description" class="text-red-500 text-sm mt-1"></span>
             </div>
-            
+
             <div class="mb-5">
                 <label class="block text-gray-700 mb-2 font-medium">Tags</label>
                 <div class="flex items-center space-x-2">
-                    <input type="text" id="tagInput" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Add a tag and press Enter" />
-                    <button type="button" id="addTagBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+                    <input type="text" id="tagInput"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Add a tag and press Enter" />
+                    <button type="button" id="addTagBtn"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
                         Add
                     </button>
                 </div>
@@ -78,12 +94,14 @@
                 <div id="selectedTags" class="flex flex-wrap gap-2 mt-2"></div>
                 <input type="hidden" id="tagIds" name="tagIds" />
             </div>
-            
+
             <div class="mb-5">
                 <label class="block text-gray-700 mb-2 font-medium">Upload Images</label>
                 <div class="flex items-center space-x-2">
-                    <input type="file" id="imageUpload" accept="image/*" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none" multiple />
-                    <button type="button" id="uploadButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+                    <input type="file" id="imageUpload" accept="image/*"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none" />
+                    <button type="button" id="uploadButton"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
                         Upload
                     </button>
                 </div>
@@ -91,10 +109,12 @@
                 <input type="hidden" id="imageUrls" name="imageUrls" />
                 <div id="uploadStatus" class="mt-2"></div>
             </div>
-            
+
             <div class="mb-5">
                 <label class="block text-gray-700 mb-2 font-medium">Select Condition *</label>
-                <select asp-for="ConditionId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                <select asp-for="ConditionId"
+                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required>
                     <option value="">-- Select Condition --</option>
                     @foreach (var condition in conditions)
                     {
@@ -103,443 +123,223 @@
                 </select>
                 <span asp-validation-for="ConditionId" class="text-red-500 text-sm mt-1"></span>
             </div>
-            
+
             <!-- Auction specific fields -->
             <div class="mb-5 auction-field">
                 <label asp-for="StartPrice" class="block text-gray-700 mb-2 font-medium">Starting Price *</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
-                    <input asp-for="StartPrice" type="number" step="0.01" min="0.01" class="w-full border border-gray-300 rounded px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                    <input asp-for="StartPrice" type="number" step="0.01" min="0.01"
+                        class="w-full border border-gray-300 rounded px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required />
                 </div>
                 <span asp-validation-for="StartPrice" class="text-red-500 text-sm mt-1"></span>
             </div>
-            
+
             <div class="mb-5 auction-field">
                 <label asp-for="EndTime" class="block text-gray-700 mb-2 font-medium">End Auction Date</label>
-                <input asp-for="EndTime" type="datetime-local" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                <input asp-for="EndTime" type="datetime-local"
+                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required />
                 <span asp-validation-for="EndTime" class="text-red-500 text-sm mt-1"></span>
             </div>
-            
+
             <!-- Borrow specific fields -->
             <div class="mb-5 borrow-field" style="display: none;">
                 <label for="AvailableFrom" class="block text-gray-700 mb-2 font-medium">Available From *</label>
-                <input name="StartDate" id="AvailableFrom" type="datetime-local" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                <input name="StartDate" id="AvailableFrom" type="datetime-local"
+                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required />
             </div>
-            
+
             <div class="mb-5 borrow-field" style="display: none;">
                 <label for="AvailableTo" class="block text-gray-700 mb-2 font-medium">Available To *</label>
-                <input name="EndDate" id="AvailableTo" type="datetime-local" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                <input name="EndDate" id="AvailableTo" type="datetime-local"
+                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required />
             </div>
-            
+
             <div class="mb-5 borrow-field" style="display: none;">
                 <label for="DailyRate" class="block text-gray-700 mb-2 font-medium">Daily Rate *</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
-                    <input name="DailyRate" id="DailyRate" type="number" step="0.01" min="0.01" class="w-full border border-gray-300 rounded px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                    <input name="DailyRate" id="DailyRate" type="number" step="0.01" min="0.01"
+                        class="w-full border border-gray-300 rounded px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required />
                 </div>
             </div>
-            
+
             <!-- Buy specific fields -->
             <div class="mb-5 buy-field" style="display: none;">
-                <label for="Price" class="block text-gray-700 mb-2 font-medium">Price *</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
-                    <input name="Price" id="Price" type="number" step="0.01" min="0.01" class="w-full border border-gray-300 rounded px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="Price" class="block text-gray-700 mb-2 font-medium">Price *</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500">$</span>
+                            </div>
+                            <input name="Price" id="Price" type="number" min="0.01" step="0.01"
+                                class="w-full border border-gray-300 rounded px-3 pl-8 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                required />
+                        </div>
+                    </div>
+                    <div>
+                        <label for="Stock" class="block text-gray-700 mb-2 font-medium">Stock *</label>
+                        <input name="Stock" id="Stock" type="number" min="1" value="1"
+                            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            required />
+                    </div>
                 </div>
+                <p class="text-sm text-gray-500 mt-1">Enter the number of items available for sale.</p>
             </div>
-            
+
             <!-- Hidden fields for borrow product -->
             <input type="hidden" name="TimeLimit" id="TimeLimit" />
             <input type="hidden" name="IsBorrowed" id="IsBorrowed" value="false" />
-            
+
             <!-- Hidden fields for buy product -->
             <input type="hidden" name="IsSold" id="IsSold" value="false" />
-            
+
             <input type="hidden" asp-for="StartTime" value="@DateTime.Now" />
             <input type="hidden" asp-for="SellerId" value="1" />
             <input type="hidden" asp-for="CurrentPrice" id="CurrentPrice" />
-            
+
             <div class="mb-5">
                 <!-- Main submit buttons with icons -->
-                <button type="submit" id="auctionSubmitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 auction-field flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                <button type="button" id="auctionSubmitBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 auction-field flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                     Create Auction Listing
                 </button>
-                
-                <button type="submit" id="buySubmitBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg text-lg shadow focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 buy-field flex items-center" style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+
+                <button type="button" id="buySubmitBtn"
+                    class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg text-lg shadow focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 buy-field flex items-center"
+                    style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                     Create Buy Listing
                 </button>
-                
-                <button type="submit" id="borrowSubmitBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg text-lg shadow focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 borrow-field flex items-center" style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+
+                <button type="button" id="borrowSubmitBtn"
+                    class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg text-lg shadow focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 borrow-field flex items-center"
+                    style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
                     Create Borrow Listing
                 </button>
-                
-                <a asp-controller="Home" asp-action="Index" class="ml-2 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50">
+
+                <a asp-controller="Home" asp-action="Index"
+                    class="ml-2 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50">
                     Cancel
                 </a>
             </div>
-            
-<!-- Debug section removed for production -->
+
+            <!-- Debug section removed for production -->
         </form>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM Content Loaded - Initializing form handlers");
-            
-            // Form and button elements
-            const form = document.getElementById('listingForm');
-            const productTypeSelect = document.getElementById('productType');
-            const auctionSubmitBtn = document.getElementById('auctionSubmitBtn');
-            const buySubmitBtn = document.getElementById('buySubmitBtn');
-            const borrowSubmitBtn = document.getElementById('borrowSubmitBtn');
-            
-            // Tag handling elements
-            const tagInput = document.getElementById('tagInput');
-            const addTagBtn = document.getElementById('addTagBtn');
-            const selectedTags = document.getElementById('selectedTags');
-            const tagIdsInput = document.getElementById('tagIds');
-            const selectedTagIds = [];
-            
-            // Image handling elements
-            const imageUpload = document.getElementById('imageUpload');
-            const uploadButton = document.getElementById('uploadButton');
-            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-            const imageUrlsInput = document.getElementById('imageUrls');
-            const uploadStatus = document.getElementById('uploadStatus');
-            let uploadedImages = [];
-
-            // Available tags from the backend
-            const availableTags = @Html.Raw(Json.Serialize(allTags));
-            console.log("Available tags loaded:", availableTags);
-
-            // Tag handling functions
-            function handleAddTag() {
-                console.log("handleAddTag called");
-                const tagText = tagInput.value.trim();
-                
-                if (!tagText) {
-                    console.log("Empty tag text, ignoring");
-                    return;
-                }
-                
-                console.log("Processing tag:", tagText);
-                
-                // Find if tag already exists
-                const existingTag = availableTags.find(tag => 
-                    tag.Title && tag.Title.toLowerCase() === tagText.toLowerCase()
-                );
-                
-                let tagId, tagTitle, isNew = false;
-                
-                if (existingTag) {
-                    tagId = existingTag.Id.toString();
-                    tagTitle = existingTag.Title;
-                    console.log("Found existing tag:", tagTitle, "ID:", tagId);
-                } else {
-                    tagId = 'new_' + tagText;
-                    tagTitle = tagText;
-                    isNew = true;
-                    console.log("Creating new tag:", tagTitle);
-                }
-                
-                // Check if tag is already added
-                if (selectedTagIds.includes(tagId)) {
-                    console.log("Tag already exists in selection");
-                    tagInput.value = '';
-                    return;
-                }
-                
-                // Add to selected tags
-                selectedTagIds.push(tagId);
-                tagIdsInput.value = selectedTagIds.join(',');
-                console.log("Updated tagIds input:", tagIdsInput.value);
-                
-                // Create tag element
-                const tagElement = document.createElement('div');
-                tagElement.className = isNew ? 
-                    'bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center' :
-                    'bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center';
-                
-                tagElement.innerHTML = `
-                    <span>${tagTitle}</span>
-                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none" data-tag-id="${tagId}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                `;
-                
-                // Add remove functionality
-                const removeBtn = tagElement.querySelector('button');
-                removeBtn.addEventListener('click', function() {
-                    const tagIdToRemove = this.getAttribute('data-tag-id');
-                    const index = selectedTagIds.indexOf(tagIdToRemove);
-                    
-                    if (index !== -1) {
-                        selectedTagIds.splice(index, 1);
-                        tagIdsInput.value = selectedTagIds.join(',');
-                        console.log("Removed tag, updated IDs:", tagIdsInput.value);
-                    }
-                    
-                    tagElement.remove();
-                });
-                
-                selectedTags.appendChild(tagElement);
-                tagInput.value = '';
-                tagInput.focus();
+        document.addEventListener('DOMContentLoaded', function () {
+            const endDateInput = document.getElementById('EndTime');
+            if (!endDateInput.value) {
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + 7);
+                endDateInput.value = endDate.toISOString().slice(0, 16);
             }
 
-            // Tag input event listeners
-            tagInput.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    handleAddTag();
-                }
+            // Set current price equal to start price
+            const startPriceInput = document.getElementById('StartPrice');
+            const currentPriceInput = document.getElementById('CurrentPrice');
+
+            startPriceInput.addEventListener('change', function () {
+                currentPriceInput.value = this.value;
             });
 
-            addTagBtn.addEventListener('click', function(event) {
-                event.preventDefault();
-                handleAddTag();
-            });
+            // Initial value
+            currentPriceInput.value = startPriceInput.value || 0;
 
-            // Form submission handling
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                console.log("Form submission initiated");
+            // Handle product type change
+            const productTypeSelect = document.getElementById('productType');
+            const form = document.getElementById('listingForm');
 
-                // Validate images
-                if (uploadedImages.length === 0) {
-                    uploadStatus.innerHTML = '<p class="text-red-500">Please upload at least one image before submitting.</p>';
-                    return;
-                }
+            // Check initial product type and set form accordingly
+            if (productTypeSelect.value === 'borrow') {
+                form.action = '@Url.Action("CreateBorrowProduct", "Home")';
+                console.log("Setting initial form action for borrow:", form.action);
+                showAuctionFields(false);
+                showBorrowFields(true);
+                setDefaultBorrowDates();
+            } else if (productTypeSelect.value === 'buy') {
+                form.action = '@Url.Action("CreateBuyProduct", "Home")';
+                console.log("Setting initial form action for buy:", form.action);
+                showAuctionFields(false);
+                showBorrowFields(false);
+                showBuyFields(true);
+            } else {
+                form.action = '@Url.Action("Create", "Home")';
+                console.log("Setting initial form action for auction:", form.action);
+                showAuctionFields(true);
+                showBorrowFields(false);
+                showBuyFields(false);
+            }
 
-                // Set form action based on product type
-                const productType = productTypeSelect.value;
-                switch (productType) {
-                    case 'auction':
-                        form.action = '@Url.Action("Create", "Home")';
-                        break;
-                    case 'buy':
-                        form.action = '@Url.Action("CreateBuyProduct", "Home")';
-                        break;
-                    case 'borrow':
-                        form.action = '@Url.Action("CreateBorrowProduct", "Home")';
-                        break;
-                }
-
-                // Create a hidden input for imageUrls if it doesn't exist
-                let imageUrlsInput = document.getElementById('imageUrls');
-                if (!imageUrlsInput) {
-                    imageUrlsInput = document.createElement('input');
-                    imageUrlsInput.type = 'hidden';
-                    imageUrlsInput.name = 'imageUrls';
-                    imageUrlsInput.id = 'imageUrls';
-                    form.appendChild(imageUrlsInput);
-                }
-
-                // Set the image URLs
-                imageUrlsInput.value = uploadedImages.join('\n');
-                console.log("Setting imageUrls to:", imageUrlsInput.value);
-
-                // Set current price to start price for auction products
-                const currentPriceInput = document.getElementById('CurrentPrice');
-                const startPriceInput = document.querySelector('input[name="StartPrice"]');
-                if (currentPriceInput && startPriceInput) {
-                    currentPriceInput.value = startPriceInput.value;
-                }
-
-                // Set the base Product Price field
-                let priceInput = document.getElementById('Price');
-                if (!priceInput) {
-                    priceInput = document.createElement('input');
-                    priceInput.type = 'hidden';
-                    priceInput.name = 'Price';
-                    priceInput.id = 'Price';
-                    form.appendChild(priceInput);
-                }
-                priceInput.value = startPriceInput.value;
-
-                // Ensure SellerId is set
-                let sellerIdInput = document.getElementById('SellerId');
-                if (!sellerIdInput) {
-                    sellerIdInput = document.createElement('input');
-                    sellerIdInput.type = 'hidden';
-                    sellerIdInput.name = 'SellerId';
-                    sellerIdInput.id = 'SellerId';
-                    sellerIdInput.value = '1'; // Default seller ID
-                    form.appendChild(sellerIdInput);
-                }
-
-                // Ensure the antiforgery token is included
-                const antiforgeryToken = document.querySelector('input[name="__RequestVerificationToken"]');
-                if (!antiforgeryToken) {
-                    console.error("Antiforgery token not found!");
-                    return;
-                }
-
-                // Log form data
-                const formData = new FormData(form);
-                const formValues = {};
-                for (let [key, value] of formData.entries()) {
-                    formValues[key] = value;
-                }
-                console.log("Submitting form with data:", formValues);
-
-                // Submit the form
-                form.submit();
-            });
-
-            // Image upload handling
-            uploadButton.addEventListener('click', async function() {
-                console.log("Upload button clicked");
-                const files = imageUpload.files;
-                
-                if (files.length === 0) {
-                    uploadStatus.innerHTML = '<p class="text-red-500">Please select at least one image to upload.</p>';
-                    return;
-                }
-
-                uploadStatus.innerHTML = '<p class="text-blue-500">Uploading images...</p>';
-                
-                try {
-                    for (let file of files) {
-                        console.log("Processing file:", file.name, "Size:", file.size, "Type:", file.type);
-                        
-                        const formData = new FormData();
-                        formData.append('image', file);
-
-                        console.log("Sending upload request to /api/Images/Upload");
-                        const response = await fetch('/api/Images/Upload', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        console.log("Response status:", response.status);
-                        const responseText = await response.text();
-                        console.log("Raw response:", responseText);
-
-                        let result;
-                        try {
-                            result = JSON.parse(responseText);
-                        } catch (parseError) {
-                            console.error("Failed to parse response as JSON:", parseError);
-                            throw new Error(`Invalid server response: ${responseText}`);
-                        }
-
-                        if (!response.ok) {
-                            throw new Error(result.message || `Failed to upload image: ${response.statusText}`);
-                        }
-
-                        console.log("Parsed response:", result);
-                        
-                        if (result && result.url) {
-                            console.log("Adding image URL to collection:", result.url);
-                            uploadedImages.push(result.url);
-
-                            // Add preview
-                            const preview = document.createElement('div');
-                            preview.className = 'relative';
-                            preview.innerHTML = `
-                                <img src="${result.url}" class="w-24 h-24 object-cover rounded" />
-                                <button type="button" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center" 
-                                    onclick="removeImage('${result.url}')">×</button>
-                            `;
-                            imagePreviewContainer.appendChild(preview);
-                        } else {
-                            throw new Error('Invalid response format: missing URL');
-                        }
-                    }
-
-                    console.log("Setting imageUrlsInput.value to:", uploadedImages.join('\n'));
-                    imageUrlsInput.value = uploadedImages.join('\n');
-                    uploadStatus.innerHTML = '<p class="text-green-500">Images uploaded successfully!</p>';
-                } catch (error) {
-                    console.error('Upload error:', error);
-                    uploadStatus.innerHTML = `<p class="text-red-500">Error uploading images: ${error.message}</p>`;
-                }
-            });
-
-            // Image removal function
-            window.removeImage = function(url) {
-                console.log("Removing image:", url);
-                uploadedImages = uploadedImages.filter(u => u !== url);
-                imageUrlsInput.value = uploadedImages.join('\n');
-                
-                const previews = imagePreviewContainer.getElementsByTagName('div');
-                for (let preview of previews) {
-                    if (preview.querySelector('img').src === url) {
-                        preview.remove();
-                        break;
-                    }
-                }
-            };
-
-            // Add click handlers for submit buttons
-            auctionSubmitBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                productTypeSelect.value = 'auction';
-                form.dispatchEvent(new Event('submit'));
-            });
-
-            buySubmitBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                productTypeSelect.value = 'buy';
-                form.dispatchEvent(new Event('submit'));
-            });
-
-            borrowSubmitBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                productTypeSelect.value = 'borrow';
-                form.dispatchEvent(new Event('submit'));
-            });
-
-            // Product type change handling
-            productTypeSelect.addEventListener('change', function() {
-                console.log("Product type changed to:", this.value);
+            productTypeSelect.addEventListener('change', function () {
+                // Update form action based on product type
                 switch (this.value) {
                     case 'auction':
+                        form.action = '@Url.Action("Create", "Home")';
+                        console.log("Updated form action for auction:", form.action);
                         showAuctionFields(true);
                         showBorrowFields(false);
                         showBuyFields(false);
                         break;
                     case 'buy':
+                        form.action = '@Url.Action("CreateBuyProduct", "Home")';
+                        console.log("Updated form action for buy:", form.action);
                         showAuctionFields(false);
                         showBorrowFields(false);
                         showBuyFields(true);
                         break;
                     case 'borrow':
+                        form.action = '@Url.Action("CreateBorrowProduct", "Home")';
+                        console.log("Updated form action for borrow:", form.action);
                         showAuctionFields(false);
                         showBorrowFields(true);
                         showBuyFields(false);
                         setDefaultBorrowDates();
                         break;
                 }
+
+                // Log the current form action for debugging
+                console.log("Form action updated to:", form.action);
             });
 
-            // Initialize form state
-            console.log("Initializing form state");
-            if (productTypeSelect.value === 'auction') {
-                showAuctionFields(true);
-                showBorrowFields(false);
-                showBuyFields(false);
-            }
-
-            // Helper functions for showing/hiding fields
             function showAuctionFields(show) {
                 const auctionFields = document.querySelectorAll('.auction-field');
                 auctionFields.forEach(field => {
                     field.style.display = show ? 'block' : 'none';
+
+                    // Toggle required attribute on inputs
+                    const inputs = field.querySelectorAll('input[required], select[required]');
+                    inputs.forEach(input => {
+                        if (show) {
+                            input.setAttribute('required', '');
+                        } else {
+                            input.removeAttribute('required');
+                        }
+                    });
                 });
             }
 
@@ -547,6 +347,16 @@
                 const borrowFields = document.querySelectorAll('.borrow-field');
                 borrowFields.forEach(field => {
                     field.style.display = show ? 'block' : 'none';
+
+                    // Toggle required attribute on inputs
+                    const inputs = field.querySelectorAll('input[required], select[required]');
+                    inputs.forEach(input => {
+                        if (show) {
+                            input.setAttribute('required', '');
+                        } else {
+                            input.removeAttribute('required');
+                        }
+                    });
                 });
             }
 
@@ -554,25 +364,357 @@
                 const buyFields = document.querySelectorAll('.buy-field');
                 buyFields.forEach(field => {
                     field.style.display = show ? 'block' : 'none';
+
+                    // Toggle required attribute on inputs
+                    const inputs = field.querySelectorAll('input[required], select[required]');
+                    inputs.forEach(input => {
+                        if (show) {
+                            input.setAttribute('required', '');
+                        } else {
+                            input.removeAttribute('required');
+                        }
+                    });
                 });
             }
 
             function setDefaultBorrowDates() {
-                const now = new Date();
-                const oneMonthLater = new Date();
-                oneMonthLater.setMonth(now.getMonth() + 1);
+                const availableFromInput = document.getElementById('AvailableFrom');
+                const availableToInput = document.getElementById('AvailableTo');
 
-                const availableFrom = document.getElementById('AvailableFrom');
-                const availableTo = document.getElementById('AvailableTo');
+                if (!availableFromInput.value) {
+                    const fromDate = new Date();
+                    availableFromInput.value = fromDate.toISOString().slice(0, 16);
+                }
 
-                if (availableFrom) {
-                    availableFrom.value = now.toISOString().slice(0, 16);
+                if (!availableToInput.value) {
+                    const toDate = new Date();
+                    toDate.setMonth(toDate.getMonth() + 1);
+                    availableToInput.value = toDate.toISOString().slice(0, 16);
                 }
-                if (availableTo) {
-                    availableTo.value = oneMonthLater.toISOString().slice(0, 16);
+            }
+
+            // Direct button click events with specific form submission
+            document.getElementById('auctionSubmitBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+
+                if (productTypeSelect.value !== 'auction') {
+                    console.log("Switching to auction type");
+                    productTypeSelect.value = 'auction';
+                    productTypeSelect.dispatchEvent(new Event('change'));
                 }
+
+                // Set form action explicitly
+                form.action = '@Url.Action("Create", "Home")';
+                console.log("Auction submit button clicked, form action:", form.action);
+
+                // Submit the form after a short delay to ensure changes propagate
+                setTimeout(() => {
+                    form.submit();
+                }, 50);
+            });
+
+            document.getElementById('borrowSubmitBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+
+                if (productTypeSelect.value !== 'borrow') {
+                    console.log("Switching to borrow type");
+                    productTypeSelect.value = 'borrow';
+                    productTypeSelect.dispatchEvent(new Event('change'));
+                }
+
+                // Check if borrow-specific fields are filled
+                const availableFrom = document.getElementById('AvailableFrom').value;
+                const availableTo = document.getElementById('AvailableTo').value;
+                const dailyRate = document.getElementById('DailyRate').value;
+
+                if (!availableFrom || !availableTo || !dailyRate) {
+                    alert('Please fill all required fields for borrowing');
+                    console.error("Borrow form validation failed - missing required fields");
+                    return false;
+                }
+
+                // Set required values including TimeLimit
+                const timeLimitDate = new Date(availableTo);
+                document.getElementById('TimeLimit').value = timeLimitDate.toISOString();
+
+                // Set form action explicitly
+                form.action = '@Url.Action("CreateBorrowProduct", "Home")';
+                console.log("Borrow submit button clicked, form action:", form.action);
+
+                // Debug log all form fields
+                const formData = new FormData(form);
+                const formValues = {};
+                for (let [key, value] of formData.entries()) {
+                    formValues[key] = value;
+                }
+                console.log("Borrow form fields being submitted:", formValues);
+
+                // Submit the form after a short delay to ensure changes propagate
+                setTimeout(() => {
+                    form.submit();
+                }, 50);
+            });
+
+            document.getElementById('buySubmitBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+
+                if (productTypeSelect.value !== 'buy') {
+                    console.log("Switching to buy type");
+                    productTypeSelect.value = 'buy';
+                    productTypeSelect.dispatchEvent(new Event('change'));
+                }
+
+                // Set form action explicitly
+                form.action = '@Url.Action("CreateBuyProduct", "Home")';
+                console.log("Buy submit button clicked, form action:", form.action);
+
+                // Submit the form after a short delay to ensure changes propagate
+                setTimeout(() => {
+                    form.submit();
+                }, 50);
+            });
+
+            // COMPLETELY REWRITTEN TAG HANDLING
+            // --------------------------------------
+            const tagInput = document.getElementById('tagInput');
+            const addTagBtn = document.getElementById('addTagBtn');
+            const selectedTags = document.getElementById('selectedTags');
+            const tagIdsInput = document.getElementById('tagIds');
+
+            // Store selected tag IDs
+            const selectedTagIds = [];
+
+            // Available tags from the backend
+            const availableTags = @Html.Raw(Json.Serialize(allTags));
+            console.log("Available tags:", availableTags);
+
+            // Cancel form submission on Enter in tag input
+            tagInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    console.log("Enter key pressed");
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleAddTag();
+                    return false;
+                }
+            });
+
+            // Add tag button click handler
+            addTagBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                handleAddTag();
+            });
+
+            // Core function to add a tag
+            function handleAddTag() {
+                const tagText = tagInput.value.trim();
+                console.log("Adding tag:", tagText);
+
+                if (!tagText) {
+                    console.log("Tag text is empty");
+                    return;
+                }
+
+                // Find if tag already exists in available tags
+                let tagId, tagTitle, isNew = false;
+                const existingTag = availableTags.find(tag =>
+                    tag.Title && tag.Title.toLowerCase() === tagText.toLowerCase()
+                );
+
+                if (existingTag) {
+                    tagId = existingTag.Id.toString();
+                    tagTitle = existingTag.Title;
+                    console.log("Found existing tag:", tagTitle, "with ID:", tagId);
+                } else {
+                    tagId = 'new_' + tagText;
+                    tagTitle = tagText;
+                    isNew = true;
+                    console.log("Creating new tag:", tagTitle, "with ID:", tagId);
+                }
+
+                // Check if tag is already added
+                if (selectedTagIds.includes(tagId)) {
+                    console.log("Tag already added");
+                    tagInput.value = '';
+                    return;
+                }
+
+                // Add the tag ID to our array
+                selectedTagIds.push(tagId);
+
+                // Update the hidden input
+                tagIdsInput.value = selectedTagIds.join(',');
+                console.log("Updated tag IDs:", tagIdsInput.value);
+
+                // Create tag UI element
+                const tagElement = document.createElement('div');
+                tagElement.className = isNew ?
+                    'bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center' :
+                    'bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center';
+
+                tagElement.innerHTML = `
+                                                <span>${tagTitle}</span>
+                                                <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none" data-tag-id="${tagId}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            `;
+
+                // Add remove functionality
+                const removeBtn = tagElement.querySelector('button');
+                removeBtn.addEventListener('click', function () {
+                    const tagIdToRemove = this.getAttribute('data-tag-id');
+                    const index = selectedTagIds.indexOf(tagIdToRemove);
+
+                    if (index !== -1) {
+                        selectedTagIds.splice(index, 1);
+                        tagIdsInput.value = selectedTagIds.join(',');
+                        console.log("Removed tag, updated IDs:", tagIdsInput.value);
+                    }
+
+                    tagElement.remove();
+                });
+
+                // Add to DOM
+                selectedTags.appendChild(tagElement);
+
+                // Clear input
+                tagInput.value = '';
+
+                // Focus back on input for adding more tags
+                tagInput.focus();
+            }
+
+            // Image upload handling
+            const imageUpload = document.getElementById('imageUpload');
+            const uploadButton = document.getElementById('uploadButton');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const imageUrlsInput = document.getElementById('imageUrls');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadedUrls = [];
+
+            uploadButton.addEventListener('click', async function () {
+                if (!imageUpload.files || imageUpload.files.length === 0) {
+                    uploadStatus.innerHTML = '<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 rounded">Please select an image first</div>';
+                    return;
+                }
+
+                const file = imageUpload.files[0];
+                const formData = new FormData();
+                formData.append('image', file);  // Important: Must match controller parameter name
+
+                uploadStatus.innerHTML = '<div class="flex items-center"><div class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></div><span>Uploading image...</span></div>';
+
+                try {
+                    // Make AJAX request to upload the image
+                    const response = await fetch('/api/Images/Upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to upload image');
+                    }
+
+                    const data = await response.json();
+                    const imageUrl = data.url;
+
+                    if (imageUrl) {
+                        uploadedUrls.push(imageUrl);
+
+                        // Create image preview
+                        const imagePreview = document.createElement('div');
+                        imagePreview.className = 'relative';
+                        imagePreview.innerHTML = `
+                                                        <img src="${imageUrl}" alt="Uploaded image" class="h-24 w-24 object-cover rounded" />
+                                                        <button type="button" class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2" aria-label="Remove image">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    `;
+
+                        imagePreview.querySelector('button').addEventListener('click', function () {
+                            const index = uploadedUrls.indexOf(imageUrl);
+                            if (index !== -1) {
+                                uploadedUrls.splice(index, 1);
+                                updateImageUrlsInput();
+                            }
+                            imagePreview.remove();
+                        });
+
+                        imagePreviewContainer.appendChild(imagePreview);
+                        updateImageUrlsInput();
+
+                        uploadStatus.innerHTML = '<div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-2 rounded">Image uploaded successfully!</div>';
+                        imageUpload.value = ''; // Clear the file input
+                    }
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    uploadStatus.innerHTML = `<div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 rounded">Error uploading image: ${error.message}</div>`;
+                }
+            });
+
+            function updateImageUrlsInput() {
+                imageUrlsInput.value = uploadedUrls.join('\n');
+            }
+
+            // Debug section code
+            // Show debug section by adding ?debug=true to URL
+            if (window.location.search.includes('debug=true')) {
+                document.getElementById('debugSection').style.display = 'block';
+
+                // Update debug info
+                function updateDebugInfo() {
+                    document.getElementById('currentFormAction').textContent = form.action;
+                    document.getElementById('selectedProductType').textContent = productTypeSelect.value;
+                }
+
+                // Initial update
+                updateDebugInfo();
+
+                // Update when product type changes
+                productTypeSelect.addEventListener('change', updateDebugInfo);
+
+                // Debug submit button
+                document.getElementById('debugSubmitBtn').addEventListener('click', function () {
+                    console.log("Debug force submit clicked");
+                    console.log("Form action:", form.action);
+                    console.log("Product type:", productTypeSelect.value);
+
+                    // Trigger validation
+                    if (productTypeSelect.value === 'borrow') {
+                        const availableFrom = document.getElementById('AvailableFrom').value;
+                        const availableTo = document.getElementById('AvailableTo').value;
+                        const dailyRate = document.getElementById('DailyRate').value;
+
+                        if (!availableFrom || !availableTo || !dailyRate) {
+                            alert('Debug: Please fill all required fields for borrowing');
+                            return;
+                        }
+
+                        // Set TimeLimit
+                        document.getElementById('TimeLimit').value = new Date(availableTo).toISOString();
+                    }
+
+                    // Log form data
+                    const formData = new FormData(form);
+                    const formValues = {};
+                    for (let [key, value] of formData.entries()) {
+                        formValues[key] = value;
+                    }
+                    console.log("Debug - Form values to submit:", formValues);
+
+                    // Force form submission
+                    try {
+                        form.submit();
+                        console.log("Debug - Form submitted successfully");
+                    } catch (error) {
+                        console.error("Debug - Error submitting form:", error);
+                    }
+                });
             }
         });
     </script>
-} 
-} 
+}

@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 // <copyright file="ShoppingCartService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
@@ -302,6 +302,29 @@ namespace MarketMinds.Shared.Services
             }
 
             return await this.shoppingCartRepository.IsProductInCartAsync(buyerId, productId);
+        }
+
+        /// <summary>
+        /// Gets the quantity of a specific product in the buyer's cart.
+        /// </summary>
+        /// <param name="buyerId">The ID of the buyer.</param>
+        /// <param name="productId">The ID of the product to check.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the quantity of the product in the cart.</returns>
+        /// <exception cref="ArgumentException">Thrown if the buyer ID or product ID is invalid.</exception>
+        /// <exception cref="Exception">Thrown when buyer cart item is not found.</exception>
+        public async Task<int> GetProductQuantityAsync(int buyerId, int productId)
+        {
+            if (buyerId <= 0)
+            {
+                throw new ArgumentException("Buyer ID must be a positive integer.", nameof(buyerId));
+            }
+
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be a positive integer.", nameof(productId));
+            }
+
+            return await this.shoppingCartRepository.GetProductQuantityAsync(buyerId, productId);
         }
     }
 }

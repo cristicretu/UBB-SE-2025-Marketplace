@@ -1,4 +1,4 @@
-﻿// <copyright file="OrderApiController.cs" company="PlaceholderCompany">
+// <copyright file="OrderApiController.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -17,7 +17,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing order data.
     /// </summary>
-    [Authorize]
     [Route("api/orders")]
     [ApiController]
     public class OrderApiController : ControllerBase
@@ -31,6 +30,33 @@ namespace Server.Controllers
         public OrderApiController(IOrderRepository orderRepository)
         {
             this.orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
+        }
+
+        /// <summary>
+        /// Gets an order by its ID.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to retrieve.</param>
+        /// <returns>The order with the specified ID.</returns>
+        [HttpGet("{orderId}")]
+        [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<Order>> GetOrderById(int orderId)
+        {
+            try
+            {
+                var order = await this.orderRepository.GetOrderByIdAsync(orderId);
+                if (order == null)
+                {
+                    return this.NotFound($"Order with ID {orderId} not found.");
+                }
+                
+                return this.Ok(order);
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while retrieving order: {ex.Message}");
+            }
         }
 
         /// <summary>

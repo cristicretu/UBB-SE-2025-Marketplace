@@ -15,7 +15,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public BuyProductsProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
             if (!apiBaseUrl.EndsWith("/"))
             {
                 apiBaseUrl += "/";
@@ -105,6 +105,52 @@ namespace MarketMinds.Shared.ProxyRepository
             await this.ThrowOnError(nameof(UpdateProductAsync), response);
         }
 
+        /// <summary>
+        /// Updates the stock quantity for a product by decreasing it by the specified amount
+        /// </summary>
+        /// <param name="id">Product ID</param>
+        /// <param name="decreaseAmount">Amount to decrease from current stock</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task UpdateProductStockAsync(int id, int decreaseAmount)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                // Create simple request with just the quantity to decrease
+                var stockUpdateRequest = new { Quantity = decreaseAmount };
+
+                // Use the dedicated stock update endpoint
+                string url = $"buyproducts/stock/{id}";
+                Console.WriteLine($"Sending POST request to update product {id} stock, decreasing by {decreaseAmount}");
+
+                var response = await httpClient.PostAsJsonAsync(url, stockUpdateRequest);
+
+                // Log the response status
+                Console.WriteLine($"Stock update response status: {(int)response.StatusCode} {response.ReasonPhrase}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error content: {errorContent}");
+                }
+
+                await ThrowOnError(nameof(UpdateProductStockAsync), response);
+                Console.WriteLine($"Stock decreased successfully for product {id} by {decreaseAmount}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in UpdateProductStockAsync: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                throw;
+            }
+        }
 
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {

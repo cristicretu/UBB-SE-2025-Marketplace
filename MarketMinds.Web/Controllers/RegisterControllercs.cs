@@ -60,6 +60,8 @@ namespace WebMarketplace.Controllers
             { role = 2; }
             else if (model.Role == "Seller")
             { role = 3; }
+            else if (model.Role == "Admin")
+            { role = 1; }
 
             // Save the user in the database
             _logger.LogInformation($"Registering user: {model.Username}, Email: {model.Email}, Role: {model.Role}");    
@@ -73,6 +75,10 @@ namespace WebMarketplace.Controllers
                 // Automatically log the user in
                 var user = await _userService.GetUserByEmail(model.Email);
                 UserSession.CurrentUserId = user.Id;
+                
+                // Store numeric user type
+                UserSession.CurrentUserRole = role.ToString();
+                
                 TempData["SuccessMessage"] = "Registration successful! Welcome!";
                 return RedirectToAction("Index", "Home"); // Redirect to Home after successful login
             }

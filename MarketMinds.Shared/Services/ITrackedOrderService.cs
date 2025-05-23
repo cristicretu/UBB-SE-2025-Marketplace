@@ -17,6 +17,16 @@ namespace MarketMinds.Shared.Services
         Task<OrderCheckpoint?> GetLastCheckpointAsync(TrackedOrder order);
         Task<int> GetNumberOfCheckpointsAsync(TrackedOrder order);
         Task RevertToPreviousCheckpointAsync(TrackedOrder? order);
+        Task<TrackedOrder?> GetTrackedOrderByOrderIdAsync(int orderId);
+        Task<int> UpdateOrderStatusWithCheckpointAsync(int trackedOrderID, OrderStatus newStatus, string description = "Status updated", string? location = null);
+        Task<int> CreateTrackedOrderForOrderAsync(
+            int orderId,
+            DateOnly estimatedDeliveryDate,
+            string deliveryAddress,
+            OrderStatus initialStatus = OrderStatus.PROCESSING,
+            string initialDescription = "Order received");
+        Task<List<TrackedOrder>> GetTrackedOrdersByBuyerIdAsync(int buyerId);
+        Task<int> CalculateDeliveryProgressPercentageAsync(int trackedOrderId);
 
         // Potentially add other business logic methods here in the future
     }

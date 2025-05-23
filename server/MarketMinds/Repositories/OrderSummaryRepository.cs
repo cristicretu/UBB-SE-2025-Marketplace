@@ -55,5 +55,20 @@ namespace Server.Repository
 
             return orderSummary;
         }
+
+        public async Task<int> AddOrderSummaryAsync(OrderSummary orderSummary)
+        {
+            try
+            {
+                await this.dbContext.OrderSummary.AddAsync(orderSummary);
+                await this.dbContext.SaveChangesAsync();
+                return orderSummary.ID;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
     }
 }

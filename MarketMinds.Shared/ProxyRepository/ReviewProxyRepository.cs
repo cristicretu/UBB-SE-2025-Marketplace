@@ -57,24 +57,27 @@ namespace MarketMinds.Shared.ProxyRepository
             response.EnsureSuccessStatusCode();
         }
 
-        public void EditReviewRaw(object updateRequest)
+        public void EditReviewRaw(Review review)
         {
-            var response = httpClient.PutAsJsonAsync("review", updateRequest, jsonOptions).Result;
-            response.EnsureSuccessStatusCode();
+            if (review == null)
+            {
+                throw new ArgumentNullException(nameof(review));
+            }
+
+            var response = httpClient.PutAsJsonAsync("review", review, jsonOptions).Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = response.Content.ReadAsStringAsync().Result;
+                throw new Exception($"Failed to edit review: {error}");
+            }
         }
 
         public void DeleteReviewRaw(object deleteRequest)
         {
-            var requestContent = new StringContent(
-                JsonSerializer.Serialize(deleteRequest, jsonOptions),
-                System.Text.Encoding.UTF8,
-                "application/json");
-
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Delete,
-                RequestUri = new Uri(httpClient.BaseAddress + "review"),
-                Content = requestContent
+                RequestUri = new Uri($"{httpClient.BaseAddress}review?reviewId={((dynamic)deleteRequest).ReviewId}&sellerId={((dynamic)deleteRequest).SellerId}&buyerId={((dynamic)deleteRequest).BuyerId}")
             };
 
             var response = httpClient.SendAsync(request).Result;

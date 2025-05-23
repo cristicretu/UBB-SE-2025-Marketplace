@@ -68,6 +68,12 @@
                                            FontWeight="Bold"/>
                                 <TextBlock x:Name="PriceTextBlock"/>
                             </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="10">
+                                <TextBlock Text="Stock:"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="StockTextBlock"/>
+                            </StackPanel>
                             <Button Content="Add to basket"
                                     Click="OnAddToBasketClicked"
                                     Width="120"

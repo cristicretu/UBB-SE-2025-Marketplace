@@ -44,6 +44,7 @@ namespace MarketMinds
             CategoryTextBlock.Text = buyProduct.Category.DisplayTitle;
             ConditionTextBlock.Text = buyProduct.Condition.DisplayTitle;
             PriceTextBlock.Text = $"{buyProduct.Price:C}";
+            StockTextBlock.Text = buyProduct.Stock.ToString();
 
             // Seller Info
             SellerTextBlock.Text = buyProduct.Seller.Username;
@@ -102,55 +103,55 @@ namespace MarketMinds
             }
         }
 
-          private void OnSeeReviewsClicked(object sender, RoutedEventArgs routedEventArgs)
-          {
-              if (App.SeeSellerReviewsViewModel != null)
-              {
-                  App.SeeSellerReviewsViewModel.Seller = buyProduct.Seller;
-                  // Create a window to host the SeeSellerReviewsView page
-                  seeSellerReviewsView = new Window();
-                  seeSellerReviewsView.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
-                  seeSellerReviewsView.Activate();
-              }
-              else
-              {
-                  ShowErrorDialog("Cannot view reviews at this time. Please try again later.");
-              }
-          }
+        private void OnSeeReviewsClicked(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (App.SeeSellerReviewsViewModel != null)
+            {
+                App.SeeSellerReviewsViewModel.Seller = buyProduct.Seller;
+                // Create a window to host the SeeSellerReviewsView page
+                seeSellerReviewsView = new Window();
+                seeSellerReviewsView.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
+                seeSellerReviewsView.Activate();
+            }
+            else
+            {
+                ShowErrorDialog("Cannot view reviews at this time. Please try again later.");
+            }
+        }
 
-          private void OnLeaveReviewClicked(object sender, RoutedEventArgs e)
-          {
-              if (App.CurrentUser != null)
-              {
-                  if (App.ReviewCreateViewModel != null)
-                  {
-                      App.ReviewCreateViewModel.Seller = buyProduct.Seller;
+        private void OnLeaveReviewClicked(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser != null)
+            {
+                if (App.ReviewCreateViewModel != null)
+                {
+                    App.ReviewCreateViewModel.Seller = buyProduct.Seller;
 
-                      leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
-                      leaveReviewWindow.Activate();
-                  }
-                  else
-                  {
-                      ShowErrorDialog("Cannot create review at this time. Please try again later.");
-                  }
-              }
-              else
-              {
-                  ShowErrorDialog("You must be logged in to leave a review.");
-              }
-          }
+                    leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
+                    leaveReviewWindow.Activate();
+                }
+                else
+                {
+                    ShowErrorDialog("Cannot create review at this time. Please try again later.");
+                }
+            }
+            else
+            {
+                ShowErrorDialog("You must be logged in to leave a review.");
+            }
+        }
 
-          private async void ShowErrorDialog(string message)
-          {
-              var dialog = new ContentDialog
-              {
-                  Title = "Error",
-                  Content = message,
-                  CloseButtonText = "OK",
-                  XamlRoot = this.Content.XamlRoot
-              };
+        private async void ShowErrorDialog(string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Error",
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
 
-              await dialog.ShowAsync();
-          }
+            await dialog.ShowAsync();
         }
     }
+}

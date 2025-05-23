@@ -13,7 +13,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing contract data.
     /// </summary>
-    [Authorize]
     [Route("api/contracts")]
     [ApiController]
     public class ContractApiController : ControllerBase
@@ -82,14 +81,15 @@ namespace Server.Controllers
         /// <param name="contractId">The ID of the contract.</param>
         /// <returns>The buyer information.</returns>
         [HttpGet("{contractId}/buyer")]
-        [ProducesResponseType(typeof(ValueTuple<int, string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ValueTuple<int, string>>> GetContractBuyer(long contractId)
+        public async Task<ActionResult> GetContractBuyer(long contractId)
         {
             try
             {
                 var buyerInfo = await this.contractRepository.GetContractBuyerAsync(contractId);
-                return this.Ok(buyerInfo);
+
+                return this.Ok(new { BuyerId = buyerInfo.BuyerID, BuyerName = buyerInfo.BuyerName });
             }
             catch (Exception ex)
             {
@@ -172,14 +172,14 @@ namespace Server.Controllers
         /// <param name="contractId">The ID of the contract.</param>
         /// <returns>The seller information.</returns>
         [HttpGet("{contractId}/seller")]
-        [ProducesResponseType(typeof(ValueTuple<int, string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ValueTuple<int, string>>> GetContractSeller(long contractId)
+        public async Task<ActionResult> GetContractSeller(long contractId)
         {
             try
             {
                 var sellerInfo = await this.contractRepository.GetContractSellerAsync(contractId);
-                return this.Ok(sellerInfo);
+                return this.Ok(new { SellerId = sellerInfo.SellerID, SellerName = sellerInfo.SellerName });
             }
             catch (Exception ex)
             {
@@ -214,14 +214,15 @@ namespace Server.Controllers
         /// <param name="contractId">The ID of the contract.</param>
         /// <returns>The order details.</returns>
         [HttpGet("{contractId}/order-details")]
-        [ProducesResponseType(typeof(ValueTuple<string, DateTime>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ValueTuple<string, DateTime>>> GetOrderDetails(long contractId)
+        public async Task<ActionResult> GetOrderDetails(long contractId)
         {
             try
             {
                 var orderDetails = await this.contractRepository.GetOrderDetailsAsync(contractId);
-                return this.Ok(orderDetails);
+
+                return this.Ok(new { PaymentMethod = orderDetails.PaymentMethod, OrderDate = orderDetails.OrderDate });
             }
             catch (Exception ex)
             {
@@ -298,14 +299,24 @@ namespace Server.Controllers
         /// <param name="contractId">The ID of the contract.</param>
         /// <returns>The product details.</returns>
         [HttpGet("{contractId}/product-details")]
-        [ProducesResponseType(typeof(ValueTuple<DateTime?, DateTime?, double, string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ValueTuple<DateTime?, DateTime?, double, string>?>> GetProductDetailsByContractId(long contractId)
+        public async Task<ActionResult> GetProductDetailsByContractId(long contractId)
         {
             try
             {
                 var productDetails = await this.contractRepository.GetProductDetailsByContractIdAsync(contractId);
-                return this.Ok(productDetails);
+                if (productDetails.HasValue)
+                {
+    
+                    return this.Ok(new { 
+                        StartDate = productDetails.Value.StartDate,
+                        EndDate = productDetails.Value.EndDate,
+                        Price = productDetails.Value.price,
+                        Name = productDetails.Value.name
+                    });
+                }
+                return this.Ok(null);
             }
             catch (Exception ex)
             {

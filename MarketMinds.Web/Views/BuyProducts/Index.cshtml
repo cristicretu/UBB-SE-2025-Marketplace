@@ -8,40 +8,62 @@
     <h1 class="text-3xl font-bold mb-6">Buy Products</h1>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        @foreach (var item in Model) 
+        @foreach (var item in Model)
         {
-            <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
-                <div class="h-48 bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-300 flex items-center justify-center">
-                    @if (item.Images != null && item.Images.Any())
-                    {
-                        <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
-                    }
-                    else
-                    {
-                        <div class="text-white text-lg">No Image</div>
-                    }
-                </div>
-                <div class="p-4">
-                    <h2 class="text-xl font-semibold">@item.Title</h2>
-                    <p class="text-gray-600 mb-1">@(item.Category?.Name ?? "Uncategorized")</p>
-                    
-                    @if (!string.IsNullOrEmpty(item.Description) && item.Description.Length > 50)
-                    {
-                        <p class="text-gray-700 text-sm mb-3">@(item.Description.Substring(0, 50))...</p>
-                    }
-                    else
-                    {
-                        <p class="text-gray-700 text-sm mb-3">@(item.Description ?? "No description")</p>
-                    }
-                    
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-blue-600 font-bold text-xl">$@item.Price.ToString("N2")</span>
-                        <span class="text-gray-500 text-sm">@(item.Condition?.Name ?? "Unknown condition")</span>
+            @if (item.Stock > 0)
+            {
+                <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                    <div class="h-48 bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-300 flex items-center justify-center">
+                        @if (item.Images != null && item.Images.Any())
+                        {
+                            <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
+                        }
+                        else
+                        {
+                            <div class="text-white text-lg">No Image</div>
+                        }
                     </div>
-                    
-                    <a asp-action="Details" asp-route-id="@item.Id" class="block text-center bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">View Details</a>
+                    <div class="p-4">
+                        <div class="bg-gray-100 p-3 rounded-b-lg">
+                            <h3 class="font-semibold text-lg mb-1 truncate">@item.Title</h3>
+                            <p class="text-sm text-gray-500 mb-1">
+                                @if (item.Category != null)
+                                {
+                                    <span>@(item.Category.Name ?? "Uncategorized")</span>
+                                }
+                                else
+                                {
+                                    <span>Uncategorized</span>
+                                }
+                                •
+                                @if (item.Condition != null)
+                                {
+                                    <span>@(item.Condition.Name ?? "Unknown condition")</span>
+                                }
+                                else
+                                {
+                                    <span>Unknown condition</span>
+                                }
+                            </p>
+                            <p class="text-sm text-gray-500 mb-2">
+                                @if (item.Seller != null)
+                                {
+                                    <span>Seller: @item.Seller.Username</span>
+                                }
+                                else
+                                {
+                                    <span>Unknown seller</span>
+                                }
+                            </p>
+                            <div class="flex justify-between items-center">
+                                <div class="font-bold text-blue-600">@item.Price.ToString("0.00") €</div>
+                                <a asp-action="Details" asp-route-id="@item.Id"
+                                    class="inline-block bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition">View</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            }
         }
     </div>
 </div>
@@ -50,4 +72,4 @@
     <script>
         // Any additional page-specific JavaScript can go here
     </script>
-} 
+}

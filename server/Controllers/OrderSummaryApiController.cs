@@ -13,7 +13,6 @@ namespace Server.Controllers
     /// <summary>
     /// API controller for managing order summary data.
     /// </summary>
-    [Authorize]
     [Route("api/ordersummaries")]
     [ApiController]
     public class OrderSummaryApiController : ControllerBase
@@ -93,6 +92,20 @@ namespace Server.Controllers
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while updating order summary with ID {request.Id}: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<int>> CreateOrderSummary([FromBody] OrderSummary orderSummary)
+        {
+            try
+            {
+                var newOrderSummaryId = await orderSummaryRepository.AddOrderSummaryAsync(orderSummary);
+                return Ok(newOrderSummaryId);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while creating a new order summary: {ex.Message}");
             }
         }
     }

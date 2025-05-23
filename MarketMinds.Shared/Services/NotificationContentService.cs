@@ -3,6 +3,7 @@ using MarketMinds.Shared.ProxyRepository;
 
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Helper;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Shared.Services
 {
@@ -12,7 +13,8 @@ namespace MarketMinds.Shared.Services
 
         public NotificationContentService()
         {
-            this.notificationRepository = new NotificationProxyRepository(AppConfig.GetBaseApiUrl());
+            string baseUrl = AppConfig.GetBaseApiUrl();
+            this.notificationRepository = new NotificationProxyRepository(baseUrl);
         }
 
         public string GetUnreadNotificationsCountText(int unreadCount)
@@ -25,14 +27,59 @@ namespace MarketMinds.Shared.Services
             return await notificationRepository.GetNotificationsForUser(recipientId);
         }
 
-        public void MarkAsRead(int notificationId)
+        public async Task<List<Notification>> GetUnreadNotificationsForUser(int recipientId)
         {
-            notificationRepository.MarkAsRead(notificationId);
+            try
+            {
+                var allNotificationsTask = notificationRepository.GetNotificationsForUser(recipientId);
+                var allNotifications = await allNotificationsTask;
+
+                if (allNotifications == null)
+                {
+                    return new List<Notification>();
+                }
+
+                List<Notification> allUnreadNotifications = new List<Notification>();
+                foreach (var notification in allNotifications)
+                {
+                    if (!notification.IsRead)
+                    {
+                        allUnreadNotifications.Add(notification);
+                    }
+                }
+                allUnreadNotifications = allUnreadNotifications.OrderBy(n => n.Timestamp).ToList();
+
+                return allUnreadNotifications;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetUnreadNotificationsForUser: Exception: {ex.Message}");
+                return new List<Notification>();
+            }
         }
 
-        public void AddNotification(Notification notification)
+        public async Task MarkAllAsRead(int userID)
         {
-            notificationRepository.AddNotification(notification);
+            try
+            {
+                await notificationRepository.MarkAsRead(userID);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in NotificationContentService.MarkAsRead: {ex.Message}");
+            }
+        }
+
+        public async Task AddNotification(Notification notification)
+        {
+            try
+            {
+                await notificationRepository.AddNotification(notification);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in NotificationContentService.AddNotification: {ex.Message}");
+            }
         }
     }
 }

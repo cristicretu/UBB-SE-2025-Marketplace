@@ -2,6 +2,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Models.DTOs.Mappers;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.Interfaces;
 
@@ -34,7 +36,12 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 Console.WriteLine("Received JSON from server:");
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 
-                var products = JsonSerializer.Deserialize<List<BuyProduct>>(json, jsonOptions);
+                // First deserialize to DTOs
+                var productDTOs = JsonSerializer.Deserialize<List<BuyProductDTO>>(json, jsonOptions);
+
+                // Then map DTOs to domain models
+                var products = BuyProductMapper.FromDTOList(productDTOs);
+
                 return products ?? new List<BuyProduct>();
             }
             catch (Exception ex)
@@ -137,7 +144,12 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 Console.WriteLine($"Received JSON for product {id} from server:");
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 
-                var product = JsonSerializer.Deserialize<BuyProduct>(json, jsonOptions);
+                // First deserialize to DTO
+                var productDTO = JsonSerializer.Deserialize<BuyProductDTO>(json, jsonOptions);
+
+                // Then map DTO to domain model
+                var product = BuyProductMapper.FromDTO(productDTO);
+
                 if (product == null)
                 {
                     throw new KeyNotFoundException($"Buy product with ID {id} not found.");
@@ -221,13 +233,13 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 return null;
             }
         }
-        
+
         // Explicit implementation for IProductService's GetSellerNameAsync
         public Task<string> GetSellerNameAsync(int sellerId)
         {
             return this.buyProductsRepository.GetSellerNameAsync(sellerId);
         }
-        
+
         /// <summary>
         /// Gets a list of products that can be borrowed.
         /// Implementation for IProductService interface.
@@ -243,6 +255,77 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         Task<string> IProductService.GetSellerNameAsync(int? sellerId)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Updates the stock quantity for a product
+        /// </summary>
+        /// <param name="productId">Product ID</param>
+        /// <param name="newStockQuantity">New stock quantity</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task UpdateProductStockAsync(int productId, int newStockQuantity)
+        {
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be a positive number.", nameof(productId));
+            }
+
+            if (newStockQuantity < 0)
+            {
+                throw new ArgumentException("Stock quantity cannot be negative.", nameof(newStockQuantity));
+            }
+
+            try
+            {
+                // Get current product to check current stock
+                var product = GetProductById(productId);
+
+                // Calculate how much to decrease by
+                int decreaseAmount = product.Stock - newStockQuantity;
+                if (decreaseAmount < 0)
+                {
+                    // We're actually increasing stock
+                    decreaseAmount = 0;
+                }
+
+                // Call the repository with the decrease amount
+                await buyProductsRepository.UpdateProductStockAsync(productId, decreaseAmount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating product stock: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Decreases the stock quantity for a product by the specified amount
+        /// </summary>
+        /// <param name="productId">Product ID</param>
+        /// <param name="decreaseAmount">Amount to decrease stock by</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task DecreaseProductStockAsync(int productId, int decreaseAmount)
+        {
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be a positive number.", nameof(productId));
+            }
+
+            if (decreaseAmount <= 0)
+            {
+                throw new ArgumentException("Decrease amount must be positive.", nameof(decreaseAmount));
+            }
+
+            try
+            {
+                // Directly call the repository with the decrease amount
+                await buyProductsRepository.UpdateProductStockAsync(productId, decreaseAmount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error decreasing product stock: {ex.Message}");
+                throw;
+            }
         }
     }
 }

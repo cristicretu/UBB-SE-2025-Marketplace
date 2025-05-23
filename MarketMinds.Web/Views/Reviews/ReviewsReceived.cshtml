@@ -8,14 +8,6 @@
     <h1 class="text-3xl font-bold mb-6">Reviews Received</h1>
 
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="flex mb-6 border-b">
-            <a class="px-4 py-2 text-primary border-b-2 border-primary font-semibold" asp-action="ReviewsReceived">
-                Reviews Received
-            </a>
-            <a class="px-4 py-2 hover:text-primary mr-4" asp-action="ReviewsGiven">
-                Reviews Given
-            </a>
-        </div>
 
         @if (Model == null || !Model.Any())
         {

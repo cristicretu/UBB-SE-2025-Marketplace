@@ -1,4 +1,4 @@
-﻿// <copyright file="TrackedOrderApiController.cs" company="PlaceholderCompany">
+// <copyright file="TrackedOrderApiController.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -17,7 +17,6 @@ namespace Server.Controllers // Assuming the controller is in the Server project
     /// <summary>
     /// API controller for managing tracked order data.
     /// </summary>
-    [Authorize]
     [Route("api/trackedorders")]
     [ApiController]
     public class TrackedOrderApiController : ControllerBase
@@ -308,6 +307,37 @@ namespace Server.Controllers // Assuming the controller is in the Server project
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred updating tracked order {trackedOrderId}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves a tracked order by its associated Order ID.
+        /// </summary>
+        /// <param name="orderId">The ID of the order associated with the tracked order.</param>
+        /// <returns>The tracked order with the specified Order ID.</returns>
+        [HttpGet("byorder/{orderId}")]
+        [ProducesResponseType(typeof(TrackedOrder), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<TrackedOrder>> GetTrackedOrderByOrderId(int orderId)
+        {
+            try
+            {
+                // Query the database to find the tracked order with the specified Order ID
+                var trackedOrders = await this.trackedOrderRepository.GetAllTrackedOrdersAsync();
+                var trackedOrder = trackedOrders.FirstOrDefault(to => to.OrderID == orderId);
+
+                if (trackedOrder == null)
+                {
+                    return this.NotFound($"No tracked order found for Order ID {orderId}");
+                }
+
+                return this.Ok(trackedOrder);
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, 
+                    $"An error occurred retrieving tracked order for Order ID {orderId}: {ex.Message}");
             }
         }
     }
