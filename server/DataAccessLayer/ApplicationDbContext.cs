@@ -304,6 +304,7 @@ namespace Server.DataAccessLayer
 
                 // Modify any existing relationship that might refer to User
                 entity.Ignore(p => p.Seller); // Ignore the User navigation property since we'll use Seller
+                entity.Ignore(p => p.Price); // Ignore the Price field since we'll use CurrentPrice
             });
 
             // --- BorrowProductImage Configuration ---
