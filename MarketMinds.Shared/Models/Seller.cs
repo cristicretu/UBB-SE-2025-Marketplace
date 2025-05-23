@@ -5,25 +5,23 @@
 // -----------------------------------------------------------------------
 namespace MarketMinds.Shared.Models
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Diagnostics;
     /// <summary>
     /// Represents a seller in the marketplace.
     /// </summary>
     public class Seller
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Seller"/> class.
-        /// </summary>
+        // Add this private parameterless constructor for Entity Framework Core
         public Seller()
         {
-            Debug.WriteLine("Seller default constructor called");
-            // Initialize collections
-            AuctionProducts = new List<AuctionProduct>();
-            BuyProducts = new List<BuyProduct>();
-            BorrowProducts = new List<BorrowProduct>();
+            this.User = new User();
+            this.StoreName = string.Empty;
+            this.StoreDescription = string.Empty;
+            this.StoreAddress = string.Empty;
+            this.FollowersCount = 0;
+            this.TrustScore = 0;
+            this.AuctionProducts = new List<AuctionProduct>();
+            this.BuyProducts = new List<BuyProduct>();
+            this.BorrowProducts = new List<BorrowProduct>();
         }
 
         /// <summary>
@@ -37,19 +35,15 @@ namespace MarketMinds.Shared.Models
         /// <param name="trustScore">The trust score of the seller.</param>
         public Seller(User user, string storeName = "", string storeDescription = "", string storeAddress = "", int followersCount = 0, double trustScore = 0)
         {
-            Debug.WriteLine($"Seller constructor called with User ID: {user?.Id ?? -1}");
-            this.User = user ?? throw new ArgumentNullException(nameof(user));
-            this.Id = user.Id; // Set seller ID to match user ID
+            this.User = user;
             this.StoreName = storeName;
             this.StoreDescription = storeDescription;
             this.StoreAddress = storeAddress;
             this.FollowersCount = followersCount;
             this.TrustScore = trustScore;
-
-            // Initialize collections
-            AuctionProducts = new List<AuctionProduct>();
-            BuyProducts = new List<BuyProduct>();
-            BorrowProducts = new List<BorrowProduct>();
+            this.AuctionProducts = new List<AuctionProduct>();
+            this.BuyProducts = new List<BuyProduct>();
+            this.BorrowProducts = new List<BorrowProduct>();
         }
 
         /// <summary>
@@ -58,9 +52,29 @@ namespace MarketMinds.Shared.Models
         public User User { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the seller, which is the same as the user's ID.
+        /// Gets the unique identifier of the seller, which is the same as the user's ID.
         /// </summary>
-        public int Id { get; set; }
+        public int Id { get => this.User.Id; set => this.User.Id = value; }
+
+        /// <summary>
+        /// Gets the email address of the seller.
+        /// </summary>
+        public string Email { get => this.User.Email; set => this.User.Email = value; }
+
+        /// <summary>
+        /// Gets the phone number of the seller.
+        /// </summary>
+        public string PhoneNumber { get => this.User.PhoneNumber; set => this.User.PhoneNumber = value; }
+
+        /// <summary>
+        /// Gets the username of the seller.
+        /// </summary>
+        public string Username { get => this.User.Username; set => this.User.Username = value; }
+
+        /// <summary>
+        /// Gets or sets the number of followers the seller has.
+        /// </summary>
+        public int FollowersCount { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the seller's store.
@@ -78,90 +92,23 @@ namespace MarketMinds.Shared.Models
         public string StoreAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of followers the seller has.
-        /// </summary>
-        public int FollowersCount { get; set; }
-
-        /// <summary>
         /// Gets or sets the trust score of the seller.
         /// </summary>
         public double TrustScore { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of auction products created by this seller.
+        /// Gets or sets the auction products this seller is selling.
         /// </summary>
-        public ICollection<AuctionProduct> AuctionProducts { get; set; }
+        public List<AuctionProduct> AuctionProducts { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of buy products created by this seller.
+        /// Gets or sets the buy products this seller is selling.
         /// </summary>
-        public ICollection<BuyProduct> BuyProducts { get; set; }
+        public List<BuyProduct> BuyProducts { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of borrow products created by this seller.
+        /// Gets or sets the borrow products this seller is offering.
         /// </summary>
-        public ICollection<BorrowProduct> BorrowProducts { get; set; }
-
-        /// <summary>
-        /// Gets or sets the email address of the seller.
-        /// </summary>
-        [NotMapped]
-        public string Email
-        {
-            get
-            {
-                Debug.WriteLine($"Getting Email. User is {(User == null ? "NULL" : "NOT NULL")}");
-                return User?.Email ?? string.Empty;
-            }
-            set
-            {
-                Debug.WriteLine($"Setting Email to '{value}'");
-                if (User != null)
-                    User.Email = value;
-                else
-                    Debug.WriteLine("WARNING: Cannot set Email, User is NULL");
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the phone number of the seller.
-        /// </summary>
-        public string PhoneNumber
-        {
-            get
-            {
-                Debug.WriteLine($"Getting PhoneNumber. User is {(User == null ? "NULL" : "NOT NULL")}");
-                return User?.PhoneNumber ?? string.Empty;
-            }
-            set
-            {
-                Debug.WriteLine($"Setting PhoneNumber to '{value}'");
-                if (User != null)
-                    User.PhoneNumber = value;
-                else
-                    Debug.WriteLine("WARNING: Cannot set PhoneNumber, User is NULL");
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the username of the seller.
-        /// </summary>
-        [NotMapped]
-        public string Username
-        {
-            get
-            {
-                Debug.WriteLine($"Getting Username. User is {(User == null ? "NULL" : "NOT NULL")}");
-                return User?.Username ?? string.Empty;
-            }
-            set
-            {
-                Debug.WriteLine($"Setting Username to '{value}'");
-                if (User != null)
-                    User.Username = value;
-                else
-                    Debug.WriteLine("WARNING: Cannot set Username, User is NULL");
-            }
-        }
+        public List<BorrowProduct> BorrowProducts { get; set; }
     }
 }

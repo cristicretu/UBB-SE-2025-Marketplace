@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 namespace MarketMinds.ViewModels
 {
+    using System.Windows.Media.Animation;
     using System.Diagnostics;
     using System;
     using System.Collections.Generic;
@@ -195,6 +196,16 @@ namespace MarketMinds.ViewModels
         /// </summary>
         public async void UpdateProfile()
         {
+            // add input validation here
+            var errors = ValidateFields();
+            if (errors.Count > 0)
+            {
+                string errorMessage = string.Join("\n", errors);
+                await this.ShowDialog("Validation Errors", errorMessage);
+                Debug.WriteLine("Dialog was shown");
+                return;
+            }
+            Debug.WriteLine("UpdateProfile called");
             if (this.seller != null)
             {
                 this.seller.StoreName = this.StoreName;
@@ -370,7 +381,54 @@ namespace MarketMinds.ViewModels
         public List<string> ValidateFields()
         {
             var errors = new List<string>();
-            // Add validation logic as needed
+            // Add validation logic
+            if (string.IsNullOrWhiteSpace(this.StoreName))
+            {
+                errors.Add("Store name is required.");
+                this.StoreNameError = "Store name is required.";
+            }
+            else
+            {
+                this.StoreNameError = string.Empty;
+            }
+            if (string.IsNullOrWhiteSpace(this.Email) || !this.Email.Contains("@"))
+            {
+                errors.Add("Valid email is required.");
+                this.EmailError = "Valid email is required.";
+            }
+            else
+            {
+                this.EmailError = string.Empty;
+            }
+            // check if phone number is valid, starts with +40 and has 10 digits starting with 0
+            if (string.IsNullOrWhiteSpace(this.PhoneNumber) || !this.PhoneNumber.StartsWith("+40") || this.PhoneNumber.Length != 12)
+            {
+                errors.Add("Valid phone number is required.");
+                this.PhoneNumberError = "Valid phone number is required.";
+            }
+            else
+            {
+                this.PhoneNumberError = string.Empty;
+            }
+            if (string.IsNullOrWhiteSpace(this.StoreAddress))
+            {
+                errors.Add("Store address is required.");
+                this.AddressError = "Store address is required.";
+            }
+            else
+            {
+                this.AddressError = string.Empty;
+            }
+            if (string.IsNullOrWhiteSpace(this.StoreDescription))
+            {
+                errors.Add("Store description is required.");
+                this.DescriptionError = "Store description is required.";
+            }
+            else
+            {
+                this.DescriptionError = string.Empty;
+            }
+            // Notify UI of changes
             return errors;
         }
 
