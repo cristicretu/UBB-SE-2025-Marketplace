@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.BuyProductsService;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 

@@ -73,11 +73,11 @@
                 <h4 class="font-medium mb-3 text-gray-700">Price Range</h4>
                 <div class="space-y-3">
                     <div>
-                        <input type="range" id="priceRange" class="w-full accent-primary" min="@minPrice" max="@maxPrice" step="10" value="@minPrice">
+                        <input type="range" id="priceRange" class="w-full accent-primary" min="@minPrice" max="@maxPrice" step="1" value="@maxPrice">
                         <div class="flex justify-between text-sm text-gray-600 mt-1">
-                            <span>$<span id="minPriceValue">@minPrice</span></span>
-                            <span>$<span id="currentPriceValue">@minPrice</span></span>
-                            <span>$<span id="maxPriceValue">@maxPrice</span></span>
+                            <span class="font-mono opacity-50">$<span id="minPriceValue">@minPrice</span></span>
+                            <span class="font-mono">$<span id="currentPriceValue">@maxPrice</span></span>
+                            <span class="font-mono opacity-50">$<span id="maxPriceValue">@maxPrice</span></span>
                         </div>
                     </div>
                 </div>
@@ -352,6 +352,36 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize price range slider immediately
+            const priceRange = document.getElementById('priceRange');
+            const currentPriceValue = document.getElementById('currentPriceValue');
+            const minPriceValue = document.getElementById('minPriceValue');
+            const maxPriceValue = document.getElementById('maxPriceValue');
+            
+            if (priceRange) {
+                // Make sure the slider is at maximum by default
+                priceRange.value = priceRange.max;
+                
+                // Update display values
+                if (currentPriceValue) {
+                    currentPriceValue.textContent = priceRange.max;
+                }
+                if (minPriceValue) {
+                    minPriceValue.textContent = priceRange.min;
+                }
+                if (maxPriceValue) {
+                    maxPriceValue.textContent = priceRange.max;
+                }
+                
+                // Add event listener for price range changes
+                priceRange.addEventListener('input', function() {
+                    if (currentPriceValue) {
+                        currentPriceValue.textContent = this.value;
+                    }
+                    applyFilters();
+                });
+            }
+            
             // Tab functionality
             const tabButtons = document.querySelectorAll('.tab-btn');
             const tabContents = document.querySelectorAll('.tab-content');
@@ -444,20 +474,9 @@
             }
             
             // Filter functionality
-            const priceRange = document.getElementById('priceRange');
-            const currentPriceValue = document.getElementById('currentPriceValue');
-            const clearFiltersBtn = document.getElementById('clearFilters');
             const searchInput = document.getElementById('searchInput');
             const categoryPills = document.querySelectorAll('.category-pill');
             const conditionPills = document.querySelectorAll('.condition-pill');
-            
-            // Price range slider
-            if (priceRange && currentPriceValue) {
-                priceRange.addEventListener('input', function() {
-                    currentPriceValue.textContent = this.value;
-                    applyFilters();
-                });
-            }
             
             // Search functionality
             if (searchInput) {
@@ -501,6 +520,7 @@
             }
             
             // Clear filters
+            const clearFiltersBtn = document.getElementById('clearFilters');
             if (clearFiltersBtn) {
                 clearFiltersBtn.addEventListener('click', function() {
                     // Reset search
@@ -508,8 +528,8 @@
                     
                     // Reset price range
                     if (priceRange) {
-                        priceRange.value = priceRange.min;
-                        currentPriceValue.textContent = priceRange.min;
+                        priceRange.value = priceRange.max;
+                        currentPriceValue.textContent = priceRange.max;
                     }
                     
                     // Reset all category pills
@@ -543,7 +563,7 @@
                     if (!productItems || productItems.length === 0) return;
                     
                     const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
-                    const maxPrice = priceRange ? parseInt(priceRange.value) : Number.MAX_SAFE_INTEGER;
+                    const maxPriceFilter = priceRange ? parseFloat(priceRange.value) : Number.MAX_SAFE_INTEGER;
                     
                     const selectedCategories = categoryPills ? Array.from(categoryPills)
                         .filter(pill => pill.classList.contains('bg-primary'))
@@ -553,9 +573,12 @@
                         .filter(pill => pill.classList.contains('bg-primary'))
                         .map(pill => parseInt(pill.getAttribute('data-condition-id') || '0')) : [];
                     
+                    let visibleCount = 0;
+                    
                     productItems.forEach(item => {
                         if (!item) return;
                         
+                        // Parse the price as a float to handle decimal values properly
                         const price = parseFloat(item.dataset.price || '0');
                         const categoryId = parseInt(item.dataset.category || '0');
                         const conditionId = parseInt(item.dataset.condition || '0');
@@ -567,7 +590,10 @@
                                              title.includes(searchValue) || 
                                              seller.includes(searchValue);
                         
-                        const matchesPrice = !maxPrice || price <= maxPrice;
+                        // Clear logging to debug price filtering
+                        console.log(`Product: ${title}, Price: ${price}, Max Filter: ${maxPriceFilter}, Matches: ${price <= maxPriceFilter}`);
+                        
+                        const matchesPrice = price <= maxPriceFilter;
                         
                         const matchesCategory = !selectedCategories.length || 
                                              selectedCategories.includes(categoryId);
@@ -578,15 +604,14 @@
                         // Show or hide based on filter match
                         if (matchesSearch && matchesPrice && matchesCategory && matchesCondition) {
                             item.classList.remove('hidden');
+                            visibleCount++;
                         } else {
                             item.classList.add('hidden');
                         }
                     });
                     
                     // Check if no products are visible
-                    const visibleProducts = activeGrid.querySelectorAll('.product-item:not(.hidden)');
-                    
-                    if (!visibleProducts.length) {
+                    if (visibleCount === 0) {
                         let noResultsElement = activeGrid.querySelector('.no-results');
                         
                         if (!noResultsElement) {
@@ -614,7 +639,7 @@
                 if (!clearFiltersBtn) return;
                 
                 const hasActiveSearch = searchInput && searchInput.value.trim().length > 0;
-                const hasActivePrice = priceRange && parseInt(priceRange.value) > parseInt(priceRange.min);
+                const hasActivePrice = priceRange && parseInt(priceRange.value) < parseInt(priceRange.max);
                 const hasActiveCategories = categoryPills && Array.from(categoryPills).some(pill => pill.classList.contains('bg-primary'));
                 const hasActiveConditions = conditionPills && Array.from(conditionPills).some(pill => pill.classList.contains('bg-primary'));
                 
@@ -628,7 +653,9 @@
             }
             
             // Initial filter application
-            applyFilters();
+            setTimeout(function() {
+                applyFilters();
+            }, 100);
         });
     </script>
 }
