@@ -578,6 +578,11 @@ namespace MarketMinds.Web.Controllers
 
             borrowProduct.Seller = new User { Id = borrowProduct.SellerId };
 
+            // Remove Price field from validation since BorrowProduct doesn't use it
+            ModelState.Remove("Price");
+            ModelState.Remove("price");
+            _logger.LogInformation("Removed Price field from ModelState validation for BorrowProduct");
+
             if (borrowProduct.CategoryId <= 0)
             {
                 ModelState.AddModelError("CategoryId", "Please select a valid category");
@@ -741,6 +746,19 @@ namespace MarketMinds.Web.Controllers
             }
             else
             {
+                // Detailed model state validation logging
+                _logger.LogWarning("Invalid model state when creating borrow product");
+                foreach (var modelError in ModelState)
+                {
+                    var field = modelError.Key;
+                    var errors = modelError.Value.Errors;
+                    foreach (var error in errors)
+                    {
+                        _logger.LogWarning("Model validation error - Field: {Field}, Error: {ErrorMessage}, AttemptedValue: {AttemptedValue}", 
+                            field, error.ErrorMessage, modelError.Value.AttemptedValue);
+                    }
+                }
+                
                 _logger.LogWarning("Invalid model state when creating borrow product: {Errors}", 
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
