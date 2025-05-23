@@ -17,6 +17,9 @@ using Server.MarketMinds.Repositories.UserRepository;
 // Additional repository namespaces
 using MarketMinds.Repositories;
 using Server.Repository;
+using MarketMinds.Shared.Repositories;
+using MarketMinds.Shared.Services;
+using Server.MarketMinds.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,10 +78,14 @@ builder.Services.AddScoped<IDummyCardRepository, DummyCardRepository>();
 builder.Services.AddScoped<IContractRepository, ContractRepository>();
 builder.Services.AddScoped<IContractRenewalRepository, ContractRenewalRepository>();
 builder.Services.AddScoped<IBuyerRepository, BuyerRepository>();
+builder.Services.AddScoped<IBuyerLinkageRepository, BuyerLinkageRepository>();
 // If IChatRepository has an implementation, register it
 // builder.Services.AddScoped<IChatRepository, ChatRepository>();
 // If IBasketRepository has an implementation, register it
 // builder.Services.AddScoped<IBasketRepository, BasketRepository>();
+
+// Register services
+// Removed IBuyerLinkageService registration since we handle logic in controller
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -190,7 +190,13 @@ namespace MarketMinds.Shared.Services
         /// </summary>
         /// <param name="buyerId">The ID of the buyer.</param>
         /// <returns>A task containing a list of wishlist items with product details.</returns>
+        Task<List<BuyerWishlistItem>> GetWishlistItems(int buyerId);
 
-
+        /// <summary>
+        /// Gets a buyer by their ID.
+        /// </summary>
+        /// <param name="buyerId">The ID of the buyer to retrieve.</param>
+        /// <returns>A task containing the buyer if found, null otherwise.</returns>
+        Task<Buyer?> GetBuyerByIdAsync(int buyerId);
     }
 }

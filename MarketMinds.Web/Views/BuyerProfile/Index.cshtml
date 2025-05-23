@@ -271,51 +271,53 @@
         font-weight: 600;
         color: #495057;
         margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .contract-content {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 1rem;
         flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
     }
 
     .action-btn {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border: none;
         border-radius: 6px;
-        padding: 0.6rem 1.2rem;
-        font-weight: 500;
-        color: #495057;
         text-decoration: none;
+        font-weight: 500;
         transition: all 0.2s ease;
-        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .action-btn:hover {
-        background: #e9ecef;
-        border-color: #adb5bd;
-        color: #495057;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        color: white;
         text-decoration: none;
-        transform: translateY(-1px);
     }
 
     .generate-btn {
-        background: #6c757d;
-        border: 1px solid #6c757d;
-        border-radius: 6px;
-        padding: 0.6rem 1rem;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         color: white;
+        padding: 0.8rem 1.2rem;
+        border: none;
+        border-radius: 6px;
         font-weight: 500;
-        font-size: 0.9rem;
+        cursor: pointer;
         transition: all 0.2s ease;
     }
 
     .generate-btn:hover {
-        background: #5a6268;
-        border-color: #5a6268;
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
     }
 
     .public-profile {
@@ -329,6 +331,37 @@
         gap: 1rem;
         max-width: 600px;
         margin: 0 auto;
+    }
+
+    .link-btn, .unlink-btn {
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        border: none;
+        border-radius: 6px;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: white;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .link-btn:hover, .unlink-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .unlink-btn {
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    }
+
+    .unlink-btn:hover {
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
 
     @@media (max-width: 768px) {
@@ -355,6 +388,137 @@
             width: 100%;
         }
     }
+
+    /* Links Section Styles */
+    .links-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .links-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .link-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .links-content {
+        padding: 2rem;
+        margin: 0;
+    }
+
+    .linked-buyers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .linked-buyer-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .linked-buyer-card:hover {
+        border-color: #17a2b8;
+        box-shadow: 0 8px 25px rgba(23, 162, 184, 0.15);
+        transform: translateY(-3px);
+    }
+
+    .linked-buyer-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .linked-buyer-link:hover {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .linked-buyer-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .linked-buyer-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .linked-buyer-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #343a40;
+        margin-bottom: 0.3rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .linked-buyer-badge {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+        color: #212529;
+        padding: 0.2rem 0.6rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+        margin-bottom: 0.3rem;
+    }
+
+    .linked-buyer-email {
+        color: #6c757d;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Responsive design for Links */
+    @@media (max-width: 768px) {
+        .linked-buyers-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .links-header {
+            padding: 1rem;
+            margin: -2rem -1rem 1rem -1rem;
+        }
+        
+        .links-content {
+            padding: 0 1rem 1rem 1rem;
+        }
+    }
 </style>
 
 <div class="profile-container">
@@ -362,7 +526,7 @@
         <div class="profile-card">
             <div class="profile-header">
                 <h1 class="profile-title">@(canEdit ? "Edit Profile" : $"{Model.FirstName} {Model.LastName}")</h1>
-                <p class="profile-subtitle">@(canEdit ? "Manage your profile information" : "Public buyer profile")</p>
+                <p class="profile-subtitle">@(canEdit ? "Manage your profile information" : "")</p>
                 @if (!string.IsNullOrEmpty(Model.Badge))
                 {
                     <div class="badge-container">
@@ -483,6 +647,33 @@
                 {
                     <!-- Public Profile View -->
                     <div class="public-profile">
+                        @{
+                            var linkageInfo = ViewBag.LinkageInfo as MarketMinds.Shared.Services.BuyerLinkageInfo;
+                        }
+                        
+                        @if (linkageInfo != null && linkageInfo.CanManageLink)
+                        {
+                            <!-- Link/Unlink Button -->
+                            @if (linkageInfo.IsLinked)
+                            {
+                                <form asp-action="Unlink" method="post" style="margin-bottom: 1.5rem;">
+                                    <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                    <button type="submit" class="unlink-btn">
+                                        <i class="fas fa-user-minus"></i> Unlink
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="Link" method="post" style="margin-bottom: 1.5rem;">
+                                    <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                    <button type="submit" class="link-btn">
+                                        <i class="fas fa-user-plus"></i> Link
+                                    </button>
+                                </form>
+                            }
+                        }
+                        
                         <div class="public-info-grid">
                             <div class="form-group">
                                 <label class="form-label">First Name</label>
@@ -505,6 +696,45 @@
                 }
             </div>
         </div>
+
+        <!-- Links Section -->
+        @if (Model.LinkedBuyers != null && Model.LinkedBuyers.Any())
+        {
+            <div class="profile-card">
+                <div class="links-header">
+                    <h3 class="links-title">
+                        <i class="fas fa-users"></i> Links
+                        <span class="link-count">(@Model.LinkedBuyers.Count)</span>
+                    </h3>
+                </div>
+                <div class="links-content">
+                    <div class="linked-buyers-grid">
+                        @foreach (var linkedBuyer in Model.LinkedBuyers)
+                        {
+                            <div class="linked-buyer-card">
+                                <a href="@Url.Action("PublicProfile", "BuyerProfile", new { id = linkedBuyer.BuyerId })" class="linked-buyer-link">
+                                    <div class="linked-buyer-avatar">
+                                        @{
+                                            var firstInitial = !string.IsNullOrEmpty(linkedBuyer.FirstName) ? linkedBuyer.FirstName.First().ToString().ToUpper() : "?";
+                                            var lastInitial = !string.IsNullOrEmpty(linkedBuyer.LastName) ? linkedBuyer.LastName.First().ToString().ToUpper() : "";
+                                        }
+                                        @firstInitial@lastInitial
+                                    </div>
+                                    <div class="linked-buyer-info">
+                                        <div class="linked-buyer-name">@linkedBuyer.FirstName @linkedBuyer.LastName</div>
+                                        <div class="linked-buyer-badge">@linkedBuyer.Badge</div>
+                                        @if (!string.IsNullOrEmpty(linkedBuyer.Email))
+                                        {
+                                            <div class="linked-buyer-email">@linkedBuyer.Email</div>
+                                        }
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
 
         @if (canEdit)
         {

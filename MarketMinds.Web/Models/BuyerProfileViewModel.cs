@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using MarketMinds.Shared.Models;
 
 namespace WebMarketplace.Models
 {
@@ -105,5 +106,46 @@ namespace WebMarketplace.Models
         /// Gets or sets the buyer discount
         /// </summary>
         public decimal Discount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of linked buyers
+        /// </summary>
+        public List<LinkedBuyerInfo> LinkedBuyers { get; set; } = new List<LinkedBuyerInfo>();
+    }
+
+    /// <summary>
+    /// Information about a linked buyer for display purposes
+    /// </summary>
+    public class LinkedBuyerInfo
+    {
+        /// <summary>
+        /// Gets or sets the buyer ID
+        /// </summary>
+        public int BuyerId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the first name
+        /// </summary>
+        public string FirstName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the last name
+        /// </summary>
+        public string LastName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the email
+        /// </summary>
+        public string Email { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the badge
+        /// </summary>
+        public string Badge { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date when the link was created
+        /// </summary>
+        public DateTime LinkedDate { get; set; }
     }
 }

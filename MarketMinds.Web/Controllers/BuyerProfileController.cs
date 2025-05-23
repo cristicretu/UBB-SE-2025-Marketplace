@@ -16,6 +16,7 @@ namespace WebMarketplace.Controllers
     {
         private readonly IBuyerService _buyerService;
         private readonly IUserService _userService;
+        private readonly IBuyerLinkageService _buyerLinkageService;
         private readonly ILogger<BuyerProfileController> _logger;
 
         /// <summary>
@@ -23,14 +24,17 @@ namespace WebMarketplace.Controllers
         /// </summary>
         /// <param name="buyerService">The buyer service.</param>
         /// <param name="userService">The user service.</param>
+        /// <param name="buyerLinkageService">The buyer linkage service.</param>
         /// <param name="logger">The logger.</param>
         public BuyerProfileController(
             IBuyerService buyerService,
             IUserService userService,
+            IBuyerLinkageService buyerLinkageService,
             ILogger<BuyerProfileController> logger)
         {
             _buyerService = buyerService ?? throw new ArgumentNullException(nameof(buyerService));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _buyerLinkageService = buyerLinkageService ?? throw new ArgumentNullException(nameof(buyerLinkageService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             
             _logger.LogInformation("CONSTRUCTOR: BuyerProfileController initialized");
@@ -70,6 +74,54 @@ namespace WebMarketplace.Controllers
             // If no authentication found, return 0 to indicate unauthorized
             _logger.LogWarning("DEBUG: No valid user ID found in claims or session");
             return 0;
+        }
+
+        /// <summary>
+        /// Loads linked buyers information for a specific buyer
+        /// </summary>
+        /// <param name="buyerId">The buyer ID to get linked buyers for</param>
+        /// <returns>List of linked buyer information</returns>
+        private async Task<List<LinkedBuyerInfo>> LoadLinkedBuyersAsync(int buyerId)
+        {
+            try
+            {
+                _logger.LogInformation("Loading linked buyers for buyer ID: {BuyerId}", buyerId);
+
+                // Get linked buyers directly from the service
+                var linkedBuyers = await _buyerLinkageService.GetLinkedBuyersAsync(buyerId);
+                
+                var linkedBuyerInfoList = new List<LinkedBuyerInfo>();
+
+                foreach (var linkedBuyer in linkedBuyers)
+                {
+                    try
+                    {
+                        var linkedBuyerInfo = new LinkedBuyerInfo
+                        {
+                            BuyerId = linkedBuyer.Id,
+                            FirstName = linkedBuyer.FirstName ?? "Unknown",
+                            LastName = linkedBuyer.LastName ?? "User",
+                            Email = linkedBuyer.User?.Email ?? string.Empty,
+                            Badge = linkedBuyer.Badge.ToString() ?? "None",
+                            LinkedDate = DateTime.UtcNow // Default for now since we don't have this in the old system
+                        };
+                        linkedBuyerInfoList.Add(linkedBuyerInfo);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to process linked buyer {LinkedBuyerId} for buyer {BuyerId}", linkedBuyer.Id, buyerId);
+                        // Continue with other linked buyers
+                    }
+                }
+
+                _logger.LogInformation("Loaded {Count} linked buyers for buyer ID: {BuyerId}", linkedBuyerInfoList.Count, buyerId);
+                return linkedBuyerInfoList;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading linked buyers for buyer ID: {BuyerId}", buyerId);
+                return new List<LinkedBuyerInfo>();
+            }
         }
 
         /// <summary>
@@ -470,6 +522,9 @@ namespace WebMarketplace.Controllers
 
                 _logger.LogInformation("Found buyer: {BuyerId}, loading view model", buyer.Id);
 
+                // Load linked buyers information
+                var linkedBuyers = await LoadLinkedBuyersAsync(buyer.Id);
+
                 // Create the view model
                 var viewModel = new BuyerProfileViewModel
                 {
@@ -493,7 +548,8 @@ namespace WebMarketplace.Controllers
 
                     UseSameAddress = buyer.UseSameAddress,
                     Badge = buyer.Badge.ToString() ?? "None",
-                    Discount = buyer.Discount
+                    Discount = buyer.Discount,
+                    LinkedBuyers = linkedBuyers
                 };
 
                 // Set ViewBag to indicate this is the editable version
@@ -539,6 +595,19 @@ namespace WebMarketplace.Controllers
 
                 _logger.LogInformation("Found buyer: {BuyerId}, loading public view model", targetBuyer.Id);
 
+                // Get current user ID for linkage checking
+                int currentUserId = GetCurrentUserId();
+                
+                // Get linkage information if user is authenticated
+                BuyerLinkageInfo? linkageInfo = null;
+                if (currentUserId > 0 && currentUserId != id)
+                {
+                    linkageInfo = await _buyerLinkageService.GetLinkageStatusAsync(currentUserId, id);
+                }
+
+                // Load linked buyers information
+                var linkedBuyers = await LoadLinkedBuyersAsync(targetBuyer.Id);
+
                 // Create the view model with public information only
                 var viewModel = new BuyerProfileViewModel
                 {
@@ -558,12 +627,14 @@ namespace WebMarketplace.Controllers
                     ShippingCountry = string.Empty,
                     ShippingPostalCode = string.Empty,
                     UseSameAddress = false,
-                    Discount = 0 // Don't expose discount information
+                    Discount = 0, // Don't expose discount information
+                    LinkedBuyers = linkedBuyers
                 };
 
                 // Set ViewBag to indicate this is a public read-only profile
                 ViewBag.IsOwnProfile = false;
                 ViewBag.CanEdit = false;
+                ViewBag.LinkageInfo = linkageInfo;
 
                 return View("Index", viewModel);
             }
@@ -571,6 +642,112 @@ namespace WebMarketplace.Controllers
             {
                 _logger.LogError(ex, "Error loading public buyer profile for ID: {BuyerId}", id);
                 return View("UserNotFound");
+            }
+        }
+
+        /// <summary>
+        /// Links the current buyer with another buyer
+        /// </summary>
+        /// <param name="targetBuyerId">The ID of the buyer to link with</param>
+        /// <returns>Redirects back to the public profile</returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Link(int targetBuyerId)
+        {
+            _logger.LogInformation("Link action called for target buyer ID: {TargetBuyerId}", targetBuyerId);
+
+            try
+            {
+                int currentUserId = GetCurrentUserId();
+                if (currentUserId == 0)
+                {
+                    _logger.LogWarning("User not authenticated for link action");
+                    return RedirectToAction("Login", "Account");
+                }
+
+                if (currentUserId == targetBuyerId)
+                {
+                    _logger.LogWarning("User {UserId} attempted to link to themselves", currentUserId);
+                    TempData["ErrorMessage"] = "You cannot link to yourself.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                bool success = await _buyerLinkageService.LinkBuyersAsync(currentUserId, targetBuyerId);
+
+                if (success)
+                {
+                    _logger.LogInformation("Successfully linked buyer {CurrentUserId} with buyer {TargetBuyerId}", 
+                        currentUserId, targetBuyerId);
+                    TempData["SuccessMessage"] = "Successfully linked with buyer!";
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to link buyer {CurrentUserId} with buyer {TargetBuyerId}", 
+                        currentUserId, targetBuyerId);
+                    TempData["ErrorMessage"] = "Failed to link with buyer. Please try again.";
+                }
+
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error linking buyers - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
+                    GetCurrentUserId(), targetBuyerId);
+                TempData["ErrorMessage"] = "An error occurred while linking. Please try again.";
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+            }
+        }
+
+        /// <summary>
+        /// Unlinks the current buyer from another buyer
+        /// </summary>
+        /// <param name="targetBuyerId">The ID of the buyer to unlink from</param>
+        /// <returns>Redirects back to the public profile</returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Unlink(int targetBuyerId)
+        {
+            _logger.LogInformation("Unlink action called for target buyer ID: {TargetBuyerId}", targetBuyerId);
+
+            try
+            {
+                int currentUserId = GetCurrentUserId();
+                if (currentUserId == 0)
+                {
+                    _logger.LogWarning("User not authenticated for unlink action");
+                    return RedirectToAction("Login", "Account");
+                }
+
+                if (currentUserId == targetBuyerId)
+                {
+                    _logger.LogWarning("User {UserId} attempted to unlink from themselves", currentUserId);
+                    TempData["ErrorMessage"] = "You cannot unlink from yourself.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                bool success = await _buyerLinkageService.UnlinkBuyersAsync(currentUserId, targetBuyerId);
+
+                if (success)
+                {
+                    _logger.LogInformation("Successfully unlinked buyer {CurrentUserId} from buyer {TargetBuyerId}", 
+                        currentUserId, targetBuyerId);
+                    TempData["SuccessMessage"] = "Successfully unlinked from buyer!";
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to unlink buyer {CurrentUserId} from buyer {TargetBuyerId}", 
+                        currentUserId, targetBuyerId);
+                    TempData["ErrorMessage"] = "Failed to unlink from buyer. Please try again.";
+                }
+
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error unlinking buyers - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
+                    GetCurrentUserId(), targetBuyerId);
+                TempData["ErrorMessage"] = "An error occurred while unlinking. Please try again.";
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
             }
         }
     }

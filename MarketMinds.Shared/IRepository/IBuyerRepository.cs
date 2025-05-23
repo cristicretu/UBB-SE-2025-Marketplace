@@ -23,6 +23,14 @@ namespace MarketMinds.Shared.IRepository
         Task LoadBuyerInfo(Buyer buyerEntity);
 
         /// <summary>
+        /// Loads buyer information from the database by buyer ID.
+        /// </summary>
+        /// <param name="buyerId">The ID of the buyer to load.</param>
+        /// <returns>A task containing the loaded buyer information.</returns>
+        /// <exception cref="Exception">Thrown when the buyer is not found.</exception>
+        Task<Buyer> LoadBuyerInfo(int buyerId);
+
+        /// <summary>
         /// Saves buyer information to the database.
         /// </summary>
         /// <param name="buyerEntity">The buyer object containing information to save.</param>

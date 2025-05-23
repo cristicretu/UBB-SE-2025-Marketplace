@@ -74,6 +74,53 @@ namespace Server.Repository
         }
 
         /// <inheritdoc/>
+        public async Task<Buyer> LoadBuyerInfo(int buyerId)
+        {
+            Buyer buyer = await this.dbContext.Buyers.FindAsync(buyerId)
+                                ?? throw new Exception("LoadBuyerInfo: Buyer not found");
+
+            int billingAddressId = await this.dbContext.Buyers.Where(b => b.Id == buyerId)
+                                .Select(b => EF.Property<int>(b, "BillingAddressId"))
+                                .FirstOrDefaultAsync();
+            int shippingAddressId = await this.dbContext.Buyers.Where(b => b.Id == buyerId)
+                                .Select(b => EF.Property<int>(b, "ShippingAddressId"))
+                                .FirstOrDefaultAsync();
+
+            User user = await this.dbContext.Users.FindAsync(buyerId)
+                                ?? throw new Exception("LoadBuyerInfo: User not found");
+
+            var buyerEntity = new Buyer
+            {
+                Id = buyerId,
+                Badge = buyer.Badge,
+                Wishlist = await this.GetWishlist(buyerId),
+                Linkages = await this.GetBuyerLinkages(buyerId),
+                TotalSpending = buyer.TotalSpending,
+                NumberOfPurchases = buyer.NumberOfPurchases,
+                Discount = buyer.Discount,
+                UseSameAddress = buyer.UseSameAddress,
+                FollowingUsersIds = await this.GetFollowingUsersIds(buyerId),
+                User = user,
+                FirstName = buyer.FirstName,
+                LastName = buyer.LastName,
+                BillingAddress = await this.LoadAddress(billingAddressId)
+                                ?? throw new Exception("LoadBuyerInfo: Billing address not found")
+            };
+
+            if (buyer.UseSameAddress)
+            {
+                buyerEntity.ShippingAddress = buyerEntity.BillingAddress;
+            }
+            else
+            {
+                buyerEntity.ShippingAddress = await this.LoadAddress(shippingAddressId)
+                                ?? throw new Exception("LoadBuyerInfo: Shipping address not found");
+            }
+
+            return buyerEntity;
+        }
+
+        /// <inheritdoc/>
         public async Task SaveInfo(Buyer buyerEntity)
         {
             Console.WriteLine("=== REPOSITORY: SaveInfo called ===");
@@ -248,7 +295,10 @@ namespace Server.Repository
             foreach (BuyerLinkageEntity linkageEntity in buyerLinkagesEntities)
             {
                 BuyerLinkage buyerLinkage = ReadBuyerLinkage(linkageEntity, buyerId);
-                buyerLinkages.Add(buyerLinkage);
+                if (buyerLinkage != null) // Only add approved linkages
+                {
+                    buyerLinkages.Add(buyerLinkage);
+                }
             }
 
             return buyerLinkages;
@@ -436,36 +486,18 @@ namespace Server.Repository
         /// <returns>A BuyerLinkage object containing the read information.</returns>
         private static BuyerLinkage ReadBuyerLinkage(BuyerLinkageEntity linkageEntity, int buyerId)
         {
-            int requestingBuyerId = linkageEntity.RequestingBuyerId;
-            int receivingBuyerId = linkageEntity.ReceivingBuyerId;
-            bool isApproved = linkageEntity.IsApproved;
-            int linkedBuyerId = requestingBuyerId;
-            BuyerLinkageStatus buyerLinkageStatus = BuyerLinkageStatus.Confirmed;
-
-            if (requestingBuyerId == buyerId)
+            // Only process approved linkages for the new simple system
+            if (!linkageEntity.IsApproved)
             {
-                linkedBuyerId = receivingBuyerId;
-                if (!isApproved)
-                {
-                    buyerLinkageStatus = BuyerLinkageStatus.PendingSelf;
-                }
-            }
-            else if (receivingBuyerId == buyerId)
-            {
-                linkedBuyerId = requestingBuyerId;
-                if (!isApproved)
-                {
-                    buyerLinkageStatus = BuyerLinkageStatus.PendingOther;
-                }
+                return null; // Skip non-approved linkages
             }
 
+            // Map the old entity structure to the new BuyerLinkage model
             return new BuyerLinkage
             {
-                Buyer = new Buyer
-                {
-                    User = new User { Id = linkedBuyerId },
-                },
-                Status = buyerLinkageStatus,
+                BuyerId1 = Math.Min(linkageEntity.RequestingBuyerId, linkageEntity.ReceivingBuyerId),
+                BuyerId2 = Math.Max(linkageEntity.RequestingBuyerId, linkageEntity.ReceivingBuyerId),
+                LinkedDate = DateTime.UtcNow // Default since old entity doesn't have this field
             };
         }
 
