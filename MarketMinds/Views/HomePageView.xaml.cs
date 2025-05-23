@@ -12,7 +12,6 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using MarketMinds.Views.Pages;
 
 namespace MarketMinds.Views
 {
@@ -25,11 +24,17 @@ namespace MarketMinds.Views
         {
             this.InitializeComponent();
 
-            // Navigate to the BuyProductListView by default
-            // ContentFrame.Navigate(typeof(BuyProductListView));
+            // Navigate to the MarketMindsPage by default
+            ContentFrame.Navigate(typeof(MarketMindsPage));
 
             // Set up window size and position
             this.AppWindow.Resize(new Windows.Graphics.SizeInt32(1700, 1000));
+        }
+
+        private void MarketMinds_Title_Click(object sender, RoutedEventArgs e)
+        {
+            // Navigate to the MarketMindsPage when the MarketMinds title is clicked
+            ContentFrame.Navigate(typeof(MarketMindsPage));
         }
 
         /// <summary>
@@ -41,14 +46,52 @@ namespace MarketMinds.Views
             {
                 switch (button.Label)
                 {
-                    case "Home":
-                        // ContentFrame.Navigate(typeof(BuyProductListView));
+                    case "ChatBot":
+                        // Show to chatbot page in frame
                         break;
-                    case "Search":
-                        // Could show a search dialog or navigate to a search page
+                    case "Notifications":
+                        // Show notifications page in frame
                         break;
-                    case "Settings":
-                        // Navigate to settings page if available
+                    case "Wishlist":
+                        // Show wishlist page in frame
+                        break;
+                    case "Cart":
+                        // Show cart page in frame
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handle profile menu item selections
+        /// </summary>
+        private void ProfileMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem menuItem)
+            {
+                string tag = menuItem.Tag?.ToString();
+
+                switch (tag)
+                {
+                    case "MyAccount":
+                        // Navigate to user profile page
+                        // Example: ContentFrame.Navigate(typeof(BuyerProfileView));
+                        break;
+
+                    case "MyOrders":
+                        // Navigate to orders history page
+                        // Example: ContentFrame.Navigate(typeof(OrderHistoryView));
+                        break;
+
+                    case "MyReviews":
+                        // Navigate to user reviews page
+                        // Could create a dedicated page for this
+                        break;
+
+                    case "Logout":
+                        // Handle logout logic
+                        // Could show a confirmation dialog first
+                        // Then navigate to login page or reset app state
                         break;
                 }
             }

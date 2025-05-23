@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketMinds.Views.MarketMindsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.18*"/> <!-- Utility bar - 18% width -->
+            <ColumnDefinition Width="0.82*"/> <!-- Pivot content - 82% width -->
+        </Grid.ColumnDefinitions>
+
+        <!-- Vertical Utility Bar -->
+        <Grid Grid.Column="0" Background="{ThemeResource SystemControlBackgroundAltMediumLowBrush}" Padding="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Filters header -->
+                <RowDefinition Height="Auto"/> <!-- Search box -->
+                <RowDefinition Height="Auto"/> <!-- Price Range -->
+                <RowDefinition Height="Auto"/> <!-- Categories -->
+                <RowDefinition Height="Auto"/> <!-- Condition -->
+                <RowDefinition Height="Auto"/> <!-- Clear Filters -->
+                <RowDefinition Height="*"/> <!-- Space for future elements -->
+            </Grid.RowDefinitions>
+
+            <!-- Filters Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,8,0,16"
+                       HorizontalAlignment="Stretch">
+                <FontIcon Glyph="&#xE16F;" Margin="0,0,8,0"/>
+                <TextBlock Text="Filters" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center"/>
+            </StackPanel>
+            
+            <!-- Search Box -->
+            <AutoSuggestBox Grid.Row="1" Margin="0,0,0,16" PlaceholderText="Search products..."
+                           QueryIcon="Find" HorizontalAlignment="Stretch"/>
+            
+            <!-- Price Range -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,16">
+                <TextBlock Text="Price Range" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
+                <Slider x:Name="PriceRangeSlider" Minimum="1" Maximum="100101" Value="100101"
+                       ThumbToolTipValueConverter="{x:Null}"
+                       Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"/>
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="$1" Grid.Column="0" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="$100101" Grid.Column="1" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="$100101" Grid.Column="2" Style="{StaticResource CaptionTextBlockStyle}"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- Categories -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,16">
+                <TextBlock Text="Categories" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal">
+                    <Border Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" 
+                            CornerRadius="15" Padding="10,5">
+                        <TextBlock Text="lmao" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Condition -->
+            <StackPanel Grid.Row="4" Margin="0,0,0,16">
+                <TextBlock Text="Condition" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal">
+                    <!-- will be filled programmatically - mock data for now -->
+                    <Border Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" 
+                            CornerRadius="15" Padding="10,5">
+                        <TextBlock Text="lmao" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Clear Filters Button -->
+            <Button Grid.Row="5" HorizontalAlignment="Stretch" Padding="0,8" Background="Transparent" BorderThickness="1"
+                    BorderBrush="{ThemeResource SystemControlBackgroundBaseLowBrush}" Click="ClearFilters_Click">
+                <!-- will be filled programmatically - mock data for now -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE711;" FontSize="12" Margin="0,0,8,0"/>
+                    <TextBlock Text="Clear Filters" Style="{StaticResource CaptionTextBlockStyle}"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- Pivot Control -->
+        <Pivot Grid.Column="1" x:Name="ProductsPivot" SelectionChanged="ProductsPivot_SelectionChanged">
+            <PivotItem Header="Buy Products">
+                <Grid>
+                    <!-- Content will be filled programmatically -->
+                    <TextBlock Text="Buy Products Content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+            </PivotItem>
+            <PivotItem Header="Auction Products">
+                <Grid>
+                    <!-- Content will be filled programmatically -->
+                    <TextBlock Text="Auction Products Content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+            </PivotItem>
+            <PivotItem Header="Borrow Products">
+                <Grid>
+                    <!-- Content will be filled programmatically -->
+                    <TextBlock Text="Borrow Products Content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+            </PivotItem>
+        </Pivot>
+    </Grid>
+</Page> 

@@ -23,29 +23,70 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             
+            <Button Click="MarketMinds_Title_Click" 
+                    Background="Transparent" 
+                    BorderThickness="0">
             <TextBlock Text="MarketMinds" 
-                      Style="{StaticResource TitleTextBlockStyle}" 
-                      VerticalAlignment="Center"/>
+                          Style="{StaticResource TitleTextBlockStyle}" 
+                          VerticalAlignment="Center"/>
+            </Button>
             
             <CommandBar Grid.Column="1" 
                        DefaultLabelPosition="Right" 
                        Background="Transparent" 
                        IsOpen="False">
-                <AppBarButton Icon="Home" Label="Home" Click="AppBarButton_Click"/>
-                <AppBarButton Icon="Find" Label="Search" Click="AppBarButton_Click"/>
-                <AppBarButton Icon="Setting" Label="Settings" Click="AppBarButton_Click"/>
+                <AppBarButton Label="ChatBot" Click="AppBarButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE8F2;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton Label="Notifications" Click="AppBarButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xEA8F;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton Label="Profile">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE77B;" />
+                    </AppBarButton.Icon>
+                    <AppBarButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutItem Text="My Account" Tag="MyAccount" Click="ProfileMenuItem_Click">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE77B;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="My Orders" Tag="MyOrders" Click="ProfileMenuItem_Click">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE7BF;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="My Reviews" Tag="MyReviews" Click="ProfileMenuItem_Click">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xF0E7;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem Text="Logout" Tag="Logout" Click="ProfileMenuItem_Click">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xF3B1;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <AppBarButton Label="Wishlist" Click="AppBarButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xEB51;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton Label="Cart" Click="AppBarButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE7BF;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
             </CommandBar>
         </Grid>
-
-        <!-- Navigation Tabs -->
-        <TabView Grid.Row="1" Margin="12,0,12,0" TabWidthMode="SizeToContent" 
-                IsAddTabButtonVisible="False" SelectionChanged="TabView_SelectionChanged">
-            <TabView.TabItems>
-                <TabViewItem Header="Buy Products" Tag="Buy"/>
-                <TabViewItem Header="Auction Products" Tag="Auction"/>
-                <TabViewItem Header="Borrow Products" Tag="Borrow"/>
-            </TabView.TabItems>
-        </TabView>
 
         <!-- Content Frame -->
         <Frame x:Name="ContentFrame" Grid.Row="2"/>
