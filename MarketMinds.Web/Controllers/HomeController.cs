@@ -141,10 +141,35 @@ namespace MarketMinds.Web.Controllers
 
                 ViewBag.Categories = categories;
                 ViewBag.Conditions = conditions;
-
-                ViewBag.MinPrice = buyProducts.Any() ? (int)Math.Floor(buyProducts.Min(p => p.Price)) : 0;
-                ViewBag.MaxPrice = buyProducts.Any() ? (int)Math.Ceiling(buyProducts.Max(p => p.Price)) : 1000;
-
+                
+                // Calculate min and max prices based on BOTH buy products and auction products
+                var allPrices = new List<double>();
+                
+                // Add buy product prices
+                if (buyProducts.Any())
+                {
+                    allPrices.AddRange(buyProducts.Select(p => p.Price));
+                }
+                
+                // Add auction product current prices
+                if (auctionProducts.Any())
+                {
+                    allPrices.AddRange(auctionProducts.Select(p => p.CurrentPrice));
+                }
+                
+                // Set price range based on all products
+                ViewBag.MinPrice = allPrices.Any() ? (int)Math.Floor(allPrices.Min()) : 0;
+                ViewBag.MaxPrice = allPrices.Any() ? (int)Math.Ceiling(allPrices.Max()) : 1000;
+                
+                // Debug logging to verify price range calculation
+                _logger.LogInformation($"HOME: Calculated price range - Min: {ViewBag.MinPrice}, Max: {ViewBag.MaxPrice}");
+                _logger.LogInformation($"HOME: Buy products count: {buyProducts.Count}, Auction products count: {auctionProducts.Count}");
+                if (auctionProducts.Any())
+                {
+                    var auctionPriceRange = $"{auctionProducts.Min(p => p.CurrentPrice):F2} - {auctionProducts.Max(p => p.CurrentPrice):F2}";
+                    _logger.LogInformation($"HOME: Auction products price range: {auctionPriceRange}");
+                }
+                
                 var viewModel = new HomeViewModel
                 {
                     BuyProducts = buyProducts,
@@ -174,28 +199,118 @@ namespace MarketMinds.Web.Controllers
 
         public IActionResult Create()
         {
-            return View(new AuctionProduct());
+            _logger.LogInformation("GET: Home/Create - Initializing create view");
+            var model = new AuctionProduct();
+            _logger.LogInformation("Created new AuctionProduct model with default values");
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AuctionProduct auctionProduct, string productType, string tagIds, string imageUrls)
         {
+            _logger.LogInformation("POST: Home/Create - Starting product creation");
+            _logger.LogInformation("Received parameters - productType: {ProductType}, tagIds: {TagIds}, imageUrls: {ImageUrls}", 
+                productType, tagIds, imageUrls);
+            _logger.LogInformation("TRACE: Original EndTime from form: {EndTime}", auctionProduct?.EndTime);
+            _logger.LogInformation("AuctionProduct details - Title: {Title}, Description: {Description}, StartPrice: {StartPrice}, CategoryId: {CategoryId}, ConditionId: {ConditionId}, SellerId: {SellerId}",
+                auctionProduct?.Title,
+                auctionProduct?.Description?.Substring(0, Math.Min(50, auctionProduct?.Description?.Length ?? 0)),
+                auctionProduct?.StartPrice,
+                auctionProduct?.CategoryId,
+                auctionProduct?.ConditionId,
+                auctionProduct?.SellerId);
+
+            // Set default SellerId if not set
+            if (auctionProduct.SellerId <= 0)
+            {
+                auctionProduct.SellerId = 1; // Default seller ID
+                _logger.LogInformation("Setting default SellerId to 1");
+            }
+
+            // Set the Price property from StartPrice to fix validation
+            // AuctionProduct inherits from Product which has a required Price property
+            auctionProduct.Price = auctionProduct.StartPrice;
+            _logger.LogInformation("Setting Price property to StartPrice value: {Price}", auctionProduct.Price);
+
+            // Clear the ModelState error for Price since we've now set it properly
+            ModelState.Remove("Price");
+            _logger.LogInformation("Cleared ModelState error for Price field");
+
+            // Log ModelState errors if any
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) });
+                
+                foreach (var error in errors)
+                {
+                    _logger.LogWarning("ModelState validation error for field '{Field}': {Errors}", 
+                        error.Field, string.Join(", ", error.Errors));
+                }
+                
+                var allErrors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+                _logger.LogWarning("All ModelState validation errors: {Errors}", string.Join(", ", allErrors));
+
+            }
+
             if (auctionProduct.StartTime == default)
             {
+                _logger.LogInformation("Setting default StartTime to current time");
                 auctionProduct.StartTime = DateTime.Now;
             }
 
-            if (auctionProduct.EndTime == default)
+            // Only set a default EndTime if one wasn't provided or it's invalid
+            // Check for both default value and a date that's earlier than startup
+            _logger.LogInformation("TRACE: Before EndTime check - Current value: {EndTime}, Default: {IsDefault}, Earlier than now: {IsEarlier}", 
+                auctionProduct.EndTime, 
+                auctionProduct.EndTime == default,
+                auctionProduct.EndTime < DateTime.Now);
+
+            if (auctionProduct.EndTime == default || auctionProduct.EndTime < DateTime.Now)
             {
+                _logger.LogInformation("Setting default EndTime to 7 days from now (Original was: {OriginalEndTime})", auctionProduct.EndTime);
                 auctionProduct.EndTime = DateTime.Now.AddDays(7);
+            }
+            else
+            {
+                _logger.LogInformation("Using user-provided EndTime: {EndTime}", auctionProduct.EndTime);
+            }
+
+            _logger.LogInformation("TRACE: After EndTime check - Final value: {EndTime}", auctionProduct.EndTime);
+
+            // Process image URLs
+            if (!string.IsNullOrEmpty(imageUrls))
+            {
+                try
+                {
+                    _logger.LogInformation("Raw imageUrls string: {ImageUrls}", imageUrls);
+                    var splitUrls = imageUrls.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    _logger.LogInformation("Split imageUrls: {SplitUrls}", string.Join(", ", splitUrls));
+                    var images = _imageUploadService.ParseImagesString(imageUrls);
+                    _logger.LogInformation("Successfully parsed {Count} images", images.Count);
+                    auctionProduct.NonMappedImages = images;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing image URLs");
+                    ModelState.AddModelError("imageUrls", "Error processing image URLs. Please try again.");
+                }
+            }
+            else
+            {
+                _logger.LogWarning("No image URLs provided");
+                ModelState.AddModelError("imageUrls", "At least one image is required.");
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _logger.LogInformation("Creating a new auction product");
+                    _logger.LogInformation("Attempting to create auction product: {Title}", auctionProduct.Title);
 
                     var productTags = new List<ProductTag>();
                     if (!string.IsNullOrEmpty(tagIds))
@@ -222,7 +337,8 @@ namespace MarketMinds.Web.Controllers
                                 }
                                 else if (int.TryParse(tagId, out int existingTagId))
                                 {
-                                    try
+                                    var tag = _productTagService.GetAllProductTags().FirstOrDefault(t => t.Id == existingTagId);
+                                    if (tag != null)
                                     {
                                         var allTags = _productTagService.GetAllProductTags();
                                         var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
@@ -267,17 +383,14 @@ namespace MarketMinds.Web.Controllers
                     if (User.Identity.IsAuthenticated)
                     {
                         auctionProduct.SellerId = User.GetCurrentUserId();
-                        _logger.LogInformation("Overriding seller ID with authenticated user: {SellerId}", auctionProduct.SellerId);
-                    }
-                    else if (auctionProduct.SellerId <= 0)
-                    {
-                        auctionProduct.SellerId = 1;
-                        _logger.LogWarning("User not authenticated, using default seller ID: 1");
+                        _logger.LogInformation("Setting seller ID to authenticated user: {SellerId}", auctionProduct.SellerId);
                     }
 
+                    // Set current price to start price if not set
                     if (auctionProduct.CurrentPrice <= 0)
                     {
                         auctionProduct.CurrentPrice = auctionProduct.StartPrice;
+                        _logger.LogInformation("Setting current price to start price: {Price}", auctionProduct.CurrentPrice);
                     }
 
                     _logger.LogInformation("Auction product details before creation: " +
@@ -338,10 +451,13 @@ namespace MarketMinds.Web.Controllers
                             _logger.LogError(ex, "Service connectivity check failed");
                         }
 
+                        // Create the auction product
+                        _logger.LogInformation("TRACE: Before service call - EndTime: {EndTime}", auctionProduct.EndTime);
                         bool result = false;
                         try
                         {
                             result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
+                            _logger.LogInformation("TRACE: After service call - Result: {Result}", result);
                         }
                         catch (Exception ex)
                         {
@@ -366,7 +482,7 @@ namespace MarketMinds.Web.Controllers
 
                         if (result)
                         {
-                            _logger.LogInformation("Auction product created successfully");
+                            _logger.LogInformation("Successfully created auction product");
                             return RedirectToAction("Index", "AuctionProducts");
                         }
                         else
@@ -604,7 +720,7 @@ namespace MarketMinds.Web.Controllers
             }
             else
             {
-                _logger.LogWarning("Invalid model state when creating borrow product: {Errors}",
+                _logger.LogWarning("Invalid model state when creating borrow product: {Errors}", 
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
 
@@ -652,6 +768,7 @@ namespace MarketMinds.Web.Controllers
 
             buyProduct.Seller = new User { Id = buyProduct.SellerId };
             _logger.LogInformation("Buy product seller ID after setup: {SellerId}", buyProduct.SellerId);
+
 
             if (buyProduct.CategoryId <= 0)
             {
@@ -748,7 +865,6 @@ namespace MarketMinds.Web.Controllers
                     {
                         buyProduct.Category = new Category { Id = buyProduct.CategoryId };
                     }
-
                     if (buyProduct.ConditionId > 0 && buyProduct.Condition == null)
                     {
                         buyProduct.Condition = new Condition { Id = buyProduct.ConditionId };
@@ -811,7 +927,6 @@ namespace MarketMinds.Web.Controllers
                     {
                         var repository = repositoryField.GetValue(buyProductsService);
                         var repoMethodInfo = repository.GetType().GetMethod("CreateListing");
-
                         if (repoMethodInfo != null)
                         {
                             repoMethodInfo.Invoke(repository, new[] { apiProduct });
@@ -833,14 +948,13 @@ namespace MarketMinds.Web.Controllers
             }
             else
             {
-                _logger.LogWarning("Invalid model state when creating buy product: {Errors}",
+                _logger.LogWarning("Invalid model state when creating buy product: {Errors}", 
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
 
             ViewBag.Categories = _categoryService.GetAllProductCategories();
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
-
             return View("Create", new BuyProduct());
         }
 
@@ -848,11 +962,16 @@ namespace MarketMinds.Web.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel
-            {
+            var errorModel = new ErrorViewModel 
+            { 
                 RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
-                ErrorMessage = HttpContext.Items["ErrorMessage"]?.ToString()
-            });
+                ErrorMessage = TempData["ErrorMessage"] as string ?? "An unexpected error occurred"
+            };
+            
+            _logger.LogInformation("Displaying error page. RequestId: {RequestId}, Message: {Message}", 
+                errorModel.RequestId, errorModel.ErrorMessage);
+                
+            return View(errorModel);
         }
     }
-}
+} 

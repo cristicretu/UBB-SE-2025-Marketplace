@@ -183,6 +183,16 @@ namespace Server.DataAccessLayer
             {
                 entity.ToTable("AuctionProducts");
                 entity.HasKey(auctionProducts => auctionProducts.Id);
+                
+                // Add explicit debug logging for price fields
+                entity.Property(p => p.StartPrice)
+                    .HasColumnName("starting_price")
+                    .HasColumnType("float");
+                
+                entity.Property(p => p.CurrentPrice)
+                    .HasColumnName("current_price")
+                    .HasColumnType("float");
+                
 
                 // Configure relationship with Seller instead of User
                 entity.HasOne<Seller>()
@@ -213,6 +223,10 @@ namespace Server.DataAccessLayer
             {
                 entity.ToTable("Bids");
                 entity.HasKey(bid => bid.Id);
+                
+                entity.Property(b => b.Price)
+                    .HasColumnName("price")
+                    .HasColumnType("float");
 
                 // Change relationship from User to Buyer
                 entity.HasOne<Buyer>()
@@ -290,6 +304,7 @@ namespace Server.DataAccessLayer
 
                 // Modify any existing relationship that might refer to User
                 entity.Ignore(p => p.Seller); // Ignore the User navigation property since we'll use Seller
+                entity.Ignore(p => p.Price); // Ignore the Price field since we'll use CurrentPrice
             });
 
             // --- BorrowProductImage Configuration ---

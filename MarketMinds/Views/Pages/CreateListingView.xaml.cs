@@ -21,6 +21,7 @@ using ProductCategory = MarketMinds.Shared.Models.Category;
 using ProductCondition = MarketMinds.Shared.Models.Condition;
 using MarketMinds.ViewModels;
 using WinRT.Interop;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.Views
 {
@@ -94,7 +95,7 @@ namespace MarketMinds.Views
 
             // Initialize services
             tagManagementHelper = new TagManagementViewModelHelper(productTagViewModel);
-            imageUploadService = new ImageUploadService();
+            imageUploadService = new ImageUploadService(AppConfig.Configuration);
             validationService = new ListingFormValidationService();
 
             // Load categories and conditions into ComboBoxes
