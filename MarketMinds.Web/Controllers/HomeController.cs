@@ -91,27 +91,41 @@ namespace MarketMinds.Web.Controllers
                         var user = new MarketMinds.Shared.Models.User(currentUserId);
                         user.Id = currentUserId;
 
-                        var buyer = await _buyerService.GetBuyerByUser(user);
-                        if (buyer != null)
+                        try
                         {
-                            await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.Wishlist);
-                            if (buyer.Wishlist?.Items != null && buyer.Wishlist.Items.Any())
+                            var buyer = await _buyerService.GetBuyerByUser(user);
+                            if (buyer != null)
                             {
-                                var idSet = buyer.Wishlist.Items.Select(item => item.ProductId).ToHashSet();
-                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(idSet));
-                                ViewBag.WishlistProductIds = idSet.ToList();
-                                _logger.LogInformation("Fetched and cached wishlist IDs for user {UserId}. Count: {Count}", currentUserId, idSet.Count);
+                                await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.Wishlist);
+                                if (buyer.Wishlist?.Items != null && buyer.Wishlist.Items.Any())
+                                {
+                                    var idSet = buyer.Wishlist.Items.Select(item => item.ProductId).ToHashSet();
+                                    HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(idSet));
+                                    ViewBag.WishlistProductIds = idSet.ToList();
+                                    _logger.LogInformation("Fetched and cached wishlist IDs for user {UserId}. Count: {Count}", currentUserId, idSet.Count);
+                                }
+                                else
+                                {
+                                    HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                    _logger.LogInformation("User {UserId} has an empty wishlist. Cached empty set.", currentUserId);
+                                }
                             }
                             else
                             {
+                                _logger.LogWarning("Buyer not found for user ID {UserId} when trying to load wishlist for caching.", currentUserId);
                                 HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
-                                _logger.LogInformation("User {UserId} has an empty wishlist. Cached empty set.", currentUserId);
                             }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            _logger.LogWarning("Buyer not found for user ID {UserId} when trying to load wishlist for caching.", currentUserId);
-                            HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                            _logger.LogWarning(ex, "Failed to load buyer info for user ID {UserId}. This may be because the buyer doesn't exist yet. Attempting to create buyer profile.", currentUserId);
+                            
+                            catch (Exception createEx)
+                            {
+                                _logger.LogError(createEx, "Failed to create buyer profile for user {UserId}. Continuing without wishlist data.", currentUserId);
+                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                ViewBag.WishlistProductIds = new List<int>();
+                            }
                         }
                     }
                 }
