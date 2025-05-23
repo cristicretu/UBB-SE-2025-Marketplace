@@ -87,7 +87,6 @@ namespace server.Migrations
                         .HasColumnType("float")
                         .HasColumnName("price");
 
-
                     b.Property<int>("SellerId")
                         .HasColumnType("int")
                         .HasColumnName("seller_id");
@@ -212,11 +211,6 @@ namespace server.Migrations
                     b.Property<bool>("IsBorrowed")
                         .HasColumnType("bit")
                         .HasColumnName("is_borrowed");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("float")
-                        .HasColumnName("price");
-
 
                     b.Property<int>("SellerId")
                         .HasColumnType("int")
@@ -873,10 +867,6 @@ namespace server.Migrations
                     b.Property<double>("Rating")
                         .HasColumnType("float")
                         .HasColumnName("rating");
-
-                    b.Property<int>("Score")
-                        .HasColumnType("int")
-                        .HasColumnName("score");
 
                     b.Property<int>("SellerId")
                         .HasColumnType("int")
