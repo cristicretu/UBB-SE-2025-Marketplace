@@ -20,42 +20,64 @@
                        FontWeight="Bold"
                        Foreground="#0D47A1" Text="{x:Bind ViewModel.DisplayName, Mode=OneWay}" 
                        VerticalAlignment="Center"/>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+            
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                <!-- Request Sync Button -->
                 <Button Width="50" Height="50" 
                         ToolTipService.ToolTip="Request sync"
-                        Visibility="{x:Bind ViewModel.RequestSyncVsbl,Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.RequestSyncVsbl, Mode=OneWay}"
                         Click="{x:Bind ViewModel.RequestSync}">
                     <Image Width="25" Height="25">
                         <Image.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/request-sync.svg" />
+                            <BitmapImage UriSource="ms-appx:///Assets/BuyerIcons/sync.png" />
                         </Image.Source>
                     </Image>
                 </Button>
-                <Button Width="50" Height="50" 
-                        ToolTipService.ToolTip="Unsync" Visibility="{x:Bind ViewModel.UnsyncVsbl,Mode=OneWay}"
-                        Click="{x:Bind ViewModel.Unsync}">
+
+                <!-- Cancel Button -->
+                <Button Width="50" Height="50"
+                        ToolTipService.ToolTip="Cancel request"
+                        Visibility="{x:Bind ViewModel.CancelRequestVsbl, Mode=OneWay}"
+                        Click="{x:Bind ViewModel.Cancel}">
                     <Image Width="25" Height="25">
                         <Image.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/unsync.svg" />
+                            <BitmapImage UriSource="ms-appx:///Assets/BuyerIcons/unlink.png" />
                         </Image.Source>
                     </Image>
                 </Button>
+
+                <!-- Accept Button -->
                 <Button Width="50" Height="50" 
-                        FontSize="11"
-                        ToolTipService.ToolTip="Accept" Visibility="{x:Bind ViewModel.AcceptVsbl,Mode=OneWay}"
+                        ToolTipService.ToolTip="Accept"
+                        Visibility="{x:Bind ViewModel.AcceptVsbl, Mode=OneWay}"
                         Click="{x:Bind ViewModel.Accept}">
                     <Image Width="25" Height="25">
                         <Image.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/accept.svg" />
+                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/check.svg" />
                         </Image.Source>
                     </Image>
                 </Button>
+
+                <!-- Decline Button -->
                 <Button Width="50" Height="50" 
-                        ToolTipService.ToolTip="Decline" Visibility="{x:Bind ViewModel.DeclineVsbl,Mode=OneWay}"
+                        ToolTipService.ToolTip="Decline"
+                        Visibility="{x:Bind ViewModel.DeclineVsbl, Mode=OneWay}"
                         Click="{x:Bind ViewModel.Decline}">
                     <Image Width="25" Height="25">
                         <Image.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/decline.svg" />
+                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/cross.svg" />
+                        </Image.Source>
+                    </Image>
+                </Button>
+
+                <!-- Unsync Button -->
+                <Button Width="50" Height="50" 
+                        ToolTipService.ToolTip="Unsync"
+                        Visibility="{x:Bind ViewModel.UnsyncVsbl, Mode=OneWay}"
+                        Click="{x:Bind ViewModel.Unsync}">
+                    <Image Width="25" Height="25">
+                        <Image.Source>
+                            <BitmapImage UriSource="ms-appx:///Assets/BuyerIcons/unlink.png" />
                         </Image.Source>
                     </Image>
                 </Button>
