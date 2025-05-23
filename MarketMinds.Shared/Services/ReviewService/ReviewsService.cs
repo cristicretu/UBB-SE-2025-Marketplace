@@ -210,18 +210,32 @@ namespace MarketMinds.Shared.Services.ReviewService
 
             try
             {
+                // Get the existing review to get its ID
+                var jsonResponse = repository.GetReviewsByBuyerRaw(buyerId);
+                var reviews = JsonSerializer.Deserialize<List<Review>>(jsonResponse, jsonOptions);
+                var reviewToEdit = reviews?.FirstOrDefault(r => r.SellerId == sellerId && r.BuyerId == buyerId);
+
+                if (reviewToEdit == null)
+                {
+                    throw new KeyNotFoundException($"Review not found for seller {sellerId} and buyer {buyerId}");
+                }
+
                 // Ensure the new rating is within the expected range (0-5)
                 double validRating = Math.Max(0, Math.Min(5, newRating));
 
-                // Create a shared Review object
+                // Create a shared Review object with the new images and the existing review ID
                 var sharedReview = new MarketMinds.Shared.Models.Review
                 {
-                    Description = description,
+                    Id = reviewToEdit.Id,  // Set the existing review ID
+                    Description = newDescription,
                     Images = ConvertToSharedImages(images ?? new List<Image>()),
-                    Rating = rating,
+                    Rating = validRating,
                     SellerId = sellerId,
                     BuyerId = buyerId
                 };
+
+                // Sync images before saving
+                sharedReview.SyncImagesBeforeSave();
 
                 var updateRequest = new
                 {
@@ -229,7 +243,8 @@ namespace MarketMinds.Shared.Services.ReviewService
                     SellerId = sharedReview.SellerId,
                     BuyerId = sharedReview.BuyerId,
                     Description = newDescription,
-                    Rating = validRating
+                    Rating = validRating,
+                    Images = sharedReview.ReviewImages
                 };
 
                 repository.EditReviewRaw(updateRequest);

@@ -238,25 +238,37 @@ namespace MarketMinds.Web.Controllers
                     if (review.Rating < 0 || review.Rating > 5)
                     {
                         ModelState.AddModelError("Rating", "Rating must be between 0 and 5");
-                        var sellerData = await _userService.GetUserByIdAsync(review.SellerId);
-                        ViewBag.Seller = sellerData;
+                        var seller = await _userService.GetUserByIdAsync(review.SellerId);
+                        ViewBag.Seller = seller;
                         return View(review);
                     }
 
-                    _reviewsService.EditReview(
-                        review.Description,
-                        reviewImages,
-                        review.Rating,
-                        review.SellerId,
-                        review.BuyerId,
-                        review.Description,
-                        review.Rating);
+                    try
+                    {
+                        _reviewsService.EditReview(
+                            review.Description,
+                            reviewImages,
+                            review.Rating,
+                            review.SellerId,
+                            review.BuyerId,
+                            review.Description,
+                            review.Rating);
 
-                    return RedirectToAction(nameof(ReviewsGiven));
+                        _logger.LogInformation($"Review updated successfully for seller: {review.SellerId} by buyer: {review.BuyerId}");
+                        return RedirectToAction(nameof(ReviewsGiven));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error updating review: {ex.Message}");
+                        ModelState.AddModelError("", $"Error updating review: {ex.Message}");
+                        var seller = await _userService.GetUserByIdAsync(review.SellerId);
+                        ViewBag.Seller = seller;
+                        return View(review);
+                    }
                 }
 
-                var seller = await _userService.GetUserByIdAsync(review.SellerId);
-                ViewBag.Seller = seller;
+                var sellerForView = await _userService.GetUserByIdAsync(review.SellerId);
+                ViewBag.Seller = sellerForView;
                 return View(review);
             }
             catch (Exception ex)
