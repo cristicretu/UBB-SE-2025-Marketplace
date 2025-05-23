@@ -122,14 +122,41 @@
             <div class="space-y-4">
                 @if (canPurchase)
                 {
-                    <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post">
-                        <input type="hidden" name="productId" value="@Model.Id" />
-                        <input type="hidden" name="quantity" value="1" />
-                        <button type="submit"
-                            class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
-                            Add to Cart
-                        </button>
-                    </form>
+                    <div class="flex space-x-4">
+                        <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post" class="flex-1">
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <input type="hidden" name="quantity" value="1" />
+                            <button type="submit"
+                                class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+                                Add to Cart
+                            </button>
+                        </form>
+                        
+                        @{
+                            var isInWishlist = ViewBag.WishlistProductIds != null && ((List<int>)ViewBag.WishlistProductIds).Contains(Model.Id);
+                        }
+                        
+                        @if (isInWishlist)
+                        {
+                            <form asp-controller="BuyerWishlist" asp-action="RemoveFromWishlist" method="post">
+                                <input type="hidden" name="productId" value="@Model.Id" />
+                                <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-red-500 py-3 px-4 rounded-lg transition border border-gray-300" 
+                                        title="Remove from Wishlist">
+                                    <i class="fas fa-heart text-red-500 text-xl"></i>
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-controller="BuyerWishlist" asp-action="AddToWishlist" method="post">
+                                <input type="hidden" name="productId" value="@Model.Id" />
+                                <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-red-500 py-3 px-4 rounded-lg transition border border-gray-300" 
+                                        title="Add to Wishlist">
+                                    <i class="far fa-heart text-gray-400 text-xl"></i>
+                                </button>
+                            </form>
+                        }
+                    </div>
                 }
 
                 <a href="javascript:history.back()"

@@ -121,6 +121,10 @@ builder.Services.AddTransient<IOrderSummaryService, OrderSummaryService>();
 builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddTransient<IDummyWalletService, DummyWalletService>();
 
+// Register IBuyerRepository and IBuyerService
+builder.Services.AddTransient<IBuyerRepository, BuyerProxyRepository>();
+builder.Services.AddTransient<IBuyerService, BuyerService>();
+
 // Register repository interfaces
 builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());
 builder.Services.AddTransient<IProductConditionRepository>(sp => sp.GetRequiredService<ProductConditionProxyRepository>());

@@ -264,24 +264,43 @@ namespace MarketMinds.Shared.Services
         /// <inheritdoc/>
         public async Task RemoveWishilistItem(Buyer buyer, int productId)
         {
-            await this.buyerRepo.RemoveWishilistItem(buyer.Id, productId);
-            if (buyer.Wishlist?.Items != null)
+            if (buyer == null)
             {
-                BuyerWishlistItem? wishlistItemToRemove = null;
-                foreach (var wishlistItem in buyer.Wishlist.Items)
-                {
-                    if (wishlistItem.ProductId == productId)
-                    {
-                        wishlistItemToRemove = wishlistItem;
-                        break;
-                    }
-                }
-
-                if (wishlistItemToRemove != null)
-                {
-                    buyer.Wishlist.Items.Remove(wishlistItemToRemove);
-                }
+                throw new ArgumentNullException(nameof(buyer));
             }
+
+            if (buyer.Id <= 0)
+            {
+                throw new ArgumentException("Buyer ID must be greater than zero.", nameof(buyer.Id));
+            }
+
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be greater than zero.", nameof(productId));
+            }
+
+            await this.buyerRepo.RemoveWishilistItem(buyer.Id, productId);
+        }
+
+        /// <inheritdoc/>
+        public async Task AddWishlistItem(Buyer buyer, int productId)
+        {
+            if (buyer == null)
+            {
+                throw new ArgumentNullException(nameof(buyer));
+            }
+
+            if (buyer.Id <= 0)
+            {
+                throw new ArgumentException("Buyer ID must be greater than zero.", nameof(buyer.Id));
+            }
+
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be greater than zero.", nameof(productId));
+            }
+
+            await this.buyerRepo.AddItemToWishlist(buyer.Id, productId);
         }
 
         /// <inheritdoc/>

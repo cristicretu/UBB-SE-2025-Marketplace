@@ -215,6 +215,13 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
+        public async Task AddItemToWishlist(int buyerId, int productId)
+        {
+            var response = await this.httpClient.PostAsync($"{ApiBaseRoute}/{buyerId}/wishlist/add/{productId}", null);
+            await this.ThrowOnError(nameof(AddItemToWishlist), response);
+        }
+
+        /// <inheritdoc />
         public async Task SaveInfo(Buyer buyerEntity)
         {
             var response = await this.httpClient.PostAsJsonAsync($"{ApiBaseRoute}/save", buyerEntity);

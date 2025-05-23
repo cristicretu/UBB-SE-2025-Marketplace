@@ -50,6 +50,15 @@ namespace WebMarketplace.Controllers
 
                 if (buyProduct != null)
                 {
+                    // Check if the product has any stock
+                    if (buyProduct.Stock <= 0)
+                    {
+                        // If stock is 0, remove the product from cart rather than trying to set quantity to 0
+                        await _shoppingCartService.RemoveProductFromCartAsync(buyerId, item.Id);
+                        System.Diagnostics.Debug.WriteLine($"Removed product {item.Id} from cart because stock is 0");
+                        continue; // Skip to next product
+                    }
+
                     enhancedCartItems.Add(buyProduct);
 
                     var quantity = await _shoppingCartService.GetProductQuantityAsync(buyerId, item.Id);
