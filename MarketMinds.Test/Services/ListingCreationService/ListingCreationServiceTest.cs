@@ -31,10 +31,12 @@ namespace MarketMinds.Test.Services.ListingCreationService
             _mockBorrowService = new Mock<IBorrowProductsService>(MockBehavior.Strict);
             _mockAuctionService = new Mock<IAuctionProductsService>(MockBehavior.Strict);
 
-            _service = new ListingCreationService(
+            _service = new MarketMinds.Shared.Services.ListingCreationService.ListingCreationService(
                 _mockBuyService.Object,
                 _mockBorrowService.Object,
                 _mockAuctionService.Object);
+
+
         }
 
         [Test]
