@@ -10,6 +10,9 @@ using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.BorrowProductsService;
 using Microsoft.AspNetCore.Authorization;
 using MarketMinds.Shared.Services.BuyProductsService;
+using MarketMinds.Shared.Services;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace MarketMinds.Web.Controllers
 {
@@ -24,6 +27,8 @@ namespace MarketMinds.Web.Controllers
         private readonly IImageUploadService _imageUploadService;
         private readonly IBorrowProductsService _borrowProductsService;
         private readonly IBuyProductsService _buyProductsService;
+        private readonly IBuyerService _buyerService;
+        private const string WishlistSessionKey = "WishlistProductIds";
 
         public HomeController(
             ILogger<HomeController> logger,
@@ -33,7 +38,8 @@ namespace MarketMinds.Web.Controllers
             IProductConditionService conditionService,
             IImageUploadService imageUploadService,
             IBorrowProductsService borrowProductsService,
-            IBuyProductsService buyProductsService)
+            IBuyProductsService buyProductsService,
+            IBuyerService buyerService)
         {
             _logger = logger;
             _auctionProductService = auctionProductService;
@@ -43,6 +49,16 @@ namespace MarketMinds.Web.Controllers
             _imageUploadService = imageUploadService;
             _borrowProductsService = borrowProductsService;
             _buyProductsService = buyProductsService;
+            _buyerService = buyerService;
+        }
+
+        private int GetCurrentUserId()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                return UserSession.CurrentUserId ?? 0;
+            }
+            return 0;
         }
 
         [AllowAnonymous]
@@ -50,27 +66,93 @@ namespace MarketMinds.Web.Controllers
         {
             try
             {
-                // Work around the missing GetProducts method by creating an empty list initially
+                ViewBag.WishlistProductIds = new List<int>();
+                int currentUserId = GetCurrentUserId();
+
+                if (currentUserId > 0)
+                {
+                    var wishlistIdsJson = HttpContext.Session.GetString(WishlistSessionKey);
+                    if (!string.IsNullOrEmpty(wishlistIdsJson))
+                    {
+                        try
+                        {
+                            var idSet = JsonSerializer.Deserialize<HashSet<int>>(wishlistIdsJson);
+                            ViewBag.WishlistProductIds = idSet?.ToList() ?? new List<int>();
+                            _logger.LogInformation("Loaded wishlist IDs from session for user {UserId}", currentUserId);
+                        }
+                        catch (JsonException jsonEx)
+                        {
+                            _logger.LogWarning(jsonEx, "Failed to deserialize wishlist IDs from session for user {UserId}. Will attempt to reload.", currentUserId);
+                        }
+                    }
+
+                    if (ViewBag.WishlistProductIds == null || !((List<int>)ViewBag.WishlistProductIds).Any())
+                    {
+                        var user = new MarketMinds.Shared.Models.User(currentUserId);
+                        user.Id = currentUserId;
+
+                        try
+                        {
+                            var buyer = await _buyerService.GetBuyerByUser(user);
+                            if (buyer != null)
+                            {
+                                await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.Wishlist);
+                                if (buyer.Wishlist?.Items != null && buyer.Wishlist.Items.Any())
+                                {
+                                    var idSet = buyer.Wishlist.Items.Select(item => item.ProductId).ToHashSet();
+                                    HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(idSet));
+                                    ViewBag.WishlistProductIds = idSet.ToList();
+                                    _logger.LogInformation("Fetched and cached wishlist IDs for user {UserId}. Count: {Count}", currentUserId, idSet.Count);
+                                }
+                                else
+                                {
+                                    HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                    _logger.LogInformation("User {UserId} has an empty wishlist. Cached empty set.", currentUserId);
+                                }
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Buyer not found for user ID {UserId} when trying to load wishlist for caching.", currentUserId);
+                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to load buyer info for user ID {UserId}. This may be because the buyer doesn't exist yet. Attempting to create buyer profile.", currentUserId);
+                            
+                            catch (Exception createEx)
+                            {
+                                _logger.LogError(createEx, "Failed to create buyer profile for user {UserId}. Continuing without wishlist data.", currentUserId);
+                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                ViewBag.WishlistProductIds = new List<int>();
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("No authenticated user or user ID not found. Wishlist IDs will not be loaded from session or DB.");
+                    ViewBag.WishlistProductIds = new List<int>();
+                }
+
                 List<BuyProduct> buyProducts = new List<BuyProduct>();
-                
-                // Try to access the concrete implementation if possible
+
                 if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService concreteService)
                 {
-                    // Use reflection to call the GetProducts method
                     var methodInfo = concreteService.GetType().GetMethod("GetProducts", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
                     if (methodInfo != null)
                     {
                         buyProducts = (List<BuyProduct>)methodInfo.Invoke(concreteService, null);
+
+                        buyProducts = buyProducts.Where(p => p.Stock > 0).ToList();
                     }
                 }
-                
+
                 var auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
-                
-                // Get categories and conditions for filters
+
                 var categories = _categoryService.GetAllProductCategories();
                 var conditions = _conditionService.GetAllProductConditions();
-                
-                // Pass data to ViewBag for filters
+
                 ViewBag.Categories = categories;
                 ViewBag.Conditions = conditions;
                 
@@ -107,7 +189,7 @@ namespace MarketMinds.Web.Controllers
                     BuyProducts = buyProducts,
                     AuctionProducts = auctionProducts
                 };
-                
+
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -124,14 +206,11 @@ namespace MarketMinds.Web.Controllers
             return View();
         }
 
-        // GET: Home/Account
         public IActionResult Account()
         {
-            // This is a placeholder for future account management functionality
             return View();
         }
 
-        // GET: Home/Create
         public IActionResult Create()
         {
             _logger.LogInformation("GET: Home/Create - Initializing create view");
@@ -140,7 +219,6 @@ namespace MarketMinds.Web.Controllers
             return View(model);
         }
 
-        // POST: Home/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AuctionProduct auctionProduct, string productType, string tagIds, string imageUrls)
@@ -248,7 +326,6 @@ namespace MarketMinds.Web.Controllers
                 {
                     _logger.LogInformation("Attempting to create auction product: {Title}", auctionProduct.Title);
 
-                    // Process tags
                     var productTags = new List<ProductTag>();
                     if (!string.IsNullOrEmpty(tagIds))
                     {
@@ -262,21 +339,40 @@ namespace MarketMinds.Web.Controllers
                                 {
                                     var tagTitle = tagId.Substring(4);
                                     _logger.LogInformation("Creating new tag: {TagTitle}", tagTitle);
-                                    var newTag = _productTagService.CreateProductTag(tagTitle);
-                                    productTags.Add(newTag);
+                                    try
+                                    {
+                                        var newTag = _productTagService.CreateProductTag(tagTitle);
+                                        productTags.Add(newTag);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogWarning(ex, "Failed to create new tag '{TagTitle}', skipping it", tagTitle);
+                                    }
                                 }
                                 else if (int.TryParse(tagId, out int existingTagId))
                                 {
-                                    var tag = _productTagService.GetAllProductTags().FirstOrDefault(t => t.Id == existingTagId);
-                                    if (tag != null)
+                                    try
                                     {
-                                        productTags.Add(tag);
+                                        var allTags = _productTagService.GetAllProductTags();
+                                        var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
+                                        if (tag != null)
+                                        {
+                                            productTags.Add(tag);
+                                        }
+                                        else
+                                        {
+                                            _logger.LogWarning("Tag with ID {TagId} not found, skipping it", existingTagId);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogWarning(ex, "Failed to process existing tag with ID {TagId}, skipping it", existingTagId);
                                     }
                                 }
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogWarning(ex, "Error processing tag ID: {TagId}", tagId);
+                                _logger.LogError(ex, "Error processing tag ID: {TagId}", tagId);
                             }
                         }
                     }
@@ -289,13 +385,11 @@ namespace MarketMinds.Web.Controllers
                         {
                             productImages = _imageUploadService.ParseImagesString(imageUrls);
                             _logger.LogInformation("Parsed {ImageCount} images", productImages.Count);
-                            // Set the images to the product (implementation may vary based on your model)
                             auctionProduct.NonMappedImages = productImages.ToList();
                         }
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Error parsing image URLs");
-                            // Continue without images rather than failing the entire request
                         }
                     }
 
@@ -312,7 +406,6 @@ namespace MarketMinds.Web.Controllers
                         _logger.LogInformation("Setting current price to start price: {Price}", auctionProduct.CurrentPrice);
                     }
 
-                    // Log detailed product info before creating
                     _logger.LogInformation("Auction product details before creation: " +
                         "Id={Id}, Title={Title}, Description={DescriptionLength}, " +
                         "CategoryId={CategoryId}, ConditionId={ConditionId}, " +
@@ -332,7 +425,6 @@ namespace MarketMinds.Web.Controllers
                         productTags.Count,
                         productImages.Count);
 
-                    // Check required fields before submitting
                     if (string.IsNullOrWhiteSpace(auctionProduct.Title))
                     {
                         ModelState.AddModelError("Title", "Title is required");
@@ -417,7 +509,6 @@ namespace MarketMinds.Web.Controllers
                 {
                     _logger.LogError(ex, "Error creating product");
 
-                    // Provide a user-friendly error message
                     if (!ModelState.Any(m => m.Value.Errors.Count > 0))
                     {
                         ModelState.AddModelError(string.Empty, "An error occurred while creating the product. Please check all fields and try again.");
@@ -430,8 +521,6 @@ namespace MarketMinds.Web.Controllers
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
 
-            // If we get here, something went wrong
-            // Reload categories, conditions, and tags for the view
             ViewBag.Categories = _categoryService.GetAllProductCategories();
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
@@ -439,21 +528,17 @@ namespace MarketMinds.Web.Controllers
             return View(auctionProduct);
         }
 
-        // GET: Home/Basket
         public IActionResult Basket()
         {
-            // This is a placeholder for future basket functionality
             return View();
         }
 
-        // POST: Home/CreateBorrowProduct
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateBorrowProduct(BorrowProduct borrowProduct, string tagIds, string imageUrls)
         {
             _logger.LogInformation("Creating a new borrow product");
 
-            // Debug log all received values
             _logger.LogInformation("Received borrowProduct: Title={Title}, Description={Description}, " +
                 "CategoryId={CategoryId}, ConditionId={ConditionId}, " +
                 "TimeLimit={TimeLimit}, StartDate={StartDate}, EndDate={EndDate}, " +
@@ -472,10 +557,6 @@ namespace MarketMinds.Web.Controllers
                 tagIds,
                 imageUrls?.Length ?? 0);
 
-            // CRITICAL DATA VALIDATION AND FIXING
-            // ===================================
-
-            // Ensure we have a valid SellerId
             if (User.Identity.IsAuthenticated)
             {
                 borrowProduct.SellerId = User.GetCurrentUserId();
@@ -487,10 +568,8 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogWarning("User not authenticated, using default seller ID: 1");
             }
 
-            // Ensure we have a valid Seller object
             borrowProduct.Seller = new User { Id = borrowProduct.SellerId };
 
-            // Ensure we have valid Category and Condition
             if (borrowProduct.CategoryId <= 0)
             {
                 ModelState.AddModelError("CategoryId", "Please select a valid category");
@@ -503,35 +582,30 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogWarning("ConditionId was invalid or missing");
             }
 
-            // Ensure DailyRate is set
             if (borrowProduct.DailyRate <= 0)
             {
                 _logger.LogWarning("DailyRate was invalid or missing, setting to default (1.0)");
                 borrowProduct.DailyRate = 1.0;
             }
 
-            // Ensure TimeLimit is set
             if (borrowProduct.TimeLimit == default)
             {
                 _logger.LogWarning("TimeLimit was not provided, setting to one month from now");
                 borrowProduct.TimeLimit = DateTime.Now.AddMonths(1);
             }
 
-            // Ensure StartDate is set
             if (borrowProduct.StartDate == null)
             {
                 _logger.LogWarning("StartDate was not provided, setting to now");
                 borrowProduct.StartDate = DateTime.Now;
             }
 
-            // Ensure EndDate is set
             if (borrowProduct.EndDate == null)
             {
                 _logger.LogWarning("EndDate was not provided, setting to one month from now");
                 borrowProduct.EndDate = DateTime.Now.AddMonths(1);
             }
 
-            // Process tags - Error resilient version that won't fail the entire request if tag processing fails
             var productTags = new List<ProductTag>();
             if (!string.IsNullOrEmpty(tagIds))
             {
@@ -543,7 +617,7 @@ namespace MarketMinds.Web.Controllers
                     {
                         if (tagId.StartsWith("new_"))
                         {
-                            var tagTitle = tagId.Substring(4); // Remove "new_" prefix
+                            var tagTitle = tagId.Substring(4);
                             _logger.LogInformation("Creating new tag: {TagTitle}", tagTitle);
                             try
                             {
@@ -553,7 +627,6 @@ namespace MarketMinds.Web.Controllers
                             catch (Exception ex)
                             {
                                 _logger.LogWarning(ex, "Failed to create new tag '{TagTitle}', skipping it", tagTitle);
-                                // Don't stop the whole process for a tag creation failure
                             }
                         }
                         else if (int.TryParse(tagId, out int existingTagId))
@@ -574,19 +647,16 @@ namespace MarketMinds.Web.Controllers
                             catch (Exception ex)
                             {
                                 _logger.LogWarning(ex, "Failed to process existing tag with ID {TagId}, skipping it", existingTagId);
-                                // Don't stop the whole process for a tag processing failure
                             }
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error processing tag ID: {TagId}", tagId);
-                        // Don't stop the whole process if one tag fails
                     }
                 }
             }
 
-            // Process image URLs
             var productImages = new List<Image>();
             if (!string.IsNullOrEmpty(imageUrls))
             {
@@ -600,7 +670,6 @@ namespace MarketMinds.Web.Controllers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error parsing image URLs");
-                    // Continue without images rather than failing the entire request
                 }
             }
 
@@ -610,27 +679,24 @@ namespace MarketMinds.Web.Controllers
                 {
                     _logger.LogInformation("Attempting to create borrow product: {Title}", borrowProduct.Title);
 
-                    // Create the borrow product using the service
+                    _logger.LogInformation("Sending to service: Title={Title}, CategoryId={CategoryId}, ConditionId={ConditionId}, " +
+                        "TimeLimit={TimeLimit}, StartDate={StartDate}, EndDate={EndDate}, " +
+                        "DailyRate={DailyRate}, SellerId={SellerId}, " +
+                        "ImageCount={ImageCount}, TagCount={TagCount}",
+                        borrowProduct.Title,
+                        borrowProduct.CategoryId,
+                        borrowProduct.ConditionId,
+                        borrowProduct.TimeLimit,
+                        borrowProduct.StartDate,
+                        borrowProduct.EndDate,
+                        borrowProduct.DailyRate,
+                        borrowProduct.SellerId,
+                        borrowProduct.NonMappedImages?.Count ?? 0,
+                        productTags.Count);
+
                     var result = false;
                     try
                     {
-                        // Log the complete object being sent
-                        _logger.LogInformation("Sending to service: Title={Title}, CategoryId={CategoryId}, ConditionId={ConditionId}, " +
-                            "TimeLimit={TimeLimit}, StartDate={StartDate}, EndDate={EndDate}, " +
-                            "DailyRate={DailyRate}, SellerId={SellerId}, " +
-                            "ImageCount={ImageCount}, TagCount={TagCount}",
-                            borrowProduct.Title,
-                            borrowProduct.CategoryId,
-                            borrowProduct.ConditionId,
-                            borrowProduct.TimeLimit,
-                            borrowProduct.StartDate,
-                            borrowProduct.EndDate,
-                            borrowProduct.DailyRate,
-                            borrowProduct.SellerId,
-                            borrowProduct.NonMappedImages?.Count ?? 0,
-                            productTags.Count);
-
-                        // Attempt creation
                         result = await _borrowProductsService.CreateBorrowProductAsync(borrowProduct);
                         _logger.LogInformation("CreateBorrowProductAsync completed with result: {Result}", result);
                     }
@@ -671,8 +737,6 @@ namespace MarketMinds.Web.Controllers
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
 
-            // If we get here, something went wrong
-            // Reload categories, conditions, and tags for the view
             ViewBag.Categories = _categoryService.GetAllProductCategories();
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
@@ -680,21 +744,17 @@ namespace MarketMinds.Web.Controllers
             return View("Create", new BorrowProduct());
         }
 
-        // POST: Home/CreateBuyProduct
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateBuyProduct(BuyProduct buyProduct, string tagIds, string imageUrls)
         {
             _logger.LogInformation("Creating a new buy product");
-            
-            // Log user authentication status and count of claims
-            _logger.LogInformation("User authentication status: {IsAuthenticated}, Claims count: {ClaimsCount}", 
+
+            _logger.LogInformation("User authentication status: {IsAuthenticated}, Claims count: {ClaimsCount}",
                 User.Identity?.IsAuthenticated, User.Claims?.Count() ?? 0);
-            
-            // Debug log all received values
+
             _logger.LogInformation("Initial buyProduct.SellerId: {SellerId}", buyProduct?.SellerId);
-            
-            // Debug log all received values
+
             _logger.LogInformation("Received buyProduct: Title={Title}, Description={Description}, " +
                 "CategoryId={CategoryId}, ConditionId={ConditionId}, " +
                 "Price={Price}, SellerId={SellerId}, " +
@@ -708,7 +768,6 @@ namespace MarketMinds.Web.Controllers
                 tagIds,
                 imageUrls?.Length ?? 0);
 
-            // Ensure we have a valid SellerId
             if (User.Identity.IsAuthenticated)
             {
                 buyProduct.SellerId = User.GetCurrentUserId();
@@ -719,12 +778,11 @@ namespace MarketMinds.Web.Controllers
                 buyProduct.SellerId = 1;
                 _logger.LogWarning("User not authenticated, using default seller ID: 1");
             }
-            
-            // Ensure we have a valid Seller object
+
             buyProduct.Seller = new User { Id = buyProduct.SellerId };
             _logger.LogInformation("Buy product seller ID after setup: {SellerId}", buyProduct.SellerId);
-            
-            // Ensure we have valid Category and Condition
+
+
             if (buyProduct.CategoryId <= 0)
             {
                 ModelState.AddModelError("CategoryId", "Please select a valid category");
@@ -737,14 +795,12 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogWarning("ConditionId was invalid or missing");
             }
 
-            // Ensure Price is set
             if (buyProduct.Price <= 0)
             {
                 _logger.LogWarning("Price was invalid or missing, setting to default (1.0)");
                 buyProduct.Price = 1.0;
             }
 
-            // Process tags - Error resilient version that won't fail the entire request if tag processing fails
             var productTags = new List<ProductTag>();
             if (!string.IsNullOrEmpty(tagIds))
             {
@@ -756,7 +812,7 @@ namespace MarketMinds.Web.Controllers
                     {
                         if (tagId.StartsWith("new_"))
                         {
-                            var tagTitle = tagId.Substring(4); // Remove "new_" prefix
+                            var tagTitle = tagId.Substring(4);
                             _logger.LogInformation("Creating new tag: {TagTitle}", tagTitle);
                             try
                             {
@@ -766,7 +822,6 @@ namespace MarketMinds.Web.Controllers
                             catch (Exception ex)
                             {
                                 _logger.LogWarning(ex, "Failed to create new tag '{TagTitle}', skipping it", tagTitle);
-                                // Don't stop the whole process for a tag creation failure
                             }
                         }
                         else if (int.TryParse(tagId, out int existingTagId))
@@ -787,19 +842,16 @@ namespace MarketMinds.Web.Controllers
                             catch (Exception ex)
                             {
                                 _logger.LogWarning(ex, "Failed to process existing tag with ID {TagId}, skipping it", existingTagId);
-                                // Don't stop the whole process for a tag processing failure
                             }
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error processing tag ID: {TagId}", tagId);
-                        // Don't stop the whole process if one tag fails
                     }
                 }
             }
 
-            // Process image URLs
             var productImages = new List<Image>();
             if (!string.IsNullOrEmpty(imageUrls))
             {
@@ -813,7 +865,6 @@ namespace MarketMinds.Web.Controllers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error parsing image URLs");
-                    // Continue without images rather than failing the entire request
                 }
             }
 
@@ -823,7 +874,6 @@ namespace MarketMinds.Web.Controllers
                 {
                     _logger.LogInformation("Attempting to create buy product: {Title}", buyProduct.Title);
 
-                    // Set Category and Condition objects
                     if (buyProduct.CategoryId > 0 && buyProduct.Category == null)
                     {
                         buyProduct.Category = new Category { Id = buyProduct.CategoryId };
@@ -833,7 +883,6 @@ namespace MarketMinds.Web.Controllers
                         buyProduct.Condition = new Condition { Id = buyProduct.ConditionId };
                     }
 
-                    // Add detailed logging
                     _logger.LogInformation("Buy product details: " +
                         "Title={Title}, Description={Description}, " +
                         "CategoryId={CategoryId}, Category={Category}, " +
@@ -852,7 +901,6 @@ namespace MarketMinds.Web.Controllers
                         productTags.Count,
                         productImages.Count);
 
-                    // Ensure tags and images are properly attached to the product
                     if (productTags.Any())
                     {
                         buyProduct.Tags = productTags;
@@ -863,7 +911,6 @@ namespace MarketMinds.Web.Controllers
                         buyProduct.NonMappedImages = productImages;
                     }
 
-                    // Create a simplified object that matches exactly what the API expects
                     var apiProduct = new
                     {
                         Title = buyProduct.Title,
@@ -880,14 +927,12 @@ namespace MarketMinds.Web.Controllers
                     _logger.LogInformation("Sending simplified object to API with SellerId={SellerId}, CategoryId={CategoryId}, ConditionId={ConditionId}",
                         apiProduct.SellerId, apiProduct.CategoryId, apiProduct.ConditionId);
 
-                    // Create the buy product using the service with custom object
                     var buyProductsService = HttpContext.RequestServices.GetService<MarketMinds.Shared.Services.BuyProductsService.IBuyProductsService>();
                     if (buyProductsService == null)
                     {
                         throw new InvalidOperationException("Buy Products Service is not available");
                     }
 
-                    // Use reflection to call a non-public method that accepts our custom object
                     var repoType = buyProductsService.GetType();
                     var repositoryField = repoType.GetField("buyProductsRepository", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
@@ -902,7 +947,7 @@ namespace MarketMinds.Web.Controllers
                             return RedirectToAction("Index", "BuyProducts");
                         }
                     }
-                    // Fallback to standard method if reflection fails
+
                     _logger.LogInformation("About to call buyProductsService.CreateListing with SellerId={SellerId}", buyProduct.SellerId);
                     buyProductsService.CreateListing(buyProduct);
                     _logger.LogInformation("Buy product created successfully");
@@ -919,9 +964,7 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogWarning("Invalid model state when creating buy product: {Errors}", 
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
-            
-            // If we get here, something went wrong
-            // Reload categories, conditions, and tags for the view
+
             ViewBag.Categories = _categoryService.GetAllProductCategories();
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();

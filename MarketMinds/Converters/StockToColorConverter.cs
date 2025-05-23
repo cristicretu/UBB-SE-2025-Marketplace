@@ -5,43 +5,72 @@
 namespace MarketMinds.Converters
 {
     using System;
+    using Microsoft.UI;
+    using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Data;
     using Microsoft.UI.Xaml.Media;
 
     /// <summary>
-    /// Converts the stock value to a color.
+    /// Converts stock numbers to appropriate colors.
     /// </summary>
-    public partial class StockToColorConverter : IValueConverter
+    public class StockToColorConverter : IValueConverter
     {
         /// <summary>
-        /// Converts the stock value to a color.
+        /// Converts stock values to colors.
         /// </summary>
         /// <param name="value">The stock value.</param>
-        /// <param name="targetType">The type of the target property.</param>
-        /// <param name="parameter">Additional parameter for the converter.</param>
-        /// <param name="language">The language of the converter.</param>
-        /// <returns>The color of the stock.</returns>
+        /// <param name="targetType">The target type.</param>
+        /// <param name="parameter">The converter parameter.</param>
+        /// <param name="language">The language.</param>
+        /// <returns>Color based on stock level.</returns>
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is int stock && stock <= 5)
+            if (value is int stockValue)
             {
-                return new SolidColorBrush(Microsoft.UI.Colors.Red);
+                if (stockValue <= 0)
+                {
+                    return new SolidColorBrush(Colors.Red);
+                }
+                else if (stockValue <= 5)
+                {
+                    return new SolidColorBrush(Colors.Orange);
+                }
+                else
+                {
+                    return new SolidColorBrush(Colors.Green);
+                }
+            }
+            else if (value is string stockText && int.TryParse(stockText, out int stockNumber))
+            {
+                if (stockNumber <= 0)
+                {
+                    return new SolidColorBrush(Colors.Red);
+                }
+                else if (stockNumber <= 5)
+                {
+                    return new SolidColorBrush(Colors.Orange);
+                }
+                else
+                {
+                    return new SolidColorBrush(Colors.Green);
+                }
             }
 
-            return new SolidColorBrush(Microsoft.UI.Colors.Black);
+            // Default color for invalid or null values
+            return new SolidColorBrush(Colors.Gray);
         }
 
         /// <summary>
-        /// Converts the color back to a stock value.
+        /// Convert back method (not implemented).
         /// </summary>
-        /// <param name="value">The color of the stock.</param>
-        /// <param name="targetType">The type of the target property.</param>
-        /// <param name="parameter">Additional parameter for the converter.</param>
-        /// <param name="language">The language of the converter.</param>
-        /// <returns>The stock value.</returns>
+        /// <param name="value">The color.</param>
+        /// <param name="targetType">The target type.</param>
+        /// <param name="parameter">The parameter.</param>
+        /// <param name="language">The language.</param>
+        /// <returns>Always returns null as this is a one-way converter.</returns>
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            throw new NotImplementedException("Converting from color to stock value was not supported when the application was developed.");
+            throw new NotImplementedException();
         }
     }
 }

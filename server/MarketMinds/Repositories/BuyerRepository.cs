@@ -390,8 +390,32 @@ namespace Server.Repository
         /// <inheritdoc/>
         public async Task RemoveWishilistItem(int buyerId, int productId)
         {
-            this.dbContext.BuyersWishlistItems.Remove(new BuyerWishlistItemsEntity { BuyerId = buyerId, ProductId = productId });
-            await this.dbContext.SaveChangesAsync();
+            BuyerWishlistItemsEntity? wishlistItem = await this.dbContext.BuyersWishlistItems
+                .FirstOrDefaultAsync(item => item.BuyerId == buyerId && item.ProductId == productId);
+            if (wishlistItem != null)
+            {
+                this.dbContext.BuyersWishlistItems.Remove(wishlistItem);
+                await this.dbContext.SaveChangesAsync();
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task AddItemToWishlist(int buyerId, int productId)
+        {
+            // Check if the item already exists to avoid duplicates
+            bool itemExists = await this.dbContext.BuyersWishlistItems
+                                      .AnyAsync(item => item.BuyerId == buyerId && item.ProductId == productId);
+
+            if (!itemExists)
+            {
+                BuyerWishlistItemsEntity wishlistItem = new BuyerWishlistItemsEntity
+                {
+                    BuyerId = buyerId,
+                    ProductId = productId,
+                };
+                this.dbContext.BuyersWishlistItems.Add(wishlistItem);
+                await this.dbContext.SaveChangesAsync();
+            }
         }
 
         /// <summary>

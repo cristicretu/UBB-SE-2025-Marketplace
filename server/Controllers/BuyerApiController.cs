@@ -398,6 +398,34 @@ namespace Server.Controllers
         }
 
         /// <summary>
+        /// Adds an item to a buyer's wishlist.
+        /// </summary>
+        /// <param name="buyerId">The ID of the buyer.</param>
+        /// <param name="productId">The ID of the product to add.</param>
+        /// <returns>An ActionResult indicating success or failure.</returns>
+        [HttpPost("{buyerId}/wishlist/add/{productId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> AddItemToWishlist(int buyerId, int productId)
+        {
+            if (buyerId <= 0 || productId <= 0)
+            {
+                return this.BadRequest("Valid buyerId and productId are required.");
+            }
+
+            try
+            {
+                await this.buyerRepository.AddItemToWishlist(buyerId, productId); // Assuming this method exists in IBuyerRepository
+                return this.NoContent();
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while adding item to wishlist. Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Removes an item from a buyer's wishlist.
         /// </summary>
         /// <param name="buyerId">The ID of the buyer.</param>

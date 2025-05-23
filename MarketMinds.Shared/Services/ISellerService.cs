@@ -11,60 +11,51 @@ namespace MarketMinds.Shared.Services
     using MarketMinds.Shared.Models;
 
     /// <summary>
-    /// Defines the interface for seller-related operations.
+    /// Interface for seller-related operations.
     /// </summary>
     public interface ISellerService
     {
         /// <summary>
-        /// Retrieves seller information based on the provided user.
+        /// Gets seller information for a specific user.
         /// </summary>
-        /// <param name="user">The user associated with the seller.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the seller information.</returns>
+        /// <param name="user">The user to get seller info for.</param>
+        /// <returns>The seller information.</returns>
         Task<Seller> GetSellerByUser(User user);
 
         /// <summary>
-        /// Retrieves a list of all products associated with the specified seller ID.
+        /// Updates seller information.
         /// </summary>
-        /// <param name="sellerID">The ID of the seller.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of products.</returns>
-        Task<List<BuyProduct>> GetAllProducts(int sellerID);
-
-        /// <summary>
-        /// Updates the seller information with the provided seller details.
-        /// </summary>
-        /// <param name="seller">The seller object containing the updated information.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
+        /// <param name="seller">The seller information to update.</param>
         Task UpdateSeller(Seller seller);
 
         /// <summary>
-        /// Creates a new seller with the provided seller details.
+        /// Gets all products for a seller.
         /// </summary>
-        /// <param name="seller">The seller object containing the information for the new seller.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        Task CreateSeller(Seller seller);
+        /// <param name="sellerId">The seller ID.</param>
+        /// <returns>List of products for the seller.</returns>
+        Task<List<BuyProduct>> GetAllProducts(int sellerId);
 
         /// <summary>
-        /// Calculates the average review score for the specified seller and updates the seller's trust score.
+        /// Gets notifications for a seller.
         /// </summary>
-        /// <param name="sellerId">The ID of the seller.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the average review score.</returns>
-        Task<double> CalculateAverageReviewScore(int sellerId);
-
-        /// <summary>
-        /// Retrieves the latest notifications for the specified seller.
-        /// </summary>
-        /// <param name="sellerId">The ID of the seller.</param>
-        /// <param name="maxNotifications">The maximum number of notifications to return.</param
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of notification messages.</returns>
+        /// <param name="sellerId">The seller ID.</param>
+        /// <param name="maxNotifications">Maximum number of notifications to retrieve.</param>
+        /// <returns>List of notification messages.</returns>
         Task<List<string>> GetNotifications(int sellerId, int maxNotifications);
 
         /// <summary>
-        /// Generate a new follower notification if the follower count changed.
+        /// Calculates the average review score for a seller.
         /// </summary>
-        /// <param name="sellerId">The ID of the seller.</param>
-        /// <param name="currentFollowerCount">The current follower count of the seller.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        Task GenerateFollowersChangedNotification(int sellerId, int currentFollowerCount);
+        /// <param name="sellerId">The seller ID.</param>
+        /// <returns>The average review score.</returns>
+        Task<double> CalculateAverageReviewScore(int sellerId);
 
+        /// <summary>
+        /// Generates notification for followers count change.
+        /// </summary>
+        /// <param name="sellerId">The seller ID.</param>
+        /// <param name="followerCount">Current follower count.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task GenerateFollowersChangedNotification(int sellerId, int followerCount);
     }
 }

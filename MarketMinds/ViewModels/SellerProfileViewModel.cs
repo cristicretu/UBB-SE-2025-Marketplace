@@ -5,6 +5,8 @@
 // -----------------------------------------------------------------------
 namespace MarketMinds.ViewModels
 {
+    using System.Windows.Media.Animation;
+    using System.Diagnostics;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -22,407 +24,446 @@ namespace MarketMinds.ViewModels
     /// </summary>
     public class SellerProfileViewModel : ISellerProfileViewModel
     {
-        private const int MaxNotifications = 6;
-        private const int HighestInvalidSellerId = 0;
-        private const double MultiplierForTrustScoreFromAverageReview = 100.0 / 5.0;
-
-        // Private fields
-        private readonly IUserService userService;
         private readonly ISellerService sellerService;
         private readonly User user;
         private Seller seller;
         private ObservableCollection<Product> allProducts;
-        private ObservableCollection<string> notifications = new ObservableCollection<string>();
+        private ObservableCollection<Product> filteredProducts;
         private bool isExpanderExpanded = false;
-        private bool isNotificationsLoaded = false;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SellerProfileViewModel"/> class.
-        /// </summary>
-        /// <param name="user">The user entity.</param>
-        /// <param name="userService">The user service.</param>
-        /// <param name="sellerService">The seller service.</param>
-        public SellerProfileViewModel(User user, IUserService userService, ISellerService sellerService)
-        {
-            this.seller = new Seller(user);
-            this.userService = userService;
-            this.sellerService = sellerService;
-            this.user = user;
-            this.allProducts = new ObservableCollection<Product>();
-            this.FilteredProducts = new ObservableCollection<Product>();
-            this.LoadSellerData();
-        }
-
-        /// <summary>
-        /// Event raised when a property value changes.
-        /// </summary>
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        /// <summary>
-        /// Gets the seller entity.
-        /// </summary>
+        private const double MultiplierForTrustScoreFromAverageReview = 20.0;
+        // Add products property to fulfill interface
+        public ObservableCollection<Product> Products { get; set; }
+        // Add validation properties to fulfill interface
+        public string StoreNameError { get; set; }
+        public string EmailError { get; set; }
+        public string PhoneNumberError { get; set; }
+        public string AddressError { get; set; }
+        public string DescriptionError { get; set; }
+        public string DisplayName { get; set; }
         public Seller Seller => this.seller;
-
-        /// <summary>
-        /// Gets or sets the filtered products collection.
-        /// </summary>
-        public ObservableCollection<Product> FilteredProducts { get; set; }
-
-        /// <summary>
-        /// Gets or sets the notifications collection.
-        /// </summary>
-        public ObservableCollection<string> Notifications
+        public SellerProfileViewModel(ISellerService sellerService, User user)
         {
-            get => this.notifications;
-            set
-            {
-                this.notifications = value;
-                this.OnPropertyChanged(nameof(this.Notifications));
-            }
+            Debug.WriteLine($"SellerProfileViewModel constructor called with User ID: {user?.Id ?? -1}");
+
+            this.sellerService = sellerService ?? throw new ArgumentNullException(nameof(sellerService));
+            this.user = user ?? throw new ArgumentNullException(nameof(user));
+
+            this.StoreName = "Loading...";
+            this.Username = string.Empty;
+            this.Email = string.Empty;
+            this.PhoneNumber = string.Empty;
+            this.StoreAddress = string.Empty;
+            this.StoreDescription = string.Empty;
+            this.FollowersCount = "0";
+            this.TrustScore = 0;
+
+            this.allProducts = new ObservableCollection<Product>();
+            this.Products = new ObservableCollection<Product>();
+            this.FilteredProducts = new ObservableCollection<Product>();
+            this.Notifications = new ObservableCollection<string>();
+
+            this.Notifications.Add("Debug: ViewModel initialized");
+
+            _ = this.Initialize();
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the expander is expanded.
-        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            Debug.WriteLine($"Property changed: {propertyName}");
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public string StoreName { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string StoreAddress { get; set; }
+        public string StoreDescription { get; set; }
+        public string FollowersCount { get; set; }
+        public double TrustScore { get; set; }
+
         public bool IsExpanderExpanded
         {
             get => this.isExpanderExpanded;
             set
             {
-                if (this.isExpanderExpanded != value)
+                this.isExpanderExpanded = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<Product> FilteredProducts { get; set; }
+        public ObservableCollection<string> Notifications { get; set; }
+
+        /// <summary>
+        /// Loads all seller data including profile, notifications, and products.
+        /// </summary>
+        private async Task Initialize()
+        {
+            try
+            {
+                Debug.WriteLine("SellerProfileViewModel: Beginning initialization");
+                this.Notifications.Add("Debug: Loading seller data...");
+
+                this.seller = await this.sellerService.GetSellerByUser(this.user);
+
+                if (this.seller == null)
                 {
-                    this.isExpanderExpanded = value;
-                    this.OnPropertyChanged();
-                    if (this.isExpanderExpanded && !this.isNotificationsLoaded)
-                    {
-                        // Load notifications only once when expander is expanded.
-                        _ = this.LoadNotifications();
-                        this.isNotificationsLoaded = true;
-                    }
+                    Debug.WriteLine("ERROR: GetSellerByUser returned NULL");
+                    this.Notifications.Add("Error: Failed to load seller data");
+
+                    this.seller = new Seller(this.user);
+                    Debug.WriteLine("Created new Seller object with User");
                 }
+                else
+                {
+                    Debug.WriteLine($"Loaded seller with ID: {this.seller.Id}");
+                    this.Notifications.Add($"Debug: Loaded seller ID {this.seller.Id}");
+                }
+
+                await this.LoadSellerProfile();
+                await this.LoadNotifications();
+                await this.LoadProducts();
+
+                Debug.WriteLine("SellerProfileViewModel initialization complete");
+                this.Notifications.Add("Debug: Initialization complete");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ERROR during SellerProfileViewModel initialization: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+                this.Notifications.Add($"Error: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Gets or sets the display name.
+        /// Loads seller information into ViewModel properties.
         /// </summary>
-        public string DisplayName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the username.
-        /// </summary>
-        public string Username { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the followers count.
-        /// </summary>
-        public string FollowersCount { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the store name.
-        /// </summary>
-        public string StoreName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the email.
-        /// </summary>
-        public string Email { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the phone number.
-        /// </summary>
-        public string PhoneNumber { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the address.
-        /// </summary>
-        public string Address { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the trust score.
-        /// </summary>
-        public double TrustScore { get; set; }
-
-        /// <summary>
-        /// Gets or sets the description.
-        /// </summary>
-        public string Description { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the products collection.
-        /// </summary>
-        public ObservableCollection<Product> Products { get; set; } = new ObservableCollection<Product>();
-
-        /// <summary>
-        /// Gets or sets the store name error message.
-        /// </summary>
-        public string StoreNameError { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the email error message.
-        /// </summary>
-        public string EmailError { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the phone number error message.
-        /// </summary>
-        public string PhoneNumberError { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the address error message.
-        /// </summary>
-        public string AddressError { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the description error message.
-        /// </summary>
-        public string DescriptionError { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Filters products based on search text.
-        /// </summary>
-        /// <param name="searchText">The text to filter products by.</param>
-        public void FilterProducts(string searchText)
+        private async Task LoadSellerProfile()
         {
-            if (string.IsNullOrEmpty(searchText))
+            Debug.WriteLine("LoadSellerProfile called");
+
+            if (this.seller == null)
             {
-                this.FilteredProducts = new ObservableCollection<Product>(this.allProducts);
+                Debug.WriteLine("ERROR: Seller is NULL");
+                return;
+            }
+
+            // Seller table fields
+            this.StoreName = this.seller.StoreName ?? string.Empty;
+            this.StoreAddress = this.seller.StoreAddress ?? string.Empty;
+            this.StoreDescription = this.seller.StoreDescription ?? string.Empty;
+            this.FollowersCount = this.seller.FollowersCount.ToString();
+
+            // User-linked fields
+            this.Username = this.seller.User?.Username ?? string.Empty;
+            this.Email = this.seller.User?.Email ?? string.Empty;
+            this.PhoneNumber = this.seller.User?.PhoneNumber ?? string.Empty;
+
+            try
+            {
+                var trustScore = await this.sellerService.CalculateAverageReviewScore(this.seller.Id);
+                this.TrustScore = trustScore * MultiplierForTrustScoreFromAverageReview;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error calculating trust score: {ex.Message}");
+                this.TrustScore = 0;
+            }
+
+            this.DisplayName = !string.IsNullOrEmpty(this.Username)
+                ? this.Username
+                : (!string.IsNullOrEmpty(this.StoreName) ? this.StoreName : "Seller");
+
+            // Notify UI
+            this.OnPropertyChanged(nameof(this.DisplayName));
+            this.OnPropertyChanged(nameof(this.StoreName));
+            this.OnPropertyChanged(nameof(this.Username));
+            this.OnPropertyChanged(nameof(this.Email));
+            this.OnPropertyChanged(nameof(this.PhoneNumber));
+            this.OnPropertyChanged(nameof(this.StoreAddress));
+            this.OnPropertyChanged(nameof(this.StoreDescription));
+            this.OnPropertyChanged(nameof(this.FollowersCount));
+            this.OnPropertyChanged(nameof(this.TrustScore));
+
+            Debug.WriteLine("LoadSellerProfile completed");
+        }
+
+        /// <summary>
+        /// Updates seller and user profile data via service.
+        /// </summary>
+        public async void UpdateProfile()
+        {
+            // add input validation here
+            var errors = ValidateFields();
+            if (errors.Count > 0)
+            {
+                string errorMessage = string.Join("\n", errors);
+                await this.ShowDialog("Validation Errors", errorMessage);
+                Debug.WriteLine("Dialog was shown");
+                return;
+            }
+            Debug.WriteLine("UpdateProfile called");
+            if (this.seller != null)
+            {
+                this.seller.StoreName = this.StoreName;
+                this.seller.StoreAddress = this.StoreAddress;
+                this.seller.StoreDescription = this.StoreDescription;
+
+                if (this.seller.User != null)
+                {
+                    this.seller.User.Username = this.Username;
+                    this.seller.User.Email = this.Email;
+                    this.seller.User.PhoneNumber = this.PhoneNumber;
+                }
+
+                try
+                {
+                    await this.sellerService.UpdateSeller(this.seller);
+                    // Reload the seller data from the database to ensure we have the latest values
+                    this.seller = await this.sellerService.GetSellerByUser(this.user);
+                    // Reload the profile data to update all UI bindings
+                    await LoadSellerProfile();
+                    await ShowDialog("Success", "Your profile has been updated successfully.");
+                }
+                catch (Exception ex)
+                {
+                    await ShowDialog("Error", $"Failed to update profile: {ex.Message}");
+                }
             }
             else
             {
-                var filtered = this.allProducts.Where(product => product.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
-                this.FilteredProducts = new ObservableCollection<Product>(filtered);
+                await ShowDialog("Error", "Could not update profile: Seller information is missing.");
             }
+        }
 
+        /// <summary>
+        /// Filters the product list by name.
+        /// </summary>
+        public void FilterProducts(string searchText)
+        {
+            Debug.WriteLine($"FilterProducts called with search text: '{searchText}'");
+            // Clear the current filtered products
+            this.FilteredProducts.Clear();
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                // If no search text, show all products
+                foreach (var product in this.allProducts)
+                {
+                    this.FilteredProducts.Add(product);
+                }
+                Debug.WriteLine($"No search text provided. Showing all {this.FilteredProducts.Count} products.");
+                return;
+            }
+            // Case insensitive search
+            searchText = searchText.ToLower();
+            // Filter products based on Title, Description, or Price containing the search text
+            var filteredList = this.allProducts.Where(p =>
+                (p.Title?.ToLower().Contains(searchText) == true) ||
+                (p.Description?.ToLower().Contains(searchText) == true) ||
+                p.Price.ToString().Contains(searchText)).ToList();
+            // Add the filtered products to the observable collection
+            foreach (var product in filteredList)
+            {
+                this.FilteredProducts.Add(product);
+            }
+            Debug.WriteLine($"Found {this.FilteredProducts.Count} products matching '{searchText}'");
+            // Notify UI that the filtered products have changed
             this.OnPropertyChanged(nameof(this.FilteredProducts));
         }
 
         /// <summary>
-        /// Sorts products by price.
+        /// Loads notifications for the seller.
+        /// </summary>
+        public async Task LoadNotifications()
+        {
+            try
+            {
+                if (this.seller != null && this.seller.Id > 0)
+                {
+                    var notifications = await this.sellerService.GetNotifications(this.seller.Id, 10);
+                    this.Notifications.Clear();
+
+                    if (notifications != null && notifications.Count > 0)
+                    {
+                        foreach (var notification in notifications)
+                        {
+                            this.Notifications.Add(notification);
+                        }
+                    }
+                    else
+                    {
+                        this.Notifications.Add("No notifications found");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Notifications.Add($"Error loading notifications: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads the seller's listed products.
+        /// </summary>
+        private async Task LoadProducts()
+        {
+            try
+            {
+                if (this.seller != null && this.seller.Id > 0)
+                {
+                    var products = await this.sellerService.GetAllProducts(this.seller.Id);
+
+                    this.allProducts.Clear();
+                    this.FilteredProducts.Clear();
+                    this.Products.Clear();
+
+                    if (products != null && products.Count > 0)
+                    {
+                        foreach (var product in products)
+                        {
+                            this.allProducts.Add(product);
+                            this.FilteredProducts.Add(product);
+                            this.Products.Add(product);
+                        }
+
+                        this.Notifications.Add($"Loaded {products.Count} products");
+                    }
+                    else
+                    {
+                        this.Notifications.Add("No products found");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Notifications.Add($"Error loading products: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Sorts the currently filtered products by price.
         /// </summary>
         public void SortProducts()
         {
-            var sortedProducts = this.allProducts.OrderBy(product => product.Price).ToList();
-            this.FilteredProducts = new ObservableCollection<Product>(sortedProducts);
+            Debug.WriteLine("SortProducts called");
+            // Static variable to remember sort order (toggles between ascending and descending)
+            bool sortAscending = true;
+            // Toggle sort order
+            sortAscending = !sortAscending;
+            Debug.WriteLine($"Sorting products by price: {(sortAscending ? "ascending" : "descending")}");
+            // Create a temporary list to hold all products
+            var tempList = new List<Product>(this.FilteredProducts);
+            // Sort by price
+            if (sortAscending)
+            {
+                tempList = tempList.OrderBy(p => p.Price).ToList();
+            }
+            else
+            {
+                tempList = tempList.OrderByDescending(p => p.Price).ToList();
+            }
+            // Clear the collection and repopulate with sorted items
+            this.FilteredProducts.Clear();
+            foreach (var product in tempList)
+            {
+                this.FilteredProducts.Add(product);
+            }
+            // Notify UI that the filtered products have changed
             this.OnPropertyChanged(nameof(this.FilteredProducts));
         }
 
         /// <summary>
-        /// Validates all fields and returns error messages.
+        /// Validates all input fields in the seller profile.
         /// </summary>
-        /// <returns>A list of error messages.</returns>
         public List<string> ValidateFields()
         {
-            List<string> errorMessages = new List<string>();
-
+            var errors = new List<string>();
+            // Add validation logic
             if (string.IsNullOrWhiteSpace(this.StoreName))
             {
+                errors.Add("Store name is required.");
                 this.StoreNameError = "Store name is required.";
-                errorMessages.Add(this.StoreNameError);
             }
             else
             {
                 this.StoreNameError = string.Empty;
             }
-
             if (string.IsNullOrWhiteSpace(this.Email) || !this.Email.Contains("@"))
             {
+                errors.Add("Valid email is required.");
                 this.EmailError = "Valid email is required.";
-                errorMessages.Add(this.EmailError);
             }
             else
             {
                 this.EmailError = string.Empty;
             }
-
-            if (string.IsNullOrWhiteSpace(this.PhoneNumber))
+            // check if phone number is valid, starts with +40 and has 10 digits starting with 0
+            if (string.IsNullOrWhiteSpace(this.PhoneNumber) || !this.PhoneNumber.StartsWith("+40") || this.PhoneNumber.Length != 12)
             {
-                this.PhoneNumberError = "Phone number is required.";
-                errorMessages.Add(this.PhoneNumberError);
+                errors.Add("Valid phone number is required.");
+                this.PhoneNumberError = "Valid phone number is required.";
             }
             else
             {
                 this.PhoneNumberError = string.Empty;
             }
-
-            if (string.IsNullOrWhiteSpace(this.Address))
+            if (string.IsNullOrWhiteSpace(this.StoreAddress))
             {
-                this.AddressError = "Address is required.";
-                errorMessages.Add(this.AddressError);
+                errors.Add("Store address is required.");
+                this.AddressError = "Store address is required.";
             }
             else
             {
                 this.AddressError = string.Empty;
             }
-
-            if (string.IsNullOrWhiteSpace(this.Description))
+            if (string.IsNullOrWhiteSpace(this.StoreDescription))
             {
-                this.DescriptionError = "Description is required.";
-                errorMessages.Add(this.DescriptionError);
+                errors.Add("Store description is required.");
+                this.DescriptionError = "Store description is required.";
             }
             else
             {
                 this.DescriptionError = string.Empty;
             }
-
-            this.OnPropertyChanged(nameof(this.StoreNameError));
-            this.OnPropertyChanged(nameof(this.EmailError));
-            this.OnPropertyChanged(nameof(this.PhoneNumberError));
-            this.OnPropertyChanged(nameof(this.AddressError));
-            this.OnPropertyChanged(nameof(this.DescriptionError));
-
-            return errorMessages;
+            // Notify UI of changes
+            return errors;
         }
 
         /// <summary>
-        /// Loads notifications asynchronously.
+        /// Shows a content dialog message.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task LoadNotifications()
-        {
-            await this.sellerService.GenerateFollowersChangedNotification(this.seller.Id, this.seller.FollowersCount);
-            var notifications = await this.sellerService.GetNotifications(this.seller.Id, MaxNotifications);
-            this.notifications.Clear();
-            foreach (var notification in notifications)
-            {
-                this.notifications.Add(notification);
-            }
-
-            this.OnPropertyChanged(nameof(this.Notifications));
-        }
-
-        /// <summary>
-        /// Updates the seller profile asynchronously.
-        /// </summary>
-        public async void UpdateProfile()
-        {
-            if (this.seller != null)
-            {
-                this.seller.StoreName = this.StoreName;
-                this.seller.StoreAddress = this.Address;
-                this.seller.StoreDescription = this.Description;
-                this.seller.User.Username = this.Username;
-                this.seller.User.Email = this.Email;
-                this.seller.User.PhoneNumber = this.PhoneNumber;
-
-                if (this.seller.Id > HighestInvalidSellerId)
-                {
-                    await this.sellerService.UpdateSeller(this.seller);
-                    await this.ShowDialog("Success", "Your seller has been updated successfully!");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("Seller ID not found. Cannot update seller information in the database.");
-                    await this.ShowDialog("Error", "Seller ID not found. Cannot update seller information in the database.");
-                }
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("User property is null. Cannot update seller information.");
-            }
-        }
-
-        /// <summary>
-        /// Raises the PropertyChanged event.
-        /// </summary>
-        /// <param name="propertyName">The name of the property that changed.</param>
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        /// <summary>
-        /// Loads seller data asynchronously.
-        /// </summary>
-        private async void LoadSellerData()
-        {
-            this.seller = await this.sellerService.GetSellerByUser(this.user);
-            this.OnPropertyChanged(nameof(this.Seller));
-
-            await this.LoadSellerProfile();
-            await this.LoadSellerProducts();
-        }
-
-        /// <summary>
-        /// Loads the seller profile asynchronously.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task LoadSellerProfile()
-        {
-            if (this.seller != null)
-            {
-                if (this.seller.StoreName == null)
-                {
-                    this.StoreName = string.Empty;
-                }
-                else
-                {
-                    this.StoreName = this.seller.StoreName;
-                }
-
-                this.Username = this.seller.Username;
-                this.Email = this.seller.Email;
-                this.PhoneNumber = this.seller.PhoneNumber;
-                this.Address = this.seller.StoreAddress;
-                this.FollowersCount = this.seller.FollowersCount.ToString();
-                this.TrustScore = await this.sellerService.CalculateAverageReviewScore(this.seller.Id) * MultiplierForTrustScoreFromAverageReview;
-                this.Description = this.seller.StoreDescription;
-                this.OnPropertyChanged(nameof(this.DisplayName));
-
-                this.OnPropertyChanged(nameof(this.StoreName));
-                this.OnPropertyChanged(nameof(this.Email));
-                this.OnPropertyChanged(nameof(this.PhoneNumber));
-                this.OnPropertyChanged(nameof(this.Address));
-                this.OnPropertyChanged(nameof(this.Description));
-                this.OnPropertyChanged(nameof(this.FollowersCount));
-                this.OnPropertyChanged(nameof(this.TrustScore));
-            }
-        }
-
-        /// <summary>
-        /// Loads the seller products asynchronously.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task LoadSellerProducts()
-        {
-            if (this.seller != null)
-            {
-                var products = await this.sellerService.GetAllProducts(this.seller.Id);
-                if (products != null)
-                {
-                    this.allProducts.Clear();
-                    foreach (var product in products)
-                    {
-                        this.allProducts.Add(product);
-                    }
-
-                    this.FilterProducts(string.Empty);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Shows a dialog with the specified title and message.
-        /// </summary>
-        /// <param name="title">The dialog title.</param>
-        /// <param name="message">The dialog message.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ShowDialog(string title, string message)
         {
-            if (App.MainWindow == null)
+            try
             {
-                return;
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK"
+                };
+
+                // Safely set XamlRoot only if it's available
+                if (App.MainWindow?.Content?.XamlRoot != null)
+                {
+                    dialog.XamlRoot = App.MainWindow.Content.XamlRoot;
+                }
+                else
+                {
+                    Debug.WriteLine("Warning: XamlRoot is null, dialog might not display properly");
+                }
+
+                // Use ConfigureAwait(true) to ensure we stay on the UI thread
+                await dialog.ShowAsync().AsTask().ConfigureAwait(true);
             }
-
-            ContentDialog dialog = new ContentDialog
+            catch (Exception ex)
             {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = App.MainWindow.Content.XamlRoot,
-            };
-
-            await dialog.ShowAsync();
+                Debug.WriteLine($"Error showing dialog: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+            }
         }
     }
 }

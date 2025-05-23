@@ -17,126 +17,134 @@ namespace MarketMinds.ViewModels
     public interface ISellerProfileViewModel : INotifyPropertyChanged
     {
         /// <summary>
-        /// Gets the seller entity.
+        /// Gets the seller entity. Includes the linked User object.
         /// </summary>
         Seller Seller { get; }
 
         /// <summary>
-        /// Gets or sets the filtered products collection.
+        /// Gets or sets the filtered products collection shown in the UI.
         /// </summary>
         ObservableCollection<Product> FilteredProducts { get; set; }
 
         /// <summary>
-        /// Gets or sets the notifications collection.
+        /// Gets or sets the full list of notifications shown on the profile.
         /// </summary>
         ObservableCollection<string> Notifications { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the expander is expanded.
+        /// Gets or sets a value indicating whether the details expander is open.
         /// </summary>
         bool IsExpanderExpanded { get; set; }
 
         /// <summary>
-        /// Gets or sets the display name.
+        /// Gets or sets the display name shown in the header of the profile.
         /// </summary>
         string DisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the username.
+        /// Gets or sets the seller's username (from User).
         /// </summary>
         string Username { get; set; }
 
         /// <summary>
-        /// Gets or sets the followers count.
+        /// Gets or sets the number of followers as a string.
         /// </summary>
         string FollowersCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the store name.
+        /// Gets or sets the name of the store (from Seller).
         /// </summary>
         string StoreName { get; set; }
 
         /// <summary>
-        /// Gets or sets the email.
+        /// Gets or sets the email address (from User).
         /// </summary>
         string Email { get; set; }
 
         /// <summary>
-        /// Gets or sets the phone number.
+        /// Gets or sets the phone number (from User).
         /// </summary>
         string PhoneNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the address.
+        /// Gets or sets the store's address (from Seller).
         /// </summary>
-        string Address { get; set; }
+        string StoreAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the trust score.
+        /// Gets or sets the seller's calculated trust score (0–100).
         /// </summary>
         double TrustScore { get; set; }
 
         /// <summary>
-        /// Gets or sets the description.
+        /// Gets or sets the store's description.
         /// </summary>
-        string Description { get; set; }
+        string StoreDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets the products collection.
+        /// Gets or sets the full list of products associated with this seller.
         /// </summary>
         ObservableCollection<Product> Products { get; set; }
 
+        // -----------------------------
+        // Validation-related properties
+        // -----------------------------
+
         /// <summary>
-        /// Gets or sets the store name error message.
+        /// Gets or sets the validation error message for the store name field.
         /// </summary>
         string StoreNameError { get; set; }
 
         /// <summary>
-        /// Gets or sets the email error message.
+        /// Gets or sets the validation error message for the email field.
         /// </summary>
         string EmailError { get; set; }
 
         /// <summary>
-        /// Gets or sets the phone number error message.
+        /// Gets or sets the validation error message for the phone number field.
         /// </summary>
         string PhoneNumberError { get; set; }
 
         /// <summary>
-        /// Gets or sets the address error message.
+        /// Gets or sets the validation error message for the address field.
         /// </summary>
         string AddressError { get; set; }
 
         /// <summary>
-        /// Gets or sets the description error message.
+        /// Gets or sets the validation error message for the store description field.
         /// </summary>
         string DescriptionError { get; set; }
 
+        // -----------------------------
+        // Methods
+        // -----------------------------
+
         /// <summary>
-        /// Loads notifications asynchronously.
+        /// Loads the latest seller notifications asynchronously.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task LoadNotifications();
 
         /// <summary>
-        /// Filters products based on search text.
+        /// Filters the list of products using a text search.
         /// </summary>
-        /// <param name="searchText">The text to filter products by.</param>
+        /// <param name="searchText">Search query entered by the user.</param>
         void FilterProducts(string searchText);
 
         /// <summary>
-        /// Sorts products by price.
+        /// Sorts the currently filtered products by price in ascending or descending order.
         /// </summary>
         void SortProducts();
 
         /// <summary>
-        /// Updates the seller profile asynchronously.
+        /// Updates the seller's profile in the backend (name, address, user info).
         /// </summary>
         void UpdateProfile();
 
         /// <summary>
-        /// Validates all fields and returns error messages.
+        /// Validates all input fields in the seller profile and returns any error messages found.
         /// </summary>
-        /// <returns>A list of error messages.</returns>
+        /// <returns>A list of validation error messages. Empty if all fields are valid.</returns>
         List<string> ValidateFields();
     }
 }
