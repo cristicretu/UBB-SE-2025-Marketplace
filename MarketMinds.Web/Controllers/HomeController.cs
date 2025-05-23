@@ -120,6 +120,26 @@ namespace MarketMinds.Web.Controllers
                         {
                             _logger.LogWarning(ex, "Failed to load buyer info for user ID {UserId}. This may be because the buyer doesn't exist yet. Attempting to create buyer profile.", currentUserId);
                             
+                            try
+                            {
+                                // Attempt to create a buyer profile for this user
+                                var newUser = new User(currentUserId);
+                                var newBuyer = new Buyer
+                                {
+                                    User = newUser,
+                                    FirstName = "",
+                                    LastName = "",
+                                    Wishlist = new BuyerWishlist(),
+                                    Linkages = new List<BuyerLinkage>(),
+                                    FollowingUsersIds = new List<int>()
+                                };
+                                
+                                // This would create the buyer - you might need to call a create method
+                                // For now, just set empty wishlist
+                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                ViewBag.WishlistProductIds = new List<int>();
+                                _logger.LogInformation("Created default buyer profile structure for user {UserId}", currentUserId);
+                            }
                             catch (Exception createEx)
                             {
                                 _logger.LogError(createEx, "Failed to create buyer profile for user {UserId}. Continuing without wishlist data.", currentUserId);

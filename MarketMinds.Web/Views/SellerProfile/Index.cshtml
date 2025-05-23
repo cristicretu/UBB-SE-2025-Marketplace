@@ -1,22 +1,27 @@
 @model WebMarketplace.Models.SellerProfileViewModel
 @{
     ViewData["Title"] = "Seller Profile";
+    bool isOwnProfile = ViewBag.IsOwnProfile ?? false;
+    int? profileSellerId = isOwnProfile ? null : Model.Seller?.User?.Id;
 }
 
 <div class="bg-white shadow rounded-lg p-6">
     <div class="flex flex-col md:flex-row justify-between mb-6 pb-6 border-b">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Seller Profile</h1>
-            <p class="text-gray-600">Manage your store and products</p>
+            <p class="text-gray-600">@(isOwnProfile ? "Manage your store and products" : "Browse this seller's store")</p>
         </div>
-        <div class="mt-4 md:mt-0 flex space-x-4">
-            <a asp-controller="UpdateProfile" asp-action="Index" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                </svg>
-                Update Profile
-            </a>
-        </div>
+        @if (isOwnProfile)
+        {
+            <div class="mt-4 md:mt-0 flex space-x-4">
+                <a asp-controller="UpdateProfile" asp-action="Index" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                    Update Profile
+                </a>
+            </div>
+        }
     </div>
 
     @if (Model.Seller == null)
@@ -103,7 +108,7 @@
             <!-- Right Column: Products -->
             <div class="md:col-span-2">
                 <div class="mb-4 flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Your Products</h2>
+                    <h2 class="text-xl font-semibold">@(isOwnProfile ? "Your Products" : "Products")</h2>
                     <div class="flex space-x-4">
                         <div class="relative">
                             <input id="productSearchInput"
@@ -132,13 +137,26 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            var sellerId = @(profileSellerId?.ToString() ?? "null");
+            var isManageMode = @(isOwnProfile ? "true" : "false");
+            
             // Handle product search
             $('#productSearchInput').on('keyup', function() {
                 const searchText = $(this).val();
+                var requestData = { searchText: searchText };
+                
+                // Add sellerId for public profiles
+                if (sellerId !== null) {
+                    requestData.sellerId = sellerId;
+                } else {
+                    // For private profiles, indicate if we're in manage mode
+                    requestData.isManageMode = isManageMode;
+                }
+                
                 $.ajax({
                     url: '@Url.Action("FilterProducts", "SellerProfile")',
                     type: 'POST',
-                    data: { searchText: searchText },
+                    data: requestData,
                     success: function(result) {
                         $('#productsContainer').html(result);
                     }
@@ -147,9 +165,20 @@
 
             // Handle product sorting
             $('#sortButton').on('click', function() {
+                var requestData = {};
+                
+                // Add sellerId for public profiles
+                if (sellerId !== null) {
+                    requestData.sellerId = sellerId;
+                } else {
+                    // For private profiles, indicate if we're in manage mode
+                    requestData.isManageMode = isManageMode;
+                }
+                
                 $.ajax({
                     url: '@Url.Action("SortProducts", "SellerProfile")',
                     type: 'POST',
+                    data: requestData,
                     success: function(result) {
                         $('#productsContainer').html(result);
                     }
