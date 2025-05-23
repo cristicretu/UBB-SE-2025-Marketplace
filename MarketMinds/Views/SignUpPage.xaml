@@ -70,6 +70,15 @@
                              BorderThickness="0" 
                              CornerRadius="8"/>
 
+				<!-- Confirm Password -->
+				<PasswordBox Password="{Binding ConfirmPassword, Mode=TwoWay}" 
+                             PlaceholderText="Confirm your password"
+                             Width="Auto" 
+                             Height="45" 
+                             Padding="8" 
+                             BorderThickness="0" 
+                             CornerRadius="8"/>
+
 				<!-- Account Type -->
 				<StackPanel>
                     <ComboBox SelectedValue="{Binding Role, Mode=TwoWay}" 
