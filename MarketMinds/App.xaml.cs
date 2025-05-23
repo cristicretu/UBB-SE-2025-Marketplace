@@ -174,6 +174,12 @@ namespace MarketMinds
             adminWindow.Activate();
         }
 
+        public static void ShowHomePage()
+        {
+            var homePage = new HomePageView();
+            homePage.Activate();
+        }
+
         // Implementation of IOnLoginSuccessCallback
         private class LoginSuccessHandler : IOnLoginSuccessCallback
         {
@@ -187,12 +193,16 @@ namespace MarketMinds
                 // Redirect based on user role
                 switch (user.UserType)
                 {
-                    case 3: // Seller
-                        ShowSellerProfile();
-                        break;
                     case 2: // Buyer
-                        ShowBuyerProfile();
+                    case 3: // Seller
+                        ShowHomePage();
                         break;
+                    // case 3: // Seller
+                    //     ShowSellerProfile();
+                    //     break;
+                    // case 2: // Buyer
+                    //     ShowBuyerProfile();
+                    //     break;
                     case 1: // Admin
                         ShowAdminProfile();
                         break;

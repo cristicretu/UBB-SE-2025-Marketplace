@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="MarketMinds.Views.HomePageView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="MarketMinds">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Text="MarketMinds" 
+                      Style="{StaticResource TitleTextBlockStyle}" 
+                      VerticalAlignment="Center"/>
+            
+            <CommandBar Grid.Column="1" 
+                       DefaultLabelPosition="Right" 
+                       Background="Transparent" 
+                       IsOpen="False">
+                <AppBarButton Icon="Home" Label="Home" Click="AppBarButton_Click"/>
+                <AppBarButton Icon="Find" Label="Search" Click="AppBarButton_Click"/>
+                <AppBarButton Icon="Setting" Label="Settings" Click="AppBarButton_Click"/>
+            </CommandBar>
+        </Grid>
+
+        <!-- Navigation Tabs -->
+        <TabView Grid.Row="1" Margin="12,0,12,0" TabWidthMode="SizeToContent" 
+                IsAddTabButtonVisible="False" SelectionChanged="TabView_SelectionChanged">
+            <TabView.TabItems>
+                <TabViewItem Header="Buy Products" Tag="Buy"/>
+                <TabViewItem Header="Auction Products" Tag="Auction"/>
+                <TabViewItem Header="Borrow Products" Tag="Borrow"/>
+            </TabView.TabItems>
+        </TabView>
+
+        <!-- Content Frame -->
+        <Frame x:Name="ContentFrame" Grid.Row="2"/>
+    </Grid>
+</Window>
