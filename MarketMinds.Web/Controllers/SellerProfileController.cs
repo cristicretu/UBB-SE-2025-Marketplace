@@ -6,6 +6,9 @@ using MarketMinds.Shared.Services.UserService;
 using MarketMinds.Web.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace WebMarketplace.Controllers
 {
@@ -17,6 +20,9 @@ namespace WebMarketplace.Controllers
         private readonly ISellerService _sellerService;
         private readonly IUserService _userService;
         private readonly ILogger<SellerProfileController> _logger;
+        private readonly IAuctionProductService _auctionProductService;
+        private readonly IBorrowProductsService _borrowProductsService;
+        private readonly IBuyProductsService _buyProductsService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SellerProfileController"/> class.
@@ -24,14 +30,23 @@ namespace WebMarketplace.Controllers
         /// <param name="sellerService">Service for seller-related operations.</param>
         /// <param name="userService">Service for user-related operations.</param>
         /// <param name="logger">Logger for the controller.</param>
+        /// <param name="auctionProductService">Service for auction products.</param>
+        /// <param name="borrowProductsService">Service for borrow products.</param>
+        /// <param name="buyProductsService">Service for buy products.</param>
         public SellerProfileController(
             ISellerService sellerService,
             IUserService userService,
-            ILogger<SellerProfileController> logger)
+            ILogger<SellerProfileController> logger,
+            IAuctionProductService auctionProductService,
+            IBorrowProductsService borrowProductsService,
+            IBuyProductsService buyProductsService)
         {
             _sellerService = sellerService ?? throw new ArgumentNullException(nameof(sellerService));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _auctionProductService = auctionProductService ?? throw new ArgumentNullException(nameof(auctionProductService));
+            _borrowProductsService = borrowProductsService ?? throw new ArgumentNullException(nameof(borrowProductsService));
+            _buyProductsService = buyProductsService ?? throw new ArgumentNullException(nameof(buyProductsService));
         }
 
         /// <summary>
@@ -93,46 +108,14 @@ namespace WebMarketplace.Controllers
         }
 
         /// <summary>
-        /// Displays the public "view as" Seller Profile page (read-only).
+        /// Redirects to the Manage action for the seller's editable profile.
+        /// The default /SellerProfile route now redirects to /SellerProfile/Manage.
         /// </summary>
-        /// <returns>The view.</returns>
-        public async Task<IActionResult> Index()
+        /// <returns>Redirect to Manage action.</returns>
+        public IActionResult Index()
         {
-            try
-            {
-                _logger.LogInformation("Loading public 'view as' Seller Profile page");
-
-                int userId = GetCurrentUserId();
-                
-                // Check if user is authenticated
-                if (userId == 0)
-                {
-                    _logger.LogWarning("User not authenticated, redirecting to login");
-                    return RedirectToAction("Login", "Account");
-                }
-
-                var user = await GetCurrentUser();
-
-                // Only allow seller role users to access this page
-                // Please modify here later on!!
-                //if (user.Role != UserRole.Seller)
-                //{
-                //    return RedirectToAction("Index", "Home");
-                //}
-
-                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService);
-                await viewModel.InitializeAsync();
-
-                // Set flag to indicate this is a public "view as" mode (cannot edit)
-                ViewBag.IsOwnProfile = false;
-
-                return View(viewModel);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading public 'view as' Seller Profile page");
-                return View("Error", new ErrorViewModel { RequestId = System.Diagnostics.Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-            }
+            _logger.LogInformation("Redirecting from Index to Manage action");
+            return RedirectToAction("Manage");
         }
 
         /// <summary>
@@ -163,7 +146,8 @@ namespace WebMarketplace.Controllers
                     return NotFound("This user is not a seller.");
                 }
 
-                var viewModel = new SellerProfileViewModel(targetUser, _userService, _sellerService);
+                var viewModel = new SellerProfileViewModel(targetUser, _userService, _sellerService, 
+                    _auctionProductService, _borrowProductsService, _buyProductsService);
                 await viewModel.InitializeAsync();
 
                 // Set flag to indicate this is a public view (cannot edit)
@@ -211,7 +195,8 @@ namespace WebMarketplace.Controllers
                     isOwnProfile = isManageMode; // Only show edit buttons in manage mode
                 }
 
-                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService);
+                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService, 
+                    _auctionProductService, _borrowProductsService, _buyProductsService);
                 await viewModel.InitializeAsync();
 
                 viewModel.FilterProducts(searchText);
@@ -259,7 +244,8 @@ namespace WebMarketplace.Controllers
                     isOwnProfile = isManageMode; // Only show edit buttons in manage mode
                 }
 
-                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService);
+                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService, 
+                    _auctionProductService, _borrowProductsService, _buyProductsService);
                 await viewModel.InitializeAsync();
 
                 viewModel.SortProducts();
@@ -288,7 +274,8 @@ namespace WebMarketplace.Controllers
                 _logger.LogInformation("Loading Update Profile page");
 
                 var user = await GetCurrentUser();
-                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService);
+                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService, 
+                    _auctionProductService, _borrowProductsService, _buyProductsService);
                 await viewModel.InitializeAsync();
 
                 return View(viewModel);
@@ -356,7 +343,8 @@ namespace WebMarketplace.Controllers
                 //    return RedirectToAction("Index", "Home");
                 //}
 
-                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService);
+                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService, 
+                    _auctionProductService, _borrowProductsService, _buyProductsService);
                 await viewModel.InitializeAsync();
 
                 // Set flag to indicate this is the seller's own profile (can edit)
