@@ -1,8 +1,9 @@
-@model MarketMinds.Shared.Models.AuctionProduct
+@model MarketMinds.Shared.Models.Product
 @using MarketMinds.Shared.Services.ProductCategoryService
 @using MarketMinds.Shared.Services.ProductTagService
 @using MarketMinds.Shared.Services.ProductConditionService
 @using MarketMinds.Shared.Services.ImagineUploadService
+@using MarketMinds.Shared.Models
 @inject IProductCategoryService CategoryService
 @inject IProductTagService TagService
 @inject IProductConditionService ConditionService
@@ -126,22 +127,24 @@
 
             <!-- Auction specific fields -->
             <div class="mb-5 auction-field">
-                <label asp-for="StartPrice" class="block text-gray-700 mb-2 font-medium">Starting Price *</label>
+                <label class="block text-gray-700 mb-2 font-medium">Starting Price *</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
-                    <input asp-for="StartPrice" type="number" step="0.01" min="0.01"
+                    <input name="StartPrice" id="StartPrice" type="number" step="0.01" min="0.01"
+                        value="@((Model as AuctionProduct)?.StartPrice ?? 0)"
                         class="w-full border border-gray-300 rounded px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required />
                 </div>
-                <span asp-validation-for="StartPrice" class="text-red-500 text-sm mt-1"></span>
+                <span class="text-red-500 text-sm mt-1"></span>
             </div>
 
             <div class="mb-5 auction-field">
-                <label asp-for="EndTime" class="block text-gray-700 mb-2 font-medium">End Auction Date</label>
-                <input asp-for="EndTime" type="datetime-local"
+                <label class="block text-gray-700 mb-2 font-medium">End Auction Date</label>
+                <input name="EndTime" id="EndTime" type="datetime-local"
+                    value="@((Model as AuctionProduct)?.EndTime.ToString("yyyy-MM-ddTHH:mm") ?? "")"
                     class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required />
-                <span asp-validation-for="EndTime" class="text-red-500 text-sm mt-1"></span>
+                <span class="text-red-500 text-sm mt-1"></span>
             </div>
 
             <!-- Borrow specific fields -->
@@ -200,9 +203,9 @@
             <!-- Hidden fields for buy product -->
             <input type="hidden" name="IsSold" id="IsSold" value="false" />
 
-            <input type="hidden" asp-for="StartTime" value="@DateTime.Now" />
+            <input type="hidden" name="StartTime" value="@((Model as AuctionProduct)?.StartTime.ToString("yyyy-MM-ddTHH:mm:ss") ?? DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss"))" />
             <input type="hidden" asp-for="SellerId" value="1" />
-            <input type="hidden" asp-for="CurrentPrice" id="CurrentPrice" />
+            <input type="hidden" name="CurrentPrice" id="CurrentPrice" value="@((Model as AuctionProduct)?.CurrentPrice ?? 0)" />
 
             <div class="mb-5">
                 <!-- Main submit buttons with icons -->
@@ -481,12 +484,23 @@
             const selectedTags = document.getElementById('selectedTags');
             const tagIdsInput = document.getElementById('tagIds');
 
+            console.log("DEBUG: Tag elements found:");
+            console.log("tagInput:", tagInput);
+            console.log("addTagBtn:", addTagBtn);
+            console.log("selectedTags:", selectedTags);
+            console.log("tagIdsInput:", tagIdsInput);
+
             // Store selected tag IDs
             const selectedTagIds = [];
 
             // Available tags from the backend
             const availableTags = @Html.Raw(Json.Serialize(allTags));
             console.log("Available tags:", availableTags);
+
+            if (!tagInput || !addTagBtn) {
+                console.error("ERROR: Could not find tag input elements!");
+                return;
+            }
 
             // Cancel form submission on Enter in tag input
             tagInput.addEventListener('keydown', function (event) {
@@ -501,6 +515,7 @@
 
             // Add tag button click handler
             addTagBtn.addEventListener('click', function (event) {
+                console.log("Add tag button clicked");
                 event.preventDefault();
                 handleAddTag();
             });
@@ -594,11 +609,27 @@
             const uploadStatus = document.getElementById('uploadStatus');
             const uploadedUrls = [];
 
+            console.log("DEBUG: Image upload elements found:");
+            console.log("imageUpload:", imageUpload);
+            console.log("uploadButton:", uploadButton);
+            console.log("imagePreviewContainer:", imagePreviewContainer);
+            console.log("imageUrlsInput:", imageUrlsInput);
+            console.log("uploadStatus:", uploadStatus);
+
+            if (!uploadButton || !imageUpload) {
+                console.error("ERROR: Could not find image upload elements!");
+                return;
+            }
+
             uploadButton.addEventListener('click', async function () {
+                console.log("Upload button clicked");
                 if (!imageUpload.files || imageUpload.files.length === 0) {
+                    console.log("No file selected");
                     uploadStatus.innerHTML = '<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 rounded">Please select an image first</div>';
                     return;
                 }
+
+                console.log("File selected:", imageUpload.files[0].name);
 
                 const file = imageUpload.files[0];
                 const formData = new FormData();

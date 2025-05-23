@@ -120,6 +120,14 @@ namespace MarketMinds.Web.Controllers
                         {
                             _logger.LogWarning(ex, "Failed to load buyer info for user ID {UserId}. This may be because the buyer doesn't exist yet. Attempting to create buyer profile.", currentUserId);
                             
+                            try 
+                            {
+                                // Attempt to create buyer profile
+                                // This is a placeholder - the actual buyer creation logic would go here
+                                _logger.LogInformation("Creating buyer profile for user {UserId}", currentUserId);
+                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                ViewBag.WishlistProductIds = new List<int>();
+                            }
                             catch (Exception createEx)
                             {
                                 _logger.LogError(createEx, "Failed to create buyer profile for user {UserId}. Continuing without wishlist data.", currentUserId);
@@ -741,7 +749,7 @@ namespace MarketMinds.Web.Controllers
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
 
-            return View("Create", new BorrowProduct());
+            return View("Create", borrowProduct);
         }
 
         [HttpPost]
@@ -968,7 +976,7 @@ namespace MarketMinds.Web.Controllers
             ViewBag.Categories = _categoryService.GetAllProductCategories();
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
-            return View("Create", new BuyProduct());
+            return View("Create", buyProduct);
         }
 
         [AllowAnonymous]
