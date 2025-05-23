@@ -1,9 +1,12 @@
 ﻿@model WebMarketplace.Models.BuyerProfileViewModel
 @{
-    ViewData["Title"] = "Buyer Profile";
+    ViewData["Title"] = ViewBag.CanEdit == true ? "Manage Buyer Profile" : $"{Model.FirstName} {Model.LastName} - Buyer Profile";
     // Get user ID from claims instead of UserSession to avoid null reference
     var UserId = User?.Identity?.IsAuthenticated == true ? 
         int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0") : 0;
+    
+    var canEdit = ViewBag.CanEdit == true;
+    var isOwnProfile = ViewBag.IsOwnProfile == true;
 }
 
 <style>
@@ -283,132 +286,172 @@
     <div class="container">
         <div class="profile-card">
             <div class="profile-header">
-                <h1 class="profile-title">Buyer Profile</h1>
-                <p class="profile-subtitle">View and edit your profile details below</p>
-                <div class="badge-container">
-                    <div class="badge-title">@Model.Badge</div>
-                    <div class="badge-discount">@(Model.Discount * 100)% Discount</div>
-                </div>
+                <h1 class="profile-title">@(canEdit ? "Manage Buyer Profile" : $"{Model.FirstName} {Model.LastName} - Buyer Profile")</h1>
+                <p class="profile-subtitle">@(canEdit ? "View and edit your profile details below" : "Public buyer profile")</p>
+                @if (!string.IsNullOrEmpty(Model.Badge))
+                {
+                    <div class="badge-container">
+                        <div class="badge-title">@Model.Badge</div>
+                        @if (canEdit && Model.Discount > 0)
+                        {
+                            <div class="badge-discount">@(Model.Discount * 100)% Discount</div>
+                        }
+                    </div>
+                }
             </div>
 
-            <form asp-action="Update" method="post">
-                <input type="hidden" asp-for="BuyerId" />
+            @if (canEdit)
+            {
+                <form asp-action="Update" method="post">
+                    <input type="hidden" asp-for="BuyerId" />
 
-                <div class="row">
-                    <!-- Personal Information -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="section-card">
-                            <h4 class="section-title">Personal Information</h4>
-                            <div class="form-group">
-                                <label asp-for="FirstName" class="form-label">First Name</label>
-                                <input asp-for="FirstName" class="form-control" />
-                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                    <div class="row">
+                        <!-- Personal Information -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="section-card">
+                                <h4 class="section-title">Personal Information</h4>
+                                <div class="form-group">
+                                    <label asp-for="FirstName" class="form-label">First Name</label>
+                                    <input asp-for="FirstName" class="form-control" />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="LastName" class="form-label">Last Name</label>
+                                    <input asp-for="LastName" class="form-control" />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Email" class="form-label">Email</label>
+                                    <input asp-for="Email" class="form-control" readonly />
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                                    <input asp-for="PhoneNumber" class="form-control" />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label asp-for="LastName" class="form-label">Last Name</label>
-                                <input asp-for="LastName" class="form-control" />
-                                <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+
+                        <!-- Billing Address -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="section-card">
+                                <h4 class="section-title">Billing Address</h4>
+                                <div class="form-group">
+                                    <label asp-for="BillingStreet" class="form-label">Street</label>
+                                    <input asp-for="BillingStreet" class="form-control" />
+                                    <span asp-validation-for="BillingStreet" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="BillingCity" class="form-label">City</label>
+                                    <input asp-for="BillingCity" class="form-control" />
+                                    <span asp-validation-for="BillingCity" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="BillingCountry" class="form-label">Country</label>
+                                    <input asp-for="BillingCountry" class="form-control" />
+                                    <span asp-validation-for="BillingCountry" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="BillingPostalCode" class="form-label">Postal Code</label>
+                                    <input asp-for="BillingPostalCode" class="form-control" />
+                                    <span asp-validation-for="BillingPostalCode" class="text-danger"></span>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label asp-for="Email" class="form-label">Email</label>
-                                <input asp-for="Email" class="form-control" readonly />
-                            </div>
-                            <div class="form-group">
-                                <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
-                                <input asp-for="PhoneNumber" class="form-control" />
-                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <!-- Shipping Address -->
+                        <div class="col-lg-4 col-md-12">
+                            <div class="section-card">
+                                <h4 class="section-title">Shipping Address</h4>
+                                <div class="checkbox-container">
+                                    <div class="form-check">
+                                        <input asp-for="UseSameAddress" class="form-check-input" id="useSameAddress" />
+                                        <label class="form-check-label" for="useSameAddress">Same as Billing Address</label>
+                                    </div>
+                                </div>
+                                <div id="shippingAddressFields">
+                                    <div class="form-group">
+                                        <label asp-for="ShippingStreet" class="form-label">Street</label>
+                                        <input asp-for="ShippingStreet" class="form-control" />
+                                        <span asp-validation-for="ShippingStreet" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label asp-for="ShippingCity" class="form-label">City</label>
+                                        <input asp-for="ShippingCity" class="form-control" />
+                                        <span asp-validation-for="ShippingCity" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label asp-for="ShippingCountry" class="form-label">Country</label>
+                                        <input asp-for="ShippingCountry" class="form-control" />
+                                        <span asp-validation-for="ShippingCountry" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label asp-for="ShippingPostalCode" class="form-label">Postal Code</label>
+                                        <input asp-for="ShippingPostalCode" class="form-control" />
+                                        <span asp-validation-for="ShippingPostalCode" class="text-danger"></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Billing Address -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="section-card">
-                            <h4 class="section-title">Billing Address</h4>
-                            <div class="form-group">
-                                <label asp-for="BillingStreet" class="form-label">Street</label>
-                                <input asp-for="BillingStreet" class="form-control" />
-                                <span asp-validation-for="BillingStreet" class="text-danger"></span>
-                            </div>
-                            <div class="form-group">
-                                <label asp-for="BillingCity" class="form-label">City</label>
-                                <input asp-for="BillingCity" class="form-control" />
-                                <span asp-validation-for="BillingCity" class="text-danger"></span>
-                            </div>
-                            <div class="form-group">
-                                <label asp-for="BillingCountry" class="form-label">Country</label>
-                                <input asp-for="BillingCountry" class="form-control" />
-                                <span asp-validation-for="BillingCountry" class="text-danger"></span>
-                            </div>
-                            <div class="form-group">
-                                <label asp-for="BillingPostalCode" class="form-label">Postal Code</label>
-                                <input asp-for="BillingPostalCode" class="form-control" />
-                                <span asp-validation-for="BillingPostalCode" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Shipping Address -->
-                    <div class="col-lg-4 col-md-12">
-                        <div class="section-card">
-                            <h4 class="section-title">Shipping Address</h4>
-                            <div class="checkbox-container">
-                                <div class="form-check">
-                                    <input asp-for="UseSameAddress" class="form-check-input" id="useSameAddress" />
-                                    <label class="form-check-label" for="useSameAddress">Same as Billing Address</label>
-                                </div>
-                            </div>
-                            <div id="shippingAddressFields">
-                                <div class="form-group">
-                                    <label asp-for="ShippingStreet" class="form-label">Street</label>
-                                    <input asp-for="ShippingStreet" class="form-control" />
-                                    <span asp-validation-for="ShippingStreet" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="ShippingCity" class="form-label">City</label>
-                                    <input asp-for="ShippingCity" class="form-control" />
-                                    <span asp-validation-for="ShippingCity" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="ShippingCountry" class="form-label">Country</label>
-                                    <input asp-for="ShippingCountry" class="form-control" />
-                                    <span asp-validation-for="ShippingCountry" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="ShippingPostalCode" class="form-label">Postal Code</label>
-                                    <input asp-for="ShippingPostalCode" class="form-control" />
-                                    <span asp-validation-for="ShippingPostalCode" class="text-danger"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" class="save-btn">
-                    Save Changes
-                </button>
-            </form>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <h3 class="quick-actions-title">Quick Actions</h3>
-            <div class="d-flex justify-content-center flex-wrap">
-                <a href="@Url.Action("Index", "BidProduct")" class="action-btn">Bid Product</a>
-                <a href="@Url.Action("Index", "WalletRefill")" class="action-btn">Refill Wallet</a>
-                <a asp-area="" asp-controller="Order" asp-action="OrderHistory" asp-route-userId="@UserId" class="action-btn">Order History</a>
-                <a href="@Url.Action("Index", "RenewContract")" class="action-btn">Renew Contract</a>
-            </div>
-            
-            <div class="contract-section">
-                <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="d-flex align-items-center justify-content-center gap-3">
-                    <label for="contractId" class="form-label mb-0">Contract ID:</label>
-                    <input type="number" class="form-control" id="contractId" name="contractId" required style="width: 150px;">
-                    <button type="submit" class="generate-btn">Generate Contract</button>
+                    <!-- Submit Button -->
+                    <button type="submit" class="save-btn">
+                        Save Changes
+                    </button>
                 </form>
-            </div>
+            }
+            else
+            {
+                <!-- Public Profile View (Read-only) -->
+                <div class="row">
+                    <!-- Public Information Only -->
+                    <div class="col-lg-6 col-md-8 mx-auto">
+                        <div class="section-card">
+                            <h4 class="section-title">Public Information</h4>
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input value="@Model.FirstName" class="form-control" readonly />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input value="@Model.LastName" class="form-control" readonly />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input value="@Model.Email" class="form-control" readonly />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Member Since</label>
+                                <input value="@DateTime.Now.ToString("MMMM yyyy")" class="form-control" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
+
+        @if (canEdit)
+        {
+            <!-- Quick Actions (only for own profile) -->
+            <div class="quick-actions">
+                <h3 class="quick-actions-title">Quick Actions</h3>
+                <div class="d-flex justify-content-center flex-wrap">
+                    <a href="@Url.Action("Index", "BidProduct")" class="action-btn">Bid Product</a>
+                    <a href="@Url.Action("Index", "WalletRefill")" class="action-btn">Refill Wallet</a>
+                    <a asp-area="" asp-controller="Order" asp-action="OrderHistory" asp-route-userId="@UserId" class="action-btn">Order History</a>
+                    <a href="@Url.Action("Index", "RenewContract")" class="action-btn">Renew Contract</a>
+                </div>
+                
+                <div class="contract-section">
+                    <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="d-flex align-items-center justify-content-center gap-3">
+                        <label for="contractId" class="form-label mb-0">Contract ID:</label>
+                        <input type="number" class="form-control" id="contractId" name="contractId" required style="width: 150px;">
+                        <button type="submit" class="generate-btn">Generate Contract</button>
+                    </form>
+                </div>
+            </div>
+        }
     </div>
 </div>
 

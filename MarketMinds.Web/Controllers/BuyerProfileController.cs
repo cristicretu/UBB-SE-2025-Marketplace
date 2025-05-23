@@ -5,6 +5,7 @@ using System.Diagnostics;
 using WebMarketplace.Models;
 using MarketMinds.Shared.Services.UserService;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebMarketplace.Controllers
 {
@@ -87,119 +88,8 @@ namespace WebMarketplace.Controllers
         /// <returns>The buyer profile view</returns>
         public async Task<IActionResult> Index()
         {
-            _logger.LogInformation("DEBUG: Index() method called - START");
-            
-            var stopwatch = Stopwatch.StartNew();
-            try
-            {
-                int userId = GetCurrentUserId();
-                _logger.LogInformation("DEBUG: Index() - Retrieved user ID: {UserId}", userId);
-                
-                // Check if user is authenticated
-                if (userId == 0)
-                {
-                    _logger.LogWarning("DEBUG: Index() - User not authenticated, redirecting to login");
-                    return RedirectToAction("Login", "Account");
-                }
-                
-                _logger.LogInformation("DEBUG: Index() - Loading buyer profile for user ID: {UserId}", userId);
-
-                // Create a basic User object instead of fetching all users
-                // This avoids the expensive GetAllUsers() call that might be causing issues
-                var user = new User(userId);
-                _logger.LogInformation("DEBUG: Index() - Created user object with ID: {UserId}", user.Id);
-
-                // Add timeout to prevent hanging
-                _logger.LogInformation("DEBUG: Index() - Calling _buyerService.GetBuyerByUser()");
-                Buyer buyer = await _buyerService.GetBuyerByUser(user);
-                _logger.LogInformation("DEBUG: Index() - GetBuyerByUser() completed successfully");
-
-                if (buyer == null)
-                {
-                    _logger.LogError("DEBUG: Index() - GetBuyerByUser() returned null");
-                    return Content("Error: No buyer profile found for this user.");
-                }
-
-                _logger.LogInformation("DEBUG: Index() - Found buyer: {BuyerId}, loading view model", buyer.Id);
-
-                // Log the current buyer address data
-                _logger.LogInformation("LOAD: Current buyer data - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}", 
-                    buyer.FirstName, buyer.LastName, buyer.User?.PhoneNumber, buyer.UseSameAddress);
-                
-                _logger.LogInformation("DEBUG: Index() - Checking billing address...");
-                if (buyer.BillingAddress != null)
-                {
-                    _logger.LogInformation("LOAD: Current billing address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, AddressId: {AddressId}", 
-                        buyer.BillingAddress.StreetLine, buyer.BillingAddress.City, buyer.BillingAddress.Country, buyer.BillingAddress.PostalCode, buyer.BillingAddress.Id);
-                }
-                else
-                {
-                    _logger.LogWarning("LOAD: Billing address is NULL");
-                }
-                
-                _logger.LogInformation("DEBUG: Index() - Checking shipping address...");
-                if (buyer.ShippingAddress != null)
-                {
-                    _logger.LogInformation("LOAD: Current shipping address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, AddressId: {AddressId}", 
-                        buyer.ShippingAddress.StreetLine, buyer.ShippingAddress.City, buyer.ShippingAddress.Country, buyer.ShippingAddress.PostalCode, buyer.ShippingAddress.Id);
-                }
-                else
-                {
-                    _logger.LogWarning("LOAD: Shipping address is NULL");
-                }
-
-                _logger.LogInformation("DEBUG: Index() - Creating view model...");
-                // Create the view model safely with null checks
-                var viewModel = new BuyerProfileViewModel
-                {
-                    BuyerId = buyer.User?.Id ?? 0,
-                    FirstName = buyer.FirstName ?? string.Empty,
-                    LastName = buyer.LastName ?? string.Empty,
-                    Email = buyer.User?.Email ?? string.Empty,
-                    PhoneNumber = buyer.User?.PhoneNumber ?? string.Empty,
-
-                    // Billing address with null safety
-                    BillingStreet = buyer.BillingAddress?.StreetLine ?? string.Empty,
-                    BillingCity = buyer.BillingAddress?.City ?? string.Empty,
-                    BillingCountry = buyer.BillingAddress?.Country ?? string.Empty,
-                    BillingPostalCode = buyer.BillingAddress?.PostalCode ?? string.Empty,
-
-                    // Shipping address with null safety
-                    ShippingStreet = buyer.ShippingAddress?.StreetLine ?? string.Empty,
-                    ShippingCity = buyer.ShippingAddress?.City ?? string.Empty,
-                    ShippingCountry = buyer.ShippingAddress?.Country ?? string.Empty,
-                    ShippingPostalCode = buyer.ShippingAddress?.PostalCode ?? string.Empty,
-
-                    UseSameAddress = buyer.UseSameAddress,
-                    Badge = buyer.Badge.ToString() ?? "None",
-                    Discount = buyer.Discount
-                };
-
-                // Log the view model data
-                _logger.LogInformation("LOAD: ViewModel created with billing address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}", 
-                    viewModel.BillingStreet, viewModel.BillingCity, viewModel.BillingCountry, viewModel.BillingPostalCode);
-                _logger.LogInformation("LOAD: ViewModel created with shipping address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, UseSameAddress: {UseSameAddress}", 
-                    viewModel.ShippingStreet, viewModel.ShippingCity, viewModel.ShippingCountry, viewModel.ShippingPostalCode, viewModel.UseSameAddress);
-
-                _logger.LogInformation("DEBUG: Index() - Profile loaded successfully in {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
-                _logger.LogInformation("DEBUG: Index() method called - END (returning view)");
-                return View(viewModel);
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.LogError(ex, "DEBUG: Index() - Network error loading buyer profile: {Message}", ex.Message);
-                return Content($"Network error while loading your profile: {ex.Message}");
-            }
-            catch (TaskCanceledException ex)
-            {
-                _logger.LogError(ex, "DEBUG: Index() - Operation timed out after {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
-                return Content("The operation timed out. Please try again later.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "DEBUG: Index() - Error loading buyer profile: {Message}", ex.Message);
-                return Content($"An error occurred: {ex.Message}. Please try again later.");
-            }
+            _logger.LogInformation("Redirecting from Index to Manage action");
+            return RedirectToAction(nameof(Manage));
         }
 
         /// <summary>
@@ -521,13 +411,13 @@ namespace WebMarketplace.Controllers
                     buyer.ShippingAddress?.StreetLine, buyer.ShippingAddress?.City, buyer.ShippingAddress?.Country, buyer.ShippingAddress?.PostalCode);
 
                 TempData["SuccessMessage"] = "Profile updated successfully!";
-                _logger.LogInformation("UPDATE: Profile update completed successfully for user ID: {UserId}, redirecting to Index", userId);
+                _logger.LogInformation("UPDATE: Profile update completed successfully for user ID: {UserId}, redirecting to Manage", userId);
                 
                 _logger.LogInformation("DEBUG: ================================");
                 _logger.LogInformation("DEBUG: Update() method called - END (SUCCESS)");
                 _logger.LogInformation("DEBUG: ================================");
                 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Manage));
             }
             catch (Exception ex)
             {
@@ -541,6 +431,146 @@ namespace WebMarketplace.Controllers
                 _logger.LogInformation("DEBUG: ================================");
                 
                 return View("Index", model);
+            }
+        }
+
+        /// <summary>
+        /// Manages the buyer profile (private, editable version)
+        /// </summary>
+        /// <returns>The manage buyer profile view</returns>
+        [Authorize]
+        public async Task<IActionResult> Manage()
+        {
+            _logger.LogInformation("Loading private editable Buyer Profile page");
+            
+            int userId = GetCurrentUserId();
+            _logger.LogInformation("Got user ID {UserId} from claims", userId);
+            
+            if (userId == 0)
+            {
+                _logger.LogWarning("User not authenticated, redirecting to login");
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                // Create a basic User object instead of fetching all users
+                var user = new User(userId);
+                _logger.LogInformation("Created user object with ID: {UserId}", user.Id);
+
+                // Get buyer information
+                Buyer buyer = await _buyerService.GetBuyerByUser(user);
+                _logger.LogInformation("GetBuyerByUser() completed successfully");
+
+                if (buyer == null)
+                {
+                    _logger.LogError("GetBuyerByUser() returned null");
+                    return Content("Error: No buyer profile found for this user.");
+                }
+
+                _logger.LogInformation("Found buyer: {BuyerId}, loading view model", buyer.Id);
+
+                // Create the view model
+                var viewModel = new BuyerProfileViewModel
+                {
+                    BuyerId = buyer.User?.Id ?? 0,
+                    FirstName = buyer.FirstName ?? string.Empty,
+                    LastName = buyer.LastName ?? string.Empty,
+                    Email = buyer.User?.Email ?? string.Empty,
+                    PhoneNumber = buyer.User?.PhoneNumber ?? string.Empty,
+
+                    // Billing address with null safety
+                    BillingStreet = buyer.BillingAddress?.StreetLine ?? string.Empty,
+                    BillingCity = buyer.BillingAddress?.City ?? string.Empty,
+                    BillingCountry = buyer.BillingAddress?.Country ?? string.Empty,
+                    BillingPostalCode = buyer.BillingAddress?.PostalCode ?? string.Empty,
+
+                    // Shipping address with null safety
+                    ShippingStreet = buyer.ShippingAddress?.StreetLine ?? string.Empty,
+                    ShippingCity = buyer.ShippingAddress?.City ?? string.Empty,
+                    ShippingCountry = buyer.ShippingAddress?.Country ?? string.Empty,
+                    ShippingPostalCode = buyer.ShippingAddress?.PostalCode ?? string.Empty,
+
+                    UseSameAddress = buyer.UseSameAddress,
+                    Badge = buyer.Badge.ToString() ?? "None",
+                    Discount = buyer.Discount
+                };
+
+                // Set ViewBag to indicate this is the editable version
+                ViewBag.IsOwnProfile = true;
+                ViewBag.CanEdit = true;
+
+                return View("Index", viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading buyer profile for user ID: {UserId}", userId);
+                return Content($"Error loading your profile: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Shows a public buyer profile (read-only version)
+        /// </summary>
+        /// <param name="id">The buyer user ID</param>
+        /// <returns>The public buyer profile view</returns>
+        [Route("BuyerProfile/{id:int}")]
+        public async Task<IActionResult> PublicProfile(int id)
+        {
+            _logger.LogInformation("Loading public Buyer Profile page for buyer ID: {BuyerId}", id);
+
+            try
+            {
+                // Get the target user by ID
+                var targetUser = await _userService.GetUserByIdAsync(id);
+                if (targetUser == null)
+                {
+                    _logger.LogWarning("User with ID {UserId} not found", id);
+                    return View("UserNotFound");
+                }
+
+                // Get buyer information for the target user
+                Buyer targetBuyer = await _buyerService.GetBuyerByUser(targetUser);
+                if (targetBuyer == null)
+                {
+                    _logger.LogWarning("No buyer profile found for user ID: {UserId}", id);
+                    return View("UserNotFound");
+                }
+
+                _logger.LogInformation("Found buyer: {BuyerId}, loading public view model", targetBuyer.Id);
+
+                // Create the view model with public information only
+                var viewModel = new BuyerProfileViewModel
+                {
+                    BuyerId = targetBuyer.User?.Id ?? 0,
+                    FirstName = targetBuyer.FirstName ?? string.Empty,
+                    LastName = targetBuyer.LastName ?? string.Empty,
+                    Email = targetBuyer.User?.Email ?? string.Empty,
+                    Badge = targetBuyer.Badge.ToString() ?? "None",
+                    // Don't expose private information like addresses and phone number
+                    PhoneNumber = string.Empty,
+                    BillingStreet = string.Empty,
+                    BillingCity = string.Empty,
+                    BillingCountry = string.Empty,
+                    BillingPostalCode = string.Empty,
+                    ShippingStreet = string.Empty,
+                    ShippingCity = string.Empty,
+                    ShippingCountry = string.Empty,
+                    ShippingPostalCode = string.Empty,
+                    UseSameAddress = false,
+                    Discount = 0 // Don't expose discount information
+                };
+
+                // Set ViewBag to indicate this is a public read-only profile
+                ViewBag.IsOwnProfile = false;
+                ViewBag.CanEdit = false;
+
+                return View("Index", viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading public buyer profile for ID: {BuyerId}", id);
+                return View("UserNotFound");
             }
         }
     }
