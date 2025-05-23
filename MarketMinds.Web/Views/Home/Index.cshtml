@@ -218,11 +218,28 @@
                                         <div class="font-bold text-primary">$@item.Price.ToString("N2")</div>
                                         @{
                                             var isInWishlist = ViewBag.WishlistProductIds != null && ((List<int>)ViewBag.WishlistProductIds).Contains(item.Id);
-                                            var heartIconClass = isInWishlist ? "fas fa-heart text-red-500" : "far fa-heart text-gray-400";
                                         }
-                                        <button class="favorite-btn text-gray-400 hover:text-red-500 transition" data-product-id="@item.Id" onclick="event.stopPropagation();">
-                                            <i class="@heartIconClass"></i>
-                                        </button>
+                                        
+                                        @if (isInWishlist)
+                                        {
+                                            <form asp-controller="BuyerWishlist" asp-action="RemoveFromWishlist" method="post" class="inline">
+                                                <input type="hidden" name="productId" value="@item.Id" />
+                                                <button type="submit" class="text-red-500 hover:text-red-600 transition" 
+                                                        title="Remove from Wishlist" onclick="event.stopPropagation();">
+                                                    <i class="fas fa-heart"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-controller="BuyerWishlist" asp-action="AddToWishlist" method="post" class="inline">
+                                                <input type="hidden" name="productId" value="@item.Id" />
+                                                <button type="submit" class="text-gray-400 hover:text-red-500 transition" 
+                                                        title="Add to Wishlist" onclick="event.stopPropagation();">
+                                                    <i class="far fa-heart"></i>
+                                                </button>
+                                            </form>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -389,55 +406,6 @@
             // Tab functionality
             const tabButtons = document.querySelectorAll('.tab-btn');
             const tabContents = document.querySelectorAll('.tab-content');
-            
-            // Favorite buttons functionality
-            const favoriteButtons = document.querySelectorAll('.favorite-btn');
-            favoriteButtons.forEach(button => {
-                button.addEventListener('click', async function(event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    const icon = this.querySelector('i');
-                    const productId = this.getAttribute('data-product-id');
-                    const isFavorited = icon.classList.contains('fas'); // Check if already favorited (filled heart)
-
-                    let targetUrl;
-                    if (isFavorited) {
-                        targetUrl = `@Url.Action("RemoveFromWishlist", "BuyerWishlist")?productId=${productId}`;
-                    } else {
-                        targetUrl = `@Url.Action("AddToWishlist", "BuyerWishlist")?productId=${productId}`;
-                    }
-
-                    try {
-                        const response = await fetch(targetUrl, {
-                            method: 'POST',
-                            headers: {
-                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                            }
-                        });
-
-                        if (response.ok) {
-                            if (isFavorited) {
-                                icon.classList.remove('fas', 'text-red-500');
-                                icon.classList.add('far', 'text-gray-400');
-                                console.log(`Product ID: ${productId} removed from wishlist.`);
-                                // Optionally, display a TempData-like message or update UI further
-                            } else {
-                                icon.classList.remove('far', 'text-gray-400');
-                                icon.classList.add('fas', 'text-red-500');
-                                console.log(`Product ID: ${productId} added to wishlist.`);
-                                // Optionally, display a TempData-like message or update UI further
-                            }
-                        } else {
-                            console.error(`Failed to process wishlist action for product ID: ${productId}. Status: ${response.status}`);
-                            // Optionally, inform the user of the failure
-                        }
-                    } catch (error) {
-                        console.error('Error processing wishlist action:', error);
-                        // Optionally, inform the user of the failure
-                    }
-                });
-            });
             
             tabButtons.forEach(button => {
                 button.addEventListener('click', function() {
