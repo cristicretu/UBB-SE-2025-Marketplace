@@ -65,7 +65,7 @@ namespace MarketMinds.Shared.Models.DTOs
     {
         public int ProductId { get; set; }
         public int BidderId { get; set; }
-        public float Amount { get; set; }
+        public double Amount { get; set; }
         public DateTime Timestamp { get; set; }
     }
 }

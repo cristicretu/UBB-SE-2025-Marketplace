@@ -1,12 +1,14 @@
 using System.Net.Http.Headers;
 using MarketMinds.Shared.Models;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Shared.Services.ImagineUploadService
 {
     public class ImageUploadService : IImageUploadService
     {
         private static readonly HttpClient HttpClient = new HttpClient();
+        private readonly IConfiguration _configuration;
 
         private const int MAXIMUM_IMAGE_SIZE = 10 * 1024 * 1024;
         private const int MAXIMUM_NUMBER_OF_RETRIES = 3;
@@ -16,6 +18,11 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
         private const string IMAGE_CONTENT_TYPE = "image/png";
         private const int IMGUR_CLIENT_ID_LENGTH = 20;
         private const int BASE_RETRY = 0;
+
+        public ImageUploadService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         public async Task<string> UploadImage(Stream imageStream, string fileName)
         {
@@ -34,10 +41,10 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
         {
             try
             {
-                string clientId = GetImgurClientId();
-                if (string.IsNullOrEmpty(clientId) || clientId == IMGUR_CLIENT_ID_PLACEHOLDER)
+                string clientId = _configuration["ImgurSettings:ClientId"];
+                if (string.IsNullOrEmpty(clientId))
                 {
-                    throw new InvalidOperationException("Imgur Client ID is not configured. Please check your appsettings.json file or environment configuration.");
+                    throw new InvalidOperationException("Imgur Client ID is not configured. Please check your appsettings.json file.");
                 }
                 if (clientId.Length > IMGUR_CLIENT_ID_LENGTH)
                 {

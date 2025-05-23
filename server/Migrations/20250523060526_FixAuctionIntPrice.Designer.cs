@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Server.DataAccessLayer;
 
@@ -11,9 +12,11 @@ using Server.DataAccessLayer;
 namespace server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250523060526_FixAuctionIntPrice")]
+    partial class FixAuctionIntPrice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,7 +89,6 @@ namespace server.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float")
                         .HasColumnName("price");
-
 
                     b.Property<int>("SellerId")
                         .HasColumnType("int")
@@ -217,7 +219,6 @@ namespace server.Migrations
                         .HasColumnType("float")
                         .HasColumnName("price");
 
-
                     b.Property<int>("SellerId")
                         .HasColumnType("int")
                         .HasColumnName("seller_id");
@@ -322,8 +323,7 @@ namespace server.Migrations
 
                     b.Property<double>("Price")
                         .HasColumnType("float")
-                        .HasColumnName("price")
-                        .HasAnnotation("Relational:JsonPropertyName", "price");
+                        .HasColumnName("price");
 
                     b.Property<int>("SellerId")
                         .HasColumnType("int")
@@ -331,8 +331,7 @@ namespace server.Migrations
 
                     b.Property<int>("Stock")
                         .HasColumnType("int")
-                        .HasColumnName("stock")
-                        .HasAnnotation("Relational:JsonPropertyName", "stock");
+                        .HasColumnName("stock");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -373,8 +372,6 @@ namespace server.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("BuyProductImages", (string)null);
-
-                    b.HasAnnotation("Relational:JsonPropertyName", "images");
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.BuyProductProductTag", b =>
@@ -401,8 +398,6 @@ namespace server.Migrations
                     b.HasIndex("TagId");
 
                     b.ToTable("BuyProductProductTags", (string)null);
-
-                    b.HasAnnotation("Relational:JsonPropertyName", "productTags");
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.Buyer", b =>
@@ -605,6 +600,9 @@ namespace server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BuyProductId")
+                        .HasColumnType("int");
+
                     b.Property<int>("BuyerId")
                         .HasColumnType("int")
                         .HasColumnName("BuyerID");
@@ -645,13 +643,13 @@ namespace server.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BuyProductId");
+
                     b.HasIndex("BuyerId");
 
                     b.HasIndex("OrderHistoryID");
 
                     b.HasIndex("OrderSummaryID");
-
-                    b.HasIndex("ProductID");
 
                     b.HasIndex("SellerId");
 
@@ -691,7 +689,7 @@ namespace server.Migrations
 
                     b.ToTable("OrderCheckpoints", t =>
                         {
-                            t.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN (0, 1, 2, 3, 4, 5)");
+                            t.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')");
                         });
                 });
 
@@ -702,21 +700,6 @@ namespace server.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderID"));
-
-                    b.Property<int>("BuyerID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PaymentMethod")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingAddress")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("OrderID");
 
@@ -974,7 +957,10 @@ namespace server.Migrations
                     b.HasIndex("OrderID")
                         .IsUnique();
 
-                    b.ToTable("TrackedOrders", (string)null);
+                    b.ToTable("TrackedOrders", t =>
+                        {
+                            t.HasCheckConstraint("TrackedOrderConstraint", "[CurrentStatus] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')");
+                        });
                 });
 
             modelBuilder.Entity("MarketMinds.Shared.Models.User", b =>
@@ -1073,6 +1059,9 @@ namespace server.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("BuyProductId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -1080,7 +1069,7 @@ namespace server.Migrations
 
                     b.HasKey("BuyerId", "ProductId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("BuyProductId");
 
                     b.ToTable("BuyerCartItems");
                 });
@@ -1114,9 +1103,12 @@ namespace server.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("BuyProductId")
+                        .HasColumnType("int");
+
                     b.HasKey("BuyerId", "ProductId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("BuyProductId");
 
                     b.ToTable("BuyerWishlistItems");
                 });
@@ -1528,6 +1520,11 @@ namespace server.Migrations
 
             modelBuilder.Entity("MarketMinds.Shared.Models.Order", b =>
                 {
+                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
+                        .WithMany()
+                        .HasForeignKey("BuyProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("MarketMinds.Shared.Models.Buyer", null)
                         .WithMany()
                         .HasForeignKey("BuyerId")
@@ -1543,12 +1540,6 @@ namespace server.Migrations
                     b.HasOne("MarketMinds.Shared.Models.OrderSummary", null)
                         .WithMany()
                         .HasForeignKey("OrderSummaryID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
-                        .WithMany()
-                        .HasForeignKey("ProductID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1642,15 +1633,15 @@ namespace server.Migrations
 
             modelBuilder.Entity("Server.DataModels.BuyerCartItemEntity", b =>
                 {
-                    b.HasOne("MarketMinds.Shared.Models.Buyer", null)
+                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
                         .WithMany()
-                        .HasForeignKey("BuyerId")
+                        .HasForeignKey("BuyProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
+                    b.HasOne("MarketMinds.Shared.Models.Buyer", null)
                         .WithMany()
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("BuyerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1672,15 +1663,14 @@ namespace server.Migrations
 
             modelBuilder.Entity("Server.DataModels.BuyerWishlistItemsEntity", b =>
                 {
+                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
+                        .WithMany()
+                        .HasForeignKey("BuyProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("MarketMinds.Shared.Models.Buyer", null)
                         .WithMany()
                         .HasForeignKey("BuyerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MarketMinds.Shared.Models.BuyProduct", null)
-                        .WithMany()
-                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

@@ -110,7 +110,10 @@ namespace MarketMinds.Web.Controllers
         // GET: Home/Create
         public IActionResult Create()
         {
-            return View(new AuctionProduct());
+            _logger.LogInformation("GET: Home/Create - Initializing create view");
+            var model = new AuctionProduct();
+            _logger.LogInformation("Created new AuctionProduct model with default values");
+            return View(model);
         }
 
         // POST: Home/Create
@@ -118,23 +121,90 @@ namespace MarketMinds.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AuctionProduct auctionProduct, string productType, string tagIds, string imageUrls)
         {
+            _logger.LogInformation("POST: Home/Create - Starting product creation");
+            _logger.LogInformation("Received parameters - productType: {ProductType}, tagIds: {TagIds}, imageUrls: {ImageUrls}", 
+                productType, tagIds, imageUrls);
+            _logger.LogInformation("TRACE: Original EndTime from form: {EndTime}", auctionProduct?.EndTime);
+            _logger.LogInformation("AuctionProduct details - Title: {Title}, Description: {Description}, StartPrice: {StartPrice}, CategoryId: {CategoryId}, ConditionId: {ConditionId}, SellerId: {SellerId}",
+                auctionProduct?.Title,
+                auctionProduct?.Description?.Substring(0, Math.Min(50, auctionProduct?.Description?.Length ?? 0)),
+                auctionProduct?.StartPrice,
+                auctionProduct?.CategoryId,
+                auctionProduct?.ConditionId,
+                auctionProduct?.SellerId);
+
+            // Set default SellerId if not set
+            if (auctionProduct.SellerId <= 0)
+            {
+                auctionProduct.SellerId = 1; // Default seller ID
+                _logger.LogInformation("Setting default SellerId to 1");
+            }
+
+            // Log ModelState errors if any
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+                _logger.LogWarning("ModelState validation errors: {Errors}", string.Join(", ", errors));
+            }
+
             if (auctionProduct.StartTime == default)
             {
+                _logger.LogInformation("Setting default StartTime to current time");
                 auctionProduct.StartTime = DateTime.Now;
             }
 
-            if (auctionProduct.EndTime == default)
+            // Only set a default EndTime if one wasn't provided or it's invalid
+            // Check for both default value and a date that's earlier than startup
+            _logger.LogInformation("TRACE: Before EndTime check - Current value: {EndTime}, Default: {IsDefault}, Earlier than now: {IsEarlier}", 
+                auctionProduct.EndTime, 
+                auctionProduct.EndTime == default,
+                auctionProduct.EndTime < DateTime.Now);
+
+            if (auctionProduct.EndTime == default || auctionProduct.EndTime < DateTime.Now)
             {
+                _logger.LogInformation("Setting default EndTime to 7 days from now (Original was: {OriginalEndTime})", auctionProduct.EndTime);
                 auctionProduct.EndTime = DateTime.Now.AddDays(7);
+            }
+            else
+            {
+                _logger.LogInformation("Using user-provided EndTime: {EndTime}", auctionProduct.EndTime);
+            }
+
+            _logger.LogInformation("TRACE: After EndTime check - Final value: {EndTime}", auctionProduct.EndTime);
+
+            // Process image URLs
+            if (!string.IsNullOrEmpty(imageUrls))
+            {
+                try
+                {
+                    _logger.LogInformation("Raw imageUrls string: {ImageUrls}", imageUrls);
+                    var splitUrls = imageUrls.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    _logger.LogInformation("Split imageUrls: {SplitUrls}", string.Join(", ", splitUrls));
+                    var images = _imageUploadService.ParseImagesString(imageUrls);
+                    _logger.LogInformation("Successfully parsed {Count} images", images.Count);
+                    auctionProduct.NonMappedImages = images;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing image URLs");
+                    ModelState.AddModelError("imageUrls", "Error processing image URLs. Please try again.");
+                }
+            }
+            else
+            {
+                _logger.LogWarning("No image URLs provided");
+                ModelState.AddModelError("imageUrls", "At least one image is required.");
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _logger.LogInformation("Creating a new auction product");
+                    _logger.LogInformation("Attempting to create auction product: {Title}", auctionProduct.Title);
 
-                    // Process tags with error resilience
+                    // Process tags
                     var productTags = new List<ProductTag>();
                     if (!string.IsNullOrEmpty(tagIds))
                     {
@@ -146,50 +216,27 @@ namespace MarketMinds.Web.Controllers
                             {
                                 if (tagId.StartsWith("new_"))
                                 {
-                                    var tagTitle = tagId.Substring(4); // Remove "new_" prefix
+                                    var tagTitle = tagId.Substring(4);
                                     _logger.LogInformation("Creating new tag: {TagTitle}", tagTitle);
-                                    try
-                                    {
-                                        var newTag = _productTagService.CreateProductTag(tagTitle);
-                                        productTags.Add(newTag);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogWarning(ex, "Failed to create new tag '{TagTitle}', skipping it", tagTitle);
-                                        // Don't stop the whole process for a tag creation failure
-                                    }
+                                    var newTag = _productTagService.CreateProductTag(tagTitle);
+                                    productTags.Add(newTag);
                                 }
                                 else if (int.TryParse(tagId, out int existingTagId))
                                 {
-                                    try
+                                    var tag = _productTagService.GetAllProductTags().FirstOrDefault(t => t.Id == existingTagId);
+                                    if (tag != null)
                                     {
-                                        var allTags = _productTagService.GetAllProductTags();
-                                        var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
-                                        if (tag != null)
-                                        {
-                                            productTags.Add(tag);
-                                        }
-                                        else
-                                        {
-                                            _logger.LogWarning("Tag with ID {TagId} not found, skipping it", existingTagId);
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogWarning(ex, "Failed to process existing tag with ID {TagId}, skipping it", existingTagId);
-                                        // Don't stop the whole process for a tag processing failure
+                                        productTags.Add(tag);
                                     }
                                 }
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError(ex, "Error processing tag ID: {TagId}", tagId);
-                                // Don't stop the whole process if one tag fails
+                                _logger.LogWarning(ex, "Error processing tag ID: {TagId}", tagId);
                             }
                         }
                     }
 
-                    // Process image URLs with error resilience 
                     var productImages = new List<Image>();
                     if (!string.IsNullOrEmpty(imageUrls))
                     {
@@ -211,17 +258,14 @@ namespace MarketMinds.Web.Controllers
                     if (User.Identity.IsAuthenticated)
                     {
                         auctionProduct.SellerId = User.GetCurrentUserId();
-                        _logger.LogInformation("Overriding seller ID with authenticated user: {SellerId}", auctionProduct.SellerId);
-                    }
-                    else if (auctionProduct.SellerId <= 0)
-                    {
-                        auctionProduct.SellerId = 1;
-                        _logger.LogWarning("User not authenticated, using default seller ID: 1");
+                        _logger.LogInformation("Setting seller ID to authenticated user: {SellerId}", auctionProduct.SellerId);
                     }
 
+                    // Set current price to start price if not set
                     if (auctionProduct.CurrentPrice <= 0)
                     {
                         auctionProduct.CurrentPrice = auctionProduct.StartPrice;
+                        _logger.LogInformation("Setting current price to start price: {Price}", auctionProduct.CurrentPrice);
                     }
 
                     // Log detailed product info before creating
@@ -284,10 +328,13 @@ namespace MarketMinds.Web.Controllers
                             _logger.LogError(ex, "Service connectivity check failed");
                         }
 
+                        // Create the auction product
+                        _logger.LogInformation("TRACE: Before service call - EndTime: {EndTime}", auctionProduct.EndTime);
                         bool result = false;
                         try
                         {
                             result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
+                            _logger.LogInformation("TRACE: After service call - Result: {Result}", result);
                         }
                         catch (Exception ex)
                         {
@@ -312,7 +359,7 @@ namespace MarketMinds.Web.Controllers
 
                         if (result)
                         {
-                            _logger.LogInformation("Auction product created successfully");
+                            _logger.LogInformation("Successfully created auction product");
                             return RedirectToAction("Index", "AuctionProducts");
                         }
                         else
@@ -576,7 +623,7 @@ namespace MarketMinds.Web.Controllers
             }
             else
             {
-                _logger.LogWarning("Invalid model state when creating borrow product: {Errors}",
+                _logger.LogWarning("Invalid model state when creating borrow product: {Errors}", 
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
 
@@ -595,14 +642,14 @@ namespace MarketMinds.Web.Controllers
         public async Task<IActionResult> CreateBuyProduct(BuyProduct buyProduct, string tagIds, string imageUrls)
         {
             _logger.LogInformation("Creating a new buy product");
-
+            
             // Log user authentication status and count of claims
-            _logger.LogInformation("User authentication status: {IsAuthenticated}, Claims count: {ClaimsCount}",
+            _logger.LogInformation("User authentication status: {IsAuthenticated}, Claims count: {ClaimsCount}", 
                 User.Identity?.IsAuthenticated, User.Claims?.Count() ?? 0);
-
+            
             // Debug log all received values
             _logger.LogInformation("Initial buyProduct.SellerId: {SellerId}", buyProduct?.SellerId);
-
+            
             // Debug log all received values
             _logger.LogInformation("Received buyProduct: Title={Title}, Description={Description}, " +
                 "CategoryId={CategoryId}, ConditionId={ConditionId}, " +
@@ -628,11 +675,11 @@ namespace MarketMinds.Web.Controllers
                 buyProduct.SellerId = 1;
                 _logger.LogWarning("User not authenticated, using default seller ID: 1");
             }
-
+            
             // Ensure we have a valid Seller object
             buyProduct.Seller = new User { Id = buyProduct.SellerId };
             _logger.LogInformation("Buy product seller ID after setup: {SellerId}", buyProduct.SellerId);
-
+            
             // Ensure we have valid Category and Condition
             if (buyProduct.CategoryId <= 0)
             {
@@ -737,7 +784,6 @@ namespace MarketMinds.Web.Controllers
                     {
                         buyProduct.Category = new Category { Id = buyProduct.CategoryId };
                     }
-
                     if (buyProduct.ConditionId > 0 && buyProduct.Condition == null)
                     {
                         buyProduct.Condition = new Condition { Id = buyProduct.ConditionId };
@@ -805,7 +851,6 @@ namespace MarketMinds.Web.Controllers
                     {
                         var repository = repositoryField.GetValue(buyProductsService);
                         var repoMethodInfo = repository.GetType().GetMethod("CreateListing");
-
                         if (repoMethodInfo != null)
                         {
                             repoMethodInfo.Invoke(repository, new[] { apiProduct });
@@ -813,7 +858,6 @@ namespace MarketMinds.Web.Controllers
                             return RedirectToAction("Index", "BuyProducts");
                         }
                     }
-
                     // Fallback to standard method if reflection fails
                     _logger.LogInformation("About to call buyProductsService.CreateListing with SellerId={SellerId}", buyProduct.SellerId);
                     buyProductsService.CreateListing(buyProduct);
@@ -828,16 +872,15 @@ namespace MarketMinds.Web.Controllers
             }
             else
             {
-                _logger.LogWarning("Invalid model state when creating buy product: {Errors}",
+                _logger.LogWarning("Invalid model state when creating buy product: {Errors}", 
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
-
+            
             // If we get here, something went wrong
             // Reload categories, conditions, and tags for the view
             ViewBag.Categories = _categoryService.GetAllProductCategories();
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
-
             return View("Create", new BuyProduct());
         }
 
@@ -845,11 +888,16 @@ namespace MarketMinds.Web.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel 
+            var errorModel = new ErrorViewModel 
             { 
                 RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
-                ErrorMessage = HttpContext.Items["ErrorMessage"]?.ToString()
-            });
+                ErrorMessage = TempData["ErrorMessage"] as string ?? "An unexpected error occurred"
+            };
+            
+            _logger.LogInformation("Displaying error page. RequestId: {RequestId}, Message: {Message}", 
+                errorModel.RequestId, errorModel.ErrorMessage);
+                
+            return View(errorModel);
         }
     }
-}
+} 
