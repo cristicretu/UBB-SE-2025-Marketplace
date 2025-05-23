@@ -77,7 +77,7 @@
                                     </a>
                                 </li>
                             }
-                            
+
                             <li class="relative dropdown-container">
                                 <a class="hover:text-primary-light transition flex items-center cursor-pointer"
                                     id="userDropdown">
@@ -90,23 +90,23 @@
                                 </a>
                                 <div id="userDropdownContent"
                                     class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-10">
-                                    <a asp-controller="Account" asp-action="Index" 
+                                    <a asp-controller="Account" asp-action="Index"
                                         class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Account</a>
-                                    <a asp-controller="Order" asp-action="OrderHistory" 
+                                    <a asp-controller="Order" asp-action="OrderHistory"
                                         class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Orders</a>
                                     @if (isBuyer)
                                     {
-                                        <a href="http://localhost:3000/Reviews/ReviewsGiven" 
+                                        <a href="http://localhost:3000/Reviews/ReviewsGiven"
                                             class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
                                     }
                                     else if (isSeller)
                                     {
-                                        <a href="http://localhost:3000/Reviews/ReviewsReceived" 
+                                        <a href="http://localhost:3000/Reviews/ReviewsReceived"
                                             class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
                                     }
                                     else
                                     {
-                                        <a asp-controller="Review" asp-action="MyReviews" 
+                                        <a asp-controller="Review" asp-action="MyReviews"
                                             class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Reviews</a>
                                     }
                                     <div class="border-t border-gray-100"></div>
@@ -117,7 +117,7 @@
                                     </form>
                                 </div>
                             </li>
-                            
+
                             @if (isSeller || isAdmin)
                             {
                                 @if (isAdmin)
@@ -132,7 +132,7 @@
                                         asp-action="Create">Create</a>
                                 </li>
                             }
-                            
+
                             @if (isBuyer || isAdmin)
                             {
                                 <li>
