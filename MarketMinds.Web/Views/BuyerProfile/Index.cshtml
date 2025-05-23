@@ -13,100 +13,156 @@
     .profile-container {
         background: #f8f9fa;
         min-height: 100vh;
-        padding: 1rem 0;
+        padding: 2rem 0;
     }
 
     .profile-card {
         background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-        margin-bottom: 1rem;
-        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 0;
+        margin-bottom: 2rem;
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+        max-width: 1000px;
+        margin: 0 auto;
     }
 
     .profile-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        padding: 2rem;
         text-align: center;
-        margin-bottom: 2rem;
         position: relative;
     }
 
     .profile-title {
-        font-size: 2rem;
+        font-size: 1.8rem;
         font-weight: 600;
-        color: #343a40;
         margin-bottom: 0.5rem;
     }
 
     .profile-subtitle {
-        color: #6c757d;
+        opacity: 0.9;
         font-size: 1rem;
+        margin-bottom: 0;
     }
 
     .badge-container {
         position: absolute;
-        top: 0;
-        right: 0;
-        background: #f8f9fa;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
         padding: 0.8rem 1.2rem;
         border-radius: 8px;
-        border: 1px solid #dee2e6;
         text-align: center;
         min-width: 100px;
     }
 
     .badge-title {
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: 600;
-        color: #495057;
         margin-bottom: 0.2rem;
     }
 
     .badge-discount {
-        font-size: 0.85rem;
-        color: #6c757d;
+        font-size: 0.8rem;
+        opacity: 0.9;
     }
 
-    .section-card {
-        background: white;
-        border-radius: 6px;
-        padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        border: 1px solid #dee2e6;
-        margin-bottom: 1rem;
+    .profile-content {
+        padding: 2rem;
     }
 
-    .section-title {
-        font-size: 1.2rem;
+    .profile-picture-section {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .profile-picture {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
         font-weight: 600;
-        color: #495057;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid #dee2e6;
+        margin-right: 1.5rem;
+        position: relative;
+    }
+
+    .edit-picture-btn {
+        position: absolute;
+        bottom: -5px;
+        right: -5px;
+        background: #007bff;
+        border: 2px solid white;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 0.2rem;
+    }
+
+    .profile-email {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
 
     .form-group {
-        margin-bottom: 1rem;
+        margin-bottom: 0;
     }
 
     .form-label {
         font-weight: 500;
         color: #495057;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.5rem;
         font-size: 0.9rem;
+        display: block;
     }
 
     .form-control {
         border: 1px solid #ced4da;
-        border-radius: 4px;
-        padding: 0.6rem 0.8rem;
+        border-radius: 6px;
+        padding: 0.75rem;
         font-size: 0.9rem;
-        transition: border-color 0.2s ease;
+        transition: all 0.2s ease;
+        width: 100%;
     }
 
     .form-control:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        outline: none;
     }
 
     .form-control[readonly] {
@@ -115,75 +171,124 @@
         color: #6c757d;
     }
 
-    .checkbox-container {
+    .address-section {
         background: #f8f9fa;
-        border-radius: 4px;
-        padding: 0.8rem;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .address-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
         margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .address-icon {
+        width: 18px;
+        height: 18px;
+        color: #3B82F6;
+    }
+
+    .checkbox-container {
+        background: white;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
         border: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
 
     .form-check-input {
-        width: 1rem;
-        height: 1rem;
-        margin-right: 0.5rem;
-        border: 1px solid #ced4da;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #ced4da;
+        border-radius: 4px;
+        margin: 0;
     }
 
     .form-check-input:checked {
-        background-color: #007bff;
-        border-color: #007bff;
+        background-color: #3B82F6;
+        border-color: #3B82F6;
     }
 
     .form-check-label {
-        font-weight: 400;
+        font-weight: 500;
         color: #495057;
         font-size: 0.9rem;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .address-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .address-full-width {
+        grid-column: 1 / -1;
     }
 
     .save-btn {
-        background: #007bff;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
         border: none;
-        border-radius: 4px;
-        padding: 0.8rem 2rem;
+        border-radius: 6px;
+        padding: 0.75rem 2rem;
         font-size: 1rem;
         font-weight: 500;
         color: white;
-        transition: background-color 0.2s ease;
-        margin: 1rem auto;
-        display: block;
+        transition: all 0.2s ease;
+        float: right;
+        margin-top: 1rem;
+        margin-bottom: 2rem;
     }
 
     .save-btn:hover {
-        background: #0056b3;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
 
-    .quick-actions {
+    .contract-actions {
         background: white;
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 1.5rem;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        border: 1px solid #dee2e6;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
         text-align: center;
+        max-width: 1000px;
+        margin: 0 auto;
     }
 
-    .quick-actions-title {
-        font-size: 1.3rem;
+    .contract-title {
+        font-size: 1.2rem;
         font-weight: 600;
         color: #495057;
         margin-bottom: 1rem;
     }
 
+    .contract-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
     .action-btn {
         background: #f8f9fa;
         border: 1px solid #dee2e6;
-        border-radius: 4px;
+        border-radius: 6px;
         padding: 0.6rem 1.2rem;
-        margin: 0.25rem;
-        font-weight: 400;
+        font-weight: 500;
         color: #495057;
         text-decoration: none;
-        display: inline-block;
         transition: all 0.2s ease;
         font-size: 0.9rem;
     }
@@ -193,91 +298,61 @@
         border-color: #adb5bd;
         color: #495057;
         text-decoration: none;
-    }
-
-    .contract-section {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        padding: 1rem;
-        text-align: center;
-        margin-top: 1rem;
-    }
-
-    .contract-section form {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .contract-section .form-label {
-        font-size: 1rem;
-        font-weight: 500;
-        color: #495057;
-        margin-bottom: 0;
-        white-space: nowrap;
-    }
-
-    .contract-section .form-control {
-        width: 150px;
-        margin: 0;
+        transform: translateY(-1px);
     }
 
     .generate-btn {
         background: #6c757d;
         border: 1px solid #6c757d;
-        border-radius: 4px;
-        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        padding: 0.6rem 1rem;
         color: white;
-        font-weight: 400;
+        font-weight: 500;
         font-size: 0.9rem;
-        transition: background-color 0.2s ease;
-        white-space: nowrap;
+        transition: all 0.2s ease;
     }
 
     .generate-btn:hover {
         background: #5a6268;
         border-color: #5a6268;
+        transform: translateY(-1px);
     }
 
-    .modal-content {
-        border-radius: 8px;
-        border: none;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    .public-profile {
+        text-align: center;
+        padding: 2rem;
     }
 
-    .modal-header {
-        border-bottom: 1px solid #dee2e6;
-        padding: 1rem 1.5rem;
-    }
-
-    .modal-body {
-        padding: 1rem 1.5rem;
-    }
-
-    .modal-footer {
-        border-top: 1px solid #dee2e6;
-        padding: 1rem 1.5rem;
+    .public-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        max-width: 600px;
+        margin: 0 auto;
     }
 
     @@media (max-width: 768px) {
-        .profile-card {
-            padding: 1rem;
+        .form-grid, .address-grid, .public-info-grid {
+            grid-template-columns: 1fr;
         }
         
-        .badge-container {
-            position: static;
-            margin: 1rem auto 0;
+        .profile-picture-section {
+            flex-direction: column;
+            text-align: center;
         }
         
-        .profile-title {
-            font-size: 1.5rem;
+        .profile-picture {
+            margin-right: 0;
+            margin-bottom: 1rem;
         }
         
-        .section-card {
-            padding: 1rem;
+        .contract-content {
+            flex-direction: column;
+        }
+        
+        .save-btn {
+            float: none;
+            width: 100%;
         }
     }
 </style>
@@ -286,8 +361,8 @@
     <div class="container">
         <div class="profile-card">
             <div class="profile-header">
-                <h1 class="profile-title">@(canEdit ? "Manage Buyer Profile" : $"{Model.FirstName} {Model.LastName} - Buyer Profile")</h1>
-                <p class="profile-subtitle">@(canEdit ? "View and edit your profile details below" : "Public buyer profile")</p>
+                <h1 class="profile-title">@(canEdit ? "Edit Profile" : $"{Model.FirstName} {Model.LastName}")</h1>
+                <p class="profile-subtitle">@(canEdit ? "Manage your profile information" : "Public buyer profile")</p>
                 @if (!string.IsNullOrEmpty(Model.Badge))
                 {
                     <div class="badge-container">
@@ -300,46 +375,56 @@
                 }
             </div>
 
-            @if (canEdit)
-            {
-                <form asp-action="Update" method="post">
-                    <input type="hidden" asp-for="BuyerId" />
+            <div class="profile-content">
+                @if (canEdit)
+                {
+                    <form asp-action="Update" method="post">
+                        <input type="hidden" asp-for="BuyerId" />
 
-                    <div class="row">
-                        <!-- Personal Information -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="section-card">
-                                <h4 class="section-title">Personal Information</h4>
-                                <div class="form-group">
-                                    <label asp-for="FirstName" class="form-label">First Name</label>
-                                    <input asp-for="FirstName" class="form-control" />
-                                    <span asp-validation-for="FirstName" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="LastName" class="form-label">Last Name</label>
-                                    <input asp-for="LastName" class="form-control" />
-                                    <span asp-validation-for="LastName" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="Email" class="form-label">Email</label>
-                                    <input asp-for="Email" class="form-control" readonly />
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
-                                    <input asp-for="PhoneNumber" class="form-control" />
-                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                                </div>
+                        <!-- Personal Information Grid -->
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label asp-for="FirstName" class="form-label">First Name</label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="LastName" class="form-label">Last Name</label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Email" class="form-label">Email</label>
+                                <input asp-for="Email" class="form-control" readonly />
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                             </div>
                         </div>
 
-                        <!-- Billing Address -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="section-card">
-                                <h4 class="section-title">Billing Address</h4>
+                        <!-- Address Section -->
+                        <div class="address-section">
+                            <div class="address-title">
+                                <svg class="address-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                </svg>
+                                Address Information
+                            </div>
+                            
+                            <!-- Billing Address -->
+                            <h6 style="font-weight: 600; color: #495057; margin-bottom: 1rem;">Billing Address</h6>
+                            <div class="address-grid">
                                 <div class="form-group">
-                                    <label asp-for="BillingStreet" class="form-label">Street</label>
+                                    <label asp-for="BillingStreet" class="form-label">Street Address</label>
                                     <input asp-for="BillingStreet" class="form-control" />
                                     <span asp-validation-for="BillingStreet" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="BillingPostalCode" class="form-label">Postal Code</label>
+                                    <input asp-for="BillingPostalCode" class="form-control" />
+                                    <span asp-validation-for="BillingPostalCode" class="text-danger"></span>
                                 </div>
                                 <div class="form-group">
                                     <label asp-for="BillingCity" class="form-label">City</label>
@@ -351,29 +436,27 @@
                                     <input asp-for="BillingCountry" class="form-control" />
                                     <span asp-validation-for="BillingCountry" class="text-danger"></span>
                                 </div>
-                                <div class="form-group">
-                                    <label asp-for="BillingPostalCode" class="form-label">Postal Code</label>
-                                    <input asp-for="BillingPostalCode" class="form-control" />
-                                    <span asp-validation-for="BillingPostalCode" class="text-danger"></span>
-                                </div>
                             </div>
-                        </div>
 
-                        <!-- Shipping Address -->
-                        <div class="col-lg-4 col-md-12">
-                            <div class="section-card">
-                                <h4 class="section-title">Shipping Address</h4>
-                                <div class="checkbox-container">
-                                    <div class="form-check">
-                                        <input asp-for="UseSameAddress" class="form-check-input" id="useSameAddress" />
-                                        <label class="form-check-label" for="useSameAddress">Same as Billing Address</label>
-                                    </div>
-                                </div>
-                                <div id="shippingAddressFields">
+                            <!-- Same Address Checkbox -->
+                            <div class="checkbox-container" style="margin-top: 1.5rem;">
+                                <input asp-for="UseSameAddress" class="form-check-input" id="useSameAddress" />
+                                <label class="form-check-label" for="useSameAddress">Use same address for shipping</label>
+                            </div>
+
+                            <!-- Shipping Address -->
+                            <div id="shippingAddressFields">
+                                <h6 style="font-weight: 600; color: #495057; margin-bottom: 1rem;">Shipping Address</h6>
+                                <div class="address-grid">
                                     <div class="form-group">
-                                        <label asp-for="ShippingStreet" class="form-label">Street</label>
+                                        <label asp-for="ShippingStreet" class="form-label">Street Address</label>
                                         <input asp-for="ShippingStreet" class="form-control" />
                                         <span asp-validation-for="ShippingStreet" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label asp-for="ShippingPostalCode" class="form-label">Postal Code</label>
+                                        <input asp-for="ShippingPostalCode" class="form-control" />
+                                        <span asp-validation-for="ShippingPostalCode" class="text-danger"></span>
                                     </div>
                                     <div class="form-group">
                                         <label asp-for="ShippingCity" class="form-label">City</label>
@@ -385,30 +468,22 @@
                                         <input asp-for="ShippingCountry" class="form-control" />
                                         <span asp-validation-for="ShippingCountry" class="text-danger"></span>
                                     </div>
-                                    <div class="form-group">
-                                        <label asp-for="ShippingPostalCode" class="form-label">Postal Code</label>
-                                        <input asp-for="ShippingPostalCode" class="form-control" />
-                                        <span asp-validation-for="ShippingPostalCode" class="text-danger"></span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Submit Button -->
-                    <button type="submit" class="save-btn">
-                        Save Changes
-                    </button>
-                </form>
-            }
-            else
-            {
-                <!-- Public Profile View (Read-only) -->
-                <div class="row">
-                    <!-- Public Information Only -->
-                    <div class="col-lg-6 col-md-8 mx-auto">
-                        <div class="section-card">
-                            <h4 class="section-title">Public Information</h4>
+                        <!-- Save Button -->
+                        <button type="submit" class="save-btn">
+                            Save Changes
+                        </button>
+                        <div class="clearfix"></div>
+                    </form>
+                }
+                else
+                {
+                    <!-- Public Profile View -->
+                    <div class="public-profile">
+                        <div class="public-info-grid">
                             <div class="form-group">
                                 <label class="form-label">First Name</label>
                                 <input value="@Model.FirstName" class="form-control" readonly />
@@ -427,28 +502,26 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
         </div>
 
         @if (canEdit)
         {
-            <!-- Contract Actions (only for own profile) -->
-            <div class="quick-actions">
-                <h3 class="quick-actions-title">Contract Management</h3>
+            <!-- Contract Actions -->
+            <div class="contract-actions">
+                <h3 class="contract-title">Contract Management</h3>
                 
-                <div class="contract-section">
-                    <div class="d-flex justify-content-center flex-wrap gap-3 align-items-center">
-                        <!-- Renew Contract -->
-                        <a href="@Url.Action("Index", "RenewContract")" class="action-btn">Renew Contract</a>
-                        
-                        <!-- Generate Contract Form -->
-                        <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="d-flex align-items-center gap-3">
-                            <label for="contractId" class="form-label mb-0">Contract ID:</label>
-                            <input type="number" class="form-control" id="contractId" name="contractId" required style="width: 150px;">
-                            <button type="submit" class="generate-btn">Generate Contract</button>
-                        </form>
-                    </div>
+                <div class="contract-content">
+                    <!-- Renew Contract -->
+                    <a href="@Url.Action("Index", "RenewContract")" class="action-btn">Renew Contract</a>
+                    
+                    <!-- Generate Contract Form -->
+                    <form asp-controller="Contract" asp-action="GenerateContract" method="post" style="display: flex; align-items: center; gap: 0.75rem;">
+                        <label for="contractId" class="form-label" style="margin: 0; font-weight: 500;">Contract ID:</label>
+                        <input type="number" class="form-control" id="contractId" name="contractId" required style="width: 120px; margin: 0;">
+                        <button type="submit" class="generate-btn">Generate</button>
+                    </form>
                 </div>
             </div>
         }
@@ -489,15 +562,6 @@
                 });
             }
 
-            // Function to clear shipping address fields
-            function clearShippingFields() {
-                console.log("clearShippingFields called");
-                $("#ShippingStreet").val("");
-                $("#ShippingCity").val("");
-                $("#ShippingCountry").val("");
-                $("#ShippingPostalCode").val("");
-            }
-
             // Function to toggle shipping address fields based on checkbox
             function toggleShippingFields() {
                 var isChecked = $("#useSameAddress").is(":checked");
@@ -513,7 +577,6 @@
                     console.log("Checkbox is unchecked - showing shipping fields");
                     // Show the shipping address fields
                     $("#shippingAddressFields").slideDown(300);
-                    // Don't clear the fields - let user keep their values
                 }
             }
 
@@ -550,7 +613,7 @@
                 }
             });
 
-            // Before form submission - just ensure data is properly set, don't prevent submission
+            // Before form submission - ensure data is properly set
             $('form[action*="Update"]').on('submit', function(e) {
                 console.log("Profile form submission started");
                 
@@ -579,7 +642,6 @@
                 console.log("UseSameAddress:", $("#useSameAddress").is(":checked"));
                 
                 console.log("Allowing form to submit normally...");
-                // Don't prevent submission - let it proceed normally
             });
             
             console.log("JavaScript initialization complete");
