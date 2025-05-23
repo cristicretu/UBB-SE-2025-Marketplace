@@ -1,24 +1,35 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
-using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services.ImagineUploadService;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services.ImagineUploadService;
+using Microsoft.Extensions.Configuration;
+using System;
 
-namespace MarketMinds.Tests.Services.ImagineUploadService
+namespace MarketMinds.Test.Services.ImageUploadService
 {
     [TestFixture]
-    public class ImageUploadServiceTests
+    public class ImageUploadServiceTest
     {
         private IImageUploadService _service;
+        private IConfiguration _mockConfig;
 
         [SetUp]
         public void Setup()
         {
-            // Use the real service for tests that don't hit Imgur
-            _service = new ImageUploadService();
+            // Mock configuration with a valid Imgur Client ID
+            var inMemorySettings = new Dictionary<string, string> {
+                {"ImgurSettings:ClientId", "12345678901234567890"} // 20 chars, valid
+            };
+            _mockConfig = new ConfigurationBuilder()
+                .AddInMemoryCollection(inMemorySettings)
+                .Build();
+
+            _service = new MarketMinds.Shared.Services.ImagineUploadService.ImageUploadService(_mockConfig);
+
         }
 
         [Test]
@@ -45,6 +56,13 @@ namespace MarketMinds.Tests.Services.ImagineUploadService
         }
 
         [Test]
+        public void FormatImagesString_NullList_ReturnsEmptyString()
+        {
+            var result = _service.FormatImagesString(null);
+            Assert.That(result, Is.EqualTo(string.Empty));
+        }
+
+        [Test]
         public void ParseImagesString_ParsesCorrectly()
         {
             string imageString = "https://imgur.com/image1.png\nhttps://imgur.com/image2.png";
@@ -66,26 +84,87 @@ namespace MarketMinds.Tests.Services.ImagineUploadService
         }
 
         [Test]
+        public void ParseImagesString_IgnoresInvalidUrls()
+        {
+            var images = _service.ParseImagesString("not_a_url\nhttps://imgur.com/image.png");
+            Assert.That(images.Count, Is.EqualTo(1));
+            Assert.That(images[0].Url, Is.EqualTo("https://imgur.com/image.png"));
+        }
+
+        [Test]
+        public void UploadImage_ThrowsOnNullStream()
+        {
+            var ex = Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await _service.UploadImage(null, "file.png"));
+            Assert.That(ex.ParamName, Is.EqualTo("imageStream"));
+        }
+
+        [Test]
+        public void UploadImage_ThrowsOnNullFileName()
+        {
+            using var ms = new MemoryStream(Encoding.UTF8.GetBytes("data"));
+            var ex = Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await _service.UploadImage(ms, null));
+            Assert.That(ex.ParamName, Is.EqualTo("fileName"));
+        }
+
+        [Test]
+        public void UploadImageAsync_ThrowsOnNullOrNonexistentFile()
+        {
+            var ex1 = Assert.ThrowsAsync<ArgumentException>(async () =>
+                await _service.UploadImageAsync(null));
+            Assert.That(ex1.ParamName, Is.EqualTo("filePath"));
+
+            var ex2 = Assert.ThrowsAsync<ArgumentException>(async () =>
+                await _service.UploadImageAsync("nonexistentfile.png"));
+            Assert.That(ex2.ParamName, Is.EqualTo("filePath"));
+        }
+
+        [Test]
         public async Task AddImageToCollection_DoesNotDuplicateExisting()
         {
-            // Arrange
+            // Use a fake service to avoid real upload
+            var fakeService = new FakeImageUploadService("https://imgur.com/image1.png");
             string existingImage = "https://imgur.com/image1.png";
             string currentImagesString = existingImage;
 
-            var fakeService = new FakeImageUploadService(existingImage);
-
-            // Act
             string result = await fakeService.AddImageToCollection(
                 new MemoryStream(Encoding.UTF8.GetBytes("fake image content")),
                 "image.png",
                 currentImagesString
             );
 
-            // Assert
             Assert.That(result, Is.EqualTo(existingImage));
         }
 
-        // Fake service implementing only IImageUploadService
+        [Test]
+        public async Task AddImageToCollection_AddsNewImage()
+        {
+            var fakeService = new FakeImageUploadService("https://imgur.com/newimage.png");
+            string currentImagesString = "https://imgur.com/image1.png";
+
+            string result = await fakeService.AddImageToCollection(
+                new MemoryStream(Encoding.UTF8.GetBytes("fake image content")),
+                "image.png",
+                currentImagesString
+            );
+
+            Assert.That(result, Is.EqualTo("https://imgur.com/image1.png\nhttps://imgur.com/newimage.png"));
+        }
+
+        [Test]
+        public async Task AddImageToCollection_EmptyCollection_AddsImage()
+        {
+            var fakeService = new FakeImageUploadService("https://imgur.com/newimage.png");
+            string result = await fakeService.AddImageToCollection(
+                new MemoryStream(Encoding.UTF8.GetBytes("fake image content")),
+                "image.png",
+                ""
+            );
+            Assert.That(result, Is.EqualTo("https://imgur.com/newimage.png"));
+        }
+
+        // Fake service implementing only IImageUploadService for AddImageToCollection logic
         private class FakeImageUploadService : IImageUploadService
         {
             private readonly string _fakeLink;
@@ -112,12 +191,14 @@ namespace MarketMinds.Tests.Services.ImagineUploadService
 
             public string FormatImagesString(List<Image> images)
             {
-                return string.Join("\n", images.Select(i => i.Url));
+                return images != null ? string.Join("\n", images.Select(i => i.Url)) : string.Empty;
             }
 
             public List<Image> ParseImagesString(string imagesString)
             {
-                return imagesString.Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries)
+                if (string.IsNullOrEmpty(imagesString))
+                    return new List<Image>();
+                return imagesString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)
                                    .Select(url => new Image(url))
                                    .ToList();
             }
