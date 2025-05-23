@@ -131,11 +131,12 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             }
         }
 
-        public BuyProduct GetProductById(int id)
+        public BuyProduct? GetProductById(int id)
         {
             if (id <= 0)
             {
-                throw new ArgumentException("ID must be a positive number.", nameof(id));
+                Console.WriteLine($"GetProductById called with invalid ID: {id}");
+                return null;
             }
 
             try
@@ -144,21 +145,19 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 Console.WriteLine($"Received JSON for product {id} from server:");
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 
-                // First deserialize to DTO
-                var productDTO = JsonSerializer.Deserialize<BuyProductDTO>(json, jsonOptions);
-
-                // Then map DTO to domain model
-                var product = BuyProductMapper.FromDTO(productDTO);
-
-                if (product == null)
+                if (string.IsNullOrEmpty(json) || json.Equals("null", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new KeyNotFoundException($"Buy product with ID {id} not found.");
+                    return null;
                 }
+
+                var productDTO = JsonSerializer.Deserialize<BuyProductDTO>(json, jsonOptions);
+                if (productDTO == null)
+                {
+                    return null;
+                }
+
+                var product = BuyProductMapper.FromDTO(productDTO);
                 return product;
-            }
-            catch (KeyNotFoundException)
-            {
-                throw;
             }
             catch (Exception ex)
             {
@@ -167,7 +166,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 {
                     Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
                 }
-                throw new KeyNotFoundException($"Buy product with ID {id} not found: {ex.Message}");
+                return null;
             }
         }
 
@@ -224,8 +223,8 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             try
             {
                 // Convert BuyProduct to Product when returning
-                BuyProduct buyProduct = GetProductById(productId);
-                return buyProduct; // BuyProduct should inherit from Product, so this should work
+                BuyProduct? buyProduct = GetProductById(productId);
+                return buyProduct ?? throw new KeyNotFoundException($"Buy product with ID {productId} not found.");
             }
             catch (Exception ex)
             {
