@@ -30,7 +30,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred: {ex.Message}");
             }
         }
 
@@ -51,7 +51,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred: {ex.Message}");
             }
         }
 
@@ -107,7 +107,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the product.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred while creating the product: {ex.Message}");
             }
         }
 
@@ -137,7 +137,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while adding the image.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred while adding the image: {ex.Message}");
             }
         }
 
@@ -168,7 +168,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while updating the product.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred while updating the product: {ex.Message}");
             }
         }
 
@@ -194,7 +194,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the product.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred while deleting the product: {ex.Message}");
             }
         }
     }
