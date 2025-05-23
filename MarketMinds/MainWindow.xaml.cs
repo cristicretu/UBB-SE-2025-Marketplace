@@ -13,9 +13,6 @@ namespace MarketMinds
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        private const int BUYER = 1;
-        private const int SELLER = 2;
-
         public MainWindow()
         {
             this.InitializeComponent();

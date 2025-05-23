@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net.Http;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Shared.Services.BorrowProductsService
 {
@@ -167,7 +169,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             
             try
             {
-                var product = borrowProductsRepository.GetProductById(id);
+                var product = borrowProductsRepository.GetProductByID(id);
                 if (product == null)
                 {
                     throw new KeyNotFoundException($"Borrow product with ID {id} not found.");
@@ -244,17 +246,16 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
 
         public async Task<BorrowProduct> GetBorrowProductByIdAsync(int id)
         {
+            // In your existing sync GetProductById you already return or throw NotFound.
+            // Here we just wrap it in a Task so that callers get an actual product instead of null.
             try
             {
                 var product = GetProductById(id);
-                if (product is BorrowProduct borrowProduct)
-                {
-                    return borrowProduct;
-                }
-                return null;
+                return product as BorrowProduct;
             }
-            catch (Exception exception)
+            catch (KeyNotFoundException)
             {
+                // let the caller know there is no product
                 return null;
             }
         }
@@ -353,14 +354,12 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 return new Dictionary<string, string[]>();
             }
         }
+        Task<Product> IProductService.GetProductByIdAsync(int productId)
+        => Task.FromResult<Product>(GetBorrowProductByIdAsync(productId).Result);
 
         #endregion
 
         // merge-nicusor
-        Task<Product> IProductService.GetProductByIdAsync(int productId)
-        {
-            throw new NotImplementedException();
-        }
 
         Task<string> IProductService.GetSellerNameAsync(int? sellerId)
         {
@@ -379,5 +378,14 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             var borrowProducts = await GetAllBorrowProductsAsync();
             return borrowProducts.Cast<Product>().ToList();
         }
+
+        public async Task BorrowProductAsync(int userId, int productId, DateTime start, DateTime end)
+        {
+            await borrowProductsRepository.BorrowProductAsync(userId, productId, start, end);
+        }
+
+
+
+
     }
 }

@@ -69,7 +69,6 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
         public BorrowProduct GetProductByID(int id)
         {
             var product = context.BorrowProducts
-                .Include(product => product.Seller)
                 .Include(product => product.Condition)
                 .Include(product => product.Category)
                 .FirstOrDefault(product => product.Id == id);

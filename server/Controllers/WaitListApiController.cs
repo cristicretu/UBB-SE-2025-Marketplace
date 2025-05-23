@@ -207,17 +207,25 @@ namespace Server.Controllers
         {
             if (userId <= 0 || productId <= 0)
             {
-                return this.BadRequest("User ID and Product ID must be positive integers.");
+                return BadRequest("User ID and Product ID must be positive integers.");
             }
 
             try
             {
-                var isInWaitlist = this.waitListRepository.IsUserInWaitlist(userId, productId);
-                return this.Ok(isInWaitlist);
+                // Synchronize on the Task<bool> so we return a plain bool
+                bool isInWaitlist = waitListRepository
+                                       .IsUserInWaitlist(userId, productId)
+                                       .GetAwaiter()
+                                       .GetResult();
+
+                return Ok(isInWaitlist);
             }
             catch (Exception ex)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while checking user waitlist status: {ex.Message}");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    $"An error occurred while checking waitlist status: {ex.Message}"
+                );
             }
         }
 

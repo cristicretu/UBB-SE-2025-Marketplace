@@ -207,7 +207,7 @@
         private void OrderHistoryButton_Clicked(object sender, RoutedEventArgs e)
         {
             // merge-nicusor FIX :)
-            int user_id = 1;
+            int user_id = UserSession.CurrentUserId ?? 1;
             var orderhistorywindow = new OrderHistoryView(user_id);
             orderhistorywindow.Activate();
         }
