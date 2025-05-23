@@ -112,10 +112,14 @@ namespace MarketMinds.ViewModels
         Task<byte[]> GetPdfByContractIdAsync(long contractId);
 
         /// <summary>
+        /// Gets the error message generated during the last contract generation attempt.
+        /// </summary>
+        string GenerateContractErrorMessage { get; }
+
+        /// <summary>
         /// Asynchronously generates a contract document and saves it based on the provided contract and type.
         /// </summary>
-        /// <param name="contract">The contract object for which to generate the document.</param>
-        /// <param name="contractType">The type of the predefined contract.</param>
+        /// <param name="contractID">The ID of the contract for which to generate the document.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task GenerateAndSaveContractAsync(long contractID);
     }
