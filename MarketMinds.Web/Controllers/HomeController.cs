@@ -337,8 +337,7 @@ namespace MarketMinds.Web.Controllers
                                 }
                                 else if (int.TryParse(tagId, out int existingTagId))
                                 {
-                                    var tag = _productTagService.GetAllProductTags().FirstOrDefault(t => t.Id == existingTagId);
-                                    if (tag != null)
+                                    try
                                     {
                                         var allTags = _productTagService.GetAllProductTags();
                                         var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
