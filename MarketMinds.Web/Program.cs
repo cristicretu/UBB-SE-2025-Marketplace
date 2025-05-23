@@ -75,6 +75,25 @@ builder.Services.AddSingleton<MarketMinds.Shared.ProxyRepository.ChatbotProxyRep
 builder.Services.AddSingleton<ConversationProxyRepository>();
 builder.Services.AddSingleton<MessageProxyRepository>();
 builder.Services.AddSingleton<ReviewProxyRepository>();
+builder.Services.AddSingleton<BuyerProxyRepository>(sp =>
+    new BuyerProxyRepository(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton<SellerProxyRepository>(sp =>
+    new SellerProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+
+// Contract-related proxy repositories
+builder.Services.AddSingleton<ContractProxyRepository>(sp =>
+    new ContractProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<PDFProxyRepository>(sp =>
+    new PDFProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<ContractRenewalProxyRepository>(sp =>
+    new ContractRenewalProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<NotificationProxyRepository>(sp =>
+    new NotificationProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
 
 // Merged: Register all unique proxy repositories from both branches
 builder.Services.AddSingleton<OrderProxyRepository>(sp =>
@@ -112,6 +131,14 @@ builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatbotServi
 builder.Services.AddTransient<IConversationService, ConversationService>();
 builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();
+builder.Services.AddTransient<IBuyerService, BuyerService>();
+builder.Services.AddTransient<ISellerService, SellerService>();
+
+// Contract-related services
+builder.Services.AddTransient<IContractService, ContractService>();
+builder.Services.AddTransient<IPDFService, PDFService>();
+builder.Services.AddTransient<IContractRenewalService, ContractRenewalService>();
+builder.Services.AddTransient<INotificationContentService, NotificationContentService>();
 
 // Merged: Register all unique services from both branches
 builder.Services.AddTransient<IOrderService, OrderService>();
@@ -132,6 +159,14 @@ builder.Services.AddTransient<MarketMinds.Shared.IRepository.IChatbotRepository>
 builder.Services.AddTransient<IConversationRepository>(sp => sp.GetRequiredService<ConversationProxyRepository>());
 builder.Services.AddTransient<IMessageRepository>(sp => sp.GetRequiredService<MessageProxyRepository>());
 builder.Services.AddTransient<IReviewRepository>(sp => sp.GetRequiredService<ReviewProxyRepository>());
+builder.Services.AddTransient<IBuyerRepository>(sp => sp.GetRequiredService<BuyerProxyRepository>());
+builder.Services.AddTransient<ISellerRepository>(sp => sp.GetRequiredService<SellerProxyRepository>());
+
+// Contract-related repository interfaces
+builder.Services.AddTransient<IContractRepository>(sp => sp.GetRequiredService<ContractProxyRepository>());
+builder.Services.AddTransient<IPDFRepository>(sp => sp.GetRequiredService<PDFProxyRepository>());
+builder.Services.AddTransient<IContractRenewalRepository>(sp => sp.GetRequiredService<ContractRenewalProxyRepository>());
+builder.Services.AddTransient<INotificationRepository>(sp => sp.GetRequiredService<NotificationProxyRepository>());
 
 // Merged: Register all unique repository interfaces from both branches
 builder.Services.AddTransient<IOrderHistoryRepository>(sp => sp.GetRequiredService<OrderHistoryProxyRepository>());

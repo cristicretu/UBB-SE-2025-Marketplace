@@ -90,8 +90,21 @@
                                 </a>
                                 <div id="userDropdownContent"
                                     class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-10">
-                                    <a asp-controller="Account" asp-action="Index" 
-                                        class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Account</a>
+                                    @if (isBuyer)
+                                    {
+                                        <a asp-controller="BuyerProfile" asp-action="Index" 
+                                            class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Account</a>
+                                    }
+                                    else if (isSeller)
+                                    {
+                                        <a asp-controller="SellerProfile" asp-action="Index" 
+                                            class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Account</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Account" asp-action="Index" 
+                                            class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Account</a>
+                                    }
                                     <a asp-controller="Order" asp-action="OrderHistory" 
                                         class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Orders</a>
                                     @if (isBuyer)
@@ -219,11 +232,29 @@
                     dropdownContent.classList.toggle('hidden');
                 });
 
-                // Close dropdown when clicking outside
+                // Close dropdown when clicking outside, but allow links to work normally
                 document.addEventListener('click', function (e) {
+                    // If clicking on a link inside the dropdown, let it work normally
+                    if (e.target.tagName === 'A' && dropdownContent.contains(e.target)) {
+                        dropdownContent.classList.add('hidden');
+                        return; // Don't prevent default for links
+                    }
+                    
                     if (!userDropdown.contains(e.target) && !dropdownContent.contains(e.target)) {
                         dropdownContent.classList.add('hidden');
                     }
+                });
+
+                // Ensure links in dropdown work properly
+                const dropdownLinks = dropdownContent.querySelectorAll('a');
+                dropdownLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        // Remove any target="_blank" if it exists
+                        this.removeAttribute('target');
+                        // Ensure it navigates in the same window
+                        e.stopPropagation();
+                        dropdownContent.classList.add('hidden');
+                    });
                 });
             }
         });

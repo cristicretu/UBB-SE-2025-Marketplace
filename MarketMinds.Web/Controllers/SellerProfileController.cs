@@ -4,6 +4,7 @@ using MarketMinds.Shared.Services;
 using WebMarketplace.Models;
 using MarketMinds.Shared.Services.UserService;
 using MarketMinds.Web.Models;
+using System.Security.Claims;
 
 namespace WebMarketplace.Controllers
 {
@@ -33,13 +34,37 @@ namespace WebMarketplace.Controllers
         }
 
         /// <summary>
-        /// Gets the current user ID.
+        /// Gets the current user ID from authentication claims.
         /// </summary>
         /// <returns>The current user ID.</returns>
         private int GetCurrentUserId()
         {
-            // For testing purposes until authentication is implemented
-            return UserSession.CurrentUserId ?? 1;
+            // Get the user ID from claims (proper authentication approach)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+            {
+                _logger.LogInformation("Got user ID {UserId} from claims", userId);
+                return userId;
+            }
+
+            // Try custom claim as fallback
+            var customIdClaim = User.FindFirst("UserId");
+            if (customIdClaim != null && int.TryParse(customIdClaim.Value, out int customUserId))
+            {
+                _logger.LogInformation("Got user ID {UserId} from custom claim", customUserId);
+                return customUserId;
+            }
+
+            // Fallback to UserSession (for backward compatibility)
+            if (UserSession.CurrentUserId.HasValue)
+            {
+                _logger.LogWarning("Falling back to UserSession.CurrentUserId: {UserId}", UserSession.CurrentUserId.Value);
+                return UserSession.CurrentUserId.Value;
+            }
+
+            // If no authentication found, return 0 to indicate unauthorized
+            _logger.LogWarning("No valid user ID found in claims or session");
+            return 0;
         }
 
         /// <summary>
@@ -64,6 +89,15 @@ namespace WebMarketplace.Controllers
             try
             {
                 _logger.LogInformation("Loading Seller Profile page");
+
+                int userId = GetCurrentUserId();
+                
+                // Check if user is authenticated
+                if (userId == 0)
+                {
+                    _logger.LogWarning("User not authenticated, redirecting to login");
+                    return RedirectToAction("Login", "Account");
+                }
 
                 var user = await GetCurrentUser();
 

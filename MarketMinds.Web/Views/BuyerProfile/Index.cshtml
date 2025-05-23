@@ -1,153 +1,413 @@
 ﻿@model WebMarketplace.Models.BuyerProfileViewModel
 @{
     ViewData["Title"] = "Buyer Profile";
-    var UserId = UserSession.CurrentUserId;
+    // Get user ID from claims instead of UserSession to avoid null reference
+    var UserId = User?.Identity?.IsAuthenticated == true ? 
+        int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0") : 0;
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="text-primary">Buyer Profile</h1>
-            <p class="text-secondary">View and edit your profile details below</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <div class="badge bg-@(Model.Badge.ToLower()) p-2">
-                <h5 class="mb-0">@Model.Badge</h5>
-                <small>@(Model.Discount * 100)% Discount</small>
+<style>
+    .profile-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 1rem 0;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .profile-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    .badge-container {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #f8f9fa;
+        padding: 0.8rem 1.2rem;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        text-align: center;
+        min-width: 100px;
+    }
+
+    .badge-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.2rem;
+    }
+
+    .badge-discount {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 6px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.3rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        color: #6c757d;
+    }
+
+    .checkbox-container {
+        background: #f8f9fa;
+        border-radius: 4px;
+        padding: 0.8rem;
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .form-check-input {
+        width: 1rem;
+        height: 1rem;
+        margin-right: 0.5rem;
+        border: 1px solid #ced4da;
+    }
+
+    .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .form-check-label {
+        font-weight: 400;
+        color: #495057;
+        font-size: 0.9rem;
+    }
+
+    .save-btn {
+        background: #007bff;
+        border: none;
+        border-radius: 4px;
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+        font-weight: 500;
+        color: white;
+        transition: background-color 0.2s ease;
+        margin: 1rem auto;
+        display: block;
+    }
+
+    .save-btn:hover {
+        background: #0056b3;
+    }
+
+    .quick-actions {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    .quick-actions-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+
+    .action-btn {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 0.6rem 1.2rem;
+        margin: 0.25rem;
+        font-weight: 400;
+        color: #495057;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+
+    .action-btn:hover {
+        background: #e9ecef;
+        border-color: #adb5bd;
+        color: #495057;
+        text-decoration: none;
+    }
+
+    .contract-section {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 1rem;
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .contract-section form {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .contract-section .form-label {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+
+    .contract-section .form-control {
+        width: 150px;
+        margin: 0;
+    }
+
+    .generate-btn {
+        background: #6c757d;
+        border: 1px solid #6c757d;
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        color: white;
+        font-weight: 400;
+        font-size: 0.9rem;
+        transition: background-color 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .generate-btn:hover {
+        background: #5a6268;
+        border-color: #5a6268;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-body {
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
+        padding: 1rem 1.5rem;
+    }
+
+    @@media (max-width: 768px) {
+        .profile-card {
+            padding: 1rem;
+        }
+        
+        .badge-container {
+            position: static;
+            margin: 1rem auto 0;
+        }
+        
+        .profile-title {
+            font-size: 1.5rem;
+        }
+        
+        .section-card {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<div class="profile-container">
+    <div class="container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <h1 class="profile-title">Buyer Profile</h1>
+                <p class="profile-subtitle">View and edit your profile details below</p>
+                <div class="badge-container">
+                    <div class="badge-title">@Model.Badge</div>
+                    <div class="badge-discount">@(Model.Discount * 100)% Discount</div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <form asp-action="Update" method="post">
-        <input type="hidden" asp-for="BuyerId" />
+            <form asp-action="Update" method="post">
+                <input type="hidden" asp-for="BuyerId" />
 
-        <div class="row">
-            <!-- Personal Information -->
-            <div class="col-md-4">
-                <h4 class="mb-3">Personal Information</h4>
-                <div class="mb-3">
-                    <label asp-for="FirstName" class="form-label">First Name</label>
-                    <input asp-for="FirstName" class="form-control" />
-                    <span asp-validation-for="FirstName" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="LastName" class="form-label">Last Name</label>
-                    <input asp-for="LastName" class="form-control" />
-                    <span asp-validation-for="LastName" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label">Email</label>
-                    <input asp-for="Email" class="form-control" readonly />
-                </div>
-                <div class="mb-3">
-                    <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
-                    <input asp-for="PhoneNumber" class="form-control" />
-                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                </div>
-            </div>
+                <div class="row">
+                    <!-- Personal Information -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="section-card">
+                            <h4 class="section-title">Personal Information</h4>
+                            <div class="form-group">
+                                <label asp-for="FirstName" class="form-label">First Name</label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="LastName" class="form-label">Last Name</label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Email" class="form-label">Email</label>
+                                <input asp-for="Email" class="form-control" readonly />
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Billing Address -->
-            <div class="col-md-4">
-                <h4 class="mb-3">Billing Address</h4>
-                <div class="mb-3">
-                    <label asp-for="BillingStreet" class="form-label">Street</label>
-                    <input asp-for="BillingStreet" class="form-control" />
-                    <span asp-validation-for="BillingStreet" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="BillingCity" class="form-label">City</label>
-                    <input asp-for="BillingCity" class="form-control" />
-                    <span asp-validation-for="BillingCity" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="BillingCountry" class="form-label">Country</label>
-                    <input asp-for="BillingCountry" class="form-control" />
-                    <span asp-validation-for="BillingCountry" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="BillingPostalCode" class="form-label">Postal Code</label>
-                    <input asp-for="BillingPostalCode" class="form-control" />
-                    <span asp-validation-for="BillingPostalCode" class="text-danger"></span>
-                </div>
-            </div>
+                    <!-- Billing Address -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="section-card">
+                            <h4 class="section-title">Billing Address</h4>
+                            <div class="form-group">
+                                <label asp-for="BillingStreet" class="form-label">Street</label>
+                                <input asp-for="BillingStreet" class="form-control" />
+                                <span asp-validation-for="BillingStreet" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="BillingCity" class="form-label">City</label>
+                                <input asp-for="BillingCity" class="form-control" />
+                                <span asp-validation-for="BillingCity" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="BillingCountry" class="form-label">Country</label>
+                                <input asp-for="BillingCountry" class="form-control" />
+                                <span asp-validation-for="BillingCountry" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="BillingPostalCode" class="form-label">Postal Code</label>
+                                <input asp-for="BillingPostalCode" class="form-control" />
+                                <span asp-validation-for="BillingPostalCode" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Shipping Address -->
-            <div class="col-md-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>Shipping Address</h4>
-                    <div class="form-check">
-                        <input asp-for="UseSameAddress" class="form-check-input" id="useSameAddress" />
-                        <label class="form-check-label" for="useSameAddress">Same as Billing</label>
+                    <!-- Shipping Address -->
+                    <div class="col-lg-4 col-md-12">
+                        <div class="section-card">
+                            <h4 class="section-title">Shipping Address</h4>
+                            <div class="checkbox-container">
+                                <div class="form-check">
+                                    <input asp-for="UseSameAddress" class="form-check-input" id="useSameAddress" />
+                                    <label class="form-check-label" for="useSameAddress">Same as Billing Address</label>
+                                </div>
+                            </div>
+                            <div id="shippingAddressFields">
+                                <div class="form-group">
+                                    <label asp-for="ShippingStreet" class="form-label">Street</label>
+                                    <input asp-for="ShippingStreet" class="form-control" />
+                                    <span asp-validation-for="ShippingStreet" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="ShippingCity" class="form-label">City</label>
+                                    <input asp-for="ShippingCity" class="form-control" />
+                                    <span asp-validation-for="ShippingCity" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="ShippingCountry" class="form-label">Country</label>
+                                    <input asp-for="ShippingCountry" class="form-control" />
+                                    <span asp-validation-for="ShippingCountry" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="ShippingPostalCode" class="form-label">Postal Code</label>
+                                    <input asp-for="ShippingPostalCode" class="form-control" />
+                                    <span asp-validation-for="ShippingPostalCode" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="shippingAddressFields">
-                    <div class="mb-3">
-                        <label asp-for="ShippingStreet" class="form-label">Street</label>
-                        <input asp-for="ShippingStreet" class="form-control" />
-                        <span asp-validation-for="ShippingStreet" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="ShippingCity" class="form-label">City</label>
-                        <input asp-for="ShippingCity" class="form-control" />
-                        <span asp-validation-for="ShippingCity" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="ShippingCountry" class="form-label">Country</label>
-                        <input asp-for="ShippingCountry" class="form-control" />
-                        <span asp-validation-for="ShippingCountry" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="ShippingPostalCode" class="form-label">Postal Code</label>
-                        <input asp-for="ShippingPostalCode" class="form-control" />
-                        <span asp-validation-for="ShippingPostalCode" class="text-danger"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Submit Button -->
-        <div class="row mt-3">
-            <div class="col-12 text-center">
-                <button type="submit" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-save"></i> Save
+                <!-- Submit Button -->
+                <button type="submit" class="save-btn">
+                    Save Changes
                 </button>
-            </div>
-        </div>
-    </form>
-
-    <!-- Quick Actions -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <h3 class="text-center mb-3">Quick Actions</h3>
-            <div class="d-flex justify-content-center flex-wrap">
-                <a href="@Url.Action("Index", "BidProduct")" class="btn btn-outline-primary m-2">Bid Product</a>
-                <a href="@Url.Action("Index", "WalletRefill")" class="btn btn-outline-primary m-2">Refill Wallet</a>
-            </div>
-            <div class="d-flex justify-content-center flex-wrap mt-2">
-                <a asp-area="" asp-controller="Order" asp-action="OrderHistory" asp-route-userId="@UserId" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Order History</a>
-                <a href="@Url.Action("Index", "RenewContract")" class="btn btn-outline-primary m-2">Renew Contract</a>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Generate Contract Modal -->
-<div class="modal fade" id="generateContractModal" tabindex="-1" aria-labelledby="generateContractModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form asp-controller="Contract" asp-action="GenerateContract" method="post">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="contractId" class="form-label">Contract ID</label>
-                        <input type="number" class="form-control" id="contractId" name="contractId" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Generate</button>
-                </div>
             </form>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3 class="quick-actions-title">Quick Actions</h3>
+            <div class="d-flex justify-content-center flex-wrap">
+                <a href="@Url.Action("Index", "BidProduct")" class="action-btn">Bid Product</a>
+                <a href="@Url.Action("Index", "WalletRefill")" class="action-btn">Refill Wallet</a>
+                <a asp-area="" asp-controller="Order" asp-action="OrderHistory" asp-route-userId="@UserId" class="action-btn">Order History</a>
+                <a href="@Url.Action("Index", "RenewContract")" class="action-btn">Renew Contract</a>
+            </div>
+            
+            <div class="contract-section">
+                <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="d-flex align-items-center justify-content-center gap-3">
+                    <label for="contractId" class="form-label mb-0">Contract ID:</label>
+                    <input type="number" class="form-control" id="contractId" name="contractId" required style="width: 150px;">
+                    <button type="submit" class="generate-btn">Generate Contract</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -155,20 +415,131 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            console.log("Document ready - initializing address logic");
+            
+            // Function to copy billing address to shipping address
+            function copyBillingToShipping() {
+                console.log("copyBillingToShipping called");
+                
+                var billingStreet = $("#BillingStreet").val();
+                var billingCity = $("#BillingCity").val();
+                var billingCountry = $("#BillingCountry").val();
+                var billingPostalCode = $("#BillingPostalCode").val();
+                
+                console.log("Billing address values:", {
+                    street: billingStreet,
+                    city: billingCity,
+                    country: billingCountry,
+                    postalCode: billingPostalCode
+                });
+                
+                $("#ShippingStreet").val(billingStreet);
+                $("#ShippingCity").val(billingCity);
+                $("#ShippingCountry").val(billingCountry);
+                $("#ShippingPostalCode").val(billingPostalCode);
+                
+                console.log("Shipping address updated to:", {
+                    street: $("#ShippingStreet").val(),
+                    city: $("#ShippingCity").val(),
+                    country: $("#ShippingCountry").val(),
+                    postalCode: $("#ShippingPostalCode").val()
+                });
+            }
+
+            // Function to clear shipping address fields
+            function clearShippingFields() {
+                console.log("clearShippingFields called");
+                $("#ShippingStreet").val("");
+                $("#ShippingCity").val("");
+                $("#ShippingCountry").val("");
+                $("#ShippingPostalCode").val("");
+            }
+
             // Function to toggle shipping address fields based on checkbox
             function toggleShippingFields() {
-                if ($("#useSameAddress").is(":checked")) {
-                    $("#shippingAddressFields").hide();
+                var isChecked = $("#useSameAddress").is(":checked");
+                console.log("toggleShippingFields called, checkbox checked:", isChecked);
+                
+                if (isChecked) {
+                    console.log("Checkbox is checked - copying billing to shipping and hiding fields");
+                    // Copy billing address to shipping address FIRST
+                    copyBillingToShipping();
+                    // Then hide the shipping address fields
+                    $("#shippingAddressFields").slideUp(300);
                 } else {
-                    $("#shippingAddressFields").show();
+                    console.log("Checkbox is unchecked - showing shipping fields");
+                    // Show the shipping address fields
+                    $("#shippingAddressFields").slideDown(300);
+                    // Don't clear the fields - let user keep their values
                 }
             }
 
-            // Initial state
-            toggleShippingFields();
+            // Initial state setup
+            console.log("Setting up initial state");
+            var initialCheckState = $("#useSameAddress").is(":checked");
+            console.log("Initial checkbox state:", initialCheckState);
+            
+            // Set initial state without animation
+            if (initialCheckState) {
+                copyBillingToShipping();
+                $("#shippingAddressFields").hide();
+            } else {
+                $("#shippingAddressFields").show();
+            }
 
-            // Event handler
-            $("#useSameAddress").change(toggleShippingFields);
+            // Event handler for checkbox change
+            $("#useSameAddress").change(function() {
+                console.log("Checkbox changed!");
+                toggleShippingFields();
+            });
+
+            // Event handler for billing address changes - copy to shipping if checkbox is checked
+            $("#BillingStreet, #BillingCity, #BillingCountry, #BillingPostalCode").on('input change keyup', function() {
+                var isChecked = $("#useSameAddress").is(":checked");
+                var fieldId = $(this).attr('id');
+                var fieldValue = $(this).val();
+                
+                console.log("Billing field changed:", fieldId, "=", fieldValue, "checkbox checked:", isChecked);
+                
+                if (isChecked) {
+                    console.log("Checkbox is checked, copying billing changes to shipping");
+                    copyBillingToShipping();
+                }
+            });
+
+            // Before form submission - just ensure data is properly set, don't prevent submission
+            $('form[action*="Update"]').on('submit', function(e) {
+                console.log("Profile form submission started");
+                
+                var isChecked = $("#useSameAddress").is(":checked");
+                console.log("UseSameAddress checkbox:", isChecked);
+                
+                if (isChecked) {
+                    console.log("Checkbox checked - ensuring shipping address matches billing");
+                    copyBillingToShipping();
+                }
+                
+                // Log all form values before submission
+                console.log("Final form values before submission:");
+                console.log("Billing Address:", {
+                    street: $("#BillingStreet").val(),
+                    city: $("#BillingCity").val(),
+                    country: $("#BillingCountry").val(),
+                    postalCode: $("#BillingPostalCode").val()
+                });
+                console.log("Shipping Address:", {
+                    street: $("#ShippingStreet").val(),
+                    city: $("#ShippingCity").val(),
+                    country: $("#ShippingCountry").val(),
+                    postalCode: $("#ShippingPostalCode").val()
+                });
+                console.log("UseSameAddress:", $("#useSameAddress").is(":checked"));
+                
+                console.log("Allowing form to submit normally...");
+                // Don't prevent submission - let it proceed normally
+            });
+            
+            console.log("JavaScript initialization complete");
         });
     </script>
 }
