@@ -120,6 +120,14 @@ namespace MarketMinds.Web.Controllers
                         {
                             _logger.LogWarning(ex, "Failed to load buyer info for user ID {UserId}. This may be because the buyer doesn't exist yet. Attempting to create buyer profile.", currentUserId);
                             
+                            try 
+                            {
+                                // Attempt to create buyer profile
+                                // This is a placeholder - the actual buyer creation logic would go here
+                                _logger.LogInformation("Creating buyer profile for user {UserId}", currentUserId);
+                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                ViewBag.WishlistProductIds = new List<int>();
+                            }
                             catch (Exception createEx)
                             {
                                 _logger.LogError(createEx, "Failed to create buyer profile for user {UserId}. Continuing without wishlist data.", currentUserId);
@@ -570,6 +578,11 @@ namespace MarketMinds.Web.Controllers
 
             borrowProduct.Seller = new User { Id = borrowProduct.SellerId };
 
+            // Remove Price field from validation since BorrowProduct doesn't use it
+            ModelState.Remove("Price");
+            ModelState.Remove("price");
+            _logger.LogInformation("Removed Price field from ModelState validation for BorrowProduct");
+
             if (borrowProduct.CategoryId <= 0)
             {
                 ModelState.AddModelError("CategoryId", "Please select a valid category");
@@ -733,6 +746,19 @@ namespace MarketMinds.Web.Controllers
             }
             else
             {
+                // Detailed model state validation logging
+                _logger.LogWarning("Invalid model state when creating borrow product");
+                foreach (var modelError in ModelState)
+                {
+                    var field = modelError.Key;
+                    var errors = modelError.Value.Errors;
+                    foreach (var error in errors)
+                    {
+                        _logger.LogWarning("Model validation error - Field: {Field}, Error: {ErrorMessage}, AttemptedValue: {AttemptedValue}", 
+                            field, error.ErrorMessage, modelError.Value.AttemptedValue);
+                    }
+                }
+                
                 _logger.LogWarning("Invalid model state when creating borrow product: {Errors}", 
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
@@ -741,7 +767,7 @@ namespace MarketMinds.Web.Controllers
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
 
-            return View("Create", new BorrowProduct());
+            return View("Create", borrowProduct);
         }
 
         [HttpPost]
@@ -968,7 +994,7 @@ namespace MarketMinds.Web.Controllers
             ViewBag.Categories = _categoryService.GetAllProductCategories();
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
-            return View("Create", new BuyProduct());
+            return View("Create", buyProduct);
         }
 
         [AllowAnonymous]
