@@ -119,7 +119,7 @@
     @if (Model.Any())
     {
         <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-center items-center">
-            <button onclick="clearAllNotifications()" 
+            <button id="clearAllNotificationsBtn" onclick="clearAllNotifications()" 
                     class="text-xs text-red-600 hover:text-red-800 transition-colors duration-200">
                 Clear all notifications
             </button>
@@ -128,133 +128,155 @@
 </div>
 
 <script>
-/**
- * Marks a specific notification as read
- */
-function markNotificationAsRead(notificationId) {
-    fetch(`/Notifications/MarkAsRead/${notificationId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Reload the dropdown content to reflect changes
-            if (typeof window.loadNotifications === 'function') {
-                window.loadNotifications();
+    // Mark individual notification as read
+    function markNotificationAsRead(notificationId) {
+        fetch(`/Notifications/MarkAsRead/${notificationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             }
-        } else {
-            console.error('Error marking notification as read:', data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error marking notification as read:', error);
-    });
-}
-
-/**
- * Clears all notifications (delete them)
- */
-function clearAllNotifications() {
-    if (!confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
-        return;
-    }
-    
-    // Show feedback immediately
-    const clearButton = event.target;
-    const originalText = clearButton.textContent;
-    clearButton.textContent = 'Clearing...';
-    clearButton.disabled = true;
-    
-    fetch('/Notifications/ClearAll', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            console.log('Successfully cleared all notifications');
-            
-            // Update the bell badge
-            const bellBadge = document.querySelector('#notificationsButton .bg-red-500');
-            if (bellBadge) {
-                bellBadge.remove();
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
             }
-            
-            // Reload the dropdown content
-            if (typeof window.loadNotifications === 'function') {
-                window.loadNotifications();
-            }
-        } else {
-            console.error('Error clearing notifications:', data.error);
-            alert('Failed to clear notifications: ' + (data.error || 'Unknown error'));
-            clearButton.textContent = originalText;
-            clearButton.disabled = false;
-        }
-    })
-    .catch(error => {
-        console.error('Error clearing notifications:', error);
-        alert('Failed to clear notifications. Please try again.');
-        clearButton.textContent = originalText;
-        clearButton.disabled = false;
-    });
-}
-
-// Set up the mark all as read functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const markAllBtn = document.getElementById('markAllAsReadBtn');
-    if (markAllBtn) {
-        markAllBtn.addEventListener('click', function() {
-            const originalText = this.textContent;
-            this.disabled = true;
-            this.textContent = 'Marking...';
-            
-            fetch('/Notifications/MarkAllAsRead', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Reload notifications if function exists
+                if (typeof window.loadNotifications === 'function') {
+                    window.loadNotifications();
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Reload the dropdown content to show updated state
-                    if (typeof window.loadNotifications === 'function') {
-                        window.loadNotifications();
-                    }
-                    
-                    // Update the bell badge
-                    const bellBadge = document.querySelector('#notificationsButton .bg-red-500');
-                    if (bellBadge && data.unreadCount === 0) {
-                        bellBadge.remove();
-                    } else if (bellBadge) {
-                        bellBadge.textContent = data.unreadCount > 9 ? '9+' : data.unreadCount.toString();
-                    }
-                } else {
-                    throw new Error(data.error || 'Unknown error occurred');
-                }
-            })
-            .catch(error => {
-                console.error('Error marking notifications as read:', error);
-                alert('Failed to mark notifications as read. Please try again.');
-            })
-            .finally(() => {
-                this.disabled = false;
-                this.textContent = originalText;
-            });
+            } else {
+                throw new Error(data.error || 'Failed to mark notification as read');
+            }
+        })
+        .catch(error => {
+            console.error('Error marking notification as read:', error);
+            alert('Failed to mark notification as read. Please try again.');
         });
     }
-});
+
+    // Clear all notifications
+    function clearAllNotifications() {
+        if (!confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+            return;
+        }
+        
+        // Get the button
+        const clearButton = document.getElementById('clearAllNotificationsBtn');
+        if (!clearButton) {
+            console.error('Clear button not found!');
+            return;
+        }
+        const originalText = clearButton.textContent;
+        
+        // Update button state
+        clearButton.textContent = 'Clearing...';
+        clearButton.disabled = true;
+        
+        // Use the web controller endpoint
+        fetch('/Notifications/ClearAll', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Remove notification badge from bell icon
+                const bellBadge = document.querySelector('#notificationsButton .bg-red-500');
+                if (bellBadge) {
+                    bellBadge.remove();
+                }
+                
+                // Reload notifications if function exists
+                if (typeof window.loadNotifications === 'function') {
+                    window.loadNotifications();
+                }
+            } else {
+                throw new Error(data.error || 'Unknown error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error clearing notifications:', error);
+            alert('Failed to clear notifications. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            clearButton.textContent = originalText;
+            clearButton.disabled = false;
+        });
+    }
+
+    // Mark all notifications as read
+    function markAllNotificationsAsRead() {
+        const markAllBtn = document.getElementById('markAllAsReadBtn');
+        if (!markAllBtn) return;
+        
+        const originalText = markAllBtn.textContent;
+        
+        // Update button state
+        markAllBtn.disabled = true;
+        markAllBtn.textContent = 'Marking...';
+        
+        fetch('/Notifications/MarkAllAsRead', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Reload notifications if function exists
+                if (typeof window.loadNotifications === 'function') {
+                    window.loadNotifications();
+                }
+                
+                // Update bell badge
+                const bellBadge = document.querySelector('#notificationsButton .bg-red-500');
+                if (bellBadge && data.unreadCount === 0) {
+                    bellBadge.remove();
+                } else if (bellBadge && typeof data.unreadCount === 'number') {
+                    bellBadge.textContent = data.unreadCount > 9 ? '9+' : data.unreadCount.toString();
+                }
+            } else {
+                throw new Error(data.error || 'Unknown error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error marking notifications as read:', error);
+            alert('Failed to mark notifications as read. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            markAllBtn.disabled = false;
+            markAllBtn.textContent = originalText;
+        });
+    }
+
+    // Initialize event listeners when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Attach event listener to "Mark all read" button
+        const markAllBtn = document.getElementById('markAllAsReadBtn');
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', markAllNotificationsAsRead);
+        }
+    });
 </script>

@@ -1,4 +1,4 @@
-﻿// <copyright file="NotificationApiController.cs" company="PlaceholderCompany">
+// <copyright file="NotificationApiController.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -210,6 +210,27 @@ namespace Server.Controllers
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while marking notifications from user: {userId} as read: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Clears (deletes) all notifications for a user.
+        /// </summary>
+        /// <param name="userId">The ID of the user whose notifications to clear.</param>
+        /// <returns>An action result indicating success or failure.</returns>
+        [HttpDelete("{userId}/clear-all")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> ClearAll(int userId)
+        {
+            try
+            {
+                await this.notificationRepository.ClearAllNotifications(userId);
+                return this.NoContent();
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while clearing notifications for user: {userId}: {ex.Message}");
             }
         }
     }
