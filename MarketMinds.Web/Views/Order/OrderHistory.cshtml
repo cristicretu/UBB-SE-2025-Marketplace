@@ -90,6 +90,39 @@
     </div>
 </div>
 
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">Success</h3>
+                    <button onclick="closeSuccessModal()" class="text-gray-400 hover:text-gray-500">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-center mb-4">
+                    <svg class="h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <p class="text-center text-gray-700" id="successMessage">Contract generated successfully!</p>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 flex justify-end">
+                <button onclick="closeSuccessModal()" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         let searchTimeout;
@@ -291,6 +324,15 @@
             }
         });
 
+        function showSuccessModal(message) {
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
         function generateContract(orderId) {
             // Show loading state
             const button = event.target;
@@ -307,13 +349,13 @@
                         // Hide generate button and show download button
                         $(`#generateBtn_${orderId}`).addClass('hidden');
                         $(`#downloadBtn_${orderId}`).removeClass('hidden');
-                        alert('Contract generated successfully!');
+                        showSuccessModal('Contract generated successfully! You can now download the PDF.');
                     } else {
-                        alert('Error: ' + response.message);
+                        showSuccessModal('Error: ' + response.message);
                     }
                 },
                 error: function(xhr, status, error) {
-                    alert('Error generating contract: ' + error);
+                    showSuccessModal('Error generating contract: ' + error);
                 },
                 complete: function() {
                     button.textContent = originalText;
