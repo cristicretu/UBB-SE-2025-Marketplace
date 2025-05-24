@@ -1,109 +1,118 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
-using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using MarketMinds.ViewModels;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Views
 {
-    [ExcludeFromCodeCoverage]
     public sealed partial class BillingInfo : Page
     {
-        /// <summary>
-        /// The view model for the BillingInfo page.
-        /// </summary>
-        private IBillingInfoViewModel viewModel;
+        public BillingInfoViewModel ViewModel { get; private set; }
+        private bool initialLoadComplete = false;
 
-        public BillingInfo(int orderHistoryID)
+        public BillingInfo(int orderHistoryId = 1)
         {
             this.InitializeComponent();
-            viewModel = new BillingInfoViewModel(orderHistoryID);
+            this.ViewModel = new BillingInfoViewModel(orderHistoryId);
+            this.DataContext = this.ViewModel;
 
-            DataContext = viewModel;
+            this.Loaded += BillingInfo_Loaded;
         }
 
-        /// <summary>
-        /// Sets the cart items for checkout.
-        /// </summary>
-        /// <param name="cartItems">The list of products and quantities.</param>
+        private async void BillingInfo_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!initialLoadComplete)
+            {
+                try
+                {
+                    // Only initialize from order history if we don't have cart data
+                    if (ViewModel.ProductList == null || ViewModel.ProductList.Count == 0)
+                    {
+                        await ViewModel.InitializeViewModelAsync();
+                    }
+
+                    initialLoadComplete = true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error initializing BillingInfo: {ex.Message}");
+                }
+            }
+        }
+
         public void SetCartItems(List<Product> cartItems)
         {
-            if (this.DataContext is BillingInfoViewModel viewModel)
+            // Only set cart items if they aren't already set to prevent data loss
+            if (!initialLoadComplete && (ViewModel.ProductList == null || ViewModel.ProductList.Count == 0))
             {
-                viewModel.SetCartItems(cartItems);
+                ViewModel.SetCartItems(cartItems);
             }
         }
 
-        /// <summary>
-        /// Sets the cart total for the order.
-        /// </summary>
-        /// <param name="total">The total price of the cart.</param>
-        public void SetCartTotal(double total)
+        public void SetCartTotal(double cartTotal)
         {
-            if (this.DataContext is BillingInfoViewModel viewModel)
+            // Only set cart total if it isn't already set to prevent data loss
+            if (!initialLoadComplete && ViewModel.Total <= 0)
             {
-                viewModel.SetCartTotal(total);
+                ViewModel.SetCartTotal(cartTotal);
+                Debug.WriteLine($"Setting cart total to: {cartTotal}");
             }
         }
 
-        /// <summary>
-        /// Sets the buyer ID for the order.
-        /// </summary>
-        /// <param name="buyerId">The ID of the buyer.</param>
         public void SetBuyerId(int buyerId)
         {
-            if (this.DataContext is BillingInfoViewModel viewModel)
+            if (!initialLoadComplete)
             {
-                viewModel.SetBuyerId(buyerId);
+                ViewModel.SetBuyerId(buyerId);
             }
         }
 
-        /// <summary>
-        /// Handles the click event for the finalize button.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private async void OnFinalizeButtonClickedAsync(object sender, RoutedEventArgs e)
         {
-            if (DataContext is BillingInfoViewModel viewModel)
+            try
             {
-                await viewModel.OnFinalizeButtonClickedAsync();
+                // Make a local copy of the total for debugging
+                double totalBeforeFinalize = ViewModel.Total;
+                Debug.WriteLine($"Total before finalizing purchase: {totalBeforeFinalize}");
+
+                await ViewModel.OnFinalizeButtonClickedAsync();
+
+                Debug.WriteLine($"Purchase finalized, total was: {totalBeforeFinalize}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error during purchase finalization: {ex.Message}");
+
+                ContentDialog errorDialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "There was a problem processing your order. Please try again.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+
+                await errorDialog.ShowAsync();
             }
         }
 
-        /// <summary>
-        /// Handles the click event for the cancel button.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        // Updated event handlers for the hidden date pickers
         private void OnStartDateChanged(DatePicker sender, DatePickerSelectedValueChangedEventArgs e)
         {
-            viewModel.UpdateStartDate(sender.Date);
-        }
-
-        /// <summary>
-        /// Handles the click event for the end date.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void OnEndDateChanged(DatePicker sender, DatePickerSelectedValueChangedEventArgs e)
-        {
-            viewModel.UpdateEndDate(sender.Date);
-            await UpdateBorrowedProductTax(sender);
-        }
-
-        /// <summary>
-        /// Handles the click event for the tax date.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <returns></returns>
-        private async Task UpdateBorrowedProductTax(DatePicker sender)
-        {
-            if (DataContext is BillingInfoViewModel viewModel && sender.DataContext is BorrowProduct product)
+            if (sender != null && e.NewDate.HasValue)
             {
-                await viewModel.ApplyBorrowedTax(product);
+                ViewModel.UpdateStartDate(e.NewDate.Value);
+            }
+        }
+
+        private void OnEndDateChanged(DatePicker sender, DatePickerSelectedValueChangedEventArgs e)
+        {
+            if (sender != null && e.NewDate.HasValue)
+            {
+                ViewModel.UpdateEndDate(e.NewDate.Value);
             }
         }
     }

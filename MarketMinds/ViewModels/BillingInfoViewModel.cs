@@ -64,7 +64,6 @@ namespace MarketMinds.ViewModels
         public BillingInfoViewModel(int orderHistoryID)
         {
             // Initialize services with dependency injection support
-            // In a real-world application, these would ideally be injected through constructor
             this.orderHistoryService = new OrderHistoryService();
             this.orderService = new OrderService();
             this.orderSummaryService = new OrderSummaryService();
@@ -162,25 +161,29 @@ namespace MarketMinds.ViewModels
         public async Task InitializeViewModelAsync()
         {
             // If we already have cart items (from ShoppingCartView), don't load from order history
-            if (this.Products.Count == 0)
+            if (this.ProductList != null && this.ProductList.Count > 0)
             {
-                // Only try to get from order history if no cart items were passed and the ID is valid
-                if (this.orderHistoryID > 0)
+                // Skip loading from order history if we already have products
+                System.Diagnostics.Debug.WriteLine("Products already loaded - skipping order history load");
+                return;
+            }
+
+            // Only try to get from order history if no cart items were passed and the ID is valid
+            if (this.orderHistoryID > 0)
+            {
+                try
                 {
-                    try
-                    {
-                        this.Products = await this.GetProductsFromOrderHistoryAsync(this.orderHistoryID);
-                        this.ProductList = new ObservableCollection<Product>(this.Products);
-                        this.OnPropertyChanged(nameof(this.ProductList));
-                    }
-                    catch (Exception ex)
-                    {
-                        // Handle case where there might not be order history yet
-                        System.Diagnostics.Debug.WriteLine($"Error loading from order history: {ex.Message}");
-                        // Initialize empty collections to avoid null references
-                        this.Products = new List<Product>();
-                        this.ProductList = new ObservableCollection<Product>();
-                    }
+                    this.Products = await this.GetProductsFromOrderHistoryAsync(this.orderHistoryID);
+                    this.ProductList = new ObservableCollection<Product>(this.Products);
+                    this.OnPropertyChanged(nameof(this.ProductList));
+                }
+                catch (Exception ex)
+                {
+                    // Handle case where there might not be order history yet
+                    System.Diagnostics.Debug.WriteLine($"Error loading from order history: {ex.Message}");
+                    // Initialize empty collections to avoid null references
+                    this.Products = new List<Product>();
+                    this.ProductList = new ObservableCollection<Product>();
                 }
             }
 

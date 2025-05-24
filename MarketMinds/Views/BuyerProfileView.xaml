@@ -120,6 +120,7 @@
                     <Button x:Name="OrderHistoryButton" Content="Order History" Click="OrderHistoryButton_Clicked" Margin="5"/>
                     <Button x:Name="renewContractButton" Content="Renew Contract" Click="RenewContractButton_Clicked" Margin="5"/>
                     <Button x:Name="trackOrderButton" Content="Track Order" Click="TrackOrderButton_Clicked" Margin="5"/>
+                    <Button x:Name="myCartButton" Content="My Cart" Click="MyCartButton_Clicked" Margin="5"/>
                 </StackPanel>
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,5">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

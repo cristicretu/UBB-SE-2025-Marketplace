@@ -143,7 +143,7 @@ namespace MarketMinds.ViewModels
         {
             var ownItems = this.Buyer.Wishlist.Items.Select(x => this.GetWishlistItemDetails(x, true));
             var linkedItems = this.Buyer.Linkages.Where(link => link.Status == BuyerLinkageStatus.Confirmed)
-                .Select(link => link.Buyer.Wishlist.Items).SelectMany(list => list)
+                .Select(link => link.Buyer1.Wishlist.Items).SelectMany(list => list)
                 .Select(wishlistItem => this.GetWishlistItemDetails(wishlistItem));
             return ownItems.Concat(linkedItems).GroupBy(x => x.ProductId)
                 .Select(itemsWithSameProduct => itemsWithSameProduct
@@ -194,7 +194,7 @@ namespace MarketMinds.ViewModels
                     var confirmedLinkages = this.Buyer.Linkages.Where(link => link.Status == BuyerLinkageStatus.Confirmed);
                     foreach (var linkage in confirmedLinkages)
                     {
-                        var linkedBuyerItems = await Task.WhenAll(linkage.Buyer.Wishlist.Items.Select(wishlistItem => GetWishlistItemDetailsAsync(wishlistItem)));
+                        var linkedBuyerItems = await Task.WhenAll(linkage.Buyer1.Wishlist.Items.Select(wishlistItem => GetWishlistItemDetailsAsync(wishlistItem)));
                         linkedItems.AddRange(linkedBuyerItems);
                     }
                 }

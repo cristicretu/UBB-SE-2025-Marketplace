@@ -444,8 +444,7 @@ namespace MarketMinds.ViewModels
                     }
                 }
 
-                // MODIFIED: Include all contracts with case-insensitive comparison
-                // Make sure to include ACTIVE, RENEWED, and EXPIRED contracts
+                // Include all contracts with case-insensitive comparison ACTIVE, RENEWED, and EXPIRED contracts
                 var filteredContracts = allContracts?.Where(c =>
                     c.ContractStatus.Equals("ACTIVE", StringComparison.OrdinalIgnoreCase) ||
                     c.ContractStatus.Equals("RENEWED", StringComparison.OrdinalIgnoreCase) ||

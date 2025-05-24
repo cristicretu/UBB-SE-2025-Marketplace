@@ -158,7 +158,6 @@ namespace MarketMinds.ViewModels
             try
             {
                 System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Starting for buyer {this.currentBuyer.Id} (User ID: {this.currentBuyer.User.Id})");
-                
                 // Get buyers with the same shipping address
                 var household = (await this.service.FindBuyersWithShippingAddress(this.currentBuyer.ShippingAddress))
                     .Where(householdBuyer => householdBuyer.Id != this.currentBuyer.Id)
@@ -167,7 +166,7 @@ namespace MarketMinds.ViewModels
                 System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Found {household.Count} household members");
 
                 // Create a dictionary of existing linkages by LinkedBuyer.Id
-                var linkageDict = this.currentBuyer.Linkages.ToDictionary(l => l.Buyer.Id, l => l);
+                var linkageDict = this.currentBuyer.Linkages.ToDictionary(l => l.BuyerId1, l => l);
 
                 var result = new List<IBuyerLinkageViewModel>();
                 foreach (var buyer in household)
@@ -176,19 +175,19 @@ namespace MarketMinds.ViewModels
                     {
                         // For existing linkages, determine status based on who initiated the request
                         BuyerLinkageStatus status;
-                        
+
                         if (linkage.Status == BuyerLinkageStatus.PendingSelf)
                         {
                             // If the current user is the receiver (linkage.Buyer.Id == this.currentBuyer.Id)
-                            status = linkage.Buyer.Id == this.currentBuyer.Id ? 
-                                BuyerLinkageStatus.PendingSelf : 
+                            status = linkage.BuyerId1 == this.currentBuyer.Id ?
+                                BuyerLinkageStatus.PendingSelf :
                                 BuyerLinkageStatus.PendingOther;
                         }
                         else if (linkage.Status == BuyerLinkageStatus.PendingOther)
                         {
                             // If the current user is the sender (linkage.Buyer.Id != this.currentBuyer.Id)
-                            status = linkage.Buyer.Id != this.currentBuyer.Id ? 
-                                BuyerLinkageStatus.PendingSelf : 
+                            status = linkage.BuyerId1 != this.currentBuyer.Id ?
+                                BuyerLinkageStatus.PendingSelf :
                                 BuyerLinkageStatus.PendingOther;
                         }
                         else
@@ -196,8 +195,8 @@ namespace MarketMinds.ViewModels
                             status = linkage.Status;
                         }
 
-                        System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Existing linkage for buyer {buyer.Id} ({buyer.FirstName} {buyer.LastName}): {status} (Original: {linkage.Status}, CurrentUser: {this.currentBuyer.Id}, LinkageBuyer: {linkage.Buyer.Id})");
-                        result.Add(this.NewBuyerLinkageViewModel(linkage.Buyer, status));
+                        System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Existing linkage for buyer {buyer.Id} ({buyer.FirstName} {buyer.LastName}): {status} (Original: {linkage.Status}, CurrentUser: {this.currentBuyer.Id}, LinkageBuyer: {linkage.BuyerId1})");
+                        result.Add(this.NewBuyerLinkageViewModel(linkage.Buyer1, status));
                     }
                     else
                     {

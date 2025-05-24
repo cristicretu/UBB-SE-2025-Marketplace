@@ -31,7 +31,6 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using MarketMinds.Views;
 using MarketMinds.ViewModels.Admin;
-using static MarketMinds.ViewModels.ContractRenewViewModel;
 
 namespace MarketMinds
 {
@@ -54,6 +53,7 @@ namespace MarketMinds
         public static BorrowProductsProxyRepository BorrowProductsRepository;
         public static BasketProxyRepository BasketRepository;
         public static BuyProductsProxyRepository BuyProductsRepository;
+        public static ShoppingCartProxyRepository ShoppingCartRepository;
 
         // Service declarations
         public static IBuyerService BuyerService;
@@ -78,7 +78,8 @@ namespace MarketMinds
         public static IContractService ContractService;
         public static IPDFService PDFService;
         public static IContractRenewalService ContractRenewalService;
-        public static IFileSystem FileSystem;
+        public static MarketMinds.ViewModels.ContractRenewViewModel.IFileSystem FileSystem;
+        public static IShoppingCartService ShoppingCartService;
 
         // ViewModel declarations
         public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
@@ -104,6 +105,8 @@ namespace MarketMinds
         public static RegisterViewModel RegisterViewModel { get; private set; }
         public static MarketMinds.Shared.Models.User CurrentUser { get; set; }
         public static ContractRenewViewModel ContractRenewViewModel { get; private set; }
+        public static ShoppingCartViewModel ShoppingCartViewModel { get; private set; }
+        public static CartItemViewModel CartItemViewModel { get; private set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -320,6 +323,7 @@ namespace MarketMinds
             BorrowProductsRepository = new BorrowProductsProxyRepository(Configuration);
             BasketRepository = new BasketProxyRepository(Configuration);
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
+            ShoppingCartRepository = new ShoppingCartProxyRepository(Configuration);
 
             // Initialize services
             AdminService = new AdminService(UserRepository);
@@ -344,7 +348,8 @@ namespace MarketMinds
             ContractService = new ContractService();
             PDFService = new PDFService();
             ContractRenewalService = new ContractRenewalService();
-            FileSystem = new FileSystemWrapper();
+            FileSystem = new MarketMinds.ViewModels.ContractRenewViewModel.FileSystemWrapper();
+            ShoppingCartService = new ShoppingCartService(ShoppingCartRepository);
 
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);

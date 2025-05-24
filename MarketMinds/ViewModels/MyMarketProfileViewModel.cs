@@ -86,7 +86,7 @@ namespace MarketMinds.ViewModels
             try
             {
                 // Use the current buyer ID instead of a hardcoded value
-                var shoppingCartViewModel = new ShoppingCartViewModel(new ShoppingCartService(), this.buyer.Id);
+                var shoppingCartViewModel = new ShoppingCartViewModel();
 
                 await shoppingCartViewModel.AddToCartAsync(product, 1);
 
