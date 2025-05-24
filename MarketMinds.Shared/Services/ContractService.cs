@@ -2,6 +2,7 @@
 using MarketMinds.Shared.ProxyRepository; // Add this using directive
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.Services; // For PdfGenerator
 
 namespace MarketMinds.Shared.Services
 {
@@ -130,18 +131,12 @@ Expected Delivery Date: {{DeliveryDate}}
         {
             try
             {
-                // If no PDF file is provided, create a default one
+                // If no PDF file is provided, create a real PDF using QuestPDF
                 if (pdfFile == null || pdfFile.Length == 0)
                 {
-                    // Create a simple PDF content with contract information
-                    string pdfContent = $@"
-                        Contract ID: {contract.ContractID}
-                        Order ID: {contract.OrderID}
-                        Status: {contract.ContractStatus}
-                        Content: {contract.ContractContent}
-                        Additional Terms: {contract.AdditionalTerms}
-                    ";
-                    pdfFile = System.Text.Encoding.UTF8.GetBytes(pdfContent);
+                    string contractTitle = "Contract Agreement";
+                    string contractContent = $@"Contract ID: {contract.ContractID}\nOrder ID: {contract.OrderID}\nStatus: {contract.ContractStatus}\nContent: {contract.ContractContent}\nAdditional Terms: {contract.AdditionalTerms}";
+                    pdfFile = PdfGenerator.GenerateContractPdf(contractTitle, contractContent);
                 }
 
                 // Create a PDF record first

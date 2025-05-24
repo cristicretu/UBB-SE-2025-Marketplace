@@ -14,8 +14,13 @@ using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Services;
+using QuestPDF;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Set QuestPDF license type to Community
+QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
