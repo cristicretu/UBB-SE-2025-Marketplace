@@ -80,6 +80,11 @@ namespace MarketMinds.ViewModels
             }
         }
 
+        public BuyerProfileViewModel(IBuyerService buyerService)
+        {
+            this.BuyerService = buyerService ?? throw new ArgumentNullException(nameof(buyerService));
+        }
+
         /// <inheritdoc/>
         public async void SaveInfo()
         {

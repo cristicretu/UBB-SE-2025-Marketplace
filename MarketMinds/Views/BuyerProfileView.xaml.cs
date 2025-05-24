@@ -17,13 +17,19 @@
 
         public BuyerProfileView()
         {
-            this.InitializeComponent();
-
             // Initialize contract and contractViewModel
             contractViewModel = new ContractViewModel();
 
             // Initialize trackedOrderViewModel
             trackedOrderViewModel = new TrackedOrderViewModel();
+
+            // Set the ViewModel from the App
+            this.ViewModel = App.BuyerProfileViewModel;
+            this.ViewModel.User = App.CurrentUser;
+            // load in background, will essentially load the ui after the profile page appears
+            _ = this.ViewModel.LoadBuyerProfile();
+
+             this.InitializeComponent();
         }
 
         public IBuyerProfileViewModel? ViewModel { get; set; }

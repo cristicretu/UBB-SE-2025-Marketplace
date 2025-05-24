@@ -22,7 +22,9 @@ namespace MarketMinds.Views
     {
         private const int BUYER_TYPE = 2;
         private const int SELLER_TYPE = 3;
-        
+        private bool isBuyer;
+        private bool isSeller;
+
         public HomePageView()
         {
             this.InitializeComponent();
@@ -32,11 +34,11 @@ namespace MarketMinds.Views
 
             // Set up window size and position
             this.AppWindow.Resize(new Windows.Graphics.SizeInt32(1700, 1000));
-            
+
             // Configure UI based on user type
             ConfigureUIForUserType();
         }
-        
+
         /// <summary>
         /// Configures the UI elements based on the current user type
         /// </summary>
@@ -45,21 +47,21 @@ namespace MarketMinds.Views
             // Get the current user type from the App
             int userType = App.CurrentUser.UserType;
             string username = App.CurrentUser.Username;
-            
-            bool isBuyer = userType == BUYER_TYPE;
-            bool isSeller = userType == SELLER_TYPE;
-            
+
+            isBuyer = userType == BUYER_TYPE;
+            isSeller = userType == SELLER_TYPE;
+
             // Configure buyer-specific UI elements
             ChatBotButton.Visibility = isBuyer ? Visibility.Visible : Visibility.Collapsed;
             NotificationsButton.Visibility = isBuyer ? Visibility.Visible : Visibility.Collapsed;
             WishlistButton.Visibility = isBuyer ? Visibility.Visible : Visibility.Collapsed;
             CartButton.Visibility = isBuyer ? Visibility.Visible : Visibility.Collapsed;
-            
+
             // Configure seller-specific UI elements
             CreateButton.Visibility = isSeller ? Visibility.Visible : Visibility.Collapsed;
 
             // Configure Profile button text
-            string userRole = isBuyer ? "(buyer)" : (isSeller ? "(seller)" : "");
+            string userRole = isBuyer ? "(buyer)" : (isSeller ? "(seller)" : string.Empty);
             ProfileButton.Label = $"{username} {userRole}";
         }
 
@@ -95,15 +97,13 @@ namespace MarketMinds.Views
                     case "Cart":
                         // Show cart page in frame
                         break;
-                    // Both buyers and sellers' cases
-                    case "Profile":
-                        // Show profile page in frame
+                    case "MyAccount":
+                        // This is handled in the ProfileMenuItem_Click method because it has a submenu of buttons
                         break;
                     // Only sellers' cases
                     case "Create":
                         // Show product creation page in frame
                         break;
-                        
                 }
             }
         }
@@ -115,11 +115,11 @@ namespace MarketMinds.Views
         {
             // Navigate to product creation page for sellers
             // Example: ContentFrame.Navigate(typeof(ProductCreationView));
-            
+
             // You should implement the appropriate navigation to your product creation page
             // If you have different types of products (Buy, Auction, Borrow), you might want to show
             // a dialog asking which type of product the seller wants to create
-            
+
             // ContentFrame.Navigate(typeof(CreateProductView));
         }
 
@@ -135,20 +135,25 @@ namespace MarketMinds.Views
                 switch (tag)
                 {
                     case "MyAccount":
-                        // Navigate to user profile page
-                        // Example: ContentFrame.Navigate(typeof(BuyerProfileView));
+                        if (isBuyer)
+                        {
+                            // Show buyer profile page in frame
+                            ContentFrame.Navigate(typeof(BuyerProfileView));
+                        }
+                        else if (isSeller)
+                        {
+                            // Show seller profile page in frame
+                            ContentFrame.Navigate(typeof(SellerProfileView));
+                        }
                         break;
-
                     case "MyOrders":
                         // Navigate to orders history page
                         // Example: ContentFrame.Navigate(typeof(OrderHistoryView));
                         break;
-
                     case "MyReviews":
                         // Navigate to user reviews page
                         // Could create a dedicated page for this
                         break;
-
                     case "Logout":
                         App.CloseHomePageWindow();
                         break;

@@ -46,7 +46,8 @@ namespace MarketMinds
         public static IConversationRepository ConversationRepository;
         public static IChatRepository ChatRepository;
         public static IChatbotRepository ChatbotRepository;
-        public static BuyerProxyRepository BuyerRepository;
+        public static IBuyerRepository BuyerRepository;
+        public static ISellerRepository SellerRepository;
         public static UserProxyRepository UserRepository;
         public static ReviewProxyRepository ReviewRepository;
         public static ProductTagProxyRepository ProductTagRepository;
@@ -57,6 +58,7 @@ namespace MarketMinds
 
         // Service declarations
         public static IBuyerService BuyerService;
+        public static ISellerService SellerService;
         public static AdminService AdminService;
         public static AnalyticsService AnalyticsService;
         public static BuyProductsService BuyProductsService;
@@ -82,6 +84,7 @@ namespace MarketMinds
 
         // ViewModel declarations
         public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
+        public static SellerProfileViewModel SellerProfileViewModel { get; private set; }
         public static AdminViewModel AdminViewModel { get; private set; }
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
         public static BorrowProductsViewModel BorrowProductsViewModel { get; private set; }
@@ -114,59 +117,7 @@ namespace MarketMinds
         public static Window MainWindow = null!;
         public static HomePageView HomePageWindow = null!;
         private static HttpClient httpClient;
-        // public static void ShowSellerProfile()
-        // {
-        //     Debug.WriteLine("ShowSellerProfile called");
 
-        //try
-        //     {
-        //         // Create a new window
-        //         var sellerProfileWindow = new Window();
-
-        //// First initialize the SellerService
-        //// Change this line in ShowSellerProfile()
-        //         var sellerRepository = new SellerProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/");
-
-        // var sellerService = new SellerService(sellerRepository);
-        // Initialize the ViewModel with the service and current user
-        //         if (CurrentUser == null)
-        //         {
-        //             Debug.WriteLine("ERROR: CurrentUser is null in ShowSellerProfile");
-        //             throw new InvalidOperationException("Cannot show seller profile: Current user is null");
-        //         }
-
-        //// Create a frame to handle the navigation
-        //         var frame = new Microsoft.UI.Xaml.Controls.Frame();
-        //         sellerProfileWindow.Content = frame;
-
-        //// Create and configure the view model
-        //         var viewModel = new SellerProfileViewModel(sellerService, CurrentUser);
-
-        // Navigate to the page with the ViewModel as parameter
-        //         frame.Navigate(typeof(MarketMinds.Views.SellerProfileView), viewModel);
-
-        // Now show the window
-        //         sellerProfileWindow.Activate();
-        //         Debug.WriteLine("Seller profile window activated with ViewModel");
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Debug.WriteLine($"ERROR showing seller profile: {ex.Message}");
-        //         Debug.WriteLine(ex.StackTrace);
-        //         ShowErrorDialog($"Could not open seller profile: {ex.Message}");
-        //     }
-        // }
-
-        // public static void ShowBuyerProfile()
-        // {
-        //     BuyerProfileWindow = new Window();
-        //     BuyerProfileViewModel.User = CurrentUser;
-        //     _ = BuyerProfileViewModel.LoadBuyerProfile();
-        //     var buyerProfileView = new MarketMinds.Views.BuyerProfileView();
-        //     buyerProfileView.ViewModel = BuyerProfileViewModel;
-        //     BuyerProfileWindow.Content = buyerProfileView;
-        //     BuyerProfileWindow.Activate();
-        // }
         public static void ShowAdminProfile()
         {
             var adminWindow = new AdminView();
@@ -320,7 +271,10 @@ namespace MarketMinds
         {
             // Create but don't show the main window yet
             MainWindow = new MarketMinds.MainWindow();
+
+            // Initialize proxy repositories
             BuyerRepository = new BuyerProxyRepository(Configuration);
+            SellerRepository = new SellerProxyRepository(Configuration);
             ProductCategoryRepository = new ProductCategoryProxyRepository(Configuration);
             MessageRepository = new MessageProxyRepository(Configuration);
             ProductConditionRepository = new ProductConditionProxyRepository(Configuration);
@@ -342,6 +296,7 @@ namespace MarketMinds
 
             UserService = new UserService(Configuration);
             BuyerService = new BuyerService(BuyerRepository, UserRepository);
+            SellerService = new SellerService(SellerRepository);
             ReviewsService = new ReviewsService(Configuration, UserService, CurrentUser);
             BuyProductsService = new BuyProductsService(BuyProductsRepository);
             BorrowProductsService = new BorrowProductsService();
@@ -376,11 +331,9 @@ namespace MarketMinds
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
             ContractRenewViewModel = new ContractRenewViewModel(ContractService, PDFService, ContractRenewalService, UserService, FileSystem);
-            BuyerProfileViewModel = new BuyerProfileViewModel()
-            {
-                BuyerService = BuyerService,
-                User = CurrentUser,
-            };
+            // CurrentUser is null at the moment, will be set after login
+            BuyerProfileViewModel = new BuyerProfileViewModel(BuyerService);
+            SellerProfileViewModel = new SellerProfileViewModel(SellerService);
             // Initialize login and register view models with proper callbacks
             AdminViewModel = new AdminViewModel(AdminService, AnalyticsService, UserService);
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
@@ -416,7 +369,6 @@ namespace MarketMinds
         //         Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
         //     }
         // }
-
         public static void ResetLoginState()
         {
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());

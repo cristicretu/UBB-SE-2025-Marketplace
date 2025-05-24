@@ -5,23 +5,23 @@
 namespace MarketMinds.Shared.Services
 {
     using System.Threading.Tasks;
-    using MarketMinds.Shared.ProxyRepository;
+    using MarketMinds.Shared.IRepository;
 
     /// <summary>
     /// Provides services related to users and buyers.
     /// </summary>
     public class AnalyticsService : IAnalyticsService
     {
-        private readonly UserProxyRepository userRepository;
+        private readonly IAccountRepository userRepository;
 
-        private readonly BuyerProxyRepository buyerRepository;
+        private readonly IBuyerRepository buyerRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalyticsService"/> class.
         /// </summary>
         /// <param name="userRepository">The user repository to be used by the service.</param>
         /// <param name="buyerRepository">The buyer repository to be used by the service.</param>
-        public AnalyticsService(UserProxyRepository userRepository, BuyerProxyRepository buyerRepository)
+        public AnalyticsService(IAccountRepository userRepository, IBuyerRepository buyerRepository)
         {
             this.userRepository = userRepository;
             this.buyerRepository = buyerRepository;
