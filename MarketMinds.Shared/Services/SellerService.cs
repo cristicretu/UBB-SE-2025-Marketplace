@@ -186,5 +186,32 @@ namespace MarketMinds.Shared.Services
                 throw;
             }
         }
+
+        /// <inheritdoc/>
+        public async Task<Seller?> GetSellerByIdAsync(int sellerId)
+        {
+            try
+            {
+                Debug.WriteLine($"GetSellerByIdAsync called for seller ID: {sellerId}");
+
+                if (sellerId <= 0)
+                {
+                    Debug.WriteLine("Invalid seller ID, returning null");
+                    return null;
+                }
+
+                // Create a User object with the seller ID and get seller info
+                var user = new User { Id = sellerId };
+                var seller = await this.sellerRepository.GetSellerInfo(user);
+                
+                Debug.WriteLine($"Retrieved seller: ID={seller?.Id ?? -1}, StoreName='{seller?.StoreName}'");
+                return seller;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting seller by ID {sellerId}: {ex.Message}");
+                return null;
+            }
+        }
     }
 }

@@ -165,34 +165,6 @@ namespace Server.Controllers
         }
 
         /// <summary>
-        /// Makes a buyer follow a seller.
-        /// </summary>
-        /// <param name="buyerId">The ID of the buyer.</param>
-        /// <param name="sellerId">The ID of the seller to follow.</param>
-        /// <returns>An ActionResult indicating success or failure.</returns>
-        [HttpPost("{buyerId}/follow/{sellerId}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> FollowSeller(int buyerId, int sellerId)
-        {
-            if (buyerId <= 0 || sellerId <= 0 || buyerId == sellerId)
-            {
-                return this.BadRequest("Valid and distinct buyerId and sellerId are required.");
-            }
-
-            try
-            {
-                await this.buyerRepository.FollowSeller(buyerId, sellerId);
-                return this.NoContent();
-            }
-            catch (Exception ex)
-            {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while following seller. Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// Gets all sellers available in the system.
         /// </summary>
         /// <returns>An ActionResult containing a list of all sellers.</returns>
@@ -208,7 +180,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while getting all sellers. Error: {ex.Message}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while retrieving all sellers. Error: {ex.Message}");
             }
         }
 
@@ -344,29 +316,6 @@ namespace Server.Controllers
         }
 
         /// <summary>
-        /// Checks if a buyer is following a specific seller.
-        /// </summary>
-        /// <param name="buyerId">The ID of the buyer.</param>
-        /// <param name="sellerId">The ID of the seller.</param>
-        /// <returns>An ActionResult containing true if the buyer is following the seller, false otherwise.</returns>
-        [HttpGet("{buyerId}/following/check/{sellerId}")]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<bool>> IsFollowing(int buyerId, int sellerId)
-        {
-            try
-            {
-                bool isFollowing = await this.buyerRepository.IsFollowing(buyerId, sellerId);
-                return this.Ok(isFollowing);
-            }
-            catch (Exception ex)
-            {
-                // Log the exception ex
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while checking following status. Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// Loads buyer information for a given buyer entity (identified by Id).
         /// </summary>
         /// <param name="buyerId">The ID of the buyer.</param>
@@ -464,47 +413,52 @@ namespace Server.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> SaveInfo([FromBody] Buyer buyerEntity)
         {
+            Console.WriteLine("=== SERVER API: SaveInfo called ===");
+            
             if (buyerEntity == null || buyerEntity.Id <= 0)
             {
+                Console.WriteLine("SERVER API: Invalid buyer entity - buyerEntity is null or ID <= 0");
                 return this.BadRequest("Valid Buyer entity with ID is required.");
             }
 
             try
             {
+                // Log detailed information about the incoming buyer entity
+                Console.WriteLine($"SERVER API: Received buyer for saving:");
+                Console.WriteLine($"SERVER API: Buyer ID: {buyerEntity.Id}");
+                Console.WriteLine($"SERVER API: FirstName: '{buyerEntity.FirstName}', LastName: '{buyerEntity.LastName}'");
+                Console.WriteLine($"SERVER API: PhoneNumber: '{buyerEntity.User?.PhoneNumber}', UseSameAddress: {buyerEntity.UseSameAddress}");
+                
+                if (buyerEntity.BillingAddress != null)
+                {
+                    Console.WriteLine($"SERVER API: Billing Address - Street: '{buyerEntity.BillingAddress.StreetLine}', City: '{buyerEntity.BillingAddress.City}', Country: '{buyerEntity.BillingAddress.Country}', PostalCode: '{buyerEntity.BillingAddress.PostalCode}', Id: {buyerEntity.BillingAddress.Id}");
+                }
+                else
+                {
+                    Console.WriteLine("SERVER API: Billing Address is NULL");
+                }
+                
+                if (buyerEntity.ShippingAddress != null)
+                {
+                    Console.WriteLine($"SERVER API: Shipping Address - Street: '{buyerEntity.ShippingAddress.StreetLine}', City: '{buyerEntity.ShippingAddress.City}', Country: '{buyerEntity.ShippingAddress.Country}', PostalCode: '{buyerEntity.ShippingAddress.PostalCode}', Id: {buyerEntity.ShippingAddress.Id}");
+                }
+                else
+                {
+                    Console.WriteLine("SERVER API: Shipping Address is NULL");
+                }
+                
+                Console.WriteLine("SERVER API: Calling buyerRepository.SaveInfo()...");
                 await this.buyerRepository.SaveInfo(buyerEntity);
+                Console.WriteLine("SERVER API: buyerRepository.SaveInfo() completed successfully");
+                
+                Console.WriteLine("=== SERVER API: SaveInfo completed successfully ===");
                 return this.NoContent();
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"SERVER API: Error in SaveInfo - Type: {ex.GetType().Name}, Message: {ex.Message}");
+                Console.WriteLine($"SERVER API: Stack trace: {ex.StackTrace}");
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while saving buyer info. Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Makes a buyer unfollow a seller.
-        /// </summary>
-        /// <param name="buyerId">The ID of the buyer.</param>
-        /// <param name="sellerId">The ID of the seller to unfollow.</param>
-        /// <returns>An ActionResult indicating success or failure.</returns>
-        [HttpDelete("{buyerId}/unfollow/{sellerId}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> UnfollowSeller(int buyerId, int sellerId)
-        {
-            if (buyerId <= 0 || sellerId <= 0)
-            {
-                return this.BadRequest("Valid buyerId and sellerId are required.");
-            }
-
-            try
-            {
-                await this.buyerRepository.UnfollowSeller(buyerId, sellerId);
-                return this.NoContent();
-            }
-            catch (Exception ex)
-            {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while unfollowing seller. Error: {ex.Message}");
             }
         }
 

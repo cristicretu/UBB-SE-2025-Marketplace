@@ -8,7 +8,13 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Left Column - Billing Information -->
         <div class="space-y-6">
-            <h2 class="text-2xl font-semibold text-gray-800">Billing Information</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-semibold text-gray-800">Billing Information</h2>
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="fillFromDatabase" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 rounded" checked />
+                    <label for="fillFromDatabase" class="text-sm text-gray-700 cursor-pointer">Fill in your credentials</label>
+                </div>
+            </div>
             
             <form asp-action="BillingInfo" method="post" class="space-y-4">
                 <input type="hidden" asp-for="OrderHistoryID" />
@@ -163,6 +169,60 @@
 
 @section Scripts {
     <script>
+        // Auto-fill from database functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Since checkbox is checked by default, fill form on page load
+            if (document.getElementById('fillFromDatabase').checked) {
+                fillFormFromDatabase();
+            }
+        });
+
+        document.getElementById('fillFromDatabase').addEventListener('change', function() {
+            if (this.checked) {
+                fillFormFromDatabase();
+            } else {
+                clearFormFields();
+            }
+        });
+
+        function fillFormFromDatabase() {
+            fetch('/Checkout/GetBuyerBillingInfo')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Fill the form fields with data from database
+                        document.querySelector('input[name="FullName"]').value = data.fullName || '';
+                        document.querySelector('input[name="Email"]').value = data.email || '';
+                        document.querySelector('input[name="PhoneNumber"]').value = data.phoneNumber || '';
+                        document.querySelector('input[name="Address"]').value = data.address || '';
+                        document.querySelector('input[name="ZipCode"]').value = data.zipCode || '';
+                        
+                        console.log('Form filled with database information');
+                    } else {
+                        alert('Error loading billing information: ' + (data.message || 'Unknown error'));
+                        // Uncheck the checkbox if there was an error
+                        document.getElementById('fillFromDatabase').checked = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching billing info:', error);
+                    alert('Error loading billing information. Please try again.');
+                    // Uncheck the checkbox if there was an error
+                    document.getElementById('fillFromDatabase').checked = false;
+                });
+        }
+
+        function clearFormFields() {
+            // Clear all the form fields
+            document.querySelector('input[name="FullName"]').value = '';
+            document.querySelector('input[name="Email"]').value = '';
+            document.querySelector('input[name="PhoneNumber"]').value = '';
+            document.querySelector('input[name="Address"]').value = '';
+            document.querySelector('input[name="ZipCode"]').value = '';
+            
+            console.log('Form fields cleared');
+        }
+
         function updateStartDate(element) {
             // Update start date
             const startDate = new Date(element.value);
