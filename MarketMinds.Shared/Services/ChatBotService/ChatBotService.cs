@@ -15,7 +15,7 @@ public class ChatbotService : IChatbotService
     private bool isActive;
     private static MarketMinds.Shared.Models.User currentUser;
     private readonly string geminiEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-    private readonly static int MINIMUM_USER_ID = 1;
+    private readonly static int MINIMUM_USER_ID = 0;
     private readonly static int FIRST = 0;
     private readonly static int BUYER_TYPE_VALUE = 1;
     private string cachedGeminiApiKey = null;
@@ -227,7 +227,7 @@ public class ChatbotService : IChatbotService
     {
         try
         {
-            if (userId <= 0)
+            if (userId < 0)
             {
                 return "No valid user ID provided.";
             }
