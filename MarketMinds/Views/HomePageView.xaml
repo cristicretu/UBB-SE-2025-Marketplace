@@ -35,17 +35,20 @@
                        DefaultLabelPosition="Right" 
                        Background="Transparent" 
                        IsOpen="False">
-                <AppBarButton Label="ChatBot" Click="AppBarButton_Click">
+                <!-- Buyer-only buttons -->
+                <AppBarButton x:Name="ChatBotButton" Label="ChatBot" Click="AppNavBarButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE8F2;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Label="Notifications" Click="AppBarButton_Click">
+                <AppBarButton x:Name="NotificationsButton" Label="Notifications" Click="AppNavBarButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xEA8F;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Label="Profile">
+                
+                <!-- Common button for all users -->
+                <AppBarButton x:Name="ProfileButton">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE77B;" />
                     </AppBarButton.Icon>
@@ -56,7 +59,7 @@
                                     <FontIcon Glyph="&#xE77B;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
-                            <MenuFlyoutItem Text="My Orders" Tag="MyOrders" Click="ProfileMenuItem_Click">
+                            <MenuFlyoutItem x:Name="MyOrdersMenuItem" Text="My Orders" Tag="MyOrders" Click="ProfileMenuItem_Click">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE7BF;" />
                                 </MenuFlyoutItem.Icon>
@@ -75,12 +78,21 @@
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton Label="Wishlist" Click="AppBarButton_Click">
+
+                <!-- Seller-only button -->
+                <AppBarButton x:Name="CreateButton" Label="Create" Click="CreateButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE710;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                
+                <!-- Buyer-only buttons -->
+                <AppBarButton x:Name="WishlistButton" Label="Wishlist" Click="AppNavBarButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xEB51;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Label="Cart" Click="AppBarButton_Click">
+                <AppBarButton x:Name="CartButton" Label="Cart" Click="AppNavBarButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE7BF;" />
                     </AppBarButton.Icon>

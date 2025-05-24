@@ -51,6 +51,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="$1" Grid.Column="0" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <!-- TODO: here should be the selected price in the slider -->
                     <TextBlock Text="$100101" Grid.Column="1" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"/>
                     <TextBlock Text="$100101" Grid.Column="2" Style="{StaticResource CaptionTextBlockStyle}"/>
                 </Grid>

@@ -102,71 +102,72 @@ namespace MarketMinds
         public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
         public static LoginViewModel LoginViewModel { get; private set; }
         public static RegisterViewModel RegisterViewModel { get; private set; }
-        public static MarketMinds.Shared.Models.User CurrentUser { get; set; }
+        public static MarketMinds.Shared.Models.User CurrentUser { get; set; } // this acts like the session user (desktop session)
         public static ContractRenewViewModel ContractRenewViewModel { get; private set; }
 
-        private const int BUYER = 1;
-        private const int SELLER = 2;
+        private const int ADMIN = 1;
+        private const int BUYER = 2;
+        private const int SELLER = 3;
 
         private static IConfiguration appConfiguration;
         public static Window LoginWindow = null!;
         public static Window MainWindow = null!;
         public static Window BuyerProfileWindow = null!;
         private static HttpClient httpClient;
-        public static void ShowSellerProfile()
-        {
-            Debug.WriteLine("ShowSellerProfile called");
+        // public static void ShowSellerProfile()
+        // {
+        //     Debug.WriteLine("ShowSellerProfile called");
 
-            try
-            {
-                // Create a new window
-                var sellerProfileWindow = new Window();
+        //     try
+        //     {
+        //         // Create a new window
+        //         var sellerProfileWindow = new Window();
 
-                // First initialize the SellerService
-                // Change this line in ShowSellerProfile()
-                var sellerRepository = new SellerProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/");
+        //         // First initialize the SellerService
+        //         // Change this line in ShowSellerProfile()
+        //         var sellerRepository = new SellerProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/");
 
-                var sellerService = new SellerService(sellerRepository);
+        //         var sellerService = new SellerService(sellerRepository);
 
-                // Initialize the ViewModel with the service and current user
-                if (CurrentUser == null)
-                {
-                    Debug.WriteLine("ERROR: CurrentUser is null in ShowSellerProfile");
-                    throw new InvalidOperationException("Cannot show seller profile: Current user is null");
-                }
+        //         // Initialize the ViewModel with the service and current user
+        //         if (CurrentUser == null)
+        //         {
+        //             Debug.WriteLine("ERROR: CurrentUser is null in ShowSellerProfile");
+        //             throw new InvalidOperationException("Cannot show seller profile: Current user is null");
+        //         }
 
-                // Create a frame to handle the navigation
-                var frame = new Microsoft.UI.Xaml.Controls.Frame();
-                sellerProfileWindow.Content = frame;
+        //         // Create a frame to handle the navigation
+        //         var frame = new Microsoft.UI.Xaml.Controls.Frame();
+        //         sellerProfileWindow.Content = frame;
 
-                // Create and configure the view model
-                var viewModel = new SellerProfileViewModel(sellerService, CurrentUser);
+        //         // Create and configure the view model
+        //         var viewModel = new SellerProfileViewModel(sellerService, CurrentUser);
 
-                // Navigate to the page with the ViewModel as parameter
-                frame.Navigate(typeof(MarketMinds.Views.SellerProfileView), viewModel);
+        //         // Navigate to the page with the ViewModel as parameter
+        //         frame.Navigate(typeof(MarketMinds.Views.SellerProfileView), viewModel);
 
-                // Now show the window
-                sellerProfileWindow.Activate();
-                Debug.WriteLine("Seller profile window activated with ViewModel");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"ERROR showing seller profile: {ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
-                ShowErrorDialog($"Could not open seller profile: {ex.Message}");
-            }
-        }
+        //         // Now show the window
+        //         sellerProfileWindow.Activate();
+        //         Debug.WriteLine("Seller profile window activated with ViewModel");
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Debug.WriteLine($"ERROR showing seller profile: {ex.Message}");
+        //         Debug.WriteLine(ex.StackTrace);
+        //         ShowErrorDialog($"Could not open seller profile: {ex.Message}");
+        //     }
+        // }
 
-        public static void ShowBuyerProfile()
-        {
-            BuyerProfileWindow = new Window();
-            BuyerProfileViewModel.User = CurrentUser;
-            _ = BuyerProfileViewModel.LoadBuyerProfile();
-            var buyerProfileView = new MarketMinds.Views.BuyerProfileView();
-            buyerProfileView.ViewModel = BuyerProfileViewModel;
-            BuyerProfileWindow.Content = buyerProfileView;
-            BuyerProfileWindow.Activate();
-        }
+        // public static void ShowBuyerProfile()
+        // {
+        //     BuyerProfileWindow = new Window();
+        //     BuyerProfileViewModel.User = CurrentUser;
+        //     _ = BuyerProfileViewModel.LoadBuyerProfile();
+        //     var buyerProfileView = new MarketMinds.Views.BuyerProfileView();
+        //     buyerProfileView.ViewModel = BuyerProfileViewModel;
+        //     BuyerProfileWindow.Content = buyerProfileView;
+        //     BuyerProfileWindow.Activate();
+        // }
 
         public static void ShowAdminProfile()
         {
@@ -195,19 +196,13 @@ namespace MarketMinds
                 {
                     case 2: // Buyer
                     case 3: // Seller
-                        ShowHomePage();
+                        ShowHomePage(); // the buyers and sellers will now see this main page
                         break;
-                    // case 3: // Seller
-                    //     ShowSellerProfile();
-                    //     break;
-                    // case 2: // Buyer
-                    //     ShowBuyerProfile();
-                    //     break;
                     case 1: // Admin
                         ShowAdminProfile();
                         break;
                     default:
-                        ShowMainWindow();
+                        Debug.WriteLine("ERROR: Invalid user type in LoginSuccessHandler, this should never happen");
                         break;
                 }
 
@@ -389,29 +384,28 @@ namespace MarketMinds
             LoginWindow.Activate();
         }
 
-        // Method to be called after successful login
-        public static void ShowMainWindow()
-        {
-            if (CurrentUser != null)
-            {
-                BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
-                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, CurrentUser);
-                SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
-                SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
-                NewChatbotService.SetCurrentUser(CurrentUser);
-                ChatBotService.SetCurrentUser(CurrentUser);
-                ChatBotViewModel.SetCurrentUser(CurrentUser);
-                if (LoginWindow != null)
-                {
-                    LoginWindow.Close();
-                }
-                MainWindow.Activate();
-            }
-            else
-            {
-                Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
-            }
-        }
+        // public static void ShowMainWindow()
+        // {
+        //     if (CurrentUser != null)
+        //     {
+        //         BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
+        //         ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, CurrentUser);
+        //         SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
+        //         SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
+        //         NewChatbotService.SetCurrentUser(CurrentUser);
+        //         ChatBotService.SetCurrentUser(CurrentUser);
+        //         ChatBotViewModel.SetCurrentUser(CurrentUser);
+        //         if (LoginWindow != null)
+        //         {
+        //             LoginWindow.Close();
+        //         }
+        //         MainWindow.Activate();
+        //     }
+        //     else
+        //     {
+        //         Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
+        //     }
+        // }
 
         public static void ResetLoginState()
         {
