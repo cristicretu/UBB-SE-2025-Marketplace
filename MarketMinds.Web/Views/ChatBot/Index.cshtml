@@ -21,7 +21,7 @@
     }
     
     /* User message markdown styles - lighter colors for dark background */
-    .bg-primary .markdown-content {
+    .bg-blue-600 .markdown-content {
         color: #fff;
     }
     
@@ -78,7 +78,7 @@
         background-color: rgba(0, 0, 0, 0.05);
     }
     
-    .bg-primary .markdown-content code {
+    .bg-blue-600 .markdown-content code {
         background-color: rgba(255, 255, 255, 0.2);
     }
     
@@ -93,7 +93,7 @@
         background-color: rgba(0, 0, 0, 0.05);
     }
     
-    .bg-primary .markdown-content pre {
+    .bg-blue-600 .markdown-content pre {
         background-color: rgba(0, 0, 0, 0.2);
     }
     
@@ -113,7 +113,7 @@
         border-color: #cbd5e0;
     }
     
-    .bg-primary .markdown-content blockquote {
+    .bg-blue-600 .markdown-content blockquote {
         border-color: rgba(255, 255, 255, 0.5);
     }
     
@@ -125,7 +125,7 @@
         color: #3B82F6;
     }
     
-    .bg-primary .markdown-content a {
+    .bg-blue-600 .markdown-content a {
         color: #fff;
         font-weight: bold;
     }
@@ -145,7 +145,7 @@
         border-color: #cbd5e0;
     }
     
-    .bg-primary .markdown-content th, .bg-primary .markdown-content td {
+    .bg-blue-600 .markdown-content th, .bg-blue-600 .markdown-content td {
         border-color: rgba(255, 255, 255, 0.3);
     }
     
@@ -159,145 +159,251 @@
         background-color: #cbd5e0;
     }
     
-    .bg-primary .markdown-content hr {
+    .bg-blue-600 .markdown-content hr {
         background-color: rgba(255, 255, 255, 0.3);
     }
 </style>
 
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">ChatBot Assistant</h1>
-    
-    <div class="flex flex-col md:flex-row gap-6">
-        <!-- Conversations List -->
-        <div class="w-full md:w-1/4 bg-white rounded-lg shadow-md p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Conversations</h2>
-                <form asp-action="CreateConversation" asp-controller="ChatBot" method="post">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition">
-                        New Chat
-                    </button>
-                </form>
-            </div>
-            
-            <div class="space-y-2 mt-4">
-                @if (Model.Conversations != null && Model.Conversations.Any())
-                {
-                    @foreach (var conversation in Model.Conversations)
-                    {
-                        <a href="@Url.Action("Index", "ChatBot", new { conversationId = conversation.Id })" 
-                           class="block p-3 @(Model.CurrentConversation?.Id == conversation.Id 
-                               ? "bg-primary/10 border-l-4 border-primary hover:bg-primary/20" 
-                               : "bg-gray-100 hover:bg-gray-200") rounded-md cursor-pointer">
-                            <p class="font-medium">Conversation @conversation.Id</p>
-                            <p class="text-sm text-gray-600 truncate">@(DateTime.Now.AddDays(-conversation.Id % 7).ToString("MMM dd, yyyy"))</p>
-                        </a>
-                    }
-                }
-                else
-                {
-                    <div class="p-4 bg-gray-50 rounded-md text-center">
-                        <p class="text-gray-600">No conversations yet</p>
-                        <p class="text-sm text-gray-500 mt-1">Click "New Chat" to start one</p>
-                    </div>
-                }
-            </div>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                <svg class="w-8 h-8 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                AI Assistant
+            </h1>
+            <p class="text-gray-600 mt-2">Get help with your questions and tasks</p>
         </div>
         
-        <!-- Chat Area -->
-        <div class="w-full md:w-3/4 bg-white rounded-lg shadow-md flex flex-col h-[600px]">
-            <!-- Chat Header -->
-            <div class="border-b p-4">
-                <h2 class="text-xl font-semibold">
-                    @if (Model.CurrentConversation != null)
-                    {
-                        <span>Conversation @Model.CurrentConversation.Id</span>
-                    }
-                    else
-                    {
-                        <span>Select or create a conversation</span>
-                    }
-                </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Conversations List -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 h-[600px] flex flex-col">
+                    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z"></path>
+                            </svg>
+                            Conversations
+                        </h2>
+                        <form asp-action="CreateConversation" asp-controller="ChatBot" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="flex-1 p-4 overflow-y-auto">
+                        @if (Model.Conversations != null && Model.Conversations.Any())
+                        {
+                            <div class="space-y-3">
+                                @foreach (var conversation in Model.Conversations)
+                                {
+                                    <a href="@Url.Action("Index", "ChatBot", new { conversationId = conversation.Id })" 
+                                       class="block p-4 rounded-lg transition-all duration-200 hover:shadow-sm
+                                              @(Model.CurrentConversation?.Id == conversation.Id 
+                                                  ? "bg-blue-50 border-2 border-blue-200" 
+                                                  : "bg-gray-50 hover:bg-gray-100 border-2 border-transparent")">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="font-semibold text-gray-900">Chat @conversation.Id</p>
+                                                <p class="text-sm text-gray-500 truncate">@(DateTime.Now.AddDays(-conversation.Id % 7).ToString("MMM dd, yyyy"))</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-12">
+                                <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-gray-600 font-medium">No conversations yet</p>
+                                <p class="text-sm text-gray-500 mt-1">Click the + button to start a new chat</p>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
             
-            <!-- Messages Container -->
-            <div class="flex-1 p-4 overflow-y-auto space-y-4" id="messagesContainer">
-                @if (Model.Messages != null && Model.Messages.Any())
-                {
-                    @for (int messageIndex = StartIndex; messageIndex < Model.Messages.Count; messageIndex++)
-                    {
-                        var message = Model.Messages[messageIndex];
-                        var isUserMessage = message.UserId != DefaultBotId; // Message is from user if UserId is not 0 (bot)
-                        
-                        @if (isUserMessage)
+            <!-- Chat Area -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 h-[600px] flex flex-col">
+                    <!-- Chat Header -->
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h2 class="text-lg font-semibold text-gray-900">
+                                        @if (Model.CurrentConversation != null)
+                                        {
+                                            <span>Chat @Model.CurrentConversation.Id</span>
+                                        }
+                                        else
+                                        {
+                                            <span>AI Assistant</span>
+                                        }
+                                    </h2>
+                                    <p class="text-sm text-gray-500">
+                                        @if (Model.CurrentConversation != null)
+                                        {
+                                            <span class="flex flex-row items-center">
+                                                <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                                                <span>Online</span>
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span>Select or create a conversation to start chatting</span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Messages Container -->
+                    <div class="flex-1 p-6 overflow-y-auto space-y-4" id="messagesContainer">
+                        @if (Model.Messages != null && Model.Messages.Any())
                         {
-                            <!-- User Message -->
-                            <div class="flex justify-end mb-2">
-                                <div class="bg-primary text-white p-3 rounded-lg max-w-[80%]">
-                                    @* This is the user message *@
-                                    <div class="markdown-content" data-content="@message.Content"></div>
+                            @for (int messageIndex = StartIndex; messageIndex < Model.Messages.Count; messageIndex++)
+                            {
+                                var message = Model.Messages[messageIndex];
+                                var isUserMessage = message.UserId != DefaultBotId; // Message is from user if UserId is not 0 (bot)
+                                
+                                @if (isUserMessage)
+                                {
+                                    <!-- User Message -->
+                                    <div class="flex justify-end">
+                                        <div class="max-w-[80%] bg-blue-600 text-white rounded-lg rounded-br-sm px-4 py-3 shadow-sm">
+                                            <div class="markdown-content" data-content="@message.Content"></div>
+                                            <div class="text-xs text-blue-100 mt-2">You</div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Bot Message -->
+                                    <div class="flex justify-start">
+                                        <div class="flex items-start space-x-3 max-w-[80%]">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <div class="bg-gray-100 rounded-lg rounded-bl-sm px-4 py-3 shadow-sm">
+                                                <div class="markdown-content" data-content="@message.Content"></div>
+                                                <div class="text-xs text-gray-500 mt-2">AI Assistant</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                        else if (Model.CurrentConversation != null)
+                        {
+                            <div class="flex justify-center items-center h-full">
+                                <div class="text-center">
+                                    <div class="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-600 font-medium">Start the conversation!</p>
+                                    <p class="text-sm text-gray-500 mt-1">Type a message below to begin chatting with AI</p>
                                 </div>
                             </div>
                         }
                         else
                         {
-                            <!-- Bot Message -->
-                            <div class="flex justify-start mb-2">
-                                <div class="bg-gray-100 p-3 rounded-lg max-w-[80%]">
-                                    <div class="markdown-content" data-content="@message.Content"></div>
+                            <div class="flex justify-center items-center h-full">
+                                <div class="text-center">
+                                    <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z"></path>
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-600 font-medium">Select a conversation</p>
+                                    <p class="text-sm text-gray-500 mt-1">Choose an existing conversation or create a new one to start chatting</p>
                                 </div>
                             </div>
                         }
-                    }
-                }
-                else if (Model.CurrentConversation != null)
-                {
-                    <div class="flex justify-center items-center h-full">
-                        <p class="text-gray-500">No messages yet. Start the conversation!</p>
                     </div>
-                }
-                else
-                {
-                    <div class="flex justify-center items-center h-full">
-                        <p class="text-gray-500">Select a conversation or create a new one to start chatting.</p>
+                    
+                    <!-- Message Input -->
+                    <div class="border-t border-gray-200 p-6">
+                        @if (Model.CurrentConversation != null)
+                        {
+                            <form asp-action="SendMessage" asp-controller="ChatBot" method="post" class="flex items-end space-x-4">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="conversationId" value="@Model.CurrentConversation.Id" />
+                                <div class="flex-1">
+                                    <div class="relative">
+                                        <input 
+                                            type="text" 
+                                            name="content"
+                                            id="messageInput"
+                                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors pr-12" 
+                                            placeholder="Type your message here..."
+                                            required
+                                        />
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" 
+                                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    </svg>
+                                    Send
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="flex items-end space-x-4">
+                                <div class="flex-1">
+                                    <input 
+                                        type="text" 
+                                        class="block w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500" 
+                                        placeholder="Select a conversation first..."
+                                        disabled
+                                    />
+                                </div>
+                                <button class="bg-gray-400 text-white font-medium py-3 px-6 rounded-lg cursor-not-allowed flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    </svg>
+                                    Send
+                                </button>
+                            </div>
+                        }
                     </div>
-                }
-            </div>
-            
-            <!-- Message Input -->
-            <div class="border-t p-4">
-                @if (Model.CurrentConversation != null)
-                {
-                    <form asp-action="SendMessage" asp-controller="ChatBot" method="post" class="flex gap-2">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="conversationId" value="@Model.CurrentConversation.Id" />
-                        <input 
-                            type="text" 
-                            name="content"
-                            id="messageInput"
-                            class="flex-1 border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" 
-                            placeholder="Type your message here..."
-                            required
-                        />
-                        <button type="submit" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition">
-                            Send
-                        </button>
-                    </form>
-                }
-                else
-                {
-                    <div class="flex gap-2">
-                        <input 
-                            type="text" 
-                            class="flex-1 border rounded-md px-4 py-2 bg-gray-100" 
-                            placeholder="Select a conversation first..."
-                            disabled
-                        />
-                        <button class="bg-gray-400 text-white px-4 py-2 rounded-md cursor-not-allowed">
-                            Send
-                        </button>
-                    </div>
-                }
+                </div>
             </div>
         </div>
     </div>
@@ -345,6 +451,31 @@
                 // Apply sanitized HTML to element
                 element.innerHTML = sanitizeOutput(html);
             });
+        });
+
+        // Add smooth scrolling when new messages are added
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            if (messagesContainer) {
+                messagesContainer.scrollTo({
+                    top: messagesContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Auto-resize textarea and handle enter key
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                // Handle Enter key to submit form
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.closest('form').submit();
+                    }
+                });
+            }
         });
     </script>
 } 

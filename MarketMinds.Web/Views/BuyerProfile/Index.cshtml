@@ -9,175 +9,261 @@
     var isOwnProfile = ViewBag.IsOwnProfile == true;
 }
 
-<div class="bg-gray-50 min-h-screen py-8">
-    <div class="container mx-auto">
-        <div class="bg-white rounded-xl shadow-lg mb-8 border border-gray-200 overflow-hidden max-w-4xl mx-auto">
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-8 text-center relative">
-                <h1 class="text-3xl font-semibold mb-2">@(canEdit ? "Edit Profile" : $"{Model.FirstName} {Model.LastName}")</h1>
-                <p class="opacity-90 text-base mb-0">@(canEdit ? "Manage your profile information" : "")</p>
-                @if (!string.IsNullOrEmpty(Model.Badge))
-                {
-                    <div class="absolute top-4 right-4 bg-white bg-opacity-20 backdrop-blur-sm p-3 rounded-lg text-center min-w-[100px]">
-                        <div class="text-sm font-semibold mb-1">@Model.Badge</div>
-                        @if (canEdit && Model.Discount > 0)
-                        {
-                            <div class="text-xs opacity-90">@(Model.Discount * 100)% Discount</div>
-                        }
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Profile Header -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8 rounded-t-xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold">
+                                @if (canEdit)
+                                {
+                                    <span>Manage Profile</span>
+                                }
+                                else
+                                {
+                                    <span>@Model.FirstName @Model.LastName</span>
+                                }
+                            </h1>
+                            <p class="text-blue-100 mt-1">
+                                @if (canEdit)
+                                {
+                                    <span>Update your profile information and preferences</span>
+                                }
+                                else
+                                {
+                                    <span>Buyer Profile</span>
+                                }
+                            </p>
+                        </div>
                     </div>
-                }
+                    @if (!string.IsNullOrEmpty(Model.Badge))
+                    {
+                        <div class="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-3 rounded-lg text-center">
+                            <div class="text-lg font-bold">@Model.Badge</div>
+                            @if (canEdit && Model.Discount > 0)
+                            {
+                                <div class="text-sm text-blue-100">@(Model.Discount * 100)% Discount</div>
+                            }
+                        </div>
+                    }
+                </div>
             </div>
 
             <div class="p-8">
                 @if (canEdit)
                 {
-                    <form asp-action="Update" method="post">
+                    <form asp-action="Update" method="post" class="space-y-8">
                         <input type="hidden" asp-for="BuyerId" />
 
-                        <!-- Personal Information Grid -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <div class="mb-0">
-                                <label asp-for="FirstName" class="block font-medium text-gray-700 mb-2 text-sm">First Name</label>
-                                <input asp-for="FirstName" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                <span asp-validation-for="FirstName" class="text-red-500 text-sm"></span>
-                            </div>
-                            <div class="mb-0">
-                                <label asp-for="LastName" class="block font-medium text-gray-700 mb-2 text-sm">Last Name</label>
-                                <input asp-for="LastName" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                <span asp-validation-for="LastName" class="text-red-500 text-sm"></span>
-                            </div>
-                            <div class="mb-0">
-                                <label asp-for="Email" class="block font-medium text-gray-700 mb-2 text-sm">Email</label>
-                                <input asp-for="Email" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm bg-gray-50 border-gray-300 text-gray-600" readonly />
-                            </div>
-                            <div class="mb-0">
-                                <label asp-for="PhoneNumber" class="block font-medium text-gray-700 mb-2 text-sm">Phone Number</label>
-                                <input asp-for="PhoneNumber" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                <span asp-validation-for="PhoneNumber" class="text-red-500 text-sm"></span>
+                        <!-- Personal Information -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Personal Information
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label asp-for="FirstName" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                    <input asp-for="FirstName" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                    <span asp-validation-for="FirstName" class="text-red-500 text-sm mt-1 block"></span>
+                                </div>
+                                <div>
+                                    <label asp-for="LastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                    <input asp-for="LastName" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                    <span asp-validation-for="LastName" class="text-red-500 text-sm mt-1 block"></span>
+                                </div>
+                                <div>
+                                    <label asp-for="Email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                    <input asp-for="Email" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" 
+                                           readonly />
+                                </div>
+                                <div>
+                                    <label asp-for="PhoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                    <input asp-for="PhoneNumber" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                    <span asp-validation-for="PhoneNumber" class="text-red-500 text-sm mt-1 block"></span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Address Section -->
-                        <div class="bg-gray-50 rounded-lg p-6 mb-8">
-                            <div class="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                        <!-- Address Information -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
                                 Address Information
-                            </div>
+                            </h3>
                             
                             <!-- Billing Address -->
-                            <h6 class="font-semibold text-gray-700 mb-4">Billing Address</h6>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="mb-0">
-                                    <label asp-for="BillingStreet" class="block font-medium text-gray-700 mb-2 text-sm">Street Address</label>
-                                    <input asp-for="BillingStreet" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                    <span asp-validation-for="BillingStreet" class="text-red-500 text-sm"></span>
-                                </div>
-                                <div class="mb-0">
-                                    <label asp-for="BillingPostalCode" class="block font-medium text-gray-700 mb-2 text-sm">Postal Code</label>
-                                    <input asp-for="BillingPostalCode" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                    <span asp-validation-for="BillingPostalCode" class="text-red-500 text-sm"></span>
-                                </div>
-                                <div class="mb-0">
-                                    <label asp-for="BillingCity" class="block font-medium text-gray-700 mb-2 text-sm">City</label>
-                                    <input asp-for="BillingCity" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                    <span asp-validation-for="BillingCity" class="text-red-500 text-sm"></span>
-                                </div>
-                                <div class="mb-0">
-                                    <label asp-for="BillingCountry" class="block font-medium text-gray-700 mb-2 text-sm">Country</label>
-                                    <input asp-for="BillingCountry" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                    <span asp-validation-for="BillingCountry" class="text-red-500 text-sm"></span>
+                            <div class="mb-8">
+                                <h4 class="font-semibold text-gray-800 mb-4">Billing Address</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label asp-for="BillingStreet" class="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                                        <input asp-for="BillingStreet" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="BillingStreet" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="BillingPostalCode" class="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
+                                        <input asp-for="BillingPostalCode" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="BillingPostalCode" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="BillingCity" class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                                        <input asp-for="BillingCity" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="BillingCity" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="BillingCountry" class="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                                        <input asp-for="BillingCountry" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="BillingCountry" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Same Address Checkbox -->
-                            <div class="bg-white rounded-md p-4 mb-6 mt-6 border border-gray-300 flex items-center gap-3">
-                                <input asp-for="UseSameAddress" class="w-4 h-4 border-2 border-gray-300 rounded bg-white checked:bg-blue-500 checked:border-blue-500" id="useSameAddress" />
-                                <label class="font-medium text-gray-700 text-sm cursor-pointer" for="useSameAddress">Use same address for shipping</label>
+                            <!-- Same Address Toggle -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-300 mb-6">
+                                <div class="flex items-center space-x-3">
+                                    <input asp-for="UseSameAddress" 
+                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" 
+                                           id="useSameAddress" />
+                                    <label class="text-sm font-medium text-gray-700 cursor-pointer" for="useSameAddress">
+                                        Use same address for shipping
+                                    </label>
+                                </div>
                             </div>
 
                             <!-- Shipping Address -->
                             <div id="shippingAddressFields">
-                                <h6 class="font-semibold text-gray-700 mb-4">Shipping Address</h6>
+                                <h4 class="font-semibold text-gray-800 mb-4">Shipping Address</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="mb-0">
-                                        <label asp-for="ShippingStreet" class="block font-medium text-gray-700 mb-2 text-sm">Street Address</label>
-                                        <input asp-for="ShippingStreet" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                        <span asp-validation-for="ShippingStreet" class="text-red-500 text-sm"></span>
+                                    <div>
+                                        <label asp-for="ShippingStreet" class="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                                        <input asp-for="ShippingStreet" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="ShippingStreet" class="text-red-500 text-sm mt-1 block"></span>
                                     </div>
-                                    <div class="mb-0">
-                                        <label asp-for="ShippingPostalCode" class="block font-medium text-gray-700 mb-2 text-sm">Postal Code</label>
-                                        <input asp-for="ShippingPostalCode" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                        <span asp-validation-for="ShippingPostalCode" class="text-red-500 text-sm"></span>
+                                    <div>
+                                        <label asp-for="ShippingPostalCode" class="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
+                                        <input asp-for="ShippingPostalCode" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="ShippingPostalCode" class="text-red-500 text-sm mt-1 block"></span>
                                     </div>
-                                    <div class="mb-0">
-                                        <label asp-for="ShippingCity" class="block font-medium text-gray-700 mb-2 text-sm">City</label>
-                                        <input asp-for="ShippingCity" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                        <span asp-validation-for="ShippingCity" class="text-red-500 text-sm"></span>
+                                    <div>
+                                        <label asp-for="ShippingCity" class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                                        <input asp-for="ShippingCity" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="ShippingCity" class="text-red-500 text-sm mt-1 block"></span>
                                     </div>
-                                    <div class="mb-0">
-                                        <label asp-for="ShippingCountry" class="block font-medium text-gray-700 mb-2 text-sm">Country</label>
-                                        <input asp-for="ShippingCountry" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
-                                        <span asp-validation-for="ShippingCountry" class="text-red-500 text-sm"></span>
+                                    <div>
+                                        <label asp-for="ShippingCountry" class="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                                        <input asp-for="ShippingCountry" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="ShippingCountry" class="text-red-500 text-sm mt-1 block"></span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Save Button -->
-                        <button type="submit" class="bg-gradient-to-r from-blue-500 to-blue-600 border-0 rounded-md px-8 py-3 text-base font-medium text-white transition-all duration-200 float-right mt-4 mb-8 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/30">
-                            Save Changes
-                        </button>
-                        <div class="clear-both"></div>
+                        <div class="flex justify-end">
+                            <button type="submit" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 shadow-sm hover:shadow-lg">
+                                <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Save Changes
+                            </button>
+                        </div>
                     </form>
                 }
                 else
                 {
                     <!-- Public Profile View -->
-                    <div class="text-center p-8">
+                    <div class="space-y-8">
                         @{
                             var linkageInfo = ViewBag.LinkageInfo as MarketMinds.Shared.Services.BuyerLinkageInfo;
                         }
                         
                         @if (linkageInfo != null && linkageInfo.CanManageLink)
                         {
-                            <!-- Link/Unlink Button -->
-                            @if (linkageInfo.IsLinked)
-                            {
-                                <form asp-action="Unlink" method="post" class="mb-6">
-                                    <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
-                                    <button type="submit" class="bg-gradient-to-r from-red-500 to-red-600 border-0 rounded-md px-6 py-3 text-sm font-medium text-white transition-all duration-200 inline-flex items-center gap-2 no-underline cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-red-500/30">
-                                        <i class="fas fa-user-minus"></i> Unlink
-                                    </button>
-                                </form>
-                            }
-                            else
-                            {
-                                <form asp-action="Link" method="post" class="mb-6">
-                                    <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
-                                    <button type="submit" class="bg-gradient-to-r from-blue-500 to-blue-600 border-0 rounded-md px-6 py-3 text-sm font-medium text-white transition-all duration-200 inline-flex items-center gap-2 no-underline cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/30">
-                                        <i class="fas fa-user-plus"></i> Link
-                                    </button>
-                                </form>
-                            }
+                            <!-- Link/Unlink Section -->
+                            <div class="text-center">
+                                @if (linkageInfo.IsLinked)
+                                {
+                                    <form asp-action="Unlink" method="post">
+                                        <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                        <button type="submit" 
+                                                class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center mx-auto">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path>
+                                            </svg>
+                                            Unlink from this buyer
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Link" method="post">
+                                        <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                        <button type="submit" 
+                                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center mx-auto">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                            </svg>
+                                            Link with this buyer
+                                        </button>
+                                    </form>
+                                }
+                            </div>
                         }
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                            <div class="mb-4">
-                                <label class="block font-medium text-gray-700 mb-2 text-sm">First Name</label>
-                                <div class="text-base text-gray-900 font-medium py-1 min-h-[20px]">@Model.FirstName</div>
-                            </div>
-                            <div class="mb-4">
-                                <label class="block font-medium text-gray-700 mb-2 text-sm">Last Name</label>
-                                <div class="text-base text-gray-900 font-medium py-1 min-h-[20px]">@Model.LastName</div>
-                            </div>
-                            <div class="mb-4">
-                                <label class="block font-medium text-gray-700 mb-2 text-sm">Email</label>
-                                <div class="text-base text-gray-900 font-medium py-1 min-h-[20px]">@Model.Email</div>
-                            </div>
-                            <div class="mb-4">
-                                <label class="block font-medium text-gray-700 mb-2 text-sm">Member Since</label>
-                                <div class="text-base text-gray-900 font-medium py-1 min-h-[20px]">@DateTime.Now.ToString("MMMM yyyy")</div>
+                        <!-- Profile Information -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Profile Information
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">First Name</label>
+                                    <p class="text-base font-semibold text-gray-900">@Model.FirstName</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Last Name</label>
+                                    <p class="text-base font-semibold text-gray-900">@Model.LastName</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Email Address</label>
+                                    <p class="text-base font-semibold text-gray-900">@Model.Email</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Member Since</label>
+                                    <p class="text-base font-semibold text-gray-900">@DateTime.Now.ToString("MMMM yyyy")</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -188,20 +274,26 @@
         <!-- Links Section -->
         @if (Model.LinkedBuyers != null && Model.LinkedBuyers.Any())
         {
-            <div class="bg-white rounded-xl shadow-lg mb-8 border border-gray-200 overflow-hidden max-w-4xl mx-auto">
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-6 m-0 rounded-t-xl">
-                    <h3 class="text-xl font-semibold m-0 flex items-center gap-3">
-                        <i class="fas fa-users"></i> Links
-                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">(@Model.LinkedBuyers.Count)</span>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+                <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-6 rounded-t-xl">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Linked Buyers
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium ml-3">
+                            @Model.LinkedBuyers.Count
+                        </span>
                     </h3>
                 </div>
-                <div class="p-8 m-0">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                <div class="p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach (var linkedBuyer in Model.LinkedBuyers)
                         {
-                            <div class="bg-gray-50 rounded-xl p-6 border-2 border-transparent transition-all duration-300 relative overflow-hidden hover:border-cyan-500 hover:shadow-xl hover:shadow-cyan-500/15 hover:-translate-y-1">
-                                <a href="@Url.Action("PublicProfile", "BuyerProfile", new { id = linkedBuyer.BuyerId })" class="no-underline text-inherit flex items-center gap-4 hover:no-underline hover:text-inherit">
-                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center font-semibold text-base flex-shrink-0">
+                            <a href="@Url.Action("PublicProfile", "BuyerProfile", new { id = linkedBuyer.BuyerId })" 
+                               class="block bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors border border-gray-200 hover:border-blue-300 hover:shadow-md">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-lg">
                                         @{
                                             var firstInitial = !string.IsNullOrEmpty(linkedBuyer.FirstName) ? linkedBuyer.FirstName.First().ToString().ToUpper() : "?";
                                             var lastInitial = !string.IsNullOrEmpty(linkedBuyer.LastName) ? linkedBuyer.LastName.First().ToString().ToUpper() : "";
@@ -209,15 +301,17 @@
                                         @firstInitial@lastInitial
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <div class="font-semibold text-lg text-gray-900 mb-1 whitespace-nowrap overflow-hidden text-ellipsis">@linkedBuyer.FirstName @linkedBuyer.LastName</div>
-                                        <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 px-2 py-1 rounded-full text-xs font-medium inline-block mb-1">@linkedBuyer.Badge</div>
+                                        <h4 class="font-semibold text-gray-900 truncate">@linkedBuyer.FirstName @linkedBuyer.LastName</h4>
+                                        <div class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium inline-block mt-1">
+                                            @linkedBuyer.Badge
+                                        </div>
                                         @if (!string.IsNullOrEmpty(linkedBuyer.Email))
                                         {
-                                            <div class="text-gray-600 text-sm whitespace-nowrap overflow-hidden text-ellipsis">@linkedBuyer.Email</div>
+                                            <p class="text-sm text-gray-500 truncate mt-1">@linkedBuyer.Email</p>
                                         }
                                     </div>
-                                </a>
-                            </div>
+                                </div>
+                            </a>
                         }
                     </div>
                 </div>
@@ -227,20 +321,26 @@
         <!-- Following Section -->
         @if (Model.FollowingSellers != null && Model.FollowingSellers.Any())
         {
-            <div class="bg-white rounded-xl shadow-lg mb-8 border border-gray-200 overflow-hidden max-w-4xl mx-auto">
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-6 m-0 rounded-t-xl">
-                    <h3 class="text-xl font-semibold m-0 flex items-center gap-3">
-                        <i class="fas fa-store"></i> Following
-                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">(@Model.FollowingSellers.Count)</span>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+                <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-8 py-6 rounded-t-xl">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        Following Sellers
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium ml-3">
+                            @Model.FollowingSellers.Count
+                        </span>
                     </h3>
                 </div>
-                <div class="p-8 m-0">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                <div class="p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach (var followedSeller in Model.FollowingSellers)
                         {
-                            <div class="bg-gray-50 rounded-xl p-6 border-2 border-transparent transition-all duration-300 relative overflow-hidden hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/15 hover:-translate-y-1">
-                                <a href="@Url.Action("PublicProfile", "SellerProfile", new { id = followedSeller.SellerId })" class="no-underline text-inherit flex items-center gap-4 hover:no-underline hover:text-inherit">
-                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center font-semibold text-base flex-shrink-0">
+                            <a href="@Url.Action("PublicProfile", "SellerProfile", new { id = followedSeller.SellerId })" 
+                               class="block bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors border border-gray-200 hover:border-purple-300 hover:shadow-md">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg">
                                         @{
                                             var firstInitial = !string.IsNullOrEmpty(followedSeller.FirstName) ? followedSeller.FirstName.First().ToString().ToUpper() : "?";
                                             var lastInitial = !string.IsNullOrEmpty(followedSeller.LastName) ? followedSeller.LastName.First().ToString().ToUpper() : "";
@@ -248,18 +348,20 @@
                                         @firstInitial@lastInitial
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <div class="font-semibold text-lg text-gray-900 mb-1 whitespace-nowrap overflow-hidden text-ellipsis">@followedSeller.FirstName @followedSeller.LastName</div>
+                                        <h4 class="font-semibold text-gray-900 truncate">@followedSeller.FirstName @followedSeller.LastName</h4>
                                         @if (!string.IsNullOrEmpty(followedSeller.StoreName))
                                         {
-                                            <div class="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white px-2 py-1 rounded-full text-xs font-medium inline-block mb-1">@followedSeller.StoreName</div>
+                                            <div class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium inline-block mt-1">
+                                                @followedSeller.StoreName
+                                            </div>
                                         }
                                         @if (!string.IsNullOrEmpty(followedSeller.Email))
                                         {
-                                            <div class="text-gray-600 text-sm whitespace-nowrap overflow-hidden text-ellipsis">@followedSeller.Email</div>
+                                            <p class="text-sm text-gray-500 truncate mt-1">@followedSeller.Email</p>
                                         }
                                     </div>
-                                </a>
-                            </div>
+                                </div>
+                            </a>
                         }
                     </div>
                 </div>
@@ -268,19 +370,41 @@
 
         @if (canEdit)
         {
-            <!-- Contract Actions -->
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center max-w-4xl mx-auto">
-                <h3 class="text-xl font-semibold text-gray-700 mb-4 flex items-center justify-center gap-2">Contract Management</h3>
+            <!-- Contract Management -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Contract Management
+                </h3>
                 
-                <div class="flex flex-wrap gap-4 items-center justify-center">
+                <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
                     <!-- Renew Contract -->
-                    <a href="@Url.Action("Index", "RenewContract")" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 border-0 rounded-md no-underline font-medium transition-all duration-200 inline-flex items-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-green-500/40 hover:text-white hover:no-underline">Renew Contract</a>
+                    <a href="@Url.Action("Index", "RenewContract")" 
+                       class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Renew Contract
+                    </a>
                     
                     <!-- Generate Contract Form -->
-                    <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="flex items-center gap-3">
-                        <label for="contractId" class="font-medium m-0">Contract ID:</label>
-                        <input type="number" class="w-30 border border-gray-300 rounded-md px-3 py-2 text-sm m-0" id="contractId" name="contractId" required />
-                        <button type="submit" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-5 py-3 border-0 rounded-md font-medium cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/40">Generate</button>
+                    <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="flex items-end gap-4">
+                        <div>
+                            <label for="contractId" class="block text-sm font-medium text-gray-700 mb-2">Contract ID</label>
+                            <input type="number" 
+                                   class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   id="contractId" name="contractId" 
+                                   placeholder="Enter ID" required />
+                        </div>
+                        <button type="submit" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Generate Contract
+                        </button>
                     </form>
                 </div>
             </div>
