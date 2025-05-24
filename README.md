@@ -152,6 +152,16 @@ To set up the database for the Messi project:
 
 This will create a database with the name specified in the `InitialCatalog` field of your server's `appsettings.json` file.
 
+### ChatBot Setup (Required)
+
+After setting up the database, you **must** run the ChatBot user creation script:
+
+1. Open your SQL Server Management Studio (or any database client)
+2. Connect to your database specified in `InitialCatalog`
+3. Run the contents of `server/CreateBotUser.sql`
+
+This creates a system user with ID 0 that the chatbot uses for sending messages. **The chatbot will not work without this step.**
+
 For the 921 project, make sure to update the connection string in the server's `appsettings.json` with your own SQL Server instance name.
 
 ---

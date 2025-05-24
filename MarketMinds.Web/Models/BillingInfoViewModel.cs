@@ -33,7 +33,7 @@ namespace WebMarketplace.Models
 
         [Required(ErrorMessage = "Phone number is required")]
         [Display(Name = "Phone Number")]
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please enter a valid 10-digit phone number")]
+        [RegularExpression(@"^\+40\d{9}$", ErrorMessage = "Please enter a valid phone number in format +40XXXXXXXXX")]
         public string PhoneNumber { get; set; }
 
         [Required(ErrorMessage = "Address is required")]
