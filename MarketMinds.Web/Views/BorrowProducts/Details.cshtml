@@ -1,4 +1,5 @@
 @model MarketMinds.Shared.Models.BorrowProduct
+@using MarketMinds.Shared.Services
 
 @{
     ViewData["Title"] = "Borrowing Details";
@@ -21,6 +22,35 @@
     {
         remainingTime = "No end date specified";
     }
+    
+    // Add user role check similar to BuyProducts Details
+    bool isAuthenticated = User.Identity?.IsAuthenticated == true && UserSession.CurrentUserId.HasValue;
+    
+    int userType = 0;
+    if (isAuthenticated && !string.IsNullOrEmpty(UserSession.CurrentUserRole))
+    {
+        if (int.TryParse(UserSession.CurrentUserRole, out int parsedType))
+        {
+            userType = parsedType;
+        }
+        else
+        {
+            switch (UserSession.CurrentUserRole)
+            {
+                case "Admin": userType = 1; break;
+                case "Buyer": userType = 2; break;
+                case "Seller": userType = 3; break;
+                default: userType = 0; break;
+            }
+        }
+    }
+    
+    bool isAdmin = isAuthenticated && userType == 1;
+    bool isBuyer = isAuthenticated && userType == 2;
+    bool isSeller = isAuthenticated && userType == 3;
+    
+    // Check if user can make purchases (admins and buyers)
+    bool canPurchase = isAdmin || isBuyer;
 }
 
 <div class="container mx-auto px-4 py-8">
@@ -96,9 +126,13 @@
                         <div>
                             <h3 class="text-lg font-medium">Seller</h3>
                             <p class="text-gray-600">@(Model.Seller?.Username ?? "Unknown")</p>
-                            <a href="/Reviews/Create?sellerId=@Model.Seller?.Id" class="inline-block mt-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-sm">
-                                Review Seller
-                            </a>
+                            @if (Model.Seller?.Id > 0 && canPurchase)
+                            {
+                                <a asp-controller="Reviews" asp-action="Create" asp-route-sellerId="@Model.Seller.Id" 
+                                   class="inline-block mt-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-sm">
+                                    Review Seller
+                                </a>
+                            }
                         </div>
                         <div>
                             <h3 class="text-lg font-medium">Remaining Time</h3>
@@ -166,14 +200,29 @@
             
             <div class="flex flex-col justify-center items-center">
                 <h3 class="text-xl font-semibold mb-4">Waiting List</h3>
-                <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
-                    <button id="joinWaitingList" class="bg-green-600 text-white px-4 py-4 rounded hover:bg-green-700 transition">
-                        Join
-                    </button>
-                    <button id="leaveWaitingList" class="bg-gray-200 text-gray-800 px-4 py-4 rounded hover:bg-gray-300 transition">
-                        Leave
-                    </button>
-                </div>
+                @if (canPurchase)
+                {
+                    <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
+                        <button id="joinWaitingList" class="bg-green-600 text-white px-4 py-4 rounded hover:bg-green-700 transition">
+                            Join
+                        </button>
+                        <button id="leaveWaitingList" class="bg-gray-200 text-gray-800 px-4 py-4 rounded hover:bg-gray-300 transition">
+                            Leave
+                        </button>
+                    </div>
+                }
+                else if (isSeller)
+                {
+                    <p class="text-gray-500 italic">Sellers cannot join waiting lists.</p>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" 
+                       class="w-full max-w-xs bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition flex items-center justify-center inline-block text-center">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        Login to Join Waiting List
+                    </a>
+                }
             </div>
         </div>
     </div>

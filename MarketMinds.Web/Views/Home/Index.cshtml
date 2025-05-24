@@ -218,11 +218,9 @@
                                         <div class="font-bold text-primary">$@item.Price.ToString("N2")</div>
                                         @if (isBuyer)
                                         {
-                                            @{
-                                                var isInWishlist = ViewBag.WishlistProductIds != null && ((List<int>)ViewBag.WishlistProductIds).Contains(item.Id);
-                                            }
+                                            var isInWishlist = ViewBag.WishlistProductIds != null && ((List<int>)ViewBag.WishlistProductIds).Contains(item.Id);
                                             
-                                            @if (isInWishlist)
+                                            if (isInWishlist)
                                             {
                                                 <form asp-controller="BuyerWishlist" asp-action="RemoveFromWishlist" method="post" class="inline">
                                                     <input type="hidden" name="productId" value="@item.Id" />
