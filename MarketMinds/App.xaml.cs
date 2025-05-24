@@ -347,6 +347,7 @@ namespace MarketMinds
             MessageService = new MessageService(MessageRepository);
             ChatBotService = new ChatbotService(ChatbotRepository);
             ChatService = new MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService(ChatRepository);
+            ImageUploadService = new ImageUploadService(Configuration);
             NewChatbotService = new MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
             ContractService = new ContractService();
             PDFService = new PDFService();
