@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="MarketMinds.Views.CreateAuctionProductWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Create Auction Listing">
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Text="Create an Auction Listing"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,8"/>
+            <TextBlock Text="Fill in the details below to list your product for auction"
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+
+                <StackPanel>
+                    <TextBox x:Name="TitleTextBox"
+                             Header="Product Title *"
+                             PlaceholderText="Enter a descriptive title"
+                             MaxLength="100"/>
+                    <TextBlock x:Name="TitleErrorText"
+                               Text=""
+                               Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                               FontSize="12"
+                               Margin="0,4,0,0"
+                               Visibility="Collapsed"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBox x:Name="DescriptionTextBox"
+                             Header="Description"
+                             PlaceholderText="Describe your product"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             Height="100"
+                             MaxLength="500"/>
+                </StackPanel>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <ComboBox x:Name="CategoryComboBox"
+                                  Header="Category *"
+                                  PlaceholderText="Select a category"
+                                  DisplayMemberPath="DisplayTitle"
+                                  SelectedValuePath="Id"/>
+                        <TextBlock x:Name="CategoryErrorText"
+                                   Text=""
+                                   Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                   FontSize="12"
+                                   Margin="0,4,0,0"
+                                   Visibility="Collapsed"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <ComboBox x:Name="ConditionComboBox"
+                                  Header="Condition *"
+                                  PlaceholderText="Select condition"
+                                  DisplayMemberPath="DisplayTitle"
+                                  SelectedValuePath="Id"/>
+                        <TextBlock x:Name="ConditionErrorText"
+                                   Text=""
+                                   Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                   FontSize="12"
+                                   Margin="0,4,0,0"
+                                   Visibility="Collapsed"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel>
+                    <TextBox x:Name="StartingPriceTextBox"
+                             Header="Starting Price *"
+                             PlaceholderText="Enter starting price"
+                             InputScope="Number"/>
+                    <TextBlock x:Name="StartingPriceErrorText"
+                               Text=""
+                               Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                               FontSize="12"
+                               Margin="0,4,0,0"
+                               Visibility="Collapsed"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Auction End Date *"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,8"/>
+                    <DatePicker x:Name="EndDatePicker"
+                                Header="End Date"/>
+                    <TextBlock x:Name="EndDateErrorText"
+                               Text=""
+                               Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                               FontSize="12"
+                               Margin="0,4,0,0"
+                               Visibility="Collapsed"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Product Images"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,8"/>
+                    <Button x:Name="UploadImagesButton"
+                            Content="📷 Upload Images"
+                            Click="UploadImagesButton_Click"
+                            Padding="16,8"
+                            HorizontalAlignment="Left"/>
+                    <GridView x:Name="ImagePreviewGrid"
+                              Margin="0,8,0,0"
+                              MaxHeight="200">
+                        <GridView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="100" Height="100" Margin="4">
+                                    <Grid>
+                                        <Image Source="{Binding Url}" Stretch="UniformToFill"/>
+                                        <Button Content="✕"
+                                                Width="24" Height="24"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Margin="4"
+                                                Click="RemoveImage_Click"
+                                                Tag="{Binding}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+                    </GridView>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="12"
+                    Margin="0,24,0,0">
+            <Button x:Name="CancelButton"
+                    Content="Cancel"
+                    Click="CancelButton_Click"
+                    Padding="24,8"
+                    MinWidth="100"/>
+            <Button x:Name="SubmitButton"
+                    Content="Create Auction"
+                    Click="SubmitButton_Click"
+                    Padding="24,8"
+                    MinWidth="120"/>
+        </StackPanel>
+
+        <Border x:Name="LoadingOverlay"
+                Grid.RowSpan="3"
+                Background="#80000000"
+                Visibility="Collapsed">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <ProgressRing IsActive="True"
+                              Width="50"
+                              Height="50"/>
+                <TextBlock Text="Creating your auction..."
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           Margin="0,12,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
