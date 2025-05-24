@@ -11,8 +11,8 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0.18*"/> <!-- Utility bar - 18% width -->
-            <ColumnDefinition Width="0.82*"/> <!-- Pivot content - 82% width -->
+            <ColumnDefinition Width="0.20*"/> <!-- Utility bar - 20% width -->
+            <ColumnDefinition Width="0.80*"/> <!-- Pivot content - 80% width -->
         </Grid.ColumnDefinitions>
 
         <!-- Vertical Utility Bar -->

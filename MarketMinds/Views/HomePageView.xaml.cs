@@ -35,6 +35,7 @@ namespace MarketMinds.Views
             // Set up window size and position
             this.AppWindow.Resize(new Windows.Graphics.SizeInt32(1700, 1000));
 
+            // Configure backend
             // Configure UI based on user type
             ConfigureUIForUserType();
         }
@@ -65,6 +66,15 @@ namespace MarketMinds.Views
             ProfileButton.Label = $"{username} {userRole}";
         }
 
+        private void ConfigureBackend()
+        {
+            // some additional configs after we have the user session available
+            if (isBuyer)
+            {
+                return;
+            }
+        }
+
         private void MarketMinds_Title_Click(object sender, RoutedEventArgs e)
         {
             if (ContentFrame.Content is MarketMindsPage)
@@ -86,7 +96,7 @@ namespace MarketMinds.Views
                 {
                     // Only buyers' cases
                     case "ChatBot":
-                        // Show to chatbot page in frame
+                        ContentFrame.Navigate(typeof(HelpPage));
                         break;
                     case "Notifications":
                         // Show notifications page in frame

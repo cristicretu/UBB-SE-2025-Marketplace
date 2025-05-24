@@ -8,10 +8,10 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid Margin="20">
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="0.20*"/> <!-- Conversation list - 20% of the screen width -->
+            <ColumnDefinition Width="0.80*"/> <!-- Chat area - 80% of the screen width -->
         </Grid.ColumnDefinitions>
 
         <!-- Left sidebar with conversation list -->

@@ -111,7 +111,7 @@ namespace MarketMinds.ViewModels
                 //     Debug.WriteLine("ERROR: GetSellerByUser returned NULL");
                 //     this.Notifications.Add("Error: Failed to load seller data");
 
-                //     this.seller = new Seller(this.User);
+                // this.seller = new Seller(this.User);
                 //     Debug.WriteLine("Created new Seller object with User");
                 // }
                 // else

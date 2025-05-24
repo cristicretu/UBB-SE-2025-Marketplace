@@ -17,10 +17,7 @@ namespace MarketMinds.Views.Pages2
             var chatbotWindow = new Window();
             chatbotWindow.Title = "Chatbot Conversations";
 
-            var helpPage = new HelpPage(
-                App.ConversationService,
-                App.MessageService,
-                App.NewChatbotService);
+            var helpPage = new HelpPage();
 
             chatbotWindow.Content = helpPage;
             chatbotWindow.Activate();

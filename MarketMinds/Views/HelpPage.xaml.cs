@@ -8,9 +8,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
 using MarketMinds.Shared.Services.ConversationService;
 using MarketMinds.Shared.Services.MessageService;
+using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Models;
 using Windows.System;
 
@@ -70,19 +70,17 @@ namespace MarketMinds.Views
             }
         }
 
-        public HelpPage(
-            IConversationService conversationService,
-            IMessageService messageService,
-            IChatbotService chatbotService)
+        public HelpPage()
         {
             try
             {
                 Debug.WriteLine("HelpPage constructor start");
                 this.InitializeComponent();
 
-                this.conversationService = conversationService;
-                this.messageService = messageService;
-                this.chatbotService = chatbotService;
+                this.conversationService = App.ConversationService;
+                this.messageService = App.MessageService;
+                this.chatbotService = App.NewChatbotService;
+                this.chatbotService.SetCurrentUser(App.CurrentUser);
 
                 conversations = new ObservableCollection<ConversationViewModel>();
                 ConversationsListView.ItemsSource = conversations;

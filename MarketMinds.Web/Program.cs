@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Services.BorrowProductsService;
 using MarketMinds.Shared.Services.BuyProductsService;
@@ -13,7 +14,6 @@ using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
-using MarketMinds.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,8 +107,8 @@ builder.Services.AddTransient<IProductTagService, ProductTagService>();
 builder.Services.AddTransient<IImageUploadService, ImageUploadService>();
 builder.Services.AddTransient<IBasketService, BasketService>();
 builder.Services.AddTransient<IUserService, UserService>();
-builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatService.IChatService, MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService>();
-builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatbotService.IChatbotService, MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService>();
+builder.Services.AddTransient<IChatService, ChatService>();
+builder.Services.AddTransient<IChatbotService, ChatbotService>();
 builder.Services.AddTransient<IConversationService, ConversationService>();
 builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();

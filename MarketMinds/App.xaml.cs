@@ -17,7 +17,8 @@ using MarketMinds.Shared.Services.ProductConditionService;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.ViewModels;
-using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
+using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.UserService;
 using Marketplace_SE.Services.DreamTeam;
@@ -69,14 +70,13 @@ namespace MarketMinds
         public static ProductConditionService ConditionService;
         public static ReviewsService ReviewsService;
         public static BasketService BasketService;
-        public static MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService ChatBotService;
-        public static MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService ChatService;
+        public static IChatService ChatService;
         public static IImageUploadService ImageUploadService;
         public static IUserService UserService;
         public static AccountPageService AccountPageService { get; private set; }
         public static IConversationService ConversationService;
         public static IMessageService MessageService;
-        public static MarketMinds.Shared.Services.DreamTeam.ChatbotService.IChatbotService NewChatbotService;
+        public static IChatbotService NewChatbotService;
         public static IContractService ContractService;
         public static IPDFService PDFService;
         public static IContractRenewalService ContractRenewalService;
@@ -308,9 +308,8 @@ namespace MarketMinds
             AccountPageService = new AccountPageService(Configuration);
             ConversationService = new ConversationService(ConversationRepository);
             MessageService = new MessageService(MessageRepository);
-            ChatBotService = new ChatbotService(ChatbotRepository);
-            ChatService = new MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService(ChatRepository);
-            NewChatbotService = new MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
+            ChatService = new ChatService(ChatRepository);
+            NewChatbotService = new ChatbotService(ChatbotRepository, Configuration);
             ContractService = new ContractService();
             PDFService = new PDFService();
             ContractRenewalService = new ContractRenewalService();
@@ -327,7 +326,6 @@ namespace MarketMinds
             BorrowProductSortAndFilterViewModel = new SortAndFilterViewModel<BorrowProductsService>(BorrowProductsService);
             BuyProductSortAndFilterViewModel = new SortAndFilterViewModel<BuyProductsService>(BuyProductsService);
             CompareProductsViewModel = new CompareProductsViewModel();
-            ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
             ContractRenewViewModel = new ContractRenewViewModel(ContractService, PDFService, ContractRenewalService, UserService, FileSystem);
@@ -347,6 +345,7 @@ namespace MarketMinds
             LoginWindow.Activate();
         }
 
+        // PLEASE DO NOT DELETE THIS, I STILL NEED IT FOR REFERENCE IN THE FUTURE
         // public static void ShowMainWindow()
         // {
         //     if (CurrentUser != null)
