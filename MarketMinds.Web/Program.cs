@@ -112,6 +112,7 @@ builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatbotServi
 builder.Services.AddTransient<IConversationService, ConversationService>();
 builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();
+builder.Services.AddTransient<INotificationContentService, NotificationContentService>();
 
 // Merged: Register all unique services from both branches
 builder.Services.AddTransient<IOrderService, OrderService>();

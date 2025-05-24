@@ -1,93 +1,261 @@
 @using MarketMinds.Shared.Services
-@inject INotificationService NotificationService
+@inject INotificationContentService NotificationService
 
 @{
-    var currentUserId = 1; // In a real app, get from authentication
-    var unreadCount = await NotificationService.GetUnreadNotificationsCountAsync(currentUserId);
+    var currentUserId = UserSession.CurrentUserId
+        ?? throw new InvalidOperationException("User ID is not available.");
+    
+    // Format the unread count text for display
+    var unreadCount = NotificationService.GetUnreadCount(currentUserId);
+    var unreadCountText = unreadCount == 0 ? "No unread notifications" : $"{unreadCount} unread notifications";
     var debugEnabled = false; // Set to true for debugging
 }
 
 <div class="relative inline-block">
-    <button id="notificationsButton" class="relative bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full focus:outline-none">
+    <!-- Notification Button -->
+    <button id="notificationsButton" 
+            class="relative hover:text-gray-400 p-2 rounded-full transition-colors duration-200"
+            aria-label="Open notifications">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
+        
+        <!-- Unread Count Badge -->
         @if (unreadCount > 0)
         {
-            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-medium">
                 @(unreadCount > 9 ? "9+" : unreadCount.ToString())
             </span>
         }
     </button>
-</div>
 
-<!-- Notifications Modal -->
-<div id="notificationsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div id="notificationsContainer" class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] overflow-hidden">
-        <!-- Notifications content will be loaded here via AJAX -->
-        <div class="p-4 bg-gray-800 text-white flex justify-between items-center">
-            <h3 class="text-lg font-semibold">Notifications</h3>
-            <button id="closeNotificationsModal" class="text-white hover:text-gray-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <div id="notificationsContent" class="p-4">
-            <div class="flex justify-center items-center h-16">
-                <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span class="ml-2 text-gray-500">Loading notifications...</span>
+    <!-- Notifications Dropdown -->
+    <div id="notificationsDropdown" 
+         class="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 hidden transform opacity-0 scale-95 transition-all duration-200 ease-out origin-top-right">
+        
+        <!-- Header -->
+        <div class="px-4 py-3 bg-blue-500 text-white rounded-t-lg">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Notifications</h3>
+                <button id="closeNotificationsDropdown" 
+                        class="text-gray-300 hover:text-white transition-colors duration-200"
+                        aria-label="Close notifications">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
         </div>
+        
+        <!-- Content Container -->
+        <div id="notificationsContent" class="relative">
+            <!-- Loading State -->
+            <div id="loadingState" class="flex justify-center items-center py-8">
+                <div class="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-600"></div>
+                <span class="ml-3 text-gray-500">Loading notifications...</span>
+            </div>
+        </div>
+        
+        <!-- Debug Info (if enabled) -->
         @if (debugEnabled)
         {
-            <div class="bg-gray-100 p-2 text-xs text-gray-600">
-                <div>Using: @NotificationService.GetType().FullName</div>
-                <div>Unread count: @unreadCount</div>
+            <div class="bg-blue-50 px-4 py-2 border-t border-gray-200 text-xs text-gray-600 rounded-b-lg">
+                <div>Service: @NotificationService.GetType().Name</div>
+                <div>Unread: @unreadCount</div>
             </div>
         }
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const notificationsButton = document.getElementById('notificationsButton');
-        const notificationsModal = document.getElementById('notificationsModal');
-        const closeNotificationsModal = document.getElementById('closeNotificationsModal');
-        const notificationsContent = document.getElementById('notificationsContent');
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationsButton = document.getElementById('notificationsButton');
+    const notificationsDropdown = document.getElementById('notificationsDropdown');
+    const closeNotificationsDropdown = document.getElementById('closeNotificationsDropdown');
+    const notificationsContent = document.getElementById('notificationsContent');
+    const loadingState = document.getElementById('loadingState');
+    
+    let isDropdownOpen = false;
 
-        notificationsButton.addEventListener('click', function() {
-            notificationsModal.classList.remove('hidden');
-            
-            // Load notifications content via AJAX
-            fetch('/BorrowProduct/Notifications')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok: ' + response.statusText);
-                    }
-                    return response.text();
-                })
-                .then(html => {
-                    notificationsContent.innerHTML = html;
-                })
-                .catch(error => {
-                    notificationsContent.innerHTML = '<div class="p-4 text-red-600">Error loading notifications: ' + error.message + '</div>';
-                    console.error('Error loading notifications:', error);
-                });
-        });
+    /**
+     * Opens the notifications dropdown and loads content
+     */
+    function openDropdown() {
+        if (isDropdownOpen) return;
+        
+        isDropdownOpen = true;
+        notificationsDropdown.classList.remove('hidden');
+        
+        // Trigger reflow for smooth animation
+        notificationsDropdown.offsetHeight;
+        
+        notificationsDropdown.classList.remove('opacity-0', 'scale-95');
+        notificationsDropdown.classList.add('opacity-100', 'scale-100');
+        
+        loadNotifications();
+    }
 
-        closeNotificationsModal.addEventListener('click', function() {
-            notificationsModal.classList.add('hidden');
-        });
+    /**
+     * Closes the notifications dropdown
+     */
+    function closeDropdown() {
+        if (!isDropdownOpen) return;
+        
+        isDropdownOpen = false;
+        notificationsDropdown.classList.remove('opacity-100', 'scale-100');
+        notificationsDropdown.classList.add('opacity-0', 'scale-95');
+        
+        setTimeout(() => {
+            notificationsDropdown.classList.add('hidden');
+        }, 200);
+    }
 
-        // Close the modal when clicking outside the container
-        notificationsModal.addEventListener('click', function(e) {
-            if (e.target === notificationsModal) {
-                notificationsModal.classList.add('hidden');
+    /**
+     * Loads notifications content via AJAX
+     */
+    function loadNotifications() {
+        // Reset to loading state
+        loadingState.style.display = 'flex';
+        
+        fetch('/Notifications', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
             }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            loadingState.style.display = 'none';
+            notificationsContent.innerHTML = html;
+            
+            // Setup event listeners for the loaded content
+            setupNotificationEvents();
+        })
+        .catch(error => {
+            console.error('Error loading notifications:', error);
+            loadingState.style.display = 'none';
+            notificationsContent.innerHTML = `
+                <div class="p-4 text-center text-red-600">
+                    <div class="mb-2">⚠️ Failed to load notifications</div>
+                    <div class="text-sm text-gray-500">${error.message}</div>
+                    <button onclick="loadNotifications()" class="mt-2 text-blue-600 hover:text-blue-800 text-sm underline">
+                        Try again
+                    </button>
+                </div>
+            `;
         });
+    }
+
+    /**
+     * Sets up event listeners for notification content
+     */
+    function setupNotificationEvents() {
+        const markAllBtn = document.getElementById('markAllAsReadBtn');
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', handleMarkAllAsRead);
+        }
+    }
+
+    /**
+     * Handles marking all notifications as read
+     */
+    function handleMarkAllAsRead() {
+        const button = document.getElementById('markAllAsReadBtn');
+        const originalText = button.textContent;
+        
+        button.disabled = true;
+        button.textContent = 'Marking as read...';
+        
+        fetch('/Notifications/MarkAllAsRead', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateUIAfterMarkingRead(data.unreadCount);
+            } else {
+                throw new Error(data.error || 'Unknown error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error marking notifications as read:', error);
+            alert('Failed to mark notifications as read. Please try again.');
+        })
+        .finally(() => {
+            button.disabled = false;
+            button.textContent = originalText;
+        });
+    }
+
+    /**
+     * Updates UI elements after marking notifications as read
+     */
+    function updateUIAfterMarkingRead(unreadCount) {
+        // Update notification items in dropdown
+        document.querySelectorAll('.bg-blue-50').forEach(el => {
+            el.classList.remove('bg-blue-50');
+        });
+        document.querySelectorAll('.font-semibold').forEach(el => {
+            el.classList.remove('font-semibold');
+        });
+        
+        // Update unread count in dropdown header
+        const unreadBadge = document.querySelector('.bg-red-500');
+        if (unreadBadge && unreadBadge.textContent.includes('unread')) {
+            unreadBadge.textContent = `${unreadCount} unread`;
+        }
+        
+        // Update notification bell badge
+        const bellBadge = document.querySelector('#notificationsButton .bg-red-500');
+        if (bellBadge) {
+            if (unreadCount === 0) {
+                bellBadge.remove();
+            } else {
+                bellBadge.textContent = unreadCount > 9 ? '9+' : unreadCount.toString();
+            }
+        }
+    }
+
+    // Event Listeners
+    notificationsButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (isDropdownOpen) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
     });
-</script> 
+
+    closeNotificationsDropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeDropdown();
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (isDropdownOpen && !notificationsDropdown.contains(e.target) && !notificationsButton.contains(e.target)) {
+            closeDropdown();
+        }
+    });
+
+    // Close dropdown on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isDropdownOpen) {
+            closeDropdown();
+        }
+    });
+
+    // Make loadNotifications available globally for retry functionality
+    window.loadNotifications = loadNotifications;
+});
+</script>

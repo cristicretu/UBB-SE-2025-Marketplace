@@ -12,7 +12,7 @@ namespace WebMarketplace.Controllers
     {
         private readonly IWaitlistService _waitlistService;
         private readonly IProductService _productService;
-        private readonly INotificationService _notificationService;
+        private readonly INotificationContentService _notificationService;
         private readonly ILogger<BorrowProductController> _logger;
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace WebMarketplace.Controllers
         public BorrowProductController(
             IWaitlistService waitlistService,
             IProductService productService,
-            INotificationService notificationService,
+            INotificationContentService notificationService,
             ILogger<BorrowProductController> logger)
         {
             _waitlistService = waitlistService ?? throw new ArgumentNullException(nameof(waitlistService));
@@ -69,7 +69,7 @@ namespace WebMarketplace.Controllers
                 int currentUserId = GetCurrentUserId();
                 bool isOnWaitlist = await _waitlistService.IsUserInWaitlist(currentUserId, id);
                 int position = isOnWaitlist ? await _waitlistService.GetUserWaitlistPosition(currentUserId, id) : 0;
-                int unreadNotificationsCount = await _notificationService.GetUnreadNotificationsCountAsync(currentUserId);
+                var unreadNotificationsCount = _notificationService.GetUnreadNotificationsCountText(currentUserId);
 
                 // Create the view model with proper type conversions
                 var viewModel = new BorrowProductViewModel
@@ -80,7 +80,7 @@ namespace WebMarketplace.Controllers
                     SellerId = product.SellerId, // Both are int, no need to cast
                     SellerName = sellerName,
                     WaitlistPosition = position,
-                    UnreadNotificationsCount = unreadNotificationsCount
+                    UnreadNotificationsCount = int.TryParse(unreadNotificationsCount, out var count) ? count : 0
                 };
 
                 return View(viewModel);
@@ -224,8 +224,8 @@ namespace WebMarketplace.Controllers
             try
             {
                 int currentUserId = GetCurrentUserId();
-                var notificationService = HttpContext.RequestServices.GetRequiredService<MarketMinds.Shared.Services.INotificationService>();
-                var notifications = await notificationService.GetUserNotificationsAsync(currentUserId);
+                var notificationService = HttpContext.RequestServices.GetRequiredService<MarketMinds.Shared.Services.INotificationContentService>();
+                var notifications = await notificationService.GetNotificationsForUser(currentUserId);
                 
                 return PartialView("_Notifications", notifications);
             }
@@ -246,8 +246,8 @@ namespace WebMarketplace.Controllers
             try
             {
                 int currentUserId = GetCurrentUserId();
-                var notificationService = HttpContext.RequestServices.GetRequiredService<MarketMinds.Shared.Services.INotificationService>();
-                var notifications = await notificationService.GetUserNotificationsAsync(currentUserId);
+                var notificationService = HttpContext.RequestServices.GetRequiredService<MarketMinds.Shared.Services.INotificationContentService>();
+                var notifications = await notificationService.GetNotificationsForUser(currentUserId);
                 
                 return Json(notifications);
             }

@@ -1,43 +1,260 @@
-@model List<MarketMinds.Shared.Services.NotificationModel>
-<script src="https://cdn.tailwindcss.com"></script>
-<div class="w-full max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-    <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
-        <h3 class="text-lg font-semibold">Notifications</h3>
-        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-            @Model.Count(n => !n.IsRead) unread
+@model List<MarketMinds.Shared.Models.Notification>
+
+<div class="notifications-dropdown-content">
+    <!-- Header with unread count -->
+    <div class="px-4 py-2 bg-blue-50 border-b border-gray-200 flex justify-between items-center">
+        <span class="text-sm text-gray-600">
+            @{
+                var unreadCount = Model.Count(n => !n.IsRead);
+            }
+            @if (unreadCount > 0)
+            {
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    @unreadCount unread
+                </span>
+            }
+            else
+            {
+                <span class="text-green-600 font-medium">All caught up!</span>
+            }
         </span>
+        
+        @if (unreadCount > 0)
+        {
+            <button id="markAllAsReadBtn" 
+                    class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200">
+                Mark all read
+            </button>
+        }
     </div>
     
+    <!-- Notifications List -->
     <div class="max-h-80 overflow-y-auto">
         @if (Model.Any())
         {
-            <ul class="divide-y divide-gray-200">
-                @foreach (var notification in Model)
+            <div class="divide-y divide-gray-100">
+                @foreach (var notification in Model.Take(5)) // Limit to recent 5 notifications
                 {
-                    <li class="p-4 hover:bg-gray-50 transition @(notification.IsRead ? "" : "bg-blue-50")">
-                        <div class="flex justify-between">
-                            <p class="text-sm text-gray-700 @(notification.IsRead ? "" : "font-semibold")">
-                                @notification.Message
-                            </p>
-                            <span class="text-xs text-gray-500">
-                                @notification.Date.ToString("MMM dd, HH:mm")
-                            </span>
+                    <div class="p-3 hover:bg-gray-50 transition-colors duration-150 @(notification.IsRead ? "" : "bg-blue-50 border-l-2 border-l-blue-500")">
+                        <div class="flex items-start space-x-3">
+                            <!-- Notification Icon -->
+                            <div class="flex-shrink-0 mt-0.5">
+                                @if (!notification.IsRead)
+                                {
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                }
+                                else
+                                {
+                                    <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                                }
+                            </div>
+                            
+                            <!-- Notification Content -->
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900 @(notification.IsRead ? "" : "font-semibold")">
+                                    @notification.Content
+                                </p>
+                                <div class="mt-1 flex items-center justify-between">
+                                    <span class="text-xs text-gray-500">
+                                        @{
+                                            var timeSpan = DateTime.Now - notification.Timestamp;
+                                            string timeAgo;
+                                            
+                                            if (timeSpan.TotalMinutes < 1)
+                                                timeAgo = "Just now";
+                                            else if (timeSpan.TotalHours < 1)
+                                                timeAgo = $"{(int)timeSpan.TotalMinutes}m ago";
+                                            else if (timeSpan.TotalDays < 1)
+                                                timeAgo = $"{(int)timeSpan.TotalHours}h ago";
+                                            else if (timeSpan.TotalDays < 7)
+                                                timeAgo = $"{(int)timeSpan.TotalDays}d ago";
+                                            else
+                                                timeAgo = notification.Timestamp.ToString("MMM dd");
+                                        }
+                                        @timeAgo
+                                    </span>
+                                    
+                                    <!-- Individual notification actions -->
+                                    @if (!notification.IsRead)
+                                    {
+                                        <button class="text-xs text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                                onclick="markNotificationAsRead(@notification.NotificationID)">
+                                            Mark read
+                                        </button>
+                                    }
+                                </div>
+                            </div>
                         </div>
-                    </li>
+                    </div>
                 }
-            </ul>
+            </div>
+            
+            <!-- View All Link (if there are more than 5 notifications) -->
+            @if (Model.Count > 5)
+            {
+                <div class="p-3 bg-gray-50 border-t border-gray-200 text-center">
+                    <a href="/Notifications/All" 
+                       class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200">
+                        View all @Model.Count notifications →
+                    </a>
+                </div>
+            }
         }
         else
         {
-            <div class="p-6 text-center text-gray-500">
-                <p>No notifications to display</p>
+            <!-- Empty State -->
+            <div class="p-8 text-center">
+                <div class="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </div>
+                <h3 class="text-sm font-medium text-gray-900 mb-1">No notifications</h3>
+                <p class="text-sm text-gray-500">You're all caught up! Check back later for updates.</p>
             </div>
         }
     </div>
     
-    <div class="p-3 bg-gray-100 border-t border-gray-200">
-        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md text-sm transition">
-            Mark all as read
-        </button>
-    </div>
-</div> 
+    <!-- Footer Actions -->
+    @if (Model.Any())
+    {
+        <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-center items-center">
+            <button onclick="clearAllNotifications()" 
+                    class="text-xs text-red-600 hover:text-red-800 transition-colors duration-200">
+                Clear all notifications
+            </button>
+        </div>
+    }
+</div>
+
+<script>
+/**
+ * Marks a specific notification as read
+ */
+function markNotificationAsRead(notificationId) {
+    fetch(`/Notifications/MarkAsRead/${notificationId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload the dropdown content to reflect changes
+            if (typeof window.loadNotifications === 'function') {
+                window.loadNotifications();
+            }
+        } else {
+            console.error('Error marking notification as read:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error marking notification as read:', error);
+    });
+}
+
+/**
+ * Clears all notifications (delete them)
+ */
+function clearAllNotifications() {
+    if (!confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+        return;
+    }
+    
+    // Show feedback immediately
+    const clearButton = event.target;
+    const originalText = clearButton.textContent;
+    clearButton.textContent = 'Clearing...';
+    clearButton.disabled = true;
+    
+    fetch('/Notifications/ClearAll', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            console.log('Successfully cleared all notifications');
+            
+            // Update the bell badge
+            const bellBadge = document.querySelector('#notificationsButton .bg-red-500');
+            if (bellBadge) {
+                bellBadge.remove();
+            }
+            
+            // Reload the dropdown content
+            if (typeof window.loadNotifications === 'function') {
+                window.loadNotifications();
+            }
+        } else {
+            console.error('Error clearing notifications:', data.error);
+            alert('Failed to clear notifications: ' + (data.error || 'Unknown error'));
+            clearButton.textContent = originalText;
+            clearButton.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error clearing notifications:', error);
+        alert('Failed to clear notifications. Please try again.');
+        clearButton.textContent = originalText;
+        clearButton.disabled = false;
+    });
+}
+
+// Set up the mark all as read functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const markAllBtn = document.getElementById('markAllAsReadBtn');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function() {
+            const originalText = this.textContent;
+            this.disabled = true;
+            this.textContent = 'Marking...';
+            
+            fetch('/Notifications/MarkAllAsRead', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the dropdown content to show updated state
+                    if (typeof window.loadNotifications === 'function') {
+                        window.loadNotifications();
+                    }
+                    
+                    // Update the bell badge
+                    const bellBadge = document.querySelector('#notificationsButton .bg-red-500');
+                    if (bellBadge && data.unreadCount === 0) {
+                        bellBadge.remove();
+                    } else if (bellBadge) {
+                        bellBadge.textContent = data.unreadCount > 9 ? '9+' : data.unreadCount.toString();
+                    }
+                } else {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notifications as read:', error);
+                alert('Failed to mark notifications as read. Please try again.');
+            })
+            .finally(() => {
+                this.disabled = false;
+                this.textContent = originalText;
+            });
+        });
+    }
+});
+</script>
