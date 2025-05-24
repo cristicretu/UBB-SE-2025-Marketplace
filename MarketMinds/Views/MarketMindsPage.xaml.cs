@@ -49,8 +49,8 @@ namespace MarketMinds.Views
         {
             // Reset filter values here
             PriceRangeSlider.Value = PriceRangeSlider.Maximum;
-            
+
             // Additional filter reset logic would go here
         }
     }
-} 
+}
