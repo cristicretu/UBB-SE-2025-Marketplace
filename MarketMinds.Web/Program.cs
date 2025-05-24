@@ -76,6 +76,14 @@ builder.Services.AddSingleton<ConversationProxyRepository>();
 builder.Services.AddSingleton<MessageProxyRepository>();
 builder.Services.AddSingleton<ReviewProxyRepository>();
 
+// Add waitlist and notification proxy repositories
+builder.Services.AddSingleton<WaitListProxyRepository>(sp =>
+    new WaitListProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<NotificationProxyRepository>(sp =>
+    new NotificationProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+
 // Merged: Register all unique proxy repositories from both branches
 builder.Services.AddSingleton<OrderProxyRepository>(sp =>
     new OrderProxyRepository(
@@ -113,6 +121,10 @@ builder.Services.AddTransient<IConversationService, ConversationService>();
 builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();
 
+// Add waitlist and notification services
+builder.Services.AddTransient<IWaitlistService, WaitlistService>();
+builder.Services.AddTransient<INotificationService, NotificationService>();
+
 // Merged: Register all unique services from both branches
 builder.Services.AddTransient<IOrderService, OrderService>();
 builder.Services.AddTransient<ITrackedOrderService, TrackedOrderService>();
@@ -136,6 +148,10 @@ builder.Services.AddTransient<MarketMinds.Shared.IRepository.IChatbotRepository>
 builder.Services.AddTransient<IConversationRepository>(sp => sp.GetRequiredService<ConversationProxyRepository>());
 builder.Services.AddTransient<IMessageRepository>(sp => sp.GetRequiredService<MessageProxyRepository>());
 builder.Services.AddTransient<IReviewRepository>(sp => sp.GetRequiredService<ReviewProxyRepository>());
+
+// Add waitlist and notification repository interfaces
+builder.Services.AddTransient<IWaitListRepository>(sp => sp.GetRequiredService<WaitListProxyRepository>());
+builder.Services.AddTransient<INotificationRepository>(sp => sp.GetRequiredService<NotificationProxyRepository>());
 
 // Merged: Register all unique repository interfaces from both branches
 builder.Services.AddTransient<IOrderHistoryRepository>(sp => sp.GetRequiredService<OrderHistoryProxyRepository>());
