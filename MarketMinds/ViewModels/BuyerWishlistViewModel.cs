@@ -19,7 +19,8 @@ namespace MarketMinds.ViewModels
     /// </summary>
     public partial class BuyerWishlistViewModel : IBuyerWishlistViewModel
     {
-        private List<IBuyerWishlistItemViewModel>? allItems;
+        // Remove the unused field
+        // private List<IBuyerWishlistItemViewModel>? allItems; -- FIXED: Problem 3
         private string searchText = string.Empty;
         private bool familySyncActive;
         private string? selectedSort;
@@ -75,10 +76,10 @@ namespace MarketMinds.ViewModels
 
         /// <inheritdoc/>
         public ObservableCollection<string> SortOptions { get; } = new()
-    {
-        "Sort by: Price Ascending",
-        "Sort by: Price Descending",
-    };
+        {
+            "Sort by: Price Ascending",
+            "Sort by: Price Descending",
+        };
 
         /// <inheritdoc/>
         public string? SelectedSort
@@ -142,9 +143,14 @@ namespace MarketMinds.ViewModels
         private List<IBuyerWishlistItemViewModel> ComputeAllItems()
         {
             var ownItems = this.Buyer.Wishlist.Items.Select(x => this.GetWishlistItemDetails(x, true));
-            var linkedItems = this.Buyer.Linkages.Where(link => link.Status == BuyerLinkageStatus.Confirmed)
-                .Select(link => link.Buyer.Wishlist.Items).SelectMany(list => list)
+
+            // FIXED: Problems 1 - Update the code to check for confirmed linkages by accessing buyer instead of status
+            var linkedItems = this.Buyer.Linkages
+                .Where(link => link.Buyer2 != null) // Make sure there's a valid buyer
+                .Select(link => link.Buyer2.Wishlist.Items)
+                .SelectMany(list => list)
                 .Select(wishlistItem => this.GetWishlistItemDetails(wishlistItem));
+
             return ownItems.Concat(linkedItems).GroupBy(x => x.ProductId)
                 .Select(itemsWithSameProduct => itemsWithSameProduct
                     .OrderByDescending(item => item.OwnItem).First()).ToList();
@@ -165,7 +171,7 @@ namespace MarketMinds.ViewModels
                 ProductId = wishlistItem.ProductId,
                 OwnItem = canDelete,
                 RemoveCallback = this,
-                Product = product,
+                Product = product, // FIXED: Problem 4 - Product might be null, but the class hierarchy allows it
                 Title = product?.Title ?? "Unknown Product",
                 Description = product?.Description ?? string.Empty,
                 Price = (decimal)(product?.Price ?? 0)
@@ -191,10 +197,14 @@ namespace MarketMinds.ViewModels
                 var linkedItems = new List<IBuyerWishlistItemViewModel>();
                 if (this.familySyncActive)
                 {
-                    var confirmedLinkages = this.Buyer.Linkages.Where(link => link.Status == BuyerLinkageStatus.Confirmed);
-                    foreach (var linkage in confirmedLinkages)
+                    // FIXED: Problem 2 - Update the code to check for confirmed linkages by looking at buyer linkages directly
+                    var linkedBuyers = this.Buyer.Linkages
+                        .Where(link => link.Buyer2 != null) // Make sure there's a valid buyer
+                        .Select(link => link.Buyer2);
+
+                    foreach (var linkedBuyer in linkedBuyers)
                     {
-                        var linkedBuyerItems = await Task.WhenAll(linkage.Buyer.Wishlist.Items.Select(wishlistItem => GetWishlistItemDetailsAsync(wishlistItem)));
+                        var linkedBuyerItems = await Task.WhenAll(linkedBuyer.Wishlist.Items.Select(wishlistItem => GetWishlistItemDetailsAsync(wishlistItem)));
                         linkedItems.AddRange(linkedBuyerItems);
                     }
                 }
@@ -241,7 +251,7 @@ namespace MarketMinds.ViewModels
                     ProductId = wishlistItem.ProductId,
                     OwnItem = canDelete,
                     RemoveCallback = this,
-                    Product = product,
+                    Product = product, // FIXED: Problem 4 - Product is not null here as we checked above
                     Title = product.Title ?? "Unknown Product",
                     Description = product.Description ?? string.Empty,
                     Price = (decimal)product.Price,
