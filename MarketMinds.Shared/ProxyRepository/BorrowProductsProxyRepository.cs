@@ -167,12 +167,33 @@ namespace MarketMinds.Shared.ProxyRepository
 
         void IBorrowProductsRepository.UpdateProduct(BorrowProduct product)
         {
+            var sellerId = product.Seller?.Id ?? product.SellerId;
+            var conditionId = product.Condition?.Id ?? product.ConditionId;
+            var categoryId = product.Category?.Id ?? product.CategoryId;
+
+            var productToSend = new
+            {
+                Id = product.Id,
+                Title = product.Title,
+                Description = product.Description,
+                SellerId = sellerId,
+                ConditionId = conditionId,
+                CategoryId = categoryId,
+                DailyRate = product.DailyRate,
+                StartDate = product.StartDate,
+                EndDate = product.EndDate,
+                TimeLimit = product.TimeLimit,
+                IsBorrowed = product.IsBorrowed,
+                BorrowerId = product.BorrowerId
+            };
+
             var serializerOptions = new System.Text.Json.JsonSerializerOptions
             {
                 WriteIndented = true,
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
-            var content = System.Net.Http.Json.JsonContent.Create(product, null, serializerOptions);
+
+            var content = System.Net.Http.Json.JsonContent.Create(productToSend, null, serializerOptions);
             var response = httpClient.PutAsync($"borrowproducts/{product.Id}", content).Result;
             response.EnsureSuccessStatusCode();
         }

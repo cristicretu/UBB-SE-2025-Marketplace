@@ -187,6 +187,10 @@ namespace server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BorrowerId")
+                        .HasColumnType("int")
+                        .HasColumnName("borrower_id");
+
                     b.Property<int>("CategoryId")
                         .HasColumnType("int")
                         .HasColumnName("category_id");
@@ -1039,6 +1043,9 @@ namespace server.Migrations
 
                     b.Property<int>("PositionInQueue")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("PreferredEndDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ProductWaitListID")
                         .HasColumnType("int");

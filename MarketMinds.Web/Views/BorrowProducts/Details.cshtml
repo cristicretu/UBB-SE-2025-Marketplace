@@ -204,93 +204,194 @@
                             </div>
                         </div>
 
-                        <!-- Price Calculator -->
-                        <div>
-                            <h3 class="text-xl font-semibold text-gray-900 mb-3 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                </svg>
-                                Calculate Rental Price
-                            </h3>
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Select End Date:</label>
-                                    <input type="date" id="endDate" 
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" 
-                                           min="@((Model.StartDate?.AddDays(1) ?? DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd"))" 
-                                           max="@Model.TimeLimit.ToString("yyyy-MM-dd")" />
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <button id="getPrice" 
-                                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200 flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        <!-- Borrowing Section -->
+                        @if (canPurchase)
+                        {
+                            <div class="mb-8">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Borrow Product
+                                </h3>
+                                
+                                @if (!Model.IsBorrowed)
+                                {
+                                    <!-- Product is available for borrowing -->
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                                        <div class="flex items-center mb-3">
+                                            <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span class="text-green-700 font-medium">This product is available for borrowing!</span>
+                                        </div>
+                                        
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Select Borrowing End Date:</label>
+                                                <input type="date" id="borrowEndDate" 
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors" 
+                                                       min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" 
+                                                       max="@Model.TimeLimit.ToString("yyyy-MM-dd")" />
+                                            </div>
+                                            
+                                            <div class="flex items-center space-x-3">
+                                                <button id="borrowButton" 
+                                                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    Borrow Product
+                                                </button>
+                                                <div id="borrowResult" class="text-gray-500 italic">Select an end date to borrow this product</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Product is currently borrowed -->
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                        <div class="flex items-center mb-3">
+                                            <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                            </svg>
+                                            <span class="text-red-700 font-medium">This product is currently borrowed</span>
+                                        </div>
+                                        
+                                        <div class="text-red-600 mb-3">
+                                            @if (Model.EndDate.HasValue)
+                                            {
+                                                <p>Available again on: <strong>@Model.EndDate.Value.ToString("MMMM dd, yyyy")</strong></p>
+                                                <p class="text-sm">Time remaining: @remainingTime</p>
+                                            }
+                                            else
+                                            {
+                                                <p>Return date not specified</p>
+                                            }
+                                        </div>
+                                        
+                                        <!-- Check if current user is the borrower -->
+                                        @if (Model.BorrowerId == UserSession.CurrentUserId)
+                                        {
+                                            <div class="mt-4">
+                                                <button id="returnButton" 
+                                                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                                                    </svg>
+                                                    Return Product
+                                                </button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <p class="text-red-600 text-sm">Join the waitlist to be notified when this product becomes available.</p>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (isSeller)
+                        {
+                            <div class="mb-8">
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                                         </svg>
-                                        Calculate
-                                    </button>
-                                    <div id="priceDisplay" class="text-gray-500 italic">Choose an end date and click Calculate</div>
+                                        <span class="text-yellow-700">Sellers cannot borrow products.</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        }
+                        else
+                        {
+                            <div class="mb-8">
+                                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" 
+                                   class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Login to Borrow Product
+                                </a>
+                            </div>
+                        }
 
-                    <!-- Waiting List Section -->
-                    @if (canPurchase)
-                    {
-                        <div class="mb-8">
-                            <h3 class="text-xl font-semibold text-gray-900 mb-3 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                                </svg>
-                                Waiting List
-                            </h3>
-                            <div class="flex space-x-3">
-                                <form asp-controller="BorrowProducts" asp-action="JoinWaitlist" asp-route-id="@Model.Id" method="post" class="flex-1">
-                                    <button type="submit" 
-                                            class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        <!-- Waiting List Section -->
+                        @if (canPurchase && Model.IsBorrowed)
+                        {
+                            <div class="mb-8">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                    </svg>
+                                    Waiting List
+                                </h3>
+                                
+                                <!-- Waitlist explanation -->
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                    <div class="flex items-start">
+                                        <svg class="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
-                                        Join Waiting List
-                                    </button>
-                                </form>
-                                <form asp-controller="BorrowProducts" asp-action="LeaveWaitlist" asp-route-id="@Model.Id" method="post" class="flex-1">
-                                    <button type="submit" 
+                                        <div class="text-blue-700">
+                                            <p class="font-medium mb-1">How the waiting list works:</p>
+                                            <ul class="text-sm space-y-1">
+                                                <li>• Choose your desired borrowing end date and join the waitlist</li>
+                                                <li>• When the product becomes available, it will be <strong>automatically assigned</strong> to the first person in line</li>
+                                                <li>• Your borrowing will start when the current borrower's period ends</li>
+                                                <li>• You'll get your chosen borrowing period (up to the product's time limit)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Waitlist Join Form -->
+                                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Choose your desired borrowing end date:</label>
+                                            <input type="date" id="waitlistEndDate" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors" 
+                                                   min="@((Model.EndDate?.AddDays(1) ?? DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd"))" 
+                                                   max="@Model.TimeLimit.ToString("yyyy-MM-dd")" />
+                                            <p class="text-xs text-gray-600 mt-1">
+                                                Your borrowing will start when the current borrower returns the product 
+                                                (currently scheduled for @(Model.EndDate?.ToString("yyyy-MM-dd") ?? "unknown date"))
+                                            </p>
+                                        </div>
+                                        
+                                        <div class="flex items-center space-x-3">
+                                            <button id="joinWaitlistButton" 
+                                                    class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                </svg>
+                                                Join Waiting List
+                                            </button>
+                                            <div id="waitlistResult" class="text-gray-500 italic">Select an end date to join the waitlist</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex space-x-3">
+                                    <button id="leaveWaitlistButton" 
                                             class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                                         </svg>
-                                        Leave
+                                        Leave Waitlist
                                     </button>
-                                </form>
-                            </div>
-                        </div>
-                    }
-                    else if (isSeller)
-                    {
-                        <div class="mb-8">
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                <div class="flex items-center">
-                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                    </svg>
-                                    <span class="text-yellow-700">Sellers cannot join waiting lists for borrowing products.</span>
+                                </div>
+                                
+                                <!-- Waitlist Position Display -->
+                                <div id="waitlistPosition" class="mt-4 text-center text-gray-600 italic">
+                                    Checking your position in the waitlist...
                                 </div>
                             </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="mb-8">
-                            <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" 
-                               class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                Login to Join Waiting List
-                            </a>
-                        </div>
-                    }
+                        }
+                    </div>
 
                     <!-- Product Information Sections -->
                     <div class="space-y-6">
@@ -368,49 +469,264 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const endDateInput = document.getElementById('endDate');
-            const getPriceButton = document.getElementById('getPrice');
-            const priceDisplay = document.getElementById('priceDisplay');
+            // Borrowing functionality
+            const borrowEndDateInput = document.getElementById('borrowEndDate');
+            const borrowButton = document.getElementById('borrowButton');
+            const borrowResult = document.getElementById('borrowResult');
+            const returnButton = document.getElementById('returnButton');
             
-            // Calculate price when Get button is clicked
-            getPriceButton.addEventListener('click', function() {
-                const endDate = endDateInput.value;
-                
-                if (!endDate) {
-                    priceDisplay.textContent = 'Please select an end date first';
-                    priceDisplay.classList.remove('text-green-600', 'font-bold', 'text-gray-500', 'italic');
-                    priceDisplay.classList.add('text-red-500');
-                    return;
-                }
-                
-                // Call the controller method to calculate the price using form data
-                const formData = new FormData();
-                formData.append('productId', @Model.Id);
-                formData.append('endDate', endDate);
-                
-                fetch('@Url.Action("CalculatePrice", "BorrowProducts")', {
-                    method: 'POST',
-                    body: formData
+            // Waitlist functionality
+            const waitlistEndDateInput = document.getElementById('waitlistEndDate');
+            const joinWaitlistButton = document.getElementById('joinWaitlistButton');
+            const waitlistResult = document.getElementById('waitlistResult');
+            const leaveWaitlistButton = document.getElementById('leaveWaitlistButton');
+            
+            // Handle borrow product
+            if (borrowButton) {
+                borrowButton.addEventListener('click', function() {
+                    const endDate = borrowEndDateInput?.value;
+                    
+                    if (!endDate) {
+                        borrowResult.textContent = 'Please select an end date first';
+                        borrowResult.classList.remove('text-green-600', 'font-bold', 'text-gray-500', 'italic');
+                        borrowResult.classList.add('text-red-500');
+                        return;
+                    }
+                    
+                    // Disable button and show loading
+                    borrowButton.disabled = true;
+                    borrowButton.innerHTML = '<svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Processing...';
+                    borrowResult.textContent = 'Processing your request...';
+                    borrowResult.classList.remove('text-red-500', 'text-green-600', 'font-bold');
+                    borrowResult.classList.add('text-blue-600', 'italic');
+                    
+                    // Call the controller method to borrow the product
+                    const formData = new FormData();
+                    formData.append('id', @Model.Id);
+                    formData.append('endDate', endDate);
+                    
+                    fetch('@Url.Action("BorrowProduct", "BorrowProducts")', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            borrowResult.textContent = `Success! ${data.message} Total cost: ${data.totalPrice} for ${data.days} days.`;
+                            borrowResult.classList.remove('text-red-500', 'text-blue-600', 'italic');
+                            borrowResult.classList.add('text-green-600', 'font-bold');
+                            
+                            // Refresh the page after 2 seconds to show updated state
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            borrowResult.textContent = data.error;
+                            borrowResult.classList.remove('text-green-600', 'font-bold', 'text-blue-600', 'italic');
+                            borrowResult.classList.add('text-red-500');
+                            
+                            // Re-enable button
+                            borrowButton.disabled = false;
+                            borrowButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>Borrow Product';
+                        }
+                    })
+                    .catch(error => {
+                        borrowResult.textContent = 'Error processing request';
+                        borrowResult.classList.remove('text-green-600', 'font-bold', 'text-blue-600', 'italic');
+                        borrowResult.classList.add('text-red-500');
+                        
+                        // Re-enable button
+                        borrowButton.disabled = false;
+                        borrowButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>Borrow Product';
+                    });
+                });
+            }
+            
+            // Handle return product
+            if (returnButton) {
+                returnButton.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to return this product?')) {
+                        // Disable button and show loading
+                        returnButton.disabled = true;
+                        returnButton.innerHTML = '<svg class="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Returning...';
+                        
+                        // Use FormData instead of JSON to properly send the ID
+                        const formData = new FormData();
+                        formData.append('id', @Model.Id);
+                        
+                        fetch('@Url.Action("ReturnProduct", "BorrowProducts")', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message);
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.error);
+                                // Re-enable button
+                                returnButton.disabled = false;
+                                returnButton.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 818 8v2M3 10l6 6m-6-6l6-6"></path></svg>Return Product';
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error processing return request');
+                            // Re-enable button
+                            returnButton.disabled = false;
+                            returnButton.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 818 8v2M3 10l6 6m-6-6l6-6"></path></svg>Return Product';
+                        });
+                    }
+                });
+            }
+            
+            // Automatically process expired borrowings every 5 minutes
+            setInterval(function() {
+                fetch('@Url.Action("ProcessExpiredBorrowings", "BorrowProducts")', {
+                    method: 'POST'
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        priceDisplay.textContent = `€${data.formattedPrice} for ${data.days} days`;
-                        priceDisplay.classList.remove('text-red-500', 'text-gray-500', 'italic');
-                        priceDisplay.classList.add('text-green-600', 'font-bold');
-                    } else {
-                        priceDisplay.textContent = data.error;
-                        priceDisplay.classList.remove('text-green-600', 'font-bold', 'text-gray-500', 'italic');
-                        priceDisplay.classList.add('text-red-500');
+                    if (data.success && data.processedCount > 0) {
+                        // Optionally refresh the page if the current product was affected
+                        if (data.processedCount > 0) {
+                            location.reload();
+                        }
                     }
                 })
                 .catch(error => {
-                    priceDisplay.textContent = 'Error calculating price';
-                    priceDisplay.classList.remove('text-green-600', 'font-bold', 'text-gray-500', 'italic');
-                    priceDisplay.classList.add('text-red-500');
-                    console.error('Error:', error);
+                    // Silent fail for background process
                 });
-            });
+            }, 300000); // 5 minutes = 300000 milliseconds
+            
+            // Check waitlist position if the product is borrowed and waitlist section exists
+            const waitlistPositionDiv = document.getElementById('waitlistPosition');
+            if (waitlistPositionDiv) {
+                fetch('@Url.Action("GetWaitlistPosition", "BorrowProducts")?id=@Model.Id')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.position && data.position > 0) {
+                        waitlistPositionDiv.innerHTML = `<div class="bg-orange-100 border border-orange-200 rounded-lg p-3"><div class="flex items-center justify-center"><svg class="w-4 h-4 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="text-orange-700 font-medium">You are #${data.position} in the waitlist</span></div></div>`;
+                    } else if (data.error) {
+                        waitlistPositionDiv.innerHTML = `<span class="text-red-500">Error: ${data.error}</span>`;
+                    } else {
+                        waitlistPositionDiv.innerHTML = '<span class="text-gray-500">You are not currently in the waitlist for this product.</span>';
+                    }
+                })
+                .catch(error => {
+                    waitlistPositionDiv.innerHTML = `<span class="text-red-500">Unable to check waitlist position: ${error.message}</span>`;
+                });
+            }
+            
+            // Handle join waitlist
+            if (joinWaitlistButton) {
+                joinWaitlistButton.addEventListener('click', function() {
+                    const endDate = waitlistEndDateInput?.value;
+                    
+                    if (!endDate) {
+                        waitlistResult.textContent = 'Please select your desired end date first';
+                        waitlistResult.classList.remove('text-green-600', 'font-bold', 'text-gray-500', 'italic');
+                        waitlistResult.classList.add('text-red-500');
+                        return;
+                    }
+                    
+                    // Disable button and show loading
+                    joinWaitlistButton.disabled = true;
+                    joinWaitlistButton.innerHTML = '<svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Joining...';
+                    waitlistResult.textContent = 'Processing your request...';
+                    waitlistResult.classList.remove('text-red-500', 'text-green-600', 'font-bold');
+                    waitlistResult.classList.add('text-blue-600', 'italic');
+                    
+                    // Call the controller method to join waitlist with end date
+                    const formData = new FormData();
+                    formData.append('id', @Model.Id);
+                    formData.append('endDate', endDate);
+                    
+                    fetch('@Url.Action("JoinWaitlist", "BorrowProducts")', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            waitlistResult.textContent = `Success! ${data.message}`;
+                            waitlistResult.classList.remove('text-red-500', 'text-blue-600', 'italic');
+                            waitlistResult.classList.add('text-green-600', 'font-bold');
+                            
+                            // Refresh the page after 2 seconds to show updated state
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            waitlistResult.textContent = data.error;
+                            waitlistResult.classList.remove('text-green-600', 'font-bold', 'text-blue-600', 'italic');
+                            waitlistResult.classList.add('text-red-500');
+                            
+                            // Re-enable button
+                            joinWaitlistButton.disabled = false;
+                            joinWaitlistButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Join Waiting List';
+                        }
+                    })
+                    .catch(error => {
+                        waitlistResult.textContent = 'Error processing request: ' + error.message;
+                        waitlistResult.classList.remove('text-green-600', 'font-bold', 'text-blue-600', 'italic');
+                        waitlistResult.classList.add('text-red-500');
+                        
+                        // Re-enable button
+                        joinWaitlistButton.disabled = false;
+                        joinWaitlistButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Join Waiting List';
+                    });
+                });
+            }
+
+            // Handle leave waitlist
+            if (leaveWaitlistButton) {
+                leaveWaitlistButton.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to leave the waitlist for this product?')) {
+                        // Disable button and show loading
+                        leaveWaitlistButton.disabled = true;
+                        leaveWaitlistButton.innerHTML = '<svg class="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Leaving...';
+                        
+                        // Call the controller method to leave waitlist
+                        fetch('@Url.Action("LeaveWaitlist", "BorrowProducts")?id=@Model.Id', {
+                            method: 'POST'
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message);
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.error);
+                                // Re-enable button
+                                leaveWaitlistButton.disabled = false;
+                                leaveWaitlistButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>Leave Waitlist';
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error processing leave waitlist request');
+                            // Re-enable button
+                            leaveWaitlistButton.disabled = false;
+                            leaveWaitlistButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>Leave Waitlist';
+                        });
+                    }
+                });
+            }
         });
     </script>
 } 

@@ -135,26 +135,52 @@ namespace MarketMinds.Web.Controllers
         }
 
         /// <summary>
-        /// Joins the waitlist for a product
+        /// Joins the waitlist for a product with a specified end date preference
         /// </summary>
         /// <param name="id">The product ID</param>
-        /// <returns>Redirects to the product details</returns>
+        /// <param name="endDate">The user's desired end date for borrowing</param>
+        /// <returns>JSON result indicating success or failure</returns>
         [HttpPost]
-        public async Task<IActionResult> JoinWaitlist(int id)
+        public async Task<IActionResult> JoinWaitlist(int id, DateTime endDate)
         {
             try
             {
                 int currentUserId = GetCurrentUserId();
-                await _waitlistService.AddUserToWaitlist(currentUserId, id);
 
-                TempData["SuccessMessage"] = "You've joined the waitlist!";
-                return RedirectToAction(nameof(Details), new { id });
+                // Validate the end date
+                var borrowProduct = await _borrowProductsService.GetBorrowProductByIdAsync(id);
+                if (borrowProduct == null || borrowProduct.Id == 0)
+                {
+                    return Json(new { success = false, error = "Product not found" });
+                }
+
+                // Check if end date is reasonable
+                DateTime earliestStart = borrowProduct.EndDate ?? DateTime.Now;
+                if (endDate <= earliestStart)
+                {
+                    return Json(new { success = false, error = "End date must be after the current borrowing period ends" });
+                }
+
+                if (endDate > borrowProduct.TimeLimit)
+                {
+                    return Json(new { success = false, error = "End date cannot exceed the product's time limit" });
+                }
+
+                // Store the end date preference in the waitlist
+                await _waitlistService.AddUserToWaitlist(currentUserId, id, endDate);
+
+                _logger.LogInformation($"User {currentUserId} joined waitlist for product {id} with preferred end date {endDate:yyyy-MM-dd}");
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"You've joined the waitlist! When available, the product will be assigned to you until {endDate:yyyy-MM-dd}."
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to join waitlist for product {ProductId}", id);
-                TempData["ErrorMessage"] = $"Failed to join waitlist: {ex.Message}";
-                return RedirectToAction(nameof(Details), new { id });
+                return Json(new { success = false, error = $"Failed to join waitlist: {ex.Message}" });
             }
         }
 
@@ -162,7 +188,7 @@ namespace MarketMinds.Web.Controllers
         /// Leaves the waitlist for a product
         /// </summary>
         /// <param name="id">The product ID</param>
-        /// <returns>Redirects to the product details</returns>
+        /// <returns>JSON result indicating success or failure</returns>
         [HttpPost]
         public async Task<IActionResult> LeaveWaitlist(int id)
         {
@@ -171,14 +197,18 @@ namespace MarketMinds.Web.Controllers
                 int currentUserId = GetCurrentUserId();
                 await _waitlistService.RemoveUserFromWaitlist(currentUserId, id);
 
-                TempData["SuccessMessage"] = "You've left the waitlist";
-                return RedirectToAction(nameof(Details), new { id });
+                _logger.LogInformation($"User {currentUserId} left waitlist for product {id}");
+
+                return Json(new
+                {
+                    success = true,
+                    message = "You've successfully left the waitlist"
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to leave waitlist for product {ProductId}", id);
-                TempData["ErrorMessage"] = $"Failed to leave waitlist: {ex.Message}";
-                return RedirectToAction(nameof(Details), new { id });
+                return Json(new { success = false, error = $"Failed to leave waitlist: {ex.Message}" });
             }
         }
 
@@ -392,6 +422,313 @@ namespace MarketMinds.Web.Controllers
             }
 
             return $"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m";
+        }
+
+        /// <summary>
+        /// Borrows a product for the current user
+        /// </summary>
+        /// <param name="id">The product ID</param>
+        /// <param name="endDate">The desired end date for borrowing</param>
+        /// <returns>JSON result indicating success or failure</returns>
+        [HttpPost]
+        public async Task<IActionResult> BorrowProduct(int id, DateTime endDate)
+        {
+            try
+            {
+                int currentUserId = GetCurrentUserId();
+                _logger.LogInformation($"User {currentUserId} attempting to borrow product {id} until {endDate}");
+
+                var borrowProduct = await _borrowProductsService.GetBorrowProductByIdAsync(id);
+
+                if (borrowProduct == null || borrowProduct.Id == 0)
+                {
+                    return Json(new { success = false, error = "Product not found" });
+                }
+
+                // Check if product is already borrowed
+                if (borrowProduct.IsBorrowed)
+                {
+                    return Json(new { success = false, error = "This product is currently borrowed by another user. Please join the waitlist." });
+                }
+
+                // Validate dates
+                DateTime startDate = DateTime.Now;
+
+                if (endDate < startDate.AddDays(1))
+                {
+                    return Json(new { success = false, error = "End date must be at least 1 day from now" });
+                }
+
+                if (endDate > borrowProduct.TimeLimit)
+                {
+                    return Json(new { success = false, error = "End date cannot exceed the product's time limit" });
+                }
+
+                // Calculate total price
+                int days = (int)Math.Ceiling((endDate - startDate).TotalDays);
+                double totalPrice = days * borrowProduct.DailyRate;
+
+                // Update the product to mark it as borrowed
+                borrowProduct.IsBorrowed = true;
+                borrowProduct.BorrowerId = currentUserId;
+                borrowProduct.StartDate = startDate;
+                borrowProduct.EndDate = endDate;
+
+                var success = await _borrowProductsService.UpdateBorrowProductAsync(borrowProduct);
+
+                if (success)
+                {
+                    _logger.LogInformation($"Product {id} successfully borrowed by user {currentUserId}");
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Product borrowed successfully!",
+                        totalPrice = totalPrice.ToString("C"),
+                        days = days,
+                        endDate = endDate.ToString("yyyy-MM-dd")
+                    });
+                }
+                else
+                {
+                    return Json(new { success = false, error = "Failed to update product status" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error borrowing product {id}");
+                return Json(new { success = false, error = "An error occurred while borrowing the product" });
+            }
+        }
+
+        /// <summary>
+        /// Returns a borrowed product and moves it to the next person in waitlist if applicable
+        /// </summary>
+        /// <param name="id">The product ID</param>
+        /// <returns>JSON result indicating success or failure</returns>
+        [HttpPost]
+        public async Task<IActionResult> ReturnProduct(int id)
+        {
+            try
+            {
+                int currentUserId = GetCurrentUserId();
+                _logger.LogInformation($"User {currentUserId} attempting to return product {id}");
+
+                var borrowProduct = await _borrowProductsService.GetBorrowProductByIdAsync(id);
+
+                if (borrowProduct == null || borrowProduct.Id == 0)
+                {
+                    return Json(new { success = false, error = "Product not found" });
+                }
+
+                // Check if the current user is the one who borrowed it
+                if (!borrowProduct.IsBorrowed || borrowProduct.BorrowerId != currentUserId)
+                {
+                    return Json(new { success = false, error = "You are not currently borrowing this product" });
+                }
+
+                // Store the previous end date for history tracking (don't clear start/end dates)
+                DateTime? previousEndDate = borrowProduct.EndDate;
+                DateTime? previousStartDate = borrowProduct.StartDate;
+
+                // Mark as returned but keep the borrowing history
+                borrowProduct.IsBorrowed = false;
+                borrowProduct.BorrowerId = null;
+                // Don't clear start/end dates - keep them for history
+
+                var success = await _borrowProductsService.UpdateBorrowProductAsync(borrowProduct);
+
+                if (success)
+                {
+                    _logger.LogInformation($"Product {id} successfully returned by user {currentUserId}");
+
+                    // Check if there's someone in waitlist before assignment
+                    var waitlistUsers = await _waitlistService.GetUsersInWaitlist(id);
+                    bool hasWaitlist = waitlistUsers != null && waitlistUsers.Count > 0;
+
+                    // Automatically assign product to next person in waitlist
+                    await NotifyNextInWaitlist(id);
+
+                    string message = hasWaitlist
+                        ? "Product returned successfully! It has been automatically assigned to the next person in the waitlist."
+                        : "Product returned successfully! It is now available for borrowing.";
+
+                    return Json(new
+                    {
+                        success = true,
+                        message = message
+                    });
+                }
+                else
+                {
+                    return Json(new { success = false, error = "Failed to update product status" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error returning product {id}");
+                return Json(new { success = false, error = "An error occurred while returning the product" });
+            }
+        }
+
+        /// <summary>
+        /// Checks for expired borrowing periods and moves products to next in waitlist
+        /// </summary>
+        /// <returns>JSON result with update count</returns>
+        [HttpPost]
+        public async Task<IActionResult> ProcessExpiredBorrowings()
+        {
+            try
+            {
+                _logger.LogInformation("Processing expired borrowings");
+
+                var allBorrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync();
+                int processedCount = 0;
+
+                foreach (var product in allBorrowProducts.Where(p => p.IsBorrowed && p.EndDate.HasValue))
+                {
+                    if (DateTime.Now > product.EndDate.Value)
+                    {
+                        _logger.LogInformation($"Product {product.Id} borrowing period expired, returning automatically");
+
+                        // Store the previous borrowing info for history (don't clear start/end dates)
+                        DateTime? previousEndDate = product.EndDate;
+                        DateTime? previousStartDate = product.StartDate;
+                        int? previousBorrowerId = product.BorrowerId;
+
+                        // Automatically return the product but keep borrowing history
+                        product.IsBorrowed = false;
+                        product.BorrowerId = null;
+                        // Don't clear start/end dates - keep them for history
+
+                        var success = await _borrowProductsService.UpdateBorrowProductAsync(product);
+                        if (success)
+                        {
+                            processedCount++;
+                            await NotifyNextInWaitlist(product.Id);
+                        }
+                    }
+                }
+
+                return Json(new { success = true, processedCount });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing expired borrowings");
+                return Json(new { success = false, error = "An error occurred while processing expired borrowings" });
+            }
+        }
+
+        /// <summary>
+        /// Automatically assigns the product to the next person in waitlist when it becomes available
+        /// </summary>
+        /// <param name="productId">The product ID</param>
+        private async Task NotifyNextInWaitlist(int productId)
+        {
+            try
+            {
+                // Get the next person in waitlist
+                var waitlistUsers = await _waitlistService.GetUsersInWaitlist(productId);
+
+                if (waitlistUsers != null && waitlistUsers.Count > 0)
+                {
+                    var firstInLine = waitlistUsers.OrderBy(w => w.PositionInQueue).FirstOrDefault();
+                    if (firstInLine != null)
+                    {
+                        _logger.LogInformation($"Automatically assigning product {productId} to user {firstInLine.UserID} (first in waitlist)");
+
+                        // Get the product to assign
+                        var borrowProduct = await _borrowProductsService.GetBorrowProductByIdAsync(productId);
+                        if (borrowProduct != null)
+                        {
+                            // Calculate smart start date: 
+                            // - If product was returned early, start from previous end date or now (whichever is later)
+                            // - If product expired naturally, start from now
+                            DateTime startDate = borrowProduct.EndDate ?? DateTime.Now;
+                            if (startDate < DateTime.Now)
+                            {
+                                startDate = DateTime.Now; // Don't start in the past
+                            }
+
+                            // Use the user's preferred end date if available, otherwise default to 7 days
+                            DateTime endDate;
+                            if (firstInLine.PreferredEndDate.HasValue && firstInLine.PreferredEndDate.Value > startDate)
+                            {
+                                endDate = firstInLine.PreferredEndDate.Value;
+                                _logger.LogInformation($"Using user's preferred end date: {endDate:yyyy-MM-dd}");
+                            }
+                            else
+                            {
+                                // Default to 7 days from start date if no preference or preference is invalid
+                                endDate = startDate.AddDays(7);
+                                _logger.LogInformation($"Using default 7-day period, end date: {endDate:yyyy-MM-dd}");
+                            }
+
+                            // Make sure end date doesn't exceed product time limit
+                            if (endDate > borrowProduct.TimeLimit)
+                            {
+                                endDate = borrowProduct.TimeLimit;
+                                _logger.LogInformation($"Adjusted end date to product time limit: {endDate:yyyy-MM-dd}");
+                            }
+
+                            // Make sure the borrowing period is at least 1 day
+                            if (endDate <= startDate)
+                            {
+                                endDate = startDate.AddDays(1);
+                                if (endDate > borrowProduct.TimeLimit)
+                                {
+                                    _logger.LogWarning($"Cannot assign product {productId} to user {firstInLine.UserID}: insufficient time remaining");
+                                    return;
+                                }
+                            }
+
+                            // Assign the product to the first person in waitlist
+                            borrowProduct.IsBorrowed = true;
+                            borrowProduct.BorrowerId = firstInLine.UserID;
+                            borrowProduct.StartDate = startDate;
+                            borrowProduct.EndDate = endDate;
+
+                            var success = await _borrowProductsService.UpdateBorrowProductAsync(borrowProduct);
+                            if (success)
+                            {
+                                // Remove the user from the waitlist since they now have the product
+                                await _waitlistService.RemoveUserFromWaitlist(firstInLine.UserID, productId);
+
+                                _logger.LogInformation($"Product {productId} successfully assigned to user {firstInLine.UserID}. Borrowing period: {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}");
+
+                                // Send notification to the user (optional)
+                                try
+                                {
+                                    string notificationMessage = firstInLine.PreferredEndDate.HasValue
+                                        ? $"Good news! The product you were waiting for is now assigned to you until your requested date {endDate:yyyy-MM-dd}."
+                                        : $"Good news! The product you were waiting for is now assigned to you until {endDate:yyyy-MM-dd}.";
+
+                                    await _notificationService.SendNotificationAsync(
+                                        firstInLine.UserID,
+                                        notificationMessage
+                                    );
+                                }
+                                catch (Exception notifEx)
+                                {
+                                    // Don't fail the entire process if notification fails
+                                    _logger.LogWarning(notifEx, $"Failed to send notification to user {firstInLine.UserID}");
+                                }
+                            }
+                            else
+                            {
+                                _logger.LogError($"Failed to assign product {productId} to user {firstInLine.UserID}");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation($"No users in waitlist for product {productId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error assigning product {productId} to next in waitlist");
+            }
         }
     }
 }

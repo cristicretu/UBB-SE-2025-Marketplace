@@ -58,9 +58,9 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             };
 
             ApplyDefaultDates(product);
-            
+
             borrowProductsRepository.CreateListing(product);
-            
+
             if (productDTO.Images != null && productDTO.Images.Any())
             {
                 foreach (var imageInfo in productDTO.Images)
@@ -79,7 +79,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                     borrowProductsRepository.AddImageToProduct(product.Id, image);
                 }
             }
-            
+
             return (BorrowProduct)GetProductById(product.Id);
         }
 
@@ -138,7 +138,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
 
             DateTime startDate = product.StartDate ?? DateTime.Now;
             DateTime endDate = product.EndDate ?? startDate.AddDays(7);
-            
+
             if (endDate < startDate)
             {
                 product.EndDate = startDate.AddDays(7);
@@ -151,8 +151,30 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             {
                 throw new ArgumentException("Product ID must be set for delete.", nameof(product.Id));
             }
-            
+
             borrowProductsRepository.DeleteListing(product);
+        }
+
+        public void UpdateListing(Product product)
+        {
+            if (!(product is BorrowProduct borrowProduct))
+            {
+                throw new ArgumentException("Product must be a BorrowProduct.", nameof(product));
+            }
+
+            if (borrowProduct.Id == 0)
+            {
+                throw new ArgumentException("Product ID must be set for update.", nameof(borrowProduct.Id));
+            }
+
+            try
+            {
+                ((IBorrowProductsRepository)borrowProductsRepository).UpdateProduct(borrowProduct);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public List<Product> GetProducts()
@@ -166,7 +188,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             {
                 throw new ArgumentException("Product ID must be greater than 0", nameof(id));
             }
-            
+
             try
             {
                 var product = borrowProductsRepository.GetProductByID(id);
@@ -268,27 +290,27 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 {
                     throw new ArgumentNullException(nameof(borrowProduct), "BorrowProduct cannot be null");
                 }
-                
+
                 if (string.IsNullOrWhiteSpace(borrowProduct.Title))
                 {
                     throw new ArgumentException("Title is required", nameof(borrowProduct.Title));
                 }
-                
+
                 if (borrowProduct.CategoryId <= 0)
                 {
                     throw new ArgumentException("CategoryId must be greater than zero", nameof(borrowProduct.CategoryId));
                 }
-                
+
                 if (borrowProduct.ConditionId <= 0)
                 {
                     throw new ArgumentException("ConditionId must be greater than zero", nameof(borrowProduct.ConditionId));
                 }
-                
+
                 if (borrowProduct.DailyRate <= 0)
                 {
                     throw new ArgumentException("DailyRate must be greater than zero", nameof(borrowProduct.DailyRate));
                 }
-                
+
                 CreateListing(borrowProduct);
                 return true;
             }
@@ -299,7 +321,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 {
                     Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
                 }
-                
+
                 throw;
             }
         }
@@ -320,7 +342,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         {
             try
             {
-                CreateListing(borrowProduct);
+                UpdateListing(borrowProduct);
                 return true;
             }
             catch (Exception exception)
@@ -366,7 +388,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             // Not implemented in borrow products service
             return Task.FromResult<string>(null);
         }
-        
+
         /// <summary>
         /// Gets a list of products that can be borrowed.
         /// Implementation for IProductService interface.
