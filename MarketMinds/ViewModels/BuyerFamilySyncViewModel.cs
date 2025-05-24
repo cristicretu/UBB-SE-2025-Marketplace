@@ -171,6 +171,10 @@ namespace MarketMinds.ViewModels
 
                 // Get linked buyers using buyerLinkageService
                 var linkedBuyers = await this.buyerLinkageService.GetLinkedBuyersAsync(this.currentBuyer.Id);
+                // make sure to filter out the current buyer from the linked buyers
+                linkedBuyers = linkedBuyers.Where(b => b.Id != this.currentBuyer.Id).ToList();
+                // only keep unique buyers
+                linkedBuyers = linkedBuyers.DistinctBy(b => b.Id).ToList();
                 var linkedBuyersDict = linkedBuyers.ToDictionary(b => b.Id);
 
                 var result = new List<IBuyerLinkageViewModel>();
