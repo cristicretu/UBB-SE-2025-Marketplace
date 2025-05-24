@@ -244,6 +244,7 @@ namespace MarketMinds.Web.Controllers
             return View();
         }
 
+        [Authorize]
         public IActionResult Create()
         {
             _logger.LogInformation("GET: Home/Create - Initializing create view");
@@ -254,6 +255,7 @@ namespace MarketMinds.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Create(AuctionProduct auctionProduct, string productType, string tagIds, string imageUrls)
         {
             _logger.LogInformation("POST: Home/Create - Starting product creation");
@@ -529,7 +531,7 @@ namespace MarketMinds.Web.Controllers
                         if (result)
                         {
                             _logger.LogInformation("Successfully created auction product");
-                            return RedirectToAction("Index", "AuctionProducts");
+                            return RedirectToAction("Index", "Home");
                         }
                         else
                         {
@@ -568,6 +570,7 @@ namespace MarketMinds.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> CreateBorrowProduct(BorrowProduct borrowProduct, string tagIds, string imageUrls)
         {
             _logger.LogInformation("Creating a new borrow product");
@@ -755,7 +758,7 @@ namespace MarketMinds.Web.Controllers
                     if (result)
                     {
                         _logger.LogInformation("Borrow product created successfully");
-                        return RedirectToAction("Index", "BorrowProducts");
+                        return RedirectToAction("Index", "Home");
                     }
                     else
                     {
@@ -797,6 +800,7 @@ namespace MarketMinds.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> CreateBuyProduct(BuyProduct buyProduct, string tagIds, string imageUrls)
         {
             _logger.LogInformation("Creating a new buy product");
@@ -1002,7 +1006,7 @@ namespace MarketMinds.Web.Controllers
                     _logger.LogInformation("About to call buyProductsService.CreateListing with SellerId={SellerId}", buyProduct.SellerId);
                     buyProductsService.CreateListing(buyProduct);
                     _logger.LogInformation("Buy product created successfully");
-                    return RedirectToAction("Index", "BuyProducts");
+                    return RedirectToAction("Index", "Home");
                 }
                 catch (Exception ex)
                 {
