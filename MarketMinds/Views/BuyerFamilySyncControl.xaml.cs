@@ -9,7 +9,7 @@ namespace MarketMinds.Views
     using Microsoft.UI.Xaml.Controls;
 
     /// <summary>
-    /// A control that displays and manages the synchronization of buyer family accounts.
+    /// A control that displays and manages family synchronization.
     /// </summary>
     /// <seealso cref="BuyerFamilySyncViewModel"/>
     public sealed partial class BuyerFamilySyncControl : UserControl
@@ -22,7 +22,7 @@ namespace MarketMinds.Views
                 nameof(ViewModel),
                 typeof(IBuyerFamilySyncViewModel),
                 typeof(BuyerFamilySyncControl),
-                new PropertyMetadata(null, OnChildViewModelChanged));
+                new PropertyMetadata(null, OnViewModelChanged));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BuyerFamilySyncControl"/> class.
@@ -44,12 +44,14 @@ namespace MarketMinds.Views
         /// <summary>
         /// Handles changes to the ViewModel property.
         /// </summary>
-        /// <param name="dependencyObject">The dependency object.</param>
-        /// <param name="eventArgs">The dependency property changed event arguments.</param>
-        private static void OnChildViewModelChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs eventArgs)
+        /// <param name="d">The dependency object.</param>
+        /// <param name="e">The dependency property changed event arguments.</param>
+        private static async void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var control = (BuyerFamilySyncControl)dependencyObject;
-            control.DataContext = eventArgs.NewValue;
+            if (d is BuyerFamilySyncControl control && e.NewValue is IBuyerFamilySyncViewModel viewModel)
+            {
+                await viewModel.LoadLinkages();
+            }
         }
     }
 }

@@ -16,10 +16,7 @@ namespace MarketMinds.ViewModels
     public class BuyerLinkageViewModel : IBuyerLinkageViewModel
     {
         private BuyerLinkageStatus status = BuyerLinkageStatus.Possible;
-        private Visibility requestSyncVsbl = Visibility.Collapsed;
-        private Visibility unsyncVsbl = Visibility.Collapsed;
-        private Visibility acceptVsbl = Visibility.Collapsed;
-        private Visibility declineVsbl = Visibility.Collapsed;
+        private Buyer linkedBuyer = null!;
 
         /// <summary>
         /// Event that is raised when a property value changes.
@@ -33,7 +30,19 @@ namespace MarketMinds.ViewModels
         public Buyer UserBuyer { get; set; } = null!;
 
         /// <inheritdoc/>
-        public Buyer LinkedBuyer { get; set; } = null!;
+        public Buyer LinkedBuyer
+        {
+            get => this.linkedBuyer;
+            set
+            {
+                if (this.linkedBuyer != value)
+                {
+                    this.linkedBuyer = value;
+                    this.UpdateDisplayName();
+                    this.OnPropertyChanged(nameof(this.LinkedBuyer));
+                }
+            }
+        }
 
         /// <inheritdoc/>
         public string DisplayName { get; private set; } = null!;
@@ -47,31 +56,18 @@ namespace MarketMinds.ViewModels
             get => this.status;
             set
             {
-                this.status = value;
-                this.UpdateDisplayName();
-                this.requestSyncVsbl = Visibility.Collapsed;
-                this.unsyncVsbl = Visibility.Collapsed;
-                this.acceptVsbl = Visibility.Collapsed;
-                this.declineVsbl = Visibility.Collapsed;
-                if (this.status == BuyerLinkageStatus.Possible)
+                if (this.status != value)
                 {
-                    this.requestSyncVsbl = Visibility.Visible;
+                    this.status = value;
+                    System.Diagnostics.Debug.WriteLine($"[BuyerLinkageViewModel] Status for buyer {this.LinkedBuyer.Id} ({this.LinkedBuyer.FirstName} {this.LinkedBuyer.LastName}) set to {this.status}");
+                    this.UpdateDisplayName();
+                    this.OnPropertyChanged(nameof(this.Status));
+                    this.OnPropertyChanged(nameof(this.RequestSyncVsbl));
+                    this.OnPropertyChanged(nameof(this.CancelRequestVsbl));
+                    this.OnPropertyChanged(nameof(this.AcceptVsbl));
+                    this.OnPropertyChanged(nameof(this.DeclineVsbl));
+                    this.OnPropertyChanged(nameof(this.UnsyncVsbl));
                 }
-                else if (this.status == BuyerLinkageStatus.PendingSelf)
-                {
-                    this.acceptVsbl = Visibility.Visible;
-                    this.declineVsbl = Visibility.Visible;
-                }
-                else if (this.status == BuyerLinkageStatus.PendingOther || this.status == BuyerLinkageStatus.Confirmed)
-                {
-                    this.unsyncVsbl = Visibility.Visible;
-                }
-
-                this.OnPropertyChanged(nameof(this.Status));
-                this.OnPropertyChanged(nameof(this.RequestSyncVsbl));
-                this.OnPropertyChanged(nameof(this.UnsyncVsbl));
-                this.OnPropertyChanged(nameof(this.AcceptVsbl));
-                this.OnPropertyChanged(nameof(this.DeclineVsbl));
             }
         }
 
@@ -80,16 +76,22 @@ namespace MarketMinds.ViewModels
         {
             get
             {
-                return this.requestSyncVsbl;
+                // Show Request Sync button only when there's no existing linkage
+                var visibility = this.Status == BuyerLinkageStatus.Possible ? Visibility.Visible : Visibility.Collapsed;
+                System.Diagnostics.Debug.WriteLine($"[RequestSyncVsbl] For buyer {this.LinkedBuyer.Id} ({this.LinkedBuyer.FirstName}): Status={this.Status}, Visibility={visibility}");
+                return visibility;
             }
         }
 
         /// <inheritdoc/>
-        public Visibility UnsyncVsbl
+        public Visibility CancelRequestVsbl
         {
             get
             {
-                return this.unsyncVsbl;
+                // Show Cancel button only when the current user is the sender of a pending request
+                var visibility = this.Status == BuyerLinkageStatus.PendingOther ? Visibility.Visible : Visibility.Collapsed;
+                System.Diagnostics.Debug.WriteLine($"[CancelRequestVsbl] For buyer {this.LinkedBuyer.Id} ({this.LinkedBuyer.FirstName}): Status={this.Status}, Visibility={visibility}");
+                return visibility;
             }
         }
 
@@ -98,7 +100,10 @@ namespace MarketMinds.ViewModels
         {
             get
             {
-                return this.acceptVsbl;
+                // Show Accept button only when the current user is the receiver of a pending request
+                var visibility = this.Status == BuyerLinkageStatus.PendingSelf ? Visibility.Visible : Visibility.Collapsed;
+                System.Diagnostics.Debug.WriteLine($"[AcceptVsbl] For buyer {this.LinkedBuyer.Id} ({this.LinkedBuyer.FirstName}): Status={this.Status}, Visibility={visibility}");
+                return visibility;
             }
         }
 
@@ -107,20 +112,46 @@ namespace MarketMinds.ViewModels
         {
             get
             {
-                return this.declineVsbl;
+                // Show Decline button only when the current user is the receiver of a pending request
+                var visibility = this.Status == BuyerLinkageStatus.PendingSelf ? Visibility.Visible : Visibility.Collapsed;
+                System.Diagnostics.Debug.WriteLine($"[DeclineVsbl] For buyer {this.LinkedBuyer.Id} ({this.LinkedBuyer.FirstName}): Status={this.Status}, Visibility={visibility}");
+                return visibility;
             }
+        }
+
+        /// <inheritdoc/>
+        public Visibility UnsyncVsbl
+        {
+            get
+            {
+                // Show Unsync button only when the linkage is confirmed
+                var visibility = this.Status == BuyerLinkageStatus.Confirmed ? Visibility.Visible : Visibility.Collapsed;
+                System.Diagnostics.Debug.WriteLine($"[UnsyncVsbl] For buyer {this.LinkedBuyer.Id} ({this.LinkedBuyer.FirstName}): Status={this.Status}, Visibility={visibility}");
+                return visibility;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BuyerLinkageViewModel"/> class.
+        /// </summary>
+        public BuyerLinkageViewModel()
+        {
+            this.DisplayName = string.Empty;
         }
 
         /// <inheritdoc/>
         public async Task RequestSync()
         {
+            System.Diagnostics.Debug.WriteLine($"[RequestSync] Starting request sync from {this.UserBuyer.Id} to {this.LinkedBuyer.Id}");
             await this.Service.CreateLinkageRequest(this.UserBuyer, this.LinkedBuyer);
             this.Status = BuyerLinkageStatus.PendingOther;
+            await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
         }
 
         /// <inheritdoc/>
         public async Task Accept()
         {
+            System.Diagnostics.Debug.WriteLine($"[Accept] Starting accept request from {this.UserBuyer.Id} to {this.LinkedBuyer.Id}");
             await this.Service.AcceptLinkageRequest(this.UserBuyer, this.LinkedBuyer);
             this.Status = BuyerLinkageStatus.Confirmed;
             await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
@@ -129,30 +160,28 @@ namespace MarketMinds.ViewModels
         /// <inheritdoc/>
         public async Task Decline()
         {
-            if (this.status == BuyerLinkageStatus.PendingSelf)
-            {
-                await this.Service.RefuseLinkageRequest(this.UserBuyer, this.LinkedBuyer);
-                await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
-            }
-
+            System.Diagnostics.Debug.WriteLine($"[Decline] Starting decline request from {this.UserBuyer.Id} to {this.LinkedBuyer.Id}");
+            await this.Service.RefuseLinkageRequest(this.UserBuyer, this.LinkedBuyer);
             this.Status = BuyerLinkageStatus.Possible;
+            await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
+        }
+
+        /// <inheritdoc/>
+        public async Task Cancel()
+        {
+            System.Diagnostics.Debug.WriteLine($"[Cancel] Starting cancel request from {this.UserBuyer.Id} to {this.LinkedBuyer.Id}");
+            await this.Service.CancelLinkageRequest(this.UserBuyer, this.LinkedBuyer);
+            this.Status = BuyerLinkageStatus.Possible;
+            await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
         }
 
         /// <inheritdoc/>
         public async Task Unsync()
         {
-            if (this.status == BuyerLinkageStatus.Confirmed)
-            {
-                await this.Service.BreakLinkage(this.UserBuyer, this.LinkedBuyer);
-            }
-
-            if (this.status == BuyerLinkageStatus.PendingOther)
-            {
-                await this.Service.CancelLinkageRequest(this.UserBuyer, this.LinkedBuyer);
-            }
-
-            await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
+            System.Diagnostics.Debug.WriteLine($"[Unsync] Starting unsync between {this.UserBuyer.Id} and {this.LinkedBuyer.Id}");
+            await this.Service.BreakLinkage(this.UserBuyer, this.LinkedBuyer);
             this.Status = BuyerLinkageStatus.Possible;
+            await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
         }
 
         /// <summary>
@@ -179,13 +208,21 @@ namespace MarketMinds.ViewModels
         /// </summary>
         private void UpdateDisplayName()
         {
-            if (this.status == BuyerLinkageStatus.Possible || this.status == BuyerLinkageStatus.PendingOther)
+            if (this.LinkedBuyer == null)
             {
-                this.DisplayName = KeepFirstLetter(this.LinkedBuyer.FirstName) + " " + KeepFirstLetter(this.LinkedBuyer.LastName);
+                this.DisplayName = string.Empty;
+                return;
             }
-            else
+
+            // Always show full name for confirmed linkages
+            if (this.Status == BuyerLinkageStatus.Confirmed)
             {
                 this.DisplayName = this.LinkedBuyer.FirstName + " " + this.LinkedBuyer.LastName;
+            }
+            // Show masked name for pending requests and possible linkages
+            else
+            {
+                this.DisplayName = KeepFirstLetter(this.LinkedBuyer.FirstName) + " " + KeepFirstLetter(this.LinkedBuyer.LastName);
             }
 
             this.OnPropertyChanged(nameof(this.DisplayName));

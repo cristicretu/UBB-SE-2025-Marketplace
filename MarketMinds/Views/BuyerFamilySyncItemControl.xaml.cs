@@ -51,5 +51,13 @@ namespace MarketMinds.Views
             var control = (BuyerFamilySyncItemControl)dependencyObject;
             control.DataContext = eventArgs.NewValue;
         }
+
+        private async void UnsyncButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ViewModel != null)
+            {
+                await this.ViewModel.Cancel();
+            }
+        }
     }
 }
