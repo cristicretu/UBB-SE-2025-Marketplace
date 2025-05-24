@@ -11,13 +11,20 @@ namespace WebMarketplace.Controllers
         private readonly IOrderService _orderService;
         private readonly ILogger<OrderController> _logger;
         private readonly IOrderSummaryService _orderSummaryService;
+        private readonly IContractService _contractService;
 
-        public OrderController(ITrackedOrderService trackedOrderService, IOrderService orderService, ILogger<OrderController> logger, IOrderSummaryService orderSummaryService)
+        public OrderController(
+            ITrackedOrderService trackedOrderService, 
+            IOrderService orderService, 
+            ILogger<OrderController> logger, 
+            IOrderSummaryService orderSummaryService,
+            IContractService contractService)
         {
             _trackedOrderService = trackedOrderService;
             _orderService = orderService;
             _logger = logger;
             _orderSummaryService = orderSummaryService;
+            _contractService = contractService;
         }
 
         // GET: Order/Test
@@ -265,6 +272,46 @@ namespace WebMarketplace.Controllers
             {
                 _logger.LogError(ex, "Error getting order summary details");
                 return Json(new { success = false, message = "Error retrieving order summary details" });
+            }
+        }
+
+        // POST: Order/GenerateContract
+        [HttpPost]
+        public async Task<IActionResult> GenerateContract(int orderId)
+        {
+            try
+            {
+                var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(orderId);
+                if (orderSummary == null)
+                {
+                    return Json(new { success = false, message = "Order summary not found" });
+                }
+
+                // Create a new contract
+                var contract = new Contract
+                {
+                    OrderID = orderSummary.ID,
+                    ContractStatus = "ACTIVE",
+                    ContractContent = orderSummary.ContractDetails ?? "Standard contract terms",
+                    RenewalCount = 0,
+                    AdditionalTerms = string.Empty
+                };
+
+                // Get the predefined contract type (assuming BorrowingContract for now)
+                var predefinedContract = await _contractService.GetPredefinedContractByPredefineContractTypeAsync(PredefinedContractType.BorrowingContract);
+
+                // Generate PDF content (empty for now, will be filled by the server)
+                byte[] pdfContent = new byte[0];
+
+                // Add the contract to the database
+                var newContract = await _contractService.AddContractAsync(contract, pdfContent);
+
+                return Json(new { success = true, message = "Contract generated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating contract");
+                return Json(new { success = false, message = $"Error generating contract: {ex.Message}" });
             }
         }
 

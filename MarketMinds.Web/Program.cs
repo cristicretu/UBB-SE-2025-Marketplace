@@ -91,6 +91,9 @@ builder.Services.AddSingleton<ShoppingCartProxyRepository>(sp =>
 builder.Services.AddSingleton<DummyWalletProxyRepository>(sp =>
     new DummyWalletProxyRepository(
         sp.GetRequiredService<IConfiguration>()["ApiSettings:BaseUrl"] ?? "http://localhost:5001"));
+builder.Services.AddSingleton<ContractProxyRepository>(sp =>
+    new ContractProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
 
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
@@ -120,6 +123,7 @@ builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
 builder.Services.AddTransient<IOrderSummaryService, OrderSummaryService>();
 builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddTransient<IDummyWalletService, DummyWalletService>();
+builder.Services.AddTransient<IContractService, ContractService>();
 
 // Register IBuyerRepository and IBuyerService
 builder.Services.AddTransient<IBuyerRepository, BuyerProxyRepository>();

@@ -255,6 +255,12 @@
                                     <div>
                                         <p class="text-sm text-gray-900">${summary.contractDetails || ''}</p>
                                     </div>
+                                    <div class="mt-4 space-x-4">
+                                        <button onclick="generateContract(${summary.id})" 
+                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                            Generate Contract
+                                        </button>
+                                    </div>
                                 </div>
                             </div>`;
                         document.getElementById('orderDetailsContent').innerHTML = content;
@@ -278,5 +284,33 @@
                 closeOrderDetailsModal();
             }
         });
+
+        function generateContract(orderId) {
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Generating...';
+            button.disabled = true;
+
+            $.ajax({
+                url: '@Url.Action("GenerateContract", "Order")',
+                type: 'POST',
+                data: { orderId: orderId },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Contract generated successfully!');
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Error generating contract: ' + error);
+                },
+                complete: function() {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            });
+        }
     </script>
 } 
