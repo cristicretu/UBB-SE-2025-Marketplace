@@ -12,5 +12,6 @@ namespace MarketMinds.Web.Models
 
         public IEnumerable<BuyProduct> BuyProducts { get; set; } = new List<BuyProduct>();
         public IEnumerable<AuctionProduct> AuctionProducts { get; set; } = new List<AuctionProduct>();
+        public IEnumerable<BorrowProduct> BorrowProducts { get; set; } = new List<BorrowProduct>();
     }
 }
