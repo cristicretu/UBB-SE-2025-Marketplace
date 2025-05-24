@@ -9,795 +9,132 @@
     var isOwnProfile = ViewBag.IsOwnProfile == true;
 }
 
-<style>
-    .profile-container {
-        background: #f8f9fa;
-        min-height: 100vh;
-        padding: 2rem 0;
-    }
-
-    .profile-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        padding: 0;
-        margin-bottom: 2rem;
-        border: 1px solid #e9ecef;
-        overflow: hidden;
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-
-    .profile-header {
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-        color: white;
-        padding: 2rem;
-        text-align: center;
-        position: relative;
-    }
-
-    .profile-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .profile-subtitle {
-        opacity: 0.9;
-        font-size: 1rem;
-        margin-bottom: 0;
-    }
-
-    .badge-container {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        padding: 0.8rem 1.2rem;
-        border-radius: 8px;
-        text-align: center;
-        min-width: 100px;
-    }
-
-    .badge-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 0.2rem;
-    }
-
-    .badge-discount {
-        font-size: 0.8rem;
-        opacity: 0.9;
-    }
-
-    .profile-content {
-        padding: 2rem;
-    }
-
-    .profile-picture-section {
-        display: flex;
-        align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 2rem;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .profile-picture {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 2rem;
-        font-weight: 600;
-        margin-right: 1.5rem;
-        position: relative;
-    }
-
-    .edit-picture-btn {
-        position: absolute;
-        bottom: -5px;
-        right: -5px;
-        background: #007bff;
-        border: 2px solid white;
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 0.8rem;
-        cursor: pointer;
-    }
-
-    .profile-info {
-        flex: 1;
-    }
-
-    .profile-name {
-        font-size: 1.3rem;
-        font-weight: 600;
-        color: #343a40;
-        margin-bottom: 0.2rem;
-    }
-
-    .profile-email {
-        color: #6c757d;
-        font-size: 0.95rem;
-    }
-
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .form-group {
-        margin-bottom: 0;
-    }
-
-    .form-label {
-        font-weight: 500;
-        color: #495057;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-        display: block;
-    }
-
-    .form-control {
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        padding: 0.75rem;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-        width: 100%;
-    }
-
-    .form-control:focus {
-        border-color: #3B82F6;
-        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-        outline: none;
-    }
-
-    .form-control[readonly] {
-        background-color: #f8f9fa;
-        border-color: #dee2e6;
-        color: #6c757d;
-    }
-
-    .address-section {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .address-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .address-icon {
-        width: 18px;
-        height: 18px;
-        color: #3B82F6;
-    }
-
-    .checkbox-container {
-        background: white;
-        border-radius: 6px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid #dee2e6;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .form-check-input {
-        width: 18px;
-        height: 18px;
-        border: 2px solid #ced4da;
-        border-radius: 4px;
-        margin: 0;
-    }
-
-    .form-check-input:checked {
-        background-color: #3B82F6;
-        border-color: #3B82F6;
-    }
-
-    .form-check-label {
-        font-weight: 500;
-        color: #495057;
-        font-size: 0.9rem;
-        margin: 0;
-        cursor: pointer;
-    }
-
-    .address-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-
-    .address-full-width {
-        grid-column: 1 / -1;
-    }
-
-    .save-btn {
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-        border: none;
-        border-radius: 6px;
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
-        font-weight: 500;
-        color: white;
-        transition: all 0.2s ease;
-        float: right;
-        margin-top: 1rem;
-        margin-bottom: 2rem;
-    }
-
-    .save-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-
-    .contract-actions {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e9ecef;
-        text-align: center;
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-
-    .contract-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .contract-content {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        align-items: center;
-    }
-
-    .action-btn {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-        padding: 0.8rem 1.5rem;
-        border: none;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .action-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-        color: white;
-        text-decoration: none;
-    }
-
-    .generate-btn {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        color: white;
-        padding: 0.8rem 1.2rem;
-        border: none;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .generate-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
-    }
-
-    .public-profile {
-        text-align: center;
-        padding: 2rem;
-    }
-
-    .public-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .public-info-item {
-        margin-bottom: 1rem;
-    }
-
-    .public-info-label {
-        font-weight: 500;
-        color: #495057;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-        display: block;
-    }
-
-    .public-info-value {
-        font-size: 1rem;
-        color: #343a40;
-        font-weight: 500;
-        padding: 0.25rem 0;
-        min-height: 20px;
-    }
-
-    .link-btn, .unlink-btn {
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-        border: none;
-        border-radius: 6px;
-        padding: 0.75rem 1.5rem;
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: white;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-    .link-btn:hover, .unlink-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        color: white;
-        text-decoration: none;
-    }
-
-    .unlink-btn {
-        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-    }
-
-    .unlink-btn:hover {
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-    }
-
-    @@media (max-width: 768px) {
-        .form-grid, .address-grid, .public-info-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .profile-picture-section {
-            flex-direction: column;
-            text-align: center;
-        }
-        
-        .profile-picture {
-            margin-right: 0;
-            margin-bottom: 1rem;
-        }
-        
-        .contract-content {
-            flex-direction: column;
-        }
-        
-        .save-btn {
-            float: none;
-            width: 100%;
-        }
-    }
-
-    /* Links Section Styles */
-    .links-header {
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-        color: white;
-        padding: 1.5rem 2rem;
-        margin: 0;
-        border-radius: 12px 12px 0 0;
-    }
-
-    .links-title {
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-    }
-
-    .link-count {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-
-    .links-content {
-        padding: 2rem;
-        margin: 0;
-    }
-
-    .linked-buyers-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin-top: 1rem;
-    }
-
-    .linked-buyer-card {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 1.5rem;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .linked-buyer-card:hover {
-        border-color: #17a2b8;
-        box-shadow: 0 8px 25px rgba(23, 162, 184, 0.15);
-        transform: translateY(-3px);
-    }
-
-    .linked-buyer-link {
-        text-decoration: none;
-        color: inherit;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .linked-buyer-link:hover {
-        text-decoration: none;
-        color: inherit;
-    }
-
-    .linked-buyer-avatar {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 1rem;
-        flex-shrink: 0;
-    }
-
-    .linked-buyer-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .linked-buyer-name {
-        font-weight: 600;
-        font-size: 1.1rem;
-        color: #343a40;
-        margin-bottom: 0.3rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .linked-buyer-badge {
-        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-        color: #212529;
-        padding: 0.2rem 0.6rem;
-        border-radius: 15px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        display: inline-block;
-        margin-bottom: 0.3rem;
-    }
-
-    .linked-buyer-email {
-        color: #6c757d;
-        font-size: 0.85rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* Responsive design for Links */
-    @@media (max-width: 768px) {
-        .linked-buyers-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .links-header {
-            padding: 1rem;
-            margin: -2rem -1rem 1rem -1rem;
-        }
-        
-        .links-content {
-            padding: 0 1rem 1rem 1rem;
-        }
-    }
-
-    /* Following Section Styles */
-    .following-header {
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-        color: white;
-        padding: 1.5rem 2rem;
-        margin: 0;
-        border-radius: 12px 12px 0 0;
-    }
-
-    .following-title {
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-    }
-
-    .following-count {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-
-    .following-content {
-        padding: 2rem;
-        margin: 0;
-    }
-
-    .followed-sellers-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin-top: 1rem;
-    }
-
-    .followed-seller-card {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 1.5rem;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .followed-seller-card:hover {
-        border-color: #3B82F6;
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
-        transform: translateY(-3px);
-    }
-
-    .followed-seller-link {
-        text-decoration: none;
-        color: inherit;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .followed-seller-link:hover {
-        text-decoration: none;
-        color: inherit;
-    }
-
-    .followed-seller-avatar {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 1rem;
-        flex-shrink: 0;
-    }
-
-    .followed-seller-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .followed-seller-name {
-        font-weight: 600;
-        font-size: 1.1rem;
-        color: #343a40;
-        margin-bottom: 0.3rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .followed-seller-store {
-        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-        color: white;
-        padding: 0.2rem 0.6rem;
-        border-radius: 15px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        display: inline-block;
-        margin-bottom: 0.3rem;
-    }
-
-    .followed-seller-email {
-        color: #6c757d;
-        font-size: 0.85rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* Responsive design for Following */
-    @@media (max-width: 768px) {
-        .followed-sellers-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .following-header {
-            padding: 1rem;
-            margin: -2rem -1rem 1rem -1rem;
-        }
-        
-        .following-content {
-            padding: 0 1rem 1rem 1rem;
-        }
-    }
-</style>
-
-<div class="profile-container">
-    <div class="container">
-        <div class="profile-card">
-            <div class="profile-header">
-                <h1 class="profile-title">@(canEdit ? "Edit Profile" : $"{Model.FirstName} {Model.LastName}")</h1>
-                <p class="profile-subtitle">@(canEdit ? "Manage your profile information" : "")</p>
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto">
+        <div class="bg-white rounded-xl shadow-lg mb-8 border border-gray-200 overflow-hidden max-w-4xl mx-auto">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-8 text-center relative">
+                <h1 class="text-3xl font-semibold mb-2">@(canEdit ? "Edit Profile" : $"{Model.FirstName} {Model.LastName}")</h1>
+                <p class="opacity-90 text-base mb-0">@(canEdit ? "Manage your profile information" : "")</p>
                 @if (!string.IsNullOrEmpty(Model.Badge))
                 {
-                    <div class="badge-container">
-                        <div class="badge-title">@Model.Badge</div>
+                    <div class="absolute top-4 right-4 bg-white bg-opacity-20 backdrop-blur-sm p-3 rounded-lg text-center min-w-[100px]">
+                        <div class="text-sm font-semibold mb-1">@Model.Badge</div>
                         @if (canEdit && Model.Discount > 0)
                         {
-                            <div class="badge-discount">@(Model.Discount * 100)% Discount</div>
+                            <div class="text-xs opacity-90">@(Model.Discount * 100)% Discount</div>
                         }
                     </div>
                 }
             </div>
 
-            <div class="profile-content">
+            <div class="p-8">
                 @if (canEdit)
                 {
                     <form asp-action="Update" method="post">
                         <input type="hidden" asp-for="BuyerId" />
 
                         <!-- Personal Information Grid -->
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label asp-for="FirstName" class="form-label">First Name</label>
-                                <input asp-for="FirstName" class="form-control" />
-                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div class="mb-0">
+                                <label asp-for="FirstName" class="block font-medium text-gray-700 mb-2 text-sm">First Name</label>
+                                <input asp-for="FirstName" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                <span asp-validation-for="FirstName" class="text-red-500 text-sm"></span>
                             </div>
-                            <div class="form-group">
-                                <label asp-for="LastName" class="form-label">Last Name</label>
-                                <input asp-for="LastName" class="form-control" />
-                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            <div class="mb-0">
+                                <label asp-for="LastName" class="block font-medium text-gray-700 mb-2 text-sm">Last Name</label>
+                                <input asp-for="LastName" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                <span asp-validation-for="LastName" class="text-red-500 text-sm"></span>
                             </div>
-                            <div class="form-group">
-                                <label asp-for="Email" class="form-label">Email</label>
-                                <input asp-for="Email" class="form-control" readonly />
+                            <div class="mb-0">
+                                <label asp-for="Email" class="block font-medium text-gray-700 mb-2 text-sm">Email</label>
+                                <input asp-for="Email" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm bg-gray-50 border-gray-300 text-gray-600" readonly />
                             </div>
-                            <div class="form-group">
-                                <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
-                                <input asp-for="PhoneNumber" class="form-control" />
-                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            <div class="mb-0">
+                                <label asp-for="PhoneNumber" class="block font-medium text-gray-700 mb-2 text-sm">Phone Number</label>
+                                <input asp-for="PhoneNumber" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                <span asp-validation-for="PhoneNumber" class="text-red-500 text-sm"></span>
                             </div>
                         </div>
 
                         <!-- Address Section -->
-                        <div class="address-section">
-                            <div class="address-title">
-                                <svg class="address-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                            <div class="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                                 </svg>
                                 Address Information
                             </div>
                             
                             <!-- Billing Address -->
-                            <h6 style="font-weight: 600; color: #495057; margin-bottom: 1rem;">Billing Address</h6>
-                            <div class="address-grid">
-                                <div class="form-group">
-                                    <label asp-for="BillingStreet" class="form-label">Street Address</label>
-                                    <input asp-for="BillingStreet" class="form-control" />
-                                    <span asp-validation-for="BillingStreet" class="text-danger"></span>
+                            <h6 class="font-semibold text-gray-700 mb-4">Billing Address</h6>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="mb-0">
+                                    <label asp-for="BillingStreet" class="block font-medium text-gray-700 mb-2 text-sm">Street Address</label>
+                                    <input asp-for="BillingStreet" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                    <span asp-validation-for="BillingStreet" class="text-red-500 text-sm"></span>
                                 </div>
-                                <div class="form-group">
-                                    <label asp-for="BillingPostalCode" class="form-label">Postal Code</label>
-                                    <input asp-for="BillingPostalCode" class="form-control" />
-                                    <span asp-validation-for="BillingPostalCode" class="text-danger"></span>
+                                <div class="mb-0">
+                                    <label asp-for="BillingPostalCode" class="block font-medium text-gray-700 mb-2 text-sm">Postal Code</label>
+                                    <input asp-for="BillingPostalCode" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                    <span asp-validation-for="BillingPostalCode" class="text-red-500 text-sm"></span>
                                 </div>
-                                <div class="form-group">
-                                    <label asp-for="BillingCity" class="form-label">City</label>
-                                    <input asp-for="BillingCity" class="form-control" />
-                                    <span asp-validation-for="BillingCity" class="text-danger"></span>
+                                <div class="mb-0">
+                                    <label asp-for="BillingCity" class="block font-medium text-gray-700 mb-2 text-sm">City</label>
+                                    <input asp-for="BillingCity" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                    <span asp-validation-for="BillingCity" class="text-red-500 text-sm"></span>
                                 </div>
-                                <div class="form-group">
-                                    <label asp-for="BillingCountry" class="form-label">Country</label>
-                                    <input asp-for="BillingCountry" class="form-control" />
-                                    <span asp-validation-for="BillingCountry" class="text-danger"></span>
+                                <div class="mb-0">
+                                    <label asp-for="BillingCountry" class="block font-medium text-gray-700 mb-2 text-sm">Country</label>
+                                    <input asp-for="BillingCountry" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                    <span asp-validation-for="BillingCountry" class="text-red-500 text-sm"></span>
                                 </div>
                             </div>
 
                             <!-- Same Address Checkbox -->
-                            <div class="checkbox-container" style="margin-top: 1.5rem;">
-                                <input asp-for="UseSameAddress" class="form-check-input" id="useSameAddress" />
-                                <label class="form-check-label" for="useSameAddress">Use same address for shipping</label>
+                            <div class="bg-white rounded-md p-4 mb-6 mt-6 border border-gray-300 flex items-center gap-3">
+                                <input asp-for="UseSameAddress" class="w-4 h-4 border-2 border-gray-300 rounded bg-white checked:bg-blue-500 checked:border-blue-500" id="useSameAddress" />
+                                <label class="font-medium text-gray-700 text-sm cursor-pointer" for="useSameAddress">Use same address for shipping</label>
                             </div>
 
                             <!-- Shipping Address -->
                             <div id="shippingAddressFields">
-                                <h6 style="font-weight: 600; color: #495057; margin-bottom: 1rem;">Shipping Address</h6>
-                                <div class="address-grid">
-                                    <div class="form-group">
-                                        <label asp-for="ShippingStreet" class="form-label">Street Address</label>
-                                        <input asp-for="ShippingStreet" class="form-control" />
-                                        <span asp-validation-for="ShippingStreet" class="text-danger"></span>
+                                <h6 class="font-semibold text-gray-700 mb-4">Shipping Address</h6>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="mb-0">
+                                        <label asp-for="ShippingStreet" class="block font-medium text-gray-700 mb-2 text-sm">Street Address</label>
+                                        <input asp-for="ShippingStreet" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                        <span asp-validation-for="ShippingStreet" class="text-red-500 text-sm"></span>
                                     </div>
-                                    <div class="form-group">
-                                        <label asp-for="ShippingPostalCode" class="form-label">Postal Code</label>
-                                        <input asp-for="ShippingPostalCode" class="form-control" />
-                                        <span asp-validation-for="ShippingPostalCode" class="text-danger"></span>
+                                    <div class="mb-0">
+                                        <label asp-for="ShippingPostalCode" class="block font-medium text-gray-700 mb-2 text-sm">Postal Code</label>
+                                        <input asp-for="ShippingPostalCode" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                        <span asp-validation-for="ShippingPostalCode" class="text-red-500 text-sm"></span>
                                     </div>
-                                    <div class="form-group">
-                                        <label asp-for="ShippingCity" class="form-label">City</label>
-                                        <input asp-for="ShippingCity" class="form-control" />
-                                        <span asp-validation-for="ShippingCity" class="text-danger"></span>
+                                    <div class="mb-0">
+                                        <label asp-for="ShippingCity" class="block font-medium text-gray-700 mb-2 text-sm">City</label>
+                                        <input asp-for="ShippingCity" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                        <span asp-validation-for="ShippingCity" class="text-red-500 text-sm"></span>
                                     </div>
-                                    <div class="form-group">
-                                        <label asp-for="ShippingCountry" class="form-label">Country</label>
-                                        <input asp-for="ShippingCountry" class="form-control" />
-                                        <span asp-validation-for="ShippingCountry" class="text-danger"></span>
+                                    <div class="mb-0">
+                                        <label asp-for="ShippingCountry" class="block font-medium text-gray-700 mb-2 text-sm">Country</label>
+                                        <input asp-for="ShippingCountry" class="w-full border border-gray-300 rounded-md px-3 py-3 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none" />
+                                        <span asp-validation-for="ShippingCountry" class="text-red-500 text-sm"></span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Save Button -->
-                        <button type="submit" class="save-btn">
+                        <button type="submit" class="bg-gradient-to-r from-blue-500 to-blue-600 border-0 rounded-md px-8 py-3 text-base font-medium text-white transition-all duration-200 float-right mt-4 mb-8 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/30">
                             Save Changes
                         </button>
-                        <div class="clearfix"></div>
+                        <div class="clear-both"></div>
                     </form>
                 }
                 else
                 {
                     <!-- Public Profile View -->
-                    <div class="public-profile">
+                    <div class="text-center p-8">
                         @{
                             var linkageInfo = ViewBag.LinkageInfo as MarketMinds.Shared.Services.BuyerLinkageInfo;
                         }
@@ -807,40 +144,40 @@
                             <!-- Link/Unlink Button -->
                             @if (linkageInfo.IsLinked)
                             {
-                                <form asp-action="Unlink" method="post" style="margin-bottom: 1.5rem;">
+                                <form asp-action="Unlink" method="post" class="mb-6">
                                     <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
-                                    <button type="submit" class="unlink-btn">
+                                    <button type="submit" class="bg-gradient-to-r from-red-500 to-red-600 border-0 rounded-md px-6 py-3 text-sm font-medium text-white transition-all duration-200 inline-flex items-center gap-2 no-underline cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-red-500/30">
                                         <i class="fas fa-user-minus"></i> Unlink
                                     </button>
                                 </form>
                             }
                             else
                             {
-                                <form asp-action="Link" method="post" style="margin-bottom: 1.5rem;">
+                                <form asp-action="Link" method="post" class="mb-6">
                                     <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
-                                    <button type="submit" class="link-btn">
+                                    <button type="submit" class="bg-gradient-to-r from-blue-500 to-blue-600 border-0 rounded-md px-6 py-3 text-sm font-medium text-white transition-all duration-200 inline-flex items-center gap-2 no-underline cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/30">
                                         <i class="fas fa-user-plus"></i> Link
                                     </button>
                                 </form>
                             }
                         }
                         
-                        <div class="public-info-grid">
-                            <div class="public-info-item">
-                                <label class="public-info-label">First Name</label>
-                                <div class="public-info-value">@Model.FirstName</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                            <div class="mb-4">
+                                <label class="block font-medium text-gray-700 mb-2 text-sm">First Name</label>
+                                <div class="text-base text-gray-900 font-medium py-1 min-h-[20px]">@Model.FirstName</div>
                             </div>
-                            <div class="public-info-item">
-                                <label class="public-info-label">Last Name</label>
-                                <div class="public-info-value">@Model.LastName</div>
+                            <div class="mb-4">
+                                <label class="block font-medium text-gray-700 mb-2 text-sm">Last Name</label>
+                                <div class="text-base text-gray-900 font-medium py-1 min-h-[20px]">@Model.LastName</div>
                             </div>
-                            <div class="public-info-item">
-                                <label class="public-info-label">Email</label>
-                                <div class="public-info-value">@Model.Email</div>
+                            <div class="mb-4">
+                                <label class="block font-medium text-gray-700 mb-2 text-sm">Email</label>
+                                <div class="text-base text-gray-900 font-medium py-1 min-h-[20px]">@Model.Email</div>
                             </div>
-                            <div class="public-info-item">
-                                <label class="public-info-label">Member Since</label>
-                                <div class="public-info-value">@DateTime.Now.ToString("MMMM yyyy")</div>
+                            <div class="mb-4">
+                                <label class="block font-medium text-gray-700 mb-2 text-sm">Member Since</label>
+                                <div class="text-base text-gray-900 font-medium py-1 min-h-[20px]">@DateTime.Now.ToString("MMMM yyyy")</div>
                             </div>
                         </div>
                     </div>
@@ -851,32 +188,32 @@
         <!-- Links Section -->
         @if (Model.LinkedBuyers != null && Model.LinkedBuyers.Any())
         {
-            <div class="profile-card">
-                <div class="links-header">
-                    <h3 class="links-title">
+            <div class="bg-white rounded-xl shadow-lg mb-8 border border-gray-200 overflow-hidden max-w-4xl mx-auto">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-6 m-0 rounded-t-xl">
+                    <h3 class="text-xl font-semibold m-0 flex items-center gap-3">
                         <i class="fas fa-users"></i> Links
-                        <span class="link-count">(@Model.LinkedBuyers.Count)</span>
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">(@Model.LinkedBuyers.Count)</span>
                     </h3>
                 </div>
-                <div class="links-content">
-                    <div class="linked-buyers-grid">
+                <div class="p-8 m-0">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
                         @foreach (var linkedBuyer in Model.LinkedBuyers)
                         {
-                            <div class="linked-buyer-card">
-                                <a href="@Url.Action("PublicProfile", "BuyerProfile", new { id = linkedBuyer.BuyerId })" class="linked-buyer-link">
-                                    <div class="linked-buyer-avatar">
+                            <div class="bg-gray-50 rounded-xl p-6 border-2 border-transparent transition-all duration-300 relative overflow-hidden hover:border-cyan-500 hover:shadow-xl hover:shadow-cyan-500/15 hover:-translate-y-1">
+                                <a href="@Url.Action("PublicProfile", "BuyerProfile", new { id = linkedBuyer.BuyerId })" class="no-underline text-inherit flex items-center gap-4 hover:no-underline hover:text-inherit">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center font-semibold text-base flex-shrink-0">
                                         @{
                                             var firstInitial = !string.IsNullOrEmpty(linkedBuyer.FirstName) ? linkedBuyer.FirstName.First().ToString().ToUpper() : "?";
                                             var lastInitial = !string.IsNullOrEmpty(linkedBuyer.LastName) ? linkedBuyer.LastName.First().ToString().ToUpper() : "";
                                         }
                                         @firstInitial@lastInitial
                                     </div>
-                                    <div class="linked-buyer-info">
-                                        <div class="linked-buyer-name">@linkedBuyer.FirstName @linkedBuyer.LastName</div>
-                                        <div class="linked-buyer-badge">@linkedBuyer.Badge</div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold text-lg text-gray-900 mb-1 whitespace-nowrap overflow-hidden text-ellipsis">@linkedBuyer.FirstName @linkedBuyer.LastName</div>
+                                        <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 px-2 py-1 rounded-full text-xs font-medium inline-block mb-1">@linkedBuyer.Badge</div>
                                         @if (!string.IsNullOrEmpty(linkedBuyer.Email))
                                         {
-                                            <div class="linked-buyer-email">@linkedBuyer.Email</div>
+                                            <div class="text-gray-600 text-sm whitespace-nowrap overflow-hidden text-ellipsis">@linkedBuyer.Email</div>
                                         }
                                     </div>
                                 </a>
@@ -890,35 +227,35 @@
         <!-- Following Section -->
         @if (Model.FollowingSellers != null && Model.FollowingSellers.Any())
         {
-            <div class="profile-card">
-                <div class="following-header">
-                    <h3 class="following-title">
+            <div class="bg-white rounded-xl shadow-lg mb-8 border border-gray-200 overflow-hidden max-w-4xl mx-auto">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-6 m-0 rounded-t-xl">
+                    <h3 class="text-xl font-semibold m-0 flex items-center gap-3">
                         <i class="fas fa-store"></i> Following
-                        <span class="following-count">(@Model.FollowingSellers.Count)</span>
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">(@Model.FollowingSellers.Count)</span>
                     </h3>
                 </div>
-                <div class="following-content">
-                    <div class="followed-sellers-grid">
+                <div class="p-8 m-0">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
                         @foreach (var followedSeller in Model.FollowingSellers)
                         {
-                            <div class="followed-seller-card">
-                                <a href="@Url.Action("PublicProfile", "SellerProfile", new { id = followedSeller.SellerId })" class="followed-seller-link">
-                                    <div class="followed-seller-avatar">
+                            <div class="bg-gray-50 rounded-xl p-6 border-2 border-transparent transition-all duration-300 relative overflow-hidden hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/15 hover:-translate-y-1">
+                                <a href="@Url.Action("PublicProfile", "SellerProfile", new { id = followedSeller.SellerId })" class="no-underline text-inherit flex items-center gap-4 hover:no-underline hover:text-inherit">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center font-semibold text-base flex-shrink-0">
                                         @{
                                             var firstInitial = !string.IsNullOrEmpty(followedSeller.FirstName) ? followedSeller.FirstName.First().ToString().ToUpper() : "?";
                                             var lastInitial = !string.IsNullOrEmpty(followedSeller.LastName) ? followedSeller.LastName.First().ToString().ToUpper() : "";
                                         }
                                         @firstInitial@lastInitial
                                     </div>
-                                    <div class="followed-seller-info">
-                                        <div class="followed-seller-name">@followedSeller.FirstName @followedSeller.LastName</div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold text-lg text-gray-900 mb-1 whitespace-nowrap overflow-hidden text-ellipsis">@followedSeller.FirstName @followedSeller.LastName</div>
                                         @if (!string.IsNullOrEmpty(followedSeller.StoreName))
                                         {
-                                            <div class="followed-seller-store">@followedSeller.StoreName</div>
+                                            <div class="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white px-2 py-1 rounded-full text-xs font-medium inline-block mb-1">@followedSeller.StoreName</div>
                                         }
                                         @if (!string.IsNullOrEmpty(followedSeller.Email))
                                         {
-                                            <div class="followed-seller-email">@followedSeller.Email</div>
+                                            <div class="text-gray-600 text-sm whitespace-nowrap overflow-hidden text-ellipsis">@followedSeller.Email</div>
                                         }
                                     </div>
                                 </a>
@@ -932,18 +269,18 @@
         @if (canEdit)
         {
             <!-- Contract Actions -->
-            <div class="contract-actions">
-                <h3 class="contract-title">Contract Management</h3>
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center max-w-4xl mx-auto">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 flex items-center justify-center gap-2">Contract Management</h3>
                 
-                <div class="contract-content">
+                <div class="flex flex-wrap gap-4 items-center justify-center">
                     <!-- Renew Contract -->
-                    <a href="@Url.Action("Index", "RenewContract")" class="action-btn">Renew Contract</a>
+                    <a href="@Url.Action("Index", "RenewContract")" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 border-0 rounded-md no-underline font-medium transition-all duration-200 inline-flex items-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-green-500/40 hover:text-white hover:no-underline">Renew Contract</a>
                     
                     <!-- Generate Contract Form -->
-                    <form asp-controller="Contract" asp-action="GenerateContract" method="post" style="display: flex; align-items: center; gap: 0.75rem;">
-                        <label for="contractId" class="form-label" style="margin: 0; font-weight: 500;">Contract ID:</label>
-                        <input type="number" class="form-control" id="contractId" name="contractId" required style="width: 120px; margin: 0;">
-                        <button type="submit" class="generate-btn">Generate</button>
+                    <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="flex items-center gap-3">
+                        <label for="contractId" class="font-medium m-0">Contract ID:</label>
+                        <input type="number" class="w-30 border border-gray-300 rounded-md px-3 py-2 text-sm m-0" id="contractId" name="contractId" required />
+                        <button type="submit" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-5 py-3 border-0 rounded-md font-medium cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/40">Generate</button>
                     </form>
                 </div>
             </div>
