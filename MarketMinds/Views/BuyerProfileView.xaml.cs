@@ -12,14 +12,14 @@
 
     public sealed partial class BuyerProfileView : Page
     {
-        private IContractViewModel? contractViewModel;
+        public IContractViewModel contractViewModel { get; private set; }
         private ITrackedOrderViewModel? trackedOrderViewModel;
 
         public BuyerProfileView()
         {
             this.InitializeComponent();
 
-            // Initialize contract and contractViewModel
+            // Initialize contractViewModel
             contractViewModel = new ContractViewModel();
 
             // Initialize trackedOrderViewModel
@@ -170,14 +170,32 @@
             if (long.TryParse(this.contractID.Text, out long contractId))
             {
                 await contractViewModel.GenerateAndSaveContractAsync(contractId);
-                var successDialog = new ContentDialog
+
+                // Check if the ViewModel set an error message
+                if (string.IsNullOrEmpty(contractViewModel.GenerateContractErrorMessage))
                 {
-                    Title = "Success",
-                    Content = "Contract generated and saved successfully.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.Content.XamlRoot
-                };
-                await successDialog.ShowAsync();
+                    var successDialog = new ContentDialog
+                    {
+                        Title = "Success",
+                        Content = "Contract generated and saved successfully.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await successDialog.ShowAsync();
+                }
+                else
+                {
+                    var successDialog = new ContentDialog
+                    {
+                        Title = "Fatal fumble",
+                        Content = contractViewModel.GenerateContractErrorMessage,
+                        CloseButtonText = "I shall proceed",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await successDialog.ShowAsync();
+                }
+                // If contractViewModel.GenerateContractErrorMessage is not empty,
+                // the TextBlock in XAML bound to it will display the error.
             }
             else
             {

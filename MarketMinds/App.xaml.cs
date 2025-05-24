@@ -365,6 +365,7 @@ namespace MarketMinds
             {
                 BuyerService = BuyerService,
                 User = CurrentUser,
+                ProductService = BuyProductsService
             };
             // Initialize login and register view models with proper callbacks
             AdminViewModel = new AdminViewModel(AdminService, AnalyticsService, UserService);

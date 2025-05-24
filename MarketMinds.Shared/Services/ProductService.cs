@@ -39,23 +39,22 @@ namespace MarketMinds.Shared.Services
         /// <inheritdoc/>
         public async Task<Product> GetProductByIdAsync(int productId)
         {
-            // Get the raw JSON string
-            var productJson = _productRepository.GetProductById(productId);
-
-            if (string.IsNullOrWhiteSpace(productJson))
+            try
             {
-                throw new KeyNotFoundException($"Product with ID {productId} was not found.");
+                var productJson = await _productRepository.GetProductByIdAsync(productId);
+                if (string.IsNullOrWhiteSpace(productJson))
+                {
+                    return null;
+                }
+
+                var product = JsonSerializer.Deserialize<Product>(productJson);
+                return product;
             }
-
-            // Deserialize to Product object
-            var product = JsonSerializer.Deserialize<Product>(productJson);
-
-            if (product == null)
+            catch (Exception ex)
             {
-                throw new KeyNotFoundException($"Product with ID {productId} was not found or could not be parsed.");
+                Console.WriteLine($"Error getting product by ID {productId}: {ex.Message}");
+                return null;
             }
-
-            return product;
         }
 
         /// <inheritdoc/>

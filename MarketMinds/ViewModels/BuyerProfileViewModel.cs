@@ -11,6 +11,7 @@ namespace MarketMinds.ViewModels
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
+    using MarketMinds.Shared.Services.BuyProductsService;
     using Microsoft.UI.Xaml.Controls;
 
     /// <summary>
@@ -30,6 +31,11 @@ namespace MarketMinds.ViewModels
 
         /// <inheritdoc/>
         public IBuyerWishlistItemDetailsProvider WishlistItemDetailsProvider { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets the product service instance.
+        /// </summary>
+        public IBuyProductsService ProductService { get; set; } = null!;
 
         /// <inheritdoc/>
         public User User { get; set; } = null!;
@@ -159,6 +165,7 @@ namespace MarketMinds.ViewModels
                 BuyerService = this.BuyerService,
                 Buyer = this.Buyer,
                 ItemDetailsProvider = this.WishlistItemDetailsProvider,
+                ProductService = this.ProductService
             };
             this.BuyerBadge = new BuyerBadgeViewModel(this.BuyerService) { Buyer = this.Buyer };
             this.OnPropertyChanged(nameof(this.Buyer));

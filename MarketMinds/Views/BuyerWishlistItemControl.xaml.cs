@@ -51,5 +51,14 @@ namespace MarketMinds.Views
             var control = (BuyerWishlistItemControl)dependencyObject;
             control.DataContext = eventArgs.NewValue;
         }
+
+        private void OnImageFailed(object sender, Microsoft.UI.Xaml.ExceptionRoutedEventArgs e)
+        {
+            if (sender is Image failedImage)
+            {
+                failedImage.Visibility = Visibility.Collapsed;
+                this.FallbackImage.Visibility = Visibility.Visible;
+            }
+        }
     }
 }

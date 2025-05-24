@@ -53,7 +53,8 @@
                   Grid.Row="1"
                   Width="200"
                   Visibility="Collapsed"
-                  SelectionChanged="SortingComboBox_SelectionChanged">
+                  SelectionChanged="SortingComboBox_SelectionChanged"
+                  PlaceholderText="Select sort order">
             <ComboBoxItem Content="Seller Rating (Best to Worst)"
                           Tag="SellerRatingDesc"/>
             <ComboBoxItem Content="Seller Rating (Worst to Best)"
