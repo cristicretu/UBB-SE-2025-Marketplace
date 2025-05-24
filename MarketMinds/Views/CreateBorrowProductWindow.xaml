@@ -111,7 +111,7 @@
 
                 <StackPanel>
                     <TextBox x:Name="DailyRateTextBox"
-                             Header="Daily Rate (₹) *"
+                             Header="Daily Rate *"
                              PlaceholderText="Enter daily rental rate"
                              Background="{ThemeResource TextControlBackground}"
                              Foreground="{ThemeResource TextControlForeground}"
