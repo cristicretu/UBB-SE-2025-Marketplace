@@ -130,15 +130,51 @@ namespace WebMarketplace.Controllers
                 {
                     try
                     {
+                        _logger.LogInformation("Processing linked buyer ID: {LinkedBuyerId}, User is null: {UserIsNull}", 
+                            linkedBuyer.Id, linkedBuyer.User == null);
+                        
+                        string username = string.Empty;
+                        string email = string.Empty;
+                        
+                        // If User object is not loaded, try to get it separately
+                        if (linkedBuyer.User == null)
+                        {
+                            _logger.LogWarning("User object is null for linked buyer {LinkedBuyerId}, trying to get user by ID", linkedBuyer.Id);
+                            var user = await _userService.GetUserByIdAsync(linkedBuyer.Id);
+                            if (user != null)
+                            {
+                                username = user.Username ?? string.Empty;
+                                email = user.Email ?? string.Empty;
+                                _logger.LogInformation("Retrieved user data for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'", 
+                                    linkedBuyer.Id, username, email);
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Could not retrieve user data for buyer {LinkedBuyerId}", linkedBuyer.Id);
+                            }
+                        }
+                        else
+                        {
+                            username = linkedBuyer.User.Username ?? string.Empty;
+                            email = linkedBuyer.User.Email ?? string.Empty;
+                            _logger.LogInformation("User object available for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'", 
+                                linkedBuyer.Id, username, email);
+                        }
+
                         var linkedBuyerInfo = new LinkedBuyerInfo
                         {
                             BuyerId = linkedBuyer.Id,
                             FirstName = linkedBuyer.FirstName ?? "Unknown",
                             LastName = linkedBuyer.LastName ?? "User",
-                            Email = linkedBuyer.User?.Email ?? string.Empty,
+                            Email = email,
+                            Username = username,
                             Badge = linkedBuyer.Badge.ToString() ?? "None",
                             LinkedDate = DateTime.UtcNow // Default for now since we don't have this in the old system
                         };
+                        
+                        _logger.LogInformation("Created LinkedBuyerInfo for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'", 
+                            linkedBuyer.Id, linkedBuyerInfo.Username, linkedBuyerInfo.Email);
+                        
                         linkedBuyerInfoList.Add(linkedBuyerInfo);
                     }
                     catch (Exception ex)
@@ -706,6 +742,7 @@ namespace WebMarketplace.Controllers
                     FirstName = targetBuyer.FirstName ?? string.Empty,
                     LastName = targetBuyer.LastName ?? string.Empty,
                     Email = targetBuyer.User?.Email ?? string.Empty,
+                    Username = targetBuyer.User?.Username ?? string.Empty,
                     Badge = targetBuyer.Badge.ToString() ?? "None",
                     // Don't expose private information like addresses and phone number
                     PhoneNumber = string.Empty,

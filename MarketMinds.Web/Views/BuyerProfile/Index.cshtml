@@ -39,7 +39,12 @@
                                 }
                                 else
                                 {
-                                    <span>Buyer Profile</span>
+                                    <span class="flex items-center gap-3">
+                                        <span class="font-medium">@Model.Username</span>
+                                        <span class="bg-white bg-opacity-20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-blue-100 border border-white border-opacity-30">
+                                            Buyer
+                                        </span>
+                                    </span>
                                 }
                             </p>
                         </div>
@@ -295,13 +300,33 @@
                                 <div class="flex items-center space-x-4">
                                     <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-lg">
                                         @{
-                                            var firstInitial = !string.IsNullOrEmpty(linkedBuyer.FirstName) ? linkedBuyer.FirstName.First().ToString().ToUpper() : "?";
-                                            var lastInitial = !string.IsNullOrEmpty(linkedBuyer.LastName) ? linkedBuyer.LastName.First().ToString().ToUpper() : "";
+                                            string initials = "?";
+                                            if (!string.IsNullOrEmpty(linkedBuyer.Username))
+                                            {
+                                                initials = linkedBuyer.Username.Length >= 2 ? linkedBuyer.Username.Substring(0, 2).ToUpper() : linkedBuyer.Username.ToUpper();
+                                            }
+                                            else if (!string.IsNullOrEmpty(linkedBuyer.FirstName))
+                                            {
+                                                initials = linkedBuyer.FirstName.Substring(0, 1).ToUpper();
+                                                if (!string.IsNullOrEmpty(linkedBuyer.LastName))
+                                                {
+                                                    initials += linkedBuyer.LastName.Substring(0, 1).ToUpper();
+                                                }
+                                            }
                                         }
-                                        @firstInitial@lastInitial
+                                        @initials
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <h4 class="font-semibold text-gray-900 truncate">@linkedBuyer.FirstName @linkedBuyer.LastName</h4>
+                                        <h4 class="font-semibold text-gray-900 truncate">
+                                            @if (!string.IsNullOrEmpty(linkedBuyer.Username))
+                                            {
+                                                @linkedBuyer.Username
+                                            }
+                                            else
+                                            {
+                                                <span class="text-gray-500 italic">Unknown User</span>
+                                            }
+                                        </h4>
                                         <div class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium inline-block mt-1">
                                             @linkedBuyer.Badge
                                         </div>
