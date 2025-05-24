@@ -216,29 +216,30 @@
                                     </p>
                                     <div class="flex justify-between items-center">
                                         <div class="font-bold text-primary">$@item.Price.ToString("N2")</div>
-                                        @{
+                                        @if (isBuyer)
+                                        {
                                             var isInWishlist = ViewBag.WishlistProductIds != null && ((List<int>)ViewBag.WishlistProductIds).Contains(item.Id);
-                                        }
-                                        
-                                        @if (isInWishlist)
-                                        {
-                                            <form asp-controller="BuyerWishlist" asp-action="RemoveFromWishlist" method="post" class="inline">
-                                                <input type="hidden" name="productId" value="@item.Id" />
-                                                <button type="submit" class="text-red-500 hover:text-red-600 transition" 
-                                                        title="Remove from Wishlist" onclick="event.stopPropagation();">
-                                                    <i class="fas fa-heart"></i>
-                                                </button>
-                                            </form>
-                                        }
-                                        else
-                                        {
-                                            <form asp-controller="BuyerWishlist" asp-action="AddToWishlist" method="post" class="inline">
-                                                <input type="hidden" name="productId" value="@item.Id" />
-                                                <button type="submit" class="text-gray-400 hover:text-red-500 transition" 
-                                                        title="Add to Wishlist" onclick="event.stopPropagation();">
-                                                    <i class="far fa-heart"></i>
-                                                </button>
-                                            </form>
+                                            
+                                            if (isInWishlist)
+                                            {
+                                                <form asp-controller="BuyerWishlist" asp-action="RemoveFromWishlist" method="post" class="inline">
+                                                    <input type="hidden" name="productId" value="@item.Id" />
+                                                    <button type="submit" class="text-red-500 hover:text-red-600 transition" 
+                                                            title="Remove from Wishlist" onclick="event.stopPropagation();">
+                                                        <i class="fas fa-heart"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form asp-controller="BuyerWishlist" asp-action="AddToWishlist" method="post" class="inline">
+                                                    <input type="hidden" name="productId" value="@item.Id" />
+                                                    <button type="submit" class="text-gray-400 hover:text-red-500 transition" 
+                                                            title="Add to Wishlist" onclick="event.stopPropagation();">
+                                                        <i class="far fa-heart"></i>
+                                                    </button>
+                                                </form>
+                                            }
                                         }
                                     </div>
                                 </div>
@@ -329,10 +330,26 @@
                             </div>
                         </a>
                         <div class="px-4 pb-4">
-                            <button class="w-full bg-primary text-white py-2 rounded hover:bg-primary-dark transition flex items-center justify-center">
-                                <i class="fas fa-gavel mr-2"></i>
-                                Place Bid
-                            </button>
+                            @if (User.Identity.IsAuthenticated && canPurchase)
+                            {
+                                <form asp-controller="AuctionProducts" asp-action="PlaceBid" method="post">
+                                    <input type="hidden" name="productId" value="@item.Id" />
+                                    <button type="submit" class="w-full bg-purple-600 text-white py-2 px-3 rounded-lg hover:bg-purple-700 transition flex items-center justify-center">
+                                        <i class="fas fa-gavel mr-2"></i>
+                                        Place Bid
+                                    </button>
+                                </form>
+                            }
+                            else if (isSeller)
+                            {
+                            }
+                            else
+                            {
+                                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" class="w-full bg-purple-600 text-white py-2 px-3 rounded-lg hover:bg-purple-700 transition flex items-center justify-center inline-block text-center">
+                                    <i class="fas fa-gavel mr-2"></i>
+                                    Place Bid
+                                </a>
+                            }
                         </div>
                     </div>
                 }

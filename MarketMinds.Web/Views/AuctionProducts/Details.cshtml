@@ -1,9 +1,39 @@
 @model MarketMinds.Shared.Models.AuctionProduct
+@using MarketMinds.Shared.Services
 
 @{
     ViewData["Title"] = "Auction Details";
     var timeLeft = Model.EndTime - DateTime.Now;
     var isAuctionEnded = timeLeft <= TimeSpan.Zero;
+    
+    // Add user role check similar to BuyProducts Details
+    bool isAuthenticated = User.Identity?.IsAuthenticated == true && UserSession.CurrentUserId.HasValue;
+    
+    int userType = 0;
+    if (isAuthenticated && !string.IsNullOrEmpty(UserSession.CurrentUserRole))
+    {
+        if (int.TryParse(UserSession.CurrentUserRole, out int parsedType))
+        {
+            userType = parsedType;
+        }
+        else
+        {
+            switch (UserSession.CurrentUserRole)
+            {
+                case "Admin": userType = 1; break;
+                case "Buyer": userType = 2; break;
+                case "Seller": userType = 3; break;
+                default: userType = 0; break;
+            }
+        }
+    }
+    
+    bool isAdmin = isAuthenticated && userType == 1;
+    bool isBuyer = isAuthenticated && userType == 2;
+    bool isSeller = isAuthenticated && userType == 3;
+    
+    // Check if user can make purchases (admins and buyers)
+    bool canPurchase = isAdmin || isBuyer;
 }
 
 <div class="container mx-auto px-4 py-8">
@@ -72,9 +102,13 @@
                         <div>
                             <h3 class="text-lg font-medium">Seller</h3>
                             <p class="text-gray-600">@(Model.Seller?.Username ?? "Unknown")</p>
-                            <a href="/Reviews/Create?sellerId=@Model.Seller?.Id" class="inline-block mt-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-sm">
-                                Review Seller
-                            </a>
+                            @if (Model.Seller?.Id > 0 && canPurchase)
+                            {
+                                <a asp-controller="Reviews" asp-action="Create" asp-route-sellerId="@Model.Seller.Id" 
+                                   class="inline-block mt-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-sm">
+                                    Review Seller
+                                </a>
+                            }
                         </div>
                     </div>
                     
@@ -82,13 +116,28 @@
                     {
                         <div class="mt-6">
                             <h3 class="text-lg font-medium mb-2">Place a Bid</h3>
-                            <form action="/AuctionProducts/PlaceBid" method="post" class="flex gap-2">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@Model.Id" />
-                                <input type="number" name="bidAmount" min="@(Model.CurrentPrice + 0.01)" step="0.01" class="form-control w-full" placeholder="Enter your bid amount (minimum @(Model.CurrentPrice + 0.01))" required />
-                                <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition">Bid</button>
-                            </form>
-                            <p class="text-sm text-gray-500 mt-2">Your bid must be at least $@(Model.CurrentPrice + 0.01)</p>
+                            @if (canPurchase)
+                            {
+                                <form action="/AuctionProducts/PlaceBid" method="post" class="flex gap-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="number" name="bidAmount" min="@(Model.CurrentPrice + 0.01)" step="0.01" class="form-control w-full" placeholder="Enter your bid amount (minimum @(Model.CurrentPrice + 0.01))" required />
+                                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition">Bid</button>
+                                </form>
+                                <p class="text-sm text-gray-500 mt-2">Your bid must be at least $@(Model.CurrentPrice + 0.01)</p>
+                            }
+                            else if (isSeller)
+                            {
+                                <p class="text-gray-500 italic">Sellers cannot place bids on auctions.</p>
+                            }
+                            else
+                            {
+                                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" 
+                                   class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition flex items-center justify-center inline-block text-center">
+                                    <i class="fas fa-gavel mr-2"></i>
+                                    Login to Place Bid
+                                </a>
+                            }
                         </div>
                     }
                     else
