@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using System.Net.Http.Json;
 
 namespace MarketMinds.Shared.ProxyRepository
 {
@@ -29,14 +30,16 @@ namespace MarketMinds.Shared.ProxyRepository
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
-        public void CreateListing(Product product)
+        public BorrowProduct CreateListing(Product product)
         {
             BorrowProduct borrowProduct = product as BorrowProduct;
             
+
             var sellerId = borrowProduct.Seller?.Id ?? borrowProduct.SellerId;
             var conditionId = borrowProduct.Condition?.Id ?? borrowProduct.ConditionId;
             var categoryId = borrowProduct.Category?.Id ?? borrowProduct.CategoryId;
             
+
             var productToSend = new
             {
                 borrowProduct.Title,
@@ -62,9 +65,23 @@ namespace MarketMinds.Shared.ProxyRepository
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
             
+
             var content = System.Net.Http.Json.JsonContent.Create(productToSend, null, serializerOptions);
             var response = httpClient.PostAsync("borrowproducts", content).Result;
             response.EnsureSuccessStatusCode();
+
+            BorrowProduct createdProduct = response.Content.ReadFromJsonAsync<BorrowProduct>(serializerOptions).Result;
+
+            if (createdProduct != null)
+            {
+                borrowProduct.Id = createdProduct.Id;
+            }
+            else
+            {
+                throw new InvalidOperationException("API did not return the created product with its ID.");
+            }
+
+            return borrowProduct;
         }
 
         public void AddImageToProduct(int productId, BorrowProductImage image)
@@ -81,6 +98,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
             
+
             var content = System.Net.Http.Json.JsonContent.Create(imageToSend, null, serializerOptions);
             var response = httpClient.PostAsync($"borrowproducts/{productId}/images", content).Result;
             response.EnsureSuccessStatusCode();

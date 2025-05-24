@@ -56,8 +56,8 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             };
 
             ApplyDefaultDates(product);
-            
-            borrowProductsRepository.CreateListing(product);
+
+            BorrowProduct createdProduct = borrowProductsRepository.CreateListing(product);
             
             if (productDTO.Images != null && productDTO.Images.Any())
             {
