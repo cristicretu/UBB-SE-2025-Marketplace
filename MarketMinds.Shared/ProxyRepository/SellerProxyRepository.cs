@@ -15,6 +15,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using System.Web;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
+    using Microsoft.Extensions.Configuration;
 
 
     /// <summary>
@@ -30,16 +31,15 @@ namespace MarketMinds.Shared.ProxyRepository
         /// Initializes a new instance of the <see cref="SellerProxyRepository"/> class.
         /// </summary>
         /// <param name="baseApiUrl">The base URL of the API (e.g., "http://localhost:5000/").</param>
-        public SellerProxyRepository(string baseApiUrl)
+        public SellerProxyRepository(IConfiguration configuration)
         {
-            Debug.WriteLine($"SellerProxyRepository constructor called with baseApiUrl: {baseApiUrl}");
+            Debug.WriteLine($"SellerProxyRepository constructor called with baseApiUrl: {configuration["ApiSettings:BaseUrl"]}");
 
             this.httpClient = new HttpClient();
-
+            var baseApiUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
             if (string.IsNullOrEmpty(baseApiUrl))
             {
-                Debug.WriteLine("WARNING: baseApiUrl is empty, defaulting to http://localhost:5000/");
-                baseApiUrl = "http://localhost:5000/";
+                throw new InvalidOperationException("API base URL is null or empty in SellerProxyRepository constructor");
             }
 
             if (!baseApiUrl.EndsWith("/"))

@@ -8,11 +8,12 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
 using MarketMinds.Shared.Services.ConversationService;
 using MarketMinds.Shared.Services.MessageService;
+using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Models;
 using Windows.System;
+using CommunityToolkit.WinUI.UI.Controls;
 
 namespace MarketMinds.Views
 {
@@ -70,19 +71,17 @@ namespace MarketMinds.Views
             }
         }
 
-        public HelpPage(
-            IConversationService conversationService,
-            IMessageService messageService,
-            IChatbotService chatbotService)
+        public HelpPage()
         {
             try
             {
                 Debug.WriteLine("HelpPage constructor start");
                 this.InitializeComponent();
 
-                this.conversationService = conversationService;
-                this.messageService = messageService;
-                this.chatbotService = chatbotService;
+                this.conversationService = App.ConversationService;
+                this.messageService = App.MessageService;
+                this.chatbotService = App.NewChatbotService;
+                this.chatbotService.SetCurrentUser(App.CurrentUser);
 
                 conversations = new ObservableCollection<ConversationViewModel>();
                 ConversationsListView.ItemsSource = conversations;
@@ -580,10 +579,26 @@ namespace MarketMinds.Views
             {
                 await RunOnUIThreadAsync(() =>
                 {
-                    // Create Border container with consistent styling
+                    var markdownTextBlock = new MarkdownTextBlock
+                    {
+                        Text = message,
+                        TextWrapping = TextWrapping.Wrap,
+                        Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black),
+                        Background = new SolidColorBrush(isFromBot ? Microsoft.UI.Colors.LightGray : Microsoft.UI.Colors.DodgerBlue),
+                        CodeBackground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                        Header1Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black),
+                        Header2Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black),
+                        Header3Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black),
+                        Header4Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black),
+                        Header5Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black),
+                        Header6Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black),
+                        QuoteForeground = new SolidColorBrush(Microsoft.UI.Colors.DarkGray),
+                        LinkForeground = new SolidColorBrush(Microsoft.UI.Colors.Blue),
+                    };
+
                     Border messageBorder = new Border
                     {
-                        Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray),
+                        Background = new SolidColorBrush(isFromBot ? Microsoft.UI.Colors.LightGray : Microsoft.UI.Colors.DodgerBlue),
                         CornerRadius = new CornerRadius(8),
                         Padding = new Thickness(15, 10, 15, 10),
                         HorizontalAlignment = isFromBot ? HorizontalAlignment.Left : HorizontalAlignment.Right,
@@ -591,21 +606,12 @@ namespace MarketMinds.Views
                         Margin = new Thickness(0, 5, 0, 5)
                     };
 
-                    // Create TextBlock for message content
-                    TextBlock messageText = new TextBlock
-                    {
-                        Text = message,
-                        TextWrapping = TextWrapping.Wrap,
-                        Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black)
-                    };
-
                     // Add TextBlock to Border
-                    messageBorder.Child = messageText;
+                    messageBorder.Child = markdownTextBlock;
 
                     // Add Border to messages panel
                     ChatMessagesPanel.Children.Add(messageBorder);
-
-                    Debug.WriteLine("[DEBUG] AddMessageToUIAsync: Message added to UI");
+                    _ = ScrollToBottomAsync(); // Scroll after adding the message
                 });
             }
             catch (Exception ex)

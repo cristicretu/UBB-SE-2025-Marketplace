@@ -1,4 +1,4 @@
-﻿namespace MarketMinds.Views
+namespace MarketMinds.Views
 {
     using System;
     using System.Configuration;
@@ -12,18 +12,24 @@
 
     public sealed partial class BuyerProfileView : Page
     {
-        public IContractViewModel ContractViewModel { get; private set; }
+        private IContractViewModel? contractViewModel;
         private ITrackedOrderViewModel? trackedOrderViewModel;
 
         public BuyerProfileView()
         {
-            this.InitializeComponent();
-
-            // Initialize ContractViewModel
-            ContractViewModel = new ContractViewModel();
+            // Initialize contract and contractViewModel
+            contractViewModel = new ContractViewModel();
 
             // Initialize trackedOrderViewModel
             trackedOrderViewModel = new TrackedOrderViewModel();
+
+            // Set the ViewModel from the App
+            this.ViewModel = App.BuyerProfileViewModel;
+            this.ViewModel.User = App.CurrentUser;
+            // load in background, will essentially load the ui after the profile page appears
+            _ = this.ViewModel.LoadBuyerProfile();
+
+             this.InitializeComponent();
         }
 
         public IBuyerProfileViewModel? ViewModel { get; set; }
@@ -169,33 +175,15 @@
         {
             if (long.TryParse(this.contractID.Text, out long contractId))
             {
-                await ContractViewModel.GenerateAndSaveContractAsync(contractId);
-
-                // Check if the ViewModel set an error message
-                if (string.IsNullOrEmpty(ContractViewModel.GenerateContractErrorMessage))
+                await contractViewModel.GenerateAndSaveContractAsync(contractId);
+                var successDialog = new ContentDialog
                 {
-                    var successDialog = new ContentDialog
-                    {
-                        Title = "Success",
-                        Content = "Contract generated and saved successfully.",
-                        CloseButtonText = "OK",
-                        XamlRoot = this.Content.XamlRoot
-                    };
-                    await successDialog.ShowAsync();
-                }
-                else
-                {
-                    var successDialog = new ContentDialog
-                    {
-                        Title = "Fatal fumble",
-                        Content = ContractViewModel.GenerateContractErrorMessage,
-                        CloseButtonText = "I shall proceed",
-                        XamlRoot = this.Content.XamlRoot
-                    };
-                    await successDialog.ShowAsync();
-                }
-                // If ContractViewModel.GenerateContractErrorMessage is not empty,
-                // the TextBlock in XAML bound to it will display the error.
+                    Title = "Success",
+                    Content = "Contract generated and saved successfully.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.Content.XamlRoot
+                };
+                await successDialog.ShowAsync();
             }
             else
             {

@@ -17,6 +17,11 @@ namespace MarketMinds.ViewModels
     public interface ISellerProfileViewModel : INotifyPropertyChanged
     {
         /// <summary>
+        /// Gets or sets the user entity.
+        /// </summary>
+        User User { get; set; }
+
+        /// <summary>
         /// Gets the seller entity. Includes the linked User object.
         /// </summary>
         Seller Seller { get; }
@@ -118,6 +123,11 @@ namespace MarketMinds.ViewModels
         // -----------------------------
         // Methods
         // -----------------------------
+
+        /// <summary>
+        /// Loads seller profile, notifications, and products asynchronously.
+        /// </summary>
+        void LoadProfileAsync();
 
         /// <summary>
         /// Loads the latest seller notifications asynchronously.

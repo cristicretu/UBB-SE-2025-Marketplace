@@ -1,7 +1,8 @@
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services.Interfaces;
 
-namespace MarketMinds.Shared.Services.DreamTeam.ChatService
+namespace MarketMinds.Shared.Services
 {
     public class ChatService : IChatService
     {

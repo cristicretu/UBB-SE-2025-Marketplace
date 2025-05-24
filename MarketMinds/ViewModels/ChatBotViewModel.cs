@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
+using MarketMinds.Shared.Services.Interfaces;
 
 namespace MarketMinds.ViewModels;
 

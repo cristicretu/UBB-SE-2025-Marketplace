@@ -89,6 +89,14 @@ namespace MarketMinds.ViewModels
             }
         }
 
+        public BuyerProfileViewModel(IBuyerService buyerService, IBuyProductsService productService, IBuyerLinkageService buyerLinkageService)
+        {
+            this.BuyerService = buyerService;
+            this.ProductService = productService;
+            this.BuyerLinkageService = buyerLinkageService;
+            // the .User will be instantiated when the BuyerProfileView is loaded because only then we know for sure that we have a non null App.CurrentUser
+        }
+
         /// <inheritdoc/>
         public async void SaveInfo()
         {
@@ -203,7 +211,7 @@ namespace MarketMinds.ViewModels
                 Title = title,
                 Content = message,
                 CloseButtonText = "OK",
-                XamlRoot = App.BuyerProfileWindow?.Content.XamlRoot,
+                XamlRoot = App.HomePageWindow?.Content.XamlRoot,
             };
 
             await dialog.ShowAsync();

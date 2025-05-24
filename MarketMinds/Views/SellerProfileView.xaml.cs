@@ -29,9 +29,12 @@ namespace MarketMinds.Views
         /// </summary>
         public SellerProfileView()
         {
-            this.InitializeComponent();
             Debug.WriteLine("SellerProfileView constructor called");
+            this.viewModel = App.SellerProfileViewModel;
+            this.viewModel.User = App.CurrentUser;
+            this.viewModel.LoadProfileAsync();
             this.Loaded += SellerProfileView_Loaded;
+            this.InitializeComponent();
         }
 
         /// <summary>

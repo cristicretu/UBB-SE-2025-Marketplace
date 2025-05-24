@@ -1,6 +1,6 @@
 ﻿using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Shared.Services.DreamTeam.ChatService;
+namespace MarketMinds.Shared.Services.Interfaces;
 
 public interface IChatService
 {

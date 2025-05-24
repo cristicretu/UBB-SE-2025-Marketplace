@@ -32,6 +32,9 @@
 		<RuntimeIdentifier>win-arm64</RuntimeIdentifier>
 		<SelfContained>true</SelfContained>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Views\HomePageView.xaml" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
@@ -93,6 +96,9 @@
 	  <None Update="appsettings.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	  <Page Update="Views\HomePageView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<!-- Enable Package and Publish Menu -->
