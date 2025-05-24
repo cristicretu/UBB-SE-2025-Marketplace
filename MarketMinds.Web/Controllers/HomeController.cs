@@ -158,13 +158,26 @@ namespace MarketMinds.Web.Controllers
 
                 var auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
 
+                // Load borrow products
+                List<BorrowProduct> borrowProducts = new List<BorrowProduct>();
+                try
+                {
+                    borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync();
+                    _logger.LogInformation($"HOME: Loaded {borrowProducts.Count} borrow products");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error loading borrow products for home page");
+                    borrowProducts = new List<BorrowProduct>();
+                }
+
                 var categories = _categoryService.GetAllProductCategories();
                 var conditions = _conditionService.GetAllProductConditions();
 
                 ViewBag.Categories = categories;
                 ViewBag.Conditions = conditions;
                 
-                // Calculate min and max prices based on BOTH buy products and auction products
+                // Calculate min and max prices based on ALL product types
                 var allPrices = new List<double>();
                 
                 // Add buy product prices
@@ -179,23 +192,35 @@ namespace MarketMinds.Web.Controllers
                     allPrices.AddRange(auctionProducts.Select(p => p.CurrentPrice));
                 }
                 
+                // Add borrow product daily rates
+                if (borrowProducts.Any())
+                {
+                    allPrices.AddRange(borrowProducts.Select(p => p.DailyRate));
+                }
+                
                 // Set price range based on all products
                 ViewBag.MinPrice = allPrices.Any() ? (int)Math.Floor(allPrices.Min()) : 0;
                 ViewBag.MaxPrice = allPrices.Any() ? (int)Math.Ceiling(allPrices.Max()) : 1000;
                 
                 // Debug logging to verify price range calculation
                 _logger.LogInformation($"HOME: Calculated price range - Min: {ViewBag.MinPrice}, Max: {ViewBag.MaxPrice}");
-                _logger.LogInformation($"HOME: Buy products count: {buyProducts.Count}, Auction products count: {auctionProducts.Count}");
+                _logger.LogInformation($"HOME: Buy products count: {buyProducts.Count}, Auction products count: {auctionProducts.Count}, Borrow products count: {borrowProducts.Count}");
                 if (auctionProducts.Any())
                 {
                     var auctionPriceRange = $"{auctionProducts.Min(p => p.CurrentPrice):F2} - {auctionProducts.Max(p => p.CurrentPrice):F2}";
                     _logger.LogInformation($"HOME: Auction products price range: {auctionPriceRange}");
                 }
+                if (borrowProducts.Any())
+                {
+                    var borrowPriceRange = $"{borrowProducts.Min(p => p.DailyRate):F2} - {borrowProducts.Max(p => p.DailyRate):F2}";
+                    _logger.LogInformation($"HOME: Borrow products daily rate range: {borrowPriceRange}");
+                }
                 
                 var viewModel = new HomeViewModel
                 {
                     BuyProducts = buyProducts,
-                    AuctionProducts = auctionProducts
+                    AuctionProducts = auctionProducts,
+                    BorrowProducts = borrowProducts
                 };
 
                 return View(viewModel);
