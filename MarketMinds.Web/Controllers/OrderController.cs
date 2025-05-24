@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using System.Security.Claims;
+using Microsoft.Extensions.Configuration;
 
 namespace WebMarketplace.Controllers
 {
@@ -12,19 +13,22 @@ namespace WebMarketplace.Controllers
         private readonly ILogger<OrderController> _logger;
         private readonly IOrderSummaryService _orderSummaryService;
         private readonly IContractService _contractService;
+        private readonly IConfiguration _configuration;
 
         public OrderController(
             ITrackedOrderService trackedOrderService, 
             IOrderService orderService, 
             ILogger<OrderController> logger, 
             IOrderSummaryService orderSummaryService,
-            IContractService contractService)
+            IContractService contractService,
+            IConfiguration configuration)
         {
             _trackedOrderService = trackedOrderService;
             _orderService = orderService;
             _logger = logger;
             _orderSummaryService = orderSummaryService;
             _contractService = contractService;
+            _configuration = configuration;
         }
 
         // GET: Order/Test
@@ -36,6 +40,7 @@ namespace WebMarketplace.Controllers
         // GET: Order/OrderHistory
         public async Task<IActionResult> OrderHistory(int userId = 0)
         {
+            ViewData["ApiBaseUrl"] = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
             try
             {
                 _logger.LogInformation($"OrderHistory action called with userId parameter: {userId}");

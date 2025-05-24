@@ -364,16 +364,21 @@ namespace Server.Controllers
         {
             try
             {
+                Console.WriteLine($"ContractApiController: Attempting to download PDF for ContractID: {contractId}");
                 var pdfFile = await this.contractRepository.GetPdfByContractIdAsync(contractId);
+
                 if (pdfFile == null || pdfFile.Length == 0)
                 {
+                    Console.WriteLine($"ContractApiController: PDF not found or empty for ContractID: {contractId}. Returning NotFound.");
                     return this.NotFound($"PDF not found for contract ID {contractId}");
                 }
 
+                Console.WriteLine($"ContractApiController: PDF found for ContractID: {contractId}. Length: {pdfFile.Length}. Returning FileResult.");
                 return this.File(pdfFile, "application/pdf", $"contract_{contractId}.pdf");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"ContractApiController: Error downloading PDF for ContractID: {contractId}. Error: {ex.Message}");
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while downloading PDF for contract ID {contractId}: {ex.Message}");
             }
         }

@@ -365,12 +365,19 @@
         }
 
         function downloadContract(contractId) {
-            // Create a temporary link element
+            const apiBaseUrl = '@ViewData["ApiBaseUrl"]'; // Get the base URL
+            let fullApiUrl = apiBaseUrl;
+            if (!fullApiUrl.endsWith('/')) {
+                fullApiUrl += '/';
+            }
+            // Temporarily hardcode contractId to 8 for testing
+            const testContractId = 8;
+            fullApiUrl += `api/contracts/${testContractId}/download-pdf`;
+
             const link = document.createElement('a');
-            link.href = `/api/contracts/${contractId}/download-pdf`;
-            link.download = `contract_${contractId}.pdf`;
+            link.href = fullApiUrl;
+            link.download = `contract_${testContractId}.pdf`;
             
-            // Append to body, click, and remove
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

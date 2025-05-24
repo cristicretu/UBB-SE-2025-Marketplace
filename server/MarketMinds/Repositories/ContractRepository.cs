@@ -360,20 +360,41 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the PDF is not found.</exception>
         public async Task<byte[]> GetPdfByContractIdAsync(long contractId)
         {
-            int pdfId = await this.dbContext.PDFs
-                .Where(pdf => pdf.ContractID == contractId)
-                .Select(pdf => pdf.PdfID)
-                .FirstOrDefaultAsync();
+            Console.WriteLine($"ContractRepository: Attempting to get PDF for ContractID: {contractId}");
 
-            if (pdfId == 0) // int cannot be null, so it will be 0 if not found
+            // 1. Get the Contract to find its PDFID
+            Contract? contract = await this.dbContext.Contracts
+                .AsNoTracking() // Good practice for read-only queries
+                .FirstOrDefaultAsync(c => c.ContractID == contractId);
+
+            if (contract == null)
             {
-                throw new Exception("GetPdfByContractIdAsync: PDF not found for contract ID: " + contractId);
+                Console.WriteLine($"ContractRepository: Contract not found for ContractID: {contractId}. Throwing exception.");
+                throw new Exception($"GetPdfByContractIdAsync: Contract not found for contract ID: {contractId}");
             }
 
-            return await this.dbContext.PDFs
-                .Where(pdf => pdf.PdfID == pdfId)
+            if (contract.PDFID == 0) // Or handle null if PDFID is nullable and that's a valid state
+            {
+                Console.WriteLine($"ContractRepository: Contract {contractId} does not have a PDFID associated. Throwing exception.");
+                throw new Exception($"GetPdfByContractIdAsync: Contract with ID {contractId} has no PDFID associated.");
+            }
+
+            Console.WriteLine($"ContractRepository: Found PDFID: {contract.PDFID} for ContractID: {contractId}");
+
+            // 2. Get the PDF file using the PDFID from the contract
+            byte[]? pdfFile = await this.dbContext.PDFs
+                .Where(pdf => pdf.PdfID == contract.PDFID)
                 .Select(pdf => pdf.File)
-                .FirstOrDefaultAsync() ?? throw new Exception("GetPdfByContractIdAsync: PDF file not found for PDF ID: " + pdfId);
+                .FirstOrDefaultAsync();
+
+            if (pdfFile == null || pdfFile.Length == 0)
+            {
+                Console.WriteLine($"ContractRepository: PDF file not found or empty for PDFID: {contract.PDFID}. Throwing exception.");
+                throw new Exception($"GetPdfByContractIdAsync: PDF file not found for PDF ID: {contract.PDFID}");
+            }
+            
+            Console.WriteLine($"ContractRepository: Retrieved PDF file. Length: {pdfFile.Length} bytes for PDFID: {contract.PDFID}");
+            return pdfFile;
         }
 
         /// <summary>
