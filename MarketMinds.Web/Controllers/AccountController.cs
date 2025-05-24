@@ -135,72 +135,223 @@ namespace MarketMinds.Web.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid)
+            // Helper method to set roles and return view
+            void SetRolesAndReturnView()
             {
-                TempData["ErrorMessage"] = "Please fill out all fields correctly.";
                 var roles = new List<SelectListItem>
                 {
                     new SelectListItem { Text = "Buyer", Value = "Buyer" },
                     new SelectListItem { Text = "Seller", Value = "Seller" }
                 };
                 ViewBag.Roles = roles;
-                return View(model);
             }
 
-            // Check if the email already exists
-            var existingUser = await _userService.GetUserByEmail(model.Email);
-            if (existingUser != null)
+            try
             {
-                TempData["ErrorMessage"] = "An account with this email already exists.";
-                var roles = new List<SelectListItem>
+                if (!ModelState.IsValid)
                 {
-                    new SelectListItem { Text = "Buyer", Value = "Buyer" },
-                    new SelectListItem { Text = "Seller", Value = "Seller" }
-                };
-                ViewBag.Roles = roles;
-                return View(model);
-            }
-
-            var role = 0; // Default role   
-            //Transforms the role string to an integer
-            if (model.Role == "Buyer")
-            { role = 2; }
-            else if (model.Role == "Seller")
-            { role = 3; }
-
-            // Save the user in the database
-            _logger.LogInformation($"Registering user: {model.Username}, Email: {model.Email}, Role: {model.Role}");    
-            var createdUser = await _userService.RegisterUser(model.Username, model.Password, model.Email, model.Telephone, role);
-
-            // Check if the user was successfully created
-            if (createdUser)
-            {
-                await this._userService.AuthorizationLogin();
-
-                // Get the newly created user
-                var user = await _userService.GetUserByEmail(model.Email);
-                if (user != null)
-                {
-                    // Set UserSession for backward compatibility
-                    UserSession.CurrentUserId = user.Id;
-                    UserSession.CurrentUserRole = model.Role;
-                    
-                    // Set up authentication cookie
-                    await SignInUserAsync(user);
-                    
-                    TempData["SuccessMessage"] = "Registration successful! Welcome!";
-                    return RedirectToAction("Index", "Home");
+                    TempData["ErrorMessage"] = "Please fill out all fields correctly.";
+                    SetRolesAndReturnView();
+                    return View(model);
                 }
+
+                // Validate password strength with detailed message
+                var passwordValidationMessage = GetPasswordValidationMessage(model.Password);
+                if (!string.IsNullOrEmpty(passwordValidationMessage))
+                {
+                    TempData["ErrorMessage"] = passwordValidationMessage;
+                    SetRolesAndReturnView();
+                    return View(model);
+                }
+
+                // Check if passwords match
+                if (model.Password != model.ConfirmPassword)
+                {
+                    TempData["ErrorMessage"] = "Password and confirm password do not match.";
+                    SetRolesAndReturnView();
+                    return View(model);
+                }
+
+                // Check if the email already exists
+                var existingUser = await _userService.GetUserByEmail(model.Email);
+                if (existingUser != null)
+                {
+                    TempData["ErrorMessage"] = "An account with this email already exists.";
+                    SetRolesAndReturnView();
+                    return View(model);
+                }
+
+                // Validate email format
+                if (!IsValidEmail(model.Email))
+                {
+                    TempData["ErrorMessage"] = "Please enter a valid email address.";
+                    SetRolesAndReturnView();
+                    return View(model);
+                }
+
+                // Validate phone number (should be +40 followed by exactly 9 digits)
+                if (string.IsNullOrWhiteSpace(model.Telephone) || 
+                    !model.Telephone.StartsWith("+40") || 
+                    model.Telephone.Length != 12 ||
+                    !model.Telephone.Substring(3).All(char.IsDigit))
+                {
+                    TempData["ErrorMessage"] = "Please enter a valid Romanian phone number (9 digits).";
+                    SetRolesAndReturnView();
+                    return View(model);
+                }
+
+                var role = 0; // Default role   
+                //Transforms the role string to an integer
+                if (model.Role == "Buyer")
+                { role = 2; }
+                else if (model.Role == "Seller")
+                { role = 3; }
+                else
+                {
+                    TempData["ErrorMessage"] = "Please select a valid account type.";
+                    SetRolesAndReturnView();
+                    return View(model);
+                }
+
+                // Save the user in the database
+                _logger.LogInformation($"Registering user: {model.Username}, Email: {model.Email}, Role: {model.Role}");    
+                
+                bool createdUser;
+                try
+                {
+                    createdUser = await _userService.RegisterUser(model.Username, model.Password, model.Email, model.Telephone, role);
+                }
+                catch (ArgumentException ex) when (ex.Message.Contains("password") || ex.Message.Contains("Password"))
+                {
+                    TempData["ErrorMessage"] = "Password does not meet security requirements. Please use only letters, numbers, and common special characters.";
+                    SetRolesAndReturnView();
+                    return View(model);
+                }
+                catch (Exception ex) when (ex.Message.Contains("password") || ex.Message.Contains("Password"))
+                {
+                    _logger.LogWarning(ex, "Password validation error for user: {Username}", model.Username);
+                    TempData["ErrorMessage"] = "Password format is not valid. Please use only letters, numbers, and common special characters.";
+                    SetRolesAndReturnView();
+                    return View(model);
+                }
+
+                // Check if the user was successfully created
+                if (createdUser)
+                {
+                    await this._userService.AuthorizationLogin();
+
+                    // Get the newly created user
+                    var user = await _userService.GetUserByEmail(model.Email);
+                    if (user != null)
+                    {
+                        // Set UserSession for backward compatibility
+                        UserSession.CurrentUserId = user.Id;
+                        UserSession.CurrentUserRole = model.Role;
+                        
+                        // Set up authentication cookie
+                        await SignInUserAsync(user);
+                        
+                        TempData["SuccessMessage"] = "Registration successful! Welcome to our marketplace!";
+                        return RedirectToAction("Index", "Home");
+                    }
+                }
+                
+                TempData["ErrorMessage"] = "An error occurred while creating your account. Please try again.";
+                SetRolesAndReturnView();
+                return View(model);
             }
-            
-            TempData["ErrorMessage"] = "An error occurred while creating your account. Please try again.";
-            var rolesList = new List<SelectListItem>
+            catch (ArgumentException ex)
             {
-                new SelectListItem { Text = "Buyer", Value = "Buyer" },
-                new SelectListItem { Text = "Seller", Value = "Seller" }
-            };
-            ViewBag.Roles = rolesList;
-            return View(model);
+                _logger.LogWarning(ex, "Validation error during registration for user: {Username}", model.Username);
+                TempData["ErrorMessage"] = ex.Message;
+                SetRolesAndReturnView();
+                return View(model);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid operation during registration for user: {Username}", model.Username);
+                TempData["ErrorMessage"] = "Registration failed. Please check your information and try again.";
+                SetRolesAndReturnView();
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error during registration for user: {Username}", model.Username);
+                TempData["ErrorMessage"] = "An unexpected error occurred. Please try again later.";
+                SetRolesAndReturnView();
+                return View(model);
+            }
+        }
+
+        // Helper method to validate password strength
+        private bool IsPasswordStrong(string password)
+        {
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+                return false;
+
+            bool hasUpper = password.Any(char.IsUpper);
+            bool hasLower = password.Any(char.IsLower);
+            bool hasDigit = password.Any(char.IsDigit);
+
+            // Check for invalid characters (only allow letters, digits, and common special chars)
+            var allowedSpecialChars = "!@#$%^&*()_+=[]{}|;:,.<>?";
+            bool hasInvalidChars = password.Any(c => !char.IsLetterOrDigit(c) && !allowedSpecialChars.Contains(c));
+
+            return hasUpper && hasLower && hasDigit && !hasInvalidChars;
+        }
+
+        // Helper method to get detailed password validation message
+        private string GetPasswordValidationMessage(string password)
+        {
+            if (string.IsNullOrWhiteSpace(password))
+                return "Password is required.";
+            
+            if (password.Length < 8)
+                return "Password must be at least 8 characters long.";
+
+            var issues = new List<string>();
+            
+            if (!password.Any(char.IsUpper))
+                issues.Add("at least one uppercase letter");
+            
+            if (!password.Any(char.IsLower))
+                issues.Add("at least one lowercase letter");
+            
+            if (!password.Any(char.IsDigit))
+                issues.Add("at least one number");
+
+            // Check for invalid characters
+            var allowedSpecialChars = "!@#$%^&*()_+=[]{}|;:,.<>?";
+            var invalidChars = password.Where(c => !char.IsLetterOrDigit(c) && !allowedSpecialChars.Contains(c)).Distinct();
+            
+            if (invalidChars.Any())
+            {
+                issues.Add($"only letters, numbers, and these special characters: {allowedSpecialChars}");
+            }
+
+            if (issues.Any())
+            {
+                return $"Password must contain {string.Join(", ", issues)}.";
+            }
+
+            return string.Empty; // Password is valid
+        }
+
+        // Helper method to validate email format
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         // POST: Account/Logout
