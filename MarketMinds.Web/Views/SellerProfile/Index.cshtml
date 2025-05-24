@@ -225,16 +225,36 @@
                                            class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                                             <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                                                 @{
-                                                    string avatarText = !string.IsNullOrEmpty(follower.FirstName) ? 
-                                                        follower.FirstName.Substring(0, 1).ToUpper() : "?";
+                                                    string avatarText = "?";
+                                                    if (!string.IsNullOrEmpty(follower.User?.Username))
+                                                    {
+                                                        avatarText = follower.User.Username.Length >= 2 ? 
+                                                            follower.User.Username.Substring(0, 2).ToUpper() : 
+                                                            follower.User.Username.ToUpper();
+                                                    }
+                                                    else if (!string.IsNullOrEmpty(follower.FirstName))
+                                                    {
+                                                        avatarText = follower.FirstName.Substring(0, 1).ToUpper();
+                                                    }
                                                 }
                                                 <span class="text-sm font-medium text-white">@avatarText</span>
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium text-gray-900 truncate">
-                                                    @follower.FirstName @follower.LastName
+                                                    @if (!string.IsNullOrEmpty(follower.User?.Username))
+                                                    {
+                                                        @follower.User.Username
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-gray-500 italic">Unknown User</span>
+                                                    }
                                                 </p>
-                                                @if (!string.IsNullOrEmpty(follower.Email))
+                                                @if (!string.IsNullOrEmpty(follower.User?.Email))
+                                                {
+                                                    <p class="text-xs text-gray-500 truncate">@follower.User.Email</p>
+                                                }
+                                                else if (!string.IsNullOrEmpty(follower.Email))
                                                 {
                                                     <p class="text-xs text-gray-500 truncate">@follower.Email</p>
                                                 }
