@@ -62,9 +62,57 @@ namespace MarketMinds.Shared.Services
             return contractRpository.GetPdfByContractIdAsync(contractId);
         }
 
-        public Task<IPredefinedContract> GetPredefinedContractByPredefineContractTypeAsync(PredefinedContractType predefinedContractType)
+        public async Task<IPredefinedContract> GetPredefinedContractByPredefineContractTypeAsync(PredefinedContractType predefinedContractType)
         {
-            return contractRpository.GetPredefinedContractByPredefineContractTypeAsync(predefinedContractType);
+            try
+            {
+                var contract = await contractRpository.GetPredefinedContractByPredefineContractTypeAsync(predefinedContractType);
+                if (contract == null)
+                {
+                    throw new Exception("Contract not found");
+                }
+                return contract;
+            }
+            catch (Exception)
+            {
+                // Return a default contract if none is found
+                return new PredefinedContract
+                {
+                    ContractID = (int)predefinedContractType,
+                    ContractContent = $@"DEFAULT {predefinedContractType} AGREEMENT
+Contract ID: {{ContractID}}
+Order Reference: {{OrderID}}
+
+THIS {predefinedContractType} AGREEMENT (the ""Agreement"") is made and entered into on {{AgreementDate}} (the ""Effective Date""),
+
+BETWEEN:
+{{SellerName}} (""Seller""), a registered vendor on the MarketMinds Marketplace,
+
+AND:
+{{BuyerName}} (""Buyer""), a registered user on the MarketMinds Marketplace.
+
+PRODUCT DETAILS:
+Description: {{ProductDescription}}
+Price: ${{Price}}
+Subtotal: ${{subtotal}}
+Warranty Fee: ${{warrantyTax}}
+Delivery Fee: ${{deliveryFee}}
+Final Total: ${{finalTotal}}
+Payment Method: {{PaymentMethod}}
+Expected Delivery Date: {{DeliveryDate}}
+
+1. TERMS AND CONDITIONS
+   1.1 This is a default contract template.
+   1.2 Please replace this with a proper contract template in the database.
+
+2. PAYMENT
+   2.1 The Buyer agrees to pay the Final Total amount stated above.
+   2.2 Payment will be processed through the MarketMinds payment system.
+
+3. DELIVERY
+   3.1 The Seller agrees to deliver the Product according to the delivery terms specified."
+                };
+            }
         }
 
         public Task<(DateTime? StartDate, DateTime? EndDate, double price, string name)?> GetProductDetailsByContractIdAsync(long contractId)
@@ -78,14 +126,47 @@ namespace MarketMinds.Shared.Services
             return contractRpository.GetAllContractsAsync();
         }
 
-        public Task<IContract> AddContractAsync(IContract contract, byte[] pdfFile)
+        public async Task<IContract> AddContractAsync(IContract contract, byte[] pdfFile)
         {
-            // Add null check for pdfFile if necessary, though repository might handle it
-            if (pdfFile == null)
+            try
             {
-                throw new ArgumentNullException(nameof(pdfFile));
+                // If no PDF file is provided, create a default one
+                if (pdfFile == null || pdfFile.Length == 0)
+                {
+                    // Create a simple PDF content with contract information
+                    string pdfContent = $@"
+                        Contract ID: {contract.ContractID}
+                        Order ID: {contract.OrderID}
+                        Status: {contract.ContractStatus}
+                        Content: {contract.ContractContent}
+                        Additional Terms: {contract.AdditionalTerms}
+                    ";
+                    pdfFile = System.Text.Encoding.UTF8.GetBytes(pdfContent);
+                }
+
+                // Create a PDF record first
+                var pdf = new PDF
+                {
+                    File = pdfFile
+                };
+
+                // Add the PDF to get its ID
+                var pdfResponse = await contractRpository.AddPdfAsync(pdf);
+                if (pdfResponse == null)
+                {
+                    throw new Exception("Failed to create PDF record");
+                }
+
+                // Set the PDFID on the contract
+                contract.PDFID = pdfResponse.PdfID;
+
+                // Now add the contract
+                return await contractRpository.AddContractAsync(contract, pdfFile);
             }
-            return contractRpository.AddContractAsync(contract, pdfFile);
+            catch (Exception ex)
+            {
+                throw new Exception($"AddContractAsync: {ex.Message}", ex);
+            }
         }
     }
 }

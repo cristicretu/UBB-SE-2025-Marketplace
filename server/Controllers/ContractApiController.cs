@@ -273,6 +273,33 @@ namespace Server.Controllers
         }
 
         /// <summary>
+        /// Asynchronously adds a new PDF record.
+        /// </summary>
+        /// <param name="pdf">The PDF entity to add.</param>
+        /// <returns>The added PDF entity with its ID.</returns>
+        [HttpPost("pdf")]
+        [ProducesResponseType(typeof(PDF), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PDF>> AddPdf([FromBody] PDF pdf)
+        {
+            if (pdf == null)
+            {
+                return this.BadRequest("Valid PDF data is required.");
+            }
+
+            try
+            {
+                var addedPdf = await this.contractRepository.AddPdfAsync(pdf);
+                return this.CreatedAtAction(nameof(this.GetPdfByContractId), new { contractId = addedPdf.ContractID }, addedPdf);
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while adding PDF: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Asynchronously retrieves a predefined contract by predefined contract type.
         /// </summary>
         /// <param name="predefinedContractType">The type of predefined contract to retrieve.</param>

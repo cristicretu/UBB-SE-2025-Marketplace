@@ -375,5 +375,23 @@ namespace Server.Repository
                 .Select(pdf => pdf.File)
                 .FirstOrDefaultAsync() ?? throw new Exception("GetPdfByContractIdAsync: PDF file not found for PDF ID: " + pdfId);
         }
+
+        /// <summary>
+        /// Asynchronously adds a new PDF record to the database.
+        /// </summary>
+        /// <param name="pdf">The PDF entity to add.</param>
+        /// <returns>The added PDF entity with its ID.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the PDF parameter is null.</exception>
+        public async Task<PDF> AddPdfAsync(PDF pdf)
+        {
+            if (pdf == null)
+            {
+                throw new ArgumentNullException(nameof(pdf));
+            }
+
+            await this.dbContext.PDFs.AddAsync(pdf);
+            await this.dbContext.SaveChangesAsync();
+            return pdf;
+        }
     }
 }

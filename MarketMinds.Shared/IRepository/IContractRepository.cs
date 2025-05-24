@@ -18,5 +18,6 @@ namespace MarketMinds.Shared.IRepository
         Task<IPredefinedContract> GetPredefinedContractByPredefineContractTypeAsync(PredefinedContractType predefinedContractType);
         // Make StartDate and EndDate nullable in the interface to match the implementation
         Task<(DateTime? StartDate, DateTime? EndDate, double price, string name)?> GetProductDetailsByContractIdAsync(long contractId);
+        Task<PDF> AddPdfAsync(PDF pdf);
     }
 }

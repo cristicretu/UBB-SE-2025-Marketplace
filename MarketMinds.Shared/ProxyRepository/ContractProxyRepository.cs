@@ -166,8 +166,16 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/pdf");
             await this.ThrowOnError(nameof(GetPdfByContractIdAsync), response);
-            var pdfFile = await response.Content.ReadAsByteArrayAsync();
-            return pdfFile;
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<PDF> AddPdfAsync(PDF pdf)
+        {
+            var response = await this.httpClient.PostAsJsonAsync($"{ApiBaseRoute}/pdf", pdf);
+            await this.ThrowOnError(nameof(AddPdfAsync), response);
+            var addedPdf = await response.Content.ReadFromJsonAsync<PDF>();
+            return addedPdf ?? throw new Exception("Failed to deserialize the added PDF");
         }
 
         /// <inheritdoc />
