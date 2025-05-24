@@ -104,23 +104,6 @@ namespace MarketMinds.ViewModels
                 Debug.WriteLine("SellerProfileViewModel: Beginning initialization");
                 this.Notifications.Add("Debug: Loading seller data...");
 
-                // this.seller = await this.sellerService.GetSellerByUser(this.User);
-
-                // if (this.seller == null)
-                // {
-                //     Debug.WriteLine("ERROR: GetSellerByUser returned NULL");
-                //     this.Notifications.Add("Error: Failed to load seller data");
-
-                // this.seller = new Seller(this.User);
-                //     Debug.WriteLine("Created new Seller object with User");
-                // }
-                // else
-                // {
-                //     Debug.WriteLine($"Loaded seller with ID: {this.seller.Id}");
-                //     this.Notifications.Add($"Debug: Loaded seller ID {this.seller.Id}");
-                // }
-
-                // Debug.WriteLine("SellerProfileViewModel initialization complete");
                 this.Notifications.Add("Debug: Initialization complete");
             }
             catch (Exception ex)
