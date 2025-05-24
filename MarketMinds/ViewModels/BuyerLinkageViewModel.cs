@@ -105,15 +105,40 @@ namespace MarketMinds.ViewModels
             ? System.Windows.Visibility.Visible
             : System.Windows.Visibility.Collapsed;
 
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.RequestSyncVsbl => throw new NotImplementedException();
+        /// <summary>
+        /// Gets the WinUI visibility state of the request sync button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.RequestSyncVsbl => Status == BuyerLinkageStatus.Possible
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
 
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.CancelRequestVsbl => throw new NotImplementedException();
+        /// <summary>
+        /// Gets the WinUI visibility state of the cancel request button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.CancelRequestVsbl => Status == BuyerLinkageStatus.PendingOther
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
 
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.AcceptVsbl => throw new NotImplementedException();
+        /// <summary>
+        /// Gets the WinUI visibility state of the accept button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.AcceptVsbl => Status == BuyerLinkageStatus.PendingSelf
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
 
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.DeclineVsbl => throw new NotImplementedException();
+        /// <summary>
+        /// Gets the WinUI visibility state of the decline button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.DeclineVsbl => Status == BuyerLinkageStatus.PendingSelf
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
 
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.UnsyncVsbl => throw new NotImplementedException();
+        /// <summary>
+        /// Gets the WinUI visibility state of the unsync button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.UnsyncVsbl => Status == BuyerLinkageStatus.Confirmed
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
 
         /// <summary>
         /// Requests synchronization with the linked buyer.
@@ -144,7 +169,8 @@ namespace MarketMinds.ViewModels
             try
             {
                 System.Diagnostics.Debug.WriteLine($"[Accept] Accepting linkage request from {LinkedBuyer.Id} for {UserBuyer.Id}");
-                await Service.AcceptLinkageRequest(UserBuyer, LinkedBuyer);
+                await Service.CreateLinkageRequest(UserBuyer, LinkedBuyer);
+                await Service.AcceptLinkageRequest(LinkedBuyer, UserBuyer);
                 Status = BuyerLinkageStatus.Confirmed;
                 await NotifyLinkageUpdated();
             }
