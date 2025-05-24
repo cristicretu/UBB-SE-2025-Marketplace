@@ -35,13 +35,18 @@ namespace MarketMinds.Test.Services
         }
 
         [Test]
-        public async Task GetTrackedOrderByIDAsync_ReturnsOrder()
+        public async Task GetTrackedOrderByIDAsyncReturnsOrder()
         {
-            var order = new TrackedOrder { TrackedOrderID = 2 };
+            var order = new TrackedOrder
+            {
+                TrackedOrderID = 2,
+                DeliveryAddress = "Test Address" // <-- Required property set
+            };
             _mockRepo.Setup(r => r.GetTrackedOrderByIdAsync(2)).ReturnsAsync(order);
             var result = await _service.GetTrackedOrderByIDAsync(2);
             Assert.That(result, Is.EqualTo(order));
         }
+
 
         [Test]
         public async Task GetTrackedOrderByIDAsync_ReturnsNullOnException()
