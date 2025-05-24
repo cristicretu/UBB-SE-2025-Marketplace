@@ -112,41 +112,40 @@ namespace MarketMinds
         private static IConfiguration appConfiguration;
         public static Window LoginWindow = null!;
         public static Window MainWindow = null!;
-        public static Window BuyerProfileWindow = null!;
+        public static HomePageView HomePageWindow = null!;
         private static HttpClient httpClient;
         // public static void ShowSellerProfile()
         // {
         //     Debug.WriteLine("ShowSellerProfile called");
 
-        //     try
+        //try
         //     {
         //         // Create a new window
         //         var sellerProfileWindow = new Window();
 
-        //         // First initialize the SellerService
-        //         // Change this line in ShowSellerProfile()
+        //// First initialize the SellerService
+        //// Change this line in ShowSellerProfile()
         //         var sellerRepository = new SellerProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/");
 
-        //         var sellerService = new SellerService(sellerRepository);
-
-        //         // Initialize the ViewModel with the service and current user
+        // var sellerService = new SellerService(sellerRepository);
+        // Initialize the ViewModel with the service and current user
         //         if (CurrentUser == null)
         //         {
         //             Debug.WriteLine("ERROR: CurrentUser is null in ShowSellerProfile");
         //             throw new InvalidOperationException("Cannot show seller profile: Current user is null");
         //         }
 
-        //         // Create a frame to handle the navigation
+        //// Create a frame to handle the navigation
         //         var frame = new Microsoft.UI.Xaml.Controls.Frame();
         //         sellerProfileWindow.Content = frame;
 
-        //         // Create and configure the view model
+        //// Create and configure the view model
         //         var viewModel = new SellerProfileViewModel(sellerService, CurrentUser);
 
-        //         // Navigate to the page with the ViewModel as parameter
+        // Navigate to the page with the ViewModel as parameter
         //         frame.Navigate(typeof(MarketMinds.Views.SellerProfileView), viewModel);
 
-        //         // Now show the window
+        // Now show the window
         //         sellerProfileWindow.Activate();
         //         Debug.WriteLine("Seller profile window activated with ViewModel");
         //     }
@@ -168,7 +167,6 @@ namespace MarketMinds
         //     BuyerProfileWindow.Content = buyerProfileView;
         //     BuyerProfileWindow.Activate();
         // }
-
         public static void ShowAdminProfile()
         {
             var adminWindow = new AdminView();
@@ -177,8 +175,20 @@ namespace MarketMinds
 
         public static void ShowHomePage()
         {
-            var homePage = new HomePageView();
-            homePage.Activate();
+            // Create the home page window if it doesn't exist yet
+            if (HomePageWindow == null)
+            {
+                HomePageWindow = new HomePageView();
+            }
+
+            // Close login window if it exists
+            if (LoginWindow != null)
+            {
+                LoginWindow.Close();
+                LoginWindow = null!;
+            }
+
+            HomePageWindow.Activate();
         }
 
         // Implementation of IOnLoginSuccessCallback
@@ -411,6 +421,25 @@ namespace MarketMinds
         {
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());
             CurrentUser = null;
+        }
+
+        // this is used just to reset the session and open the login window
+        // the closing of other windows will be handled by the programmer depending on the context (see example bellow)
+        private static void LogOut()
+        {
+            ResetLoginState();
+            LoginWindow = new LoginWindow();
+            LoginWindow.Activate();
+        }
+
+        public static void CloseHomePageWindow()
+        {
+            if (HomePageWindow != null)
+            {
+                HomePageWindow.Close();
+                HomePageWindow = null!;
+            }
+            LogOut();
         }
     }
 }

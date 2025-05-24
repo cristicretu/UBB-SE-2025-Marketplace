@@ -150,9 +150,7 @@ namespace MarketMinds.Views
                         break;
 
                     case "Logout":
-                        // Handle logout logic
-                        // Could show a confirmation dialog first
-                        // Then navigate to login page or reset app state
+                        App.CloseHomePageWindow();
                         break;
                 }
             }

@@ -193,7 +193,7 @@ namespace MarketMinds.ViewModels
                 Title = title,
                 Content = message,
                 CloseButtonText = "OK",
-                XamlRoot = App.BuyerProfileWindow?.Content.XamlRoot,
+                XamlRoot = App.HomePageWindow?.Content.XamlRoot,
             };
 
             await dialog.ShowAsync();
