@@ -208,6 +208,20 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
+        public async Task<Buyer> LoadBuyerInfo(int buyerId)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{buyerId}/info");
+            await this.ThrowOnError(nameof(LoadBuyerInfo), response);
+            var loadedBuyer = await response.Content.ReadFromJsonAsync<Buyer>();
+            if (loadedBuyer == null)
+            {
+                throw new InvalidOperationException($"Failed to load buyer info for ID: {buyerId}. API returned null.");
+            }
+
+            return loadedBuyer;
+        }
+
+        /// <inheritdoc />
         public async Task RemoveWishilistItem(int buyerId, int productId)
         {
             var response = await this.httpClient.DeleteAsync($"{ApiBaseRoute}/{buyerId}/wishlist/remove/{productId}");

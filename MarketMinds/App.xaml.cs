@@ -33,6 +33,10 @@ using MarketMinds.Shared.Services;
 using MarketMinds.Views;
 using MarketMinds.ViewModels.Admin;
 using static MarketMinds.ViewModels.ContractRenewViewModel;
+using MarketMinds.Server.Services;
+using MarketMinds.Shared.Repositories;
+using NUnit.Framework.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace MarketMinds
 {
@@ -56,6 +60,7 @@ namespace MarketMinds
         public static BorrowProductsProxyRepository BorrowProductsRepository;
         public static BasketProxyRepository BasketRepository;
         public static BuyProductsProxyRepository BuyProductsRepository;
+        public static IBuyerLinkageRepository BuyerLinkageRepository;
 
         // Service declarations
         public static IBuyerService BuyerService;
@@ -81,6 +86,7 @@ namespace MarketMinds
         public static IPDFService PDFService;
         public static IContractRenewalService ContractRenewalService;
         public static IFileSystem FileSystem;
+        public static IBuyerLinkageService BuyerLinkageService { get; private set; }
 
         // ViewModel declarations
         public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
@@ -289,6 +295,7 @@ namespace MarketMinds
             BorrowProductsRepository = new BorrowProductsProxyRepository(Configuration);
             BasketRepository = new BasketProxyRepository(Configuration);
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
+            BuyerLinkageRepository = new BuyerLinkageProxyRepository(Configuration);
 
             // Initialize services
             AdminService = new AdminService(UserRepository);
@@ -315,6 +322,9 @@ namespace MarketMinds
             ContractRenewalService = new ContractRenewalService();
             FileSystem = new FileSystemWrapper();
 
+            Microsoft.Extensions.Logging.ILogger<BuyerLinkageService> logger = new Logger<BuyerLinkageService>(new LoggerFactory());
+            BuyerLinkageService = new BuyerLinkageService(BuyerLinkageRepository, BuyerService, logger);
+
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
@@ -329,9 +339,14 @@ namespace MarketMinds
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
             ContractRenewViewModel = new ContractRenewViewModel(ContractService, PDFService, ContractRenewalService, UserService, FileSystem);
-            // CurrentUser is null at the moment, will be set after login
-            BuyerProfileViewModel = new BuyerProfileViewModel(BuyerService);
             SellerProfileViewModel = new SellerProfileViewModel(SellerService);
+            BuyerProfileViewModel = new BuyerProfileViewModel()
+            {
+                BuyerService = BuyerService,
+                User = CurrentUser,
+                ProductService = BuyProductsService,
+                BuyerLinkageService = BuyerLinkageService,
+            };
             // Initialize login and register view models with proper callbacks
             AdminViewModel = new AdminViewModel(AdminService, AnalyticsService, UserService);
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());

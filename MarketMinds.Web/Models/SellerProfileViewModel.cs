@@ -4,6 +4,9 @@ using System.Runtime.CompilerServices;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.UserService;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace WebMarketplace.Models
 {
@@ -14,12 +17,16 @@ namespace WebMarketplace.Models
     {
         private readonly IUserService _userService;
         private readonly ISellerService _sellerService;
+        private readonly IAuctionProductService _auctionProductService;
+        private readonly IBorrowProductsService _borrowProductsService;
+        private readonly IBuyProductsService _buyProductsService;
         private User _user;
         private Seller _seller;
         private List<Product> _allProducts = new List<Product>();
         private List<Product> _filteredProducts = new List<Product>();
         private string _searchText = string.Empty;
         private bool _isSortedByPrice;
+        private List<Buyer> _followersList = new List<Buyer>();
 
         public SellerProfileViewModel() { }
 
@@ -29,11 +36,19 @@ namespace WebMarketplace.Models
         /// <param name="user">The user associated with the seller.</param>
         /// <param name="userService">Service for user-related operations.</param>
         /// <param name="sellerService">Service for seller-related operations.</param>
-        public SellerProfileViewModel(User user, IUserService userService, ISellerService sellerService)
+        /// <param name="auctionProductService">Service for auction products.</param>
+        /// <param name="borrowProductsService">Service for borrow products.</param>
+        /// <param name="buyProductsService">Service for buy products.</param>
+        public SellerProfileViewModel(User user, IUserService userService, ISellerService sellerService, 
+            IAuctionProductService auctionProductService, IBorrowProductsService borrowProductsService, 
+            IBuyProductsService buyProductsService)
         {
             _user = user;
-            _userService = userService;
-            _sellerService = sellerService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _sellerService = sellerService ?? throw new ArgumentNullException(nameof(sellerService));
+            _auctionProductService = auctionProductService ?? throw new ArgumentNullException(nameof(auctionProductService));
+            _borrowProductsService = borrowProductsService ?? throw new ArgumentNullException(nameof(borrowProductsService));
+            _buyProductsService = buyProductsService ?? throw new ArgumentNullException(nameof(buyProductsService));
         }
 
         /// <summary>
@@ -115,6 +130,19 @@ namespace WebMarketplace.Models
         }
 
         /// <summary>
+        /// Gets or sets the list of followers for this seller.
+        /// </summary>
+        public List<Buyer> FollowersList
+        {
+            get => _followersList;
+            set
+            {
+                _followersList = value;
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
         /// Filters products based on search text.
         /// </summary>
         /// <param name="searchText">The search text to filter by.</param>
@@ -180,17 +208,76 @@ namespace WebMarketplace.Models
             {
                 try
                 {
-                    // Convert BuyProduct list to Product list since BuyProduct inherits from Product
+                    _allProducts = new List<Product>();
+                    
+                    int sellerId = Seller.Id;
+                    int userId = Seller.User?.Id ?? 0;
+                    Console.WriteLine($"DEBUG: Loading products for Seller ID: {sellerId}, User ID: {userId}");
+                    
+                    // Load Buy Products
                     var buyProducts = await _sellerService.GetAllProducts(Seller.Id);
-                    _allProducts = buyProducts.Cast<Product>().ToList();
-                    FilterProducts(SearchText);
+                    _allProducts.AddRange(buyProducts.Cast<Product>().ToList());
+                    Console.WriteLine($"DEBUG: Loaded {buyProducts.Count} buy products");
+                    
+                    // Load Auction Products (these are DTOs, not entities)
+                    var allAuctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
+                    Console.WriteLine($"DEBUG: Total auction products in system: {allAuctionProducts.Count}");
+                    
+                    // Debug: List some auction products with their seller IDs
+                    foreach (var auction in allAuctionProducts.Take(10)) // Show first 10 for debugging
+                    {
+                        Console.WriteLine($"DEBUG: Auction Product ID: {auction.Id}, Title: {auction.Title}, SellerId: {auction.SellerId}, Seller.Id: {auction.Seller?.Id ?? -1}, Seller.Username: {auction.Seller?.Username ?? "null"}");
+                    }
+                    
+                    // Filter auction products for this seller using SellerId
+                    var sellerAuctionProducts = allAuctionProducts.Where(auction => 
+                        auction.SellerId == sellerId || auction.SellerId == userId)
+                        .ToList();
+                    
+                    Console.WriteLine($"DEBUG: Auction products matching SellerId ({sellerId}) or UserId ({userId}): {sellerAuctionProducts.Count}");
+                    
+                    // If no matches by SellerId, try by Seller.Id as fallback
+                    if (sellerAuctionProducts.Count == 0)
+                    {
+                        var sellerAuctionProductsBySellerObject = allAuctionProducts.Where(auction => 
+                            auction.Seller != null && (auction.Seller.Id == sellerId || auction.Seller.Id == userId))
+                            .ToList();
+                        Console.WriteLine($"DEBUG: Fallback - Auction products matching Seller.Id ({sellerId}) or ({userId}): {sellerAuctionProductsBySellerObject.Count}");
+                        sellerAuctionProducts = sellerAuctionProductsBySellerObject;
+                    }
+                    
+                    // Add auction products directly since they are already AuctionProduct entities
+                    _allProducts.AddRange(sellerAuctionProducts.Cast<Product>().ToList());
+                    Console.WriteLine($"DEBUG: Using {sellerAuctionProducts.Count} auction products for seller");
+                    
+                    // Load Borrow Products
+                    var allBorrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync();
+                    Console.WriteLine($"DEBUG: Total borrow products in system: {allBorrowProducts.Count}");
+                    
+                    // Debug: List some borrow products with their seller IDs
+                    foreach (var borrow in allBorrowProducts.Take(5)) // Show first 5 for debugging
+                    {
+                        Console.WriteLine($"DEBUG: Borrow Product ID: {borrow.Id}, Title: {borrow.Title}, SellerId: {borrow.SellerId}");
+                    }
+                    
+                    // Filter borrow products for this seller
+                    var sellerBorrowProducts = allBorrowProducts.Where(borrow => 
+                        borrow.SellerId == sellerId || borrow.SellerId == userId)
+                        .ToList();
+                    
+                    _allProducts.AddRange(sellerBorrowProducts.Cast<Product>().ToList());
+                    Console.WriteLine($"DEBUG: Borrow products matching Seller.Id ({sellerId}) or User.Id ({userId}): {sellerBorrowProducts.Count}");
+                    Console.WriteLine($"DEBUG: Using {sellerBorrowProducts.Count} borrow products for seller");
+                    
+                    Console.WriteLine($"DEBUG: TOTAL products loaded for seller {sellerId}: {_allProducts.Count} ({buyProducts.Count} buy + {sellerAuctionProducts.Count} auction + {sellerBorrowProducts.Count} borrow)");
+                    
+                    // Initialize the filtered products list
+                    _filteredProducts = new List<Product>(_allProducts);
+                    OnPropertyChanged(nameof(Products));
                 }
                 catch (Exception ex)
                 {
-                    // Log the exception
                     Console.WriteLine($"Error loading products: {ex.Message}");
-                    _allProducts = new List<Product>();
-                    Products = new List<Product>();
                 }
             }
         }

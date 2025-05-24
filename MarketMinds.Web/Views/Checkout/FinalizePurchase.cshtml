@@ -20,110 +20,229 @@
     }
 }
 
-<div class="container mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Left Column - Thank You and Contact Info -->
-        <div class="space-y-6">
-            <h2 class="text-2xl font-semibold text-green-600">Thank you for your purchase!</h2>
-            
-            <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
-                <div class="space-y-3">
-                    <div class="flex">
-                        <span class="font-semibold w-36 text-gray-700">Full Name:</span>
-                        <span class="text-gray-800">@Model.FullName</span>
-                    </div>
-                    <div class="flex">
-                        <span class="font-semibold w-36 text-gray-700">Phone Number:</span>
-                        <span class="text-gray-800">@Model.PhoneNumber</span>
-                    </div>
-                    <div class="flex">
-                        <span class="font-semibold w-36 text-gray-700">Email:</span>
-                        <span class="text-gray-800">@Model.Email</span>
-                    </div>
-                    <div class="flex">
-                        <span class="font-semibold w-36 text-gray-700">Payment Method:</span>
-                        <span class="text-gray-800">@(string.IsNullOrEmpty(Model.PaymentMethod) ? "Not specified" : Model.PaymentMethod)</span>
-                    </div>
-                    <div class="flex">
-                        <span class="font-semibold w-36 text-gray-700">Order Status:</span>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            @Model.OrderStatus
-                        </span>
-                    </div>
-                </div>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Success Header -->
+        <div class="text-center mb-8">
+            <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
             </div>
-            
-            <div class="mt-8">
-                <a asp-controller="Home" asp-action="Index" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Continue Shopping
-                </a>
-            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
+            <p class="text-gray-600">Thank you for your purchase. Your order has been successfully placed.</p>
         </div>
-        
-        <!-- Right Column - Order Summary -->
-        <div class="space-y-6">
-            <h2 class="text-2xl font-semibold text-gray-800">Order Summary</h2>
-            
-            <!-- Product List -->
-            <div class="bg-gray-100 rounded-lg p-4 space-y-4">
-                @if (Model.ProductList != null && Model.ProductList.Any())
-                {
-                    foreach (var product in Model.ProductList)
-                    {
-                        <div class="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
-                            <p class="font-semibold text-gray-800">Product name: <span class="font-normal">@product.Title</span></p>
-                            <p class="font-semibold text-gray-800">Price: <span class="font-normal">@product.Price.ToString("0.00") €</span></p>
-                            
-                            @if (product.SellerId > 0)
-                            {
-                                <p class="font-semibold text-gray-800">Seller ID: <span class="font-normal">@product.SellerId</span></p>
-                            }
+
+        <div class="lg:grid lg:grid-cols-12 lg:gap-x-8">
+            <!-- Left Column - Order Confirmation & Customer Info -->
+            <div class="lg:col-span-7 space-y-8">
+                <!-- Order Number Card -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="text-center">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Your Order Number</h2>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                            <p class="text-3xl font-bold text-blue-600 mb-2">#@Model.OrderHistoryID</p>
+                            <p class="text-sm text-gray-600">Please save this number for order tracking purposes</p>
                         </div>
-                    }
-                }
-                else if (productDictList != null && productDictList.Any())
-                {
-                    <!-- Fallback to TempData serialized products -->
-                    foreach (var productDict in productDictList)
-                    {
-                        string title = productDict.ContainsKey("Title") ? productDict["Title"] : "Unknown";
-                        string price = productDict.ContainsKey("Price") ? productDict["Price"] : "0";
-                        string quantity = productDict.ContainsKey("Quantity") ? productDict["Quantity"] : "1";
-                        
-                        <div class="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
-                            <p class="font-semibold text-gray-800">Product name: <span class="font-normal">@title</span></p>
-                            <p class="font-semibold text-gray-800">Price: <span class="font-normal">@(Double.Parse(price).ToString("0.00")) €</span></p>
-                            <p class="font-semibold text-gray-800">Quantity: <span class="font-normal">@quantity</span></p>
+                    </div>
+                </div>
+
+                <!-- Customer Information -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Customer Information
+                    </h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Full Name</p>
+                                <p class="text-base text-gray-900">@Model.FullName</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Email Address</p>
+                                <p class="text-base text-gray-900">@Model.Email</p>
+                            </div>
                         </div>
-                    }
-                }
-                else
-                {
-                    <p class="text-gray-600">No products in order</p>
-                }
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Phone Number</p>
+                                <p class="text-base text-gray-900">@Model.PhoneNumber</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Payment Method</p>
+                                <div class="flex items-center">
+                                    @if (!string.IsNullOrEmpty(Model.PaymentMethod))
+                                    {
+                                        @if (Model.PaymentMethod.ToLower() == "cash")
+                                        {
+                                            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                            </svg>
+                                            <span class="text-base text-gray-900">Cash on Delivery</span>
+                                        }
+                                        else if (Model.PaymentMethod.ToLower() == "card")
+                                        {
+                                            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                            </svg>
+                                            <span class="text-base text-gray-900">Card Payment</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-base text-gray-900">@Model.PaymentMethod</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-base text-gray-500">Not specified</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex items-center">
+                            <span class="text-sm font-medium text-gray-500 mr-3">Order Status:</span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                @Model.OrderStatus
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a asp-controller="Home" asp-action="Index" 
+                           class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            Continue Shopping
+                        </a>
+                        <a asp-controller="Order" asp-action="OrderHistory"
+                           class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition-colors border border-gray-300 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
+                            </svg>
+                            View Order History
+                        </a>
+                    </div>
+                </div>
             </div>
             
-            <!-- Order Totals -->
-            <div class="space-y-2 bg-gray-50 p-4 rounded-lg">
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Subtotal:</span>
-                    <span class="text-gray-800">@Model.Subtotal.ToString("0.00") €</span>
+            <!-- Right Column - Order Summary -->
+            <div class="lg:col-span-5 mt-8 lg:mt-0">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 sticky top-8">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
+                            </svg>
+                            Order Summary
+                        </h2>
+                    </div>
+                    
+                    <!-- Product List -->
+                    <div class="px-6 py-4 max-h-80 overflow-y-auto">
+                        @if (Model.ProductList != null && Model.ProductList.Any())
+                        {
+                            <div class="space-y-4">
+                                @foreach (var product in Model.ProductList)
+                                {
+                                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">@product.Title</p>
+                                            <p class="text-sm text-blue-600 font-semibold">@product.Price.ToString("0.00") €</p>
+                                            @if (product.SellerId > 0)
+                                            {
+                                                <p class="text-xs text-gray-500">Seller ID: @product.SellerId</p>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (productDictList != null && productDictList.Any())
+                        {
+                            <!-- Fallback to TempData serialized products -->
+                            <div class="space-y-4">
+                                @foreach (var productDict in productDictList)
+                                {
+                                    string title = productDict.ContainsKey("Title") ? productDict["Title"] : "Unknown";
+                                    string price = productDict.ContainsKey("Price") ? productDict["Price"] : "0";
+                                    string quantity = productDict.ContainsKey("Quantity") ? productDict["Quantity"] : "1";
+                                    
+                                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">@title</p>
+                                            <p class="text-sm text-blue-600 font-semibold">@(Double.Parse(price).ToString("0.00")) €</p>
+                                            <p class="text-xs text-gray-500">Quantity: @quantity</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-8">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                </svg>
+                                <p class="text-gray-500 text-sm mt-2">No products in order</p>
+                            </div>
+                        }
+                    </div>
+                    
+                    <!-- Order Totals -->
+                    <div class="px-6 py-4 border-t border-gray-200 space-y-3">
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>Subtotal:</span>
+                            <span>@Model.Subtotal.ToString("0.00") €</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>Delivery Fee:</span>
+                            <span>@Model.DeliveryFee.ToString("0.00") €</span>
+                        </div>
+                        <div class="border-t border-gray-200 pt-3">
+                            <div class="flex justify-between text-lg font-semibold text-gray-900">
+                                <span>Total:</span>
+                                <span>@Model.Total.ToString("0.00") €</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div class="px-6 py-4 border-t border-gray-200 bg-blue-50">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <p class="text-sm font-medium text-blue-900">What's Next?</p>
+                                <p class="text-sm text-blue-700 mt-1">You'll receive updates on your order status in the app.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Delivery fee:</span>
-                    <span class="text-gray-800">@Model.DeliveryFee.ToString("0.00") €</span>
-                </div>
-                <div class="flex justify-between font-semibold">
-                    <span class="text-gray-800">Total:</span>
-                    <span class="text-gray-800">@Model.Total.ToString("0.00") €</span>
-                </div>
-            </div>
-            
-            <!-- Order Number -->
-            <div class="text-center mt-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <p class="text-gray-600">Your order number is:</p>
-                <p class="text-2xl font-bold text-blue-700">@Model.OrderHistoryID</p>
-                <p class="text-sm text-gray-500 mt-2">Please save this number for order tracking purposes.</p>
             </div>
         </div>
     </div>

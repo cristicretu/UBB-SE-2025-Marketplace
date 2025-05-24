@@ -1,4 +1,4 @@
-﻿namespace MarketMinds.Views
+namespace MarketMinds.Views
 {
     using System;
     using System.Configuration;
