@@ -9,7 +9,7 @@ namespace MarketMinds.Shared.ProxyRepository
 {
     public class ShoppingCartProxyRepository : IShoppingCartRepository
     {
-        private const string ApiBaseRoute = "api/shoppingcart";
+        private const string ApiBaseRoute = "shoppingcart";
         private readonly HttpClient httpClient;
         private readonly JsonSerializerOptions jsonOptions;
 
