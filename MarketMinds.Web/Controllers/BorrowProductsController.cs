@@ -155,15 +155,73 @@ namespace MarketMinds.Web.Controllers
                 }
 
                 // Check if end date is reasonable
-                DateTime earliestStart = borrowProduct.EndDate ?? DateTime.Now;
+                DateTime earliestStart;
+                if (borrowProduct.IsBorrowed && borrowProduct.EndDate.HasValue)
+                {
+                    // Product is currently borrowed - waitlist should start after current borrowing ends
+                    earliestStart = borrowProduct.EndDate.Value;
+                }
+                else if (borrowProduct.StartDate.HasValue && borrowProduct.StartDate.Value > DateTime.Now)
+                {
+                    // Product is not borrowed but has a future start date - waitlist should start after availability begins
+                    earliestStart = borrowProduct.StartDate.Value;
+                }
+                else
+                {
+                    // Product is available now or has no specific start date
+                    earliestStart = DateTime.Now;
+                }
+
                 if (endDate <= earliestStart)
                 {
-                    return Json(new { success = false, error = "End date must be after the current borrowing period ends" });
+                    string errorMessage = borrowProduct.IsBorrowed
+                        ? "End date must be after the current borrowing period ends"
+                        : borrowProduct.StartDate.HasValue && borrowProduct.StartDate.Value > DateTime.Now
+                            ? $"End date must be after the product becomes available ({borrowProduct.StartDate.Value:yyyy-MM-dd})"
+                            : "End date must be in the future";
+
+                    return Json(new { success = false, error = errorMessage });
                 }
 
                 if (endDate > borrowProduct.TimeLimit)
                 {
                     return Json(new { success = false, error = "End date cannot exceed the product's time limit" });
+                }
+
+                // Check if any existing waitlist users have the same or overlapping preferred end date
+                var existingWaitlistUsers = await _waitlistService.GetUsersInWaitlist(id);
+                if (existingWaitlistUsers != null && existingWaitlistUsers.Count > 0)
+                {
+                    foreach (var waitlistUser in existingWaitlistUsers)
+                    {
+                        if (waitlistUser.PreferredEndDate.HasValue)
+                        {
+                            var existingEndDate = waitlistUser.PreferredEndDate.Value.Date;
+                            var newEndDate = endDate.Date;
+
+                            // Check for exact same end date
+                            if (existingEndDate == newEndDate)
+                            {
+                                return Json(new
+                                {
+                                    success = false,
+                                    error = $"Another user has already selected {endDate:yyyy-MM-dd} as their end date. Please choose a different date to avoid conflicts."
+                                });
+                            }
+
+                            // Check for potential overlapping periods
+                            // Assuming minimum 1-day borrowing periods, we need to ensure some gap
+                            var daysBetween = Math.Abs((newEndDate - existingEndDate).TotalDays);
+                            if (daysBetween < 2) // Less than 2 days apart means potential overlap
+                            {
+                                return Json(new
+                                {
+                                    success = false,
+                                    error = $"Your selected end date is too close to another user's preference ({existingEndDate:yyyy-MM-dd}). Please choose a date with at least 2 days difference to ensure no overlapping borrowing periods."
+                                });
+                            }
+                        }
+                    }
                 }
 
                 // Store the end date preference in the waitlist
@@ -451,12 +509,26 @@ namespace MarketMinds.Web.Controllers
                     return Json(new { success = false, error = "This product is currently borrowed by another user. Please join the waitlist." });
                 }
 
-                // Validate dates
-                DateTime startDate = DateTime.Now;
+                // Validate dates - respect the product's start date
+                DateTime startDate = borrowProduct.StartDate ?? DateTime.Now;
+                if (startDate < DateTime.Now)
+                {
+                    startDate = DateTime.Now; // Don't start in the past
+                }
+
+                // Check if product is available yet
+                if (borrowProduct.StartDate.HasValue && DateTime.Now < borrowProduct.StartDate.Value)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        error = $"This product is not available for borrowing until {borrowProduct.StartDate.Value.ToString("MMMM dd, yyyy")}"
+                    });
+                }
 
                 if (endDate < startDate.AddDays(1))
                 {
-                    return Json(new { success = false, error = "End date must be at least 1 day from now" });
+                    return Json(new { success = false, error = $"End date must be at least 1 day from the start date ({startDate.ToString("yyyy-MM-dd")})" });
                 }
 
                 if (endDate > borrowProduct.TimeLimit)
@@ -728,6 +800,39 @@ namespace MarketMinds.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error assigning product {productId} to next in waitlist");
+            }
+        }
+
+        /// <summary>
+        /// Gets the unavailable dates for waitlist joining (dates already taken by other users)
+        /// </summary>
+        /// <param name="id">The product ID</param>
+        /// <returns>JSON with list of unavailable dates</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetUnavailableDates(int id)
+        {
+            try
+            {
+                var existingWaitlistUsers = await _waitlistService.GetUsersInWaitlist(id);
+                var unavailableDates = new List<string>();
+
+                if (existingWaitlistUsers != null && existingWaitlistUsers.Count > 0)
+                {
+                    foreach (var waitlistUser in existingWaitlistUsers)
+                    {
+                        if (waitlistUser.PreferredEndDate.HasValue)
+                        {
+                            unavailableDates.Add(waitlistUser.PreferredEndDate.Value.ToString("yyyy-MM-dd"));
+                        }
+                    }
+                }
+
+                return Json(new { unavailableDates });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get unavailable dates for product {ProductId}", id);
+                return Json(new { unavailableDates = new List<string>() });
             }
         }
     }

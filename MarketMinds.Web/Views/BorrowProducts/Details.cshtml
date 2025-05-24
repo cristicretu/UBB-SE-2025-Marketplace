@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = $"Borrow Details: {Model.Title}";
     var isAvailable = !Model.IsBorrowed;
+    var isAvailableNow = isAvailable && (!Model.StartDate.HasValue || Model.StartDate.Value <= DateTime.Now);
     var remainingTime = "";
     
     if (Model.EndDate.HasValue)
@@ -143,36 +144,66 @@
                                 
                                 @if (!Model.IsBorrowed)
                                 {
-                                    <!-- Product is available for borrowing -->
-                                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                                        <div class="flex items-center mb-3">
-                                            <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            <span class="text-green-700 font-medium">This product is available for borrowing!</span>
-                                        </div>
-                                        
-                                        <div class="space-y-4">
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Select Borrowing End Date:</label>
-                                                <input type="date" id="borrowEndDate" 
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors" 
-                                                       min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" 
-                                                       max="@Model.TimeLimit.ToString("yyyy-MM-dd")" />
+                                    @if (isAvailableNow)
+                                    {
+                                        <!-- Product is available for borrowing now -->
+                                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                                            <div class="flex items-center mb-3">
+                                                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <span class="text-green-700 font-medium">This product is available for borrowing!</span>
                                             </div>
                                             
-                                            <div class="flex items-center space-x-3">
-                                                <button id="borrowButton" 
-                                                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center">
-                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                                    </svg>
-                                                    Borrow Product
-                                                </button>
-                                                <div id="borrowResult" class="text-gray-500 italic">Select an end date to borrow this product</div>
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Borrowing End Date:</label>
+                                                    <input type="date" id="borrowEndDate" 
+                                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors" 
+                                                           min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" 
+                                                           max="@Model.TimeLimit.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                                
+                                                <div class="flex items-center space-x-3">
+                                                    <button id="borrowButton" 
+                                                            class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center">
+                                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                        </svg>
+                                                        Borrow Product
+                                                    </button>
+                                                    <div id="borrowResult" class="text-gray-500 italic">Select an end date to borrow this product</div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    }
+                                    else
+                                    {
+                                        <!-- Product is not available yet (future start date) -->
+                                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                                            <div class="flex items-center mb-3">
+                                                <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <span class="text-yellow-700 font-medium">This product will be available for borrowing soon!</span>
+                                            </div>
+                                            
+                                            <div class="text-yellow-600 mb-3">
+                                                <p>Available from: <strong>@Model.StartDate.Value.ToString("MMMM dd, yyyy")</strong></p>
+                                                @{
+                                                    var daysUntilAvailable = (Model.StartDate.Value - DateTime.Now).Days;
+                                                }
+                                                <p class="text-sm">Available in @daysUntilAvailable day@(daysUntilAvailable != 1 ? "s" : "")</p>
+                                            </div>
+                                            
+                                            <p class="text-yellow-600 text-sm">
+                                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                You can join the waitlist to be automatically assigned when it becomes available.
+                                            </p>
+                                        </div>
+                                    }
                                 }
                                 else
                                 {
@@ -204,7 +235,7 @@
                                                 <button id="returnButton" 
                                                         class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
                                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 818 8v2M3 10l6 6m-6-6l6-6"></path>
                                                     </svg>
                                                     Return Product
                                                 </button>
@@ -252,11 +283,11 @@
                     <div class="mb-6">
                         <div class="flex items-start justify-between mb-3">
                             <h1 class="text-3xl font-bold text-gray-900 leading-tight">@Model.Title</h1>
-                            <span class="inline-flex items-center px-3 py-1 @(isAvailable ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800") text-sm font-medium rounded-full">
+                            <span class="inline-flex items-center px-3 py-1 @(isAvailableNow ? "bg-green-100 text-green-800" : (isAvailable ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800")) text-sm font-medium rounded-full">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                @(isAvailable ? "Available" : "Borrowed")
+                                @(isAvailableNow ? "Available Now" : (isAvailable ? $"Available {Model.StartDate.Value.ToString("MMM dd")}" : "Borrowed"))
                             </span>
                         </div>
                         
@@ -327,7 +358,7 @@
                         </div>
 
                         <!-- Waiting List Section (at bottom) -->
-                        @if (canPurchase && Model.IsBorrowed)
+                        @if (canPurchase && (Model.IsBorrowed || !isAvailableNow))
                         {
                             <div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-3 flex items-center">
@@ -348,7 +379,14 @@
                                             <ul class="text-sm space-y-1">
                                                 <li>• Choose your desired borrowing end date and join the waitlist</li>
                                                 <li>• When the product becomes available, it will be <strong>automatically assigned</strong> to the first person in line</li>
-                                                <li>• Your borrowing will start when the current borrower's period ends</li>
+                                                @if (Model.IsBorrowed)
+                                                {
+                                                    <li>• Your borrowing will start when the current borrower's period ends</li>
+                                                }
+                                                else
+                                                {
+                                                    <li>• Your borrowing will start when the product becomes available (@Model.StartDate.Value.ToString("MMMM dd, yyyy"))</li>
+                                                }
                                                 <li>• You'll get your chosen borrowing period (up to the product's time limit)</li>
                                             </ul>
                                         </div>
@@ -360,13 +398,26 @@
                                     <div class="space-y-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Choose your desired borrowing end date:</label>
+                                            @{
+                                                DateTime minWaitlistDate = Model.IsBorrowed 
+                                                    ? (Model.EndDate?.AddDays(1) ?? DateTime.Now.AddDays(1))
+                                                    : (Model.StartDate?.AddDays(1) ?? DateTime.Now.AddDays(1));
+                                            }
                                             <input type="date" id="waitlistEndDate" 
                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors" 
-                                                   min="@((Model.EndDate?.AddDays(1) ?? DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd"))" 
+                                                   min="@minWaitlistDate.ToString("yyyy-MM-dd")" 
                                                    max="@Model.TimeLimit.ToString("yyyy-MM-dd")" />
                                             <p class="text-xs text-gray-600 mt-1">
-                                                Your borrowing will start when the current borrower returns the product 
-                                                (currently scheduled for @(Model.EndDate?.ToString("yyyy-MM-dd") ?? "unknown date"))
+                                                @if (Model.IsBorrowed)
+                                                {
+                                                    @:Your borrowing will start when the current borrower returns the product 
+                                                    @:(currently scheduled for @(Model.EndDate?.ToString("yyyy-MM-dd") ?? "unknown date"))
+                                                }
+                                                else
+                                                {
+                                                    @:Your borrowing will start when the product becomes available 
+                                                    @:(scheduled for @(Model.StartDate?.ToString("yyyy-MM-dd") ?? "unknown date"))
+                                                }
                                             </p>
                                         </div>
                                         
@@ -590,6 +641,66 @@
                 });
             }
             
+            // Fetch unavailable dates for waitlist and update date picker
+            if (waitlistEndDateInput) {
+                fetch('@Url.Action("GetUnavailableDates", "BorrowProducts")?id=@Model.Id')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.unavailableDates && data.unavailableDates.length > 0) {
+                        // Store unavailable dates for validation
+                        window.unavailableDates = data.unavailableDates;
+                        
+                        // Add multiple event listeners to catch all ways of selecting a date
+                        const validateDateSelection = function() {
+                            const selectedDate = this.value;
+                            if (selectedDate && window.unavailableDates && window.unavailableDates.includes(selectedDate)) {
+                                // Clear the invalid selection
+                                this.value = '';
+                                
+                                // Show error message
+                                showDateError(this);
+                            }
+                        };
+                        
+                        // Function to show date error message
+                        const showDateError = function(inputElement) {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'mt-2 text-red-600 text-sm fade-message';
+                            errorDiv.innerHTML = `
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    This date is already taken by another user. Please choose a different date.
+                                </div>
+                            `;
+                            
+                            // Remove any existing error messages
+                            const existingErrors = inputElement.parentNode.querySelectorAll('.fade-message');
+                            existingErrors.forEach(error => error.remove());
+                            
+                            // Add new error message
+                            inputElement.parentNode.appendChild(errorDiv);
+                            
+                            // Auto-remove error message after 5 seconds
+                            setTimeout(() => {
+                                if (errorDiv.parentNode) {
+                                    errorDiv.remove();
+                                }
+                            }, 5000);
+                        };
+                        
+                        // Add event listeners for various interactions
+                        waitlistEndDateInput.addEventListener('change', validateDateSelection);
+                        waitlistEndDateInput.addEventListener('input', validateDateSelection);
+                        waitlistEndDateInput.addEventListener('blur', validateDateSelection);
+                    }
+                })
+                .catch(error => {
+                    console.warn('Could not fetch unavailable dates:', error);
+                });
+            }
+            
             // Handle join waitlist
             if (joinWaitlistButton) {
                 joinWaitlistButton.addEventListener('click', function() {
@@ -597,6 +708,14 @@
                     
                     if (!endDate) {
                         waitlistResult.textContent = 'Please select your desired end date first';
+                        waitlistResult.classList.remove('text-green-600', 'font-bold', 'text-gray-500', 'italic');
+                        waitlistResult.classList.add('text-red-500');
+                        return;
+                    }
+                    
+                    // Check if the selected date is unavailable
+                    if (window.unavailableDates && window.unavailableDates.includes(endDate)) {
+                        waitlistResult.textContent = 'This date is already taken by another user. Please choose a different date.';
                         waitlistResult.classList.remove('text-green-600', 'font-bold', 'text-gray-500', 'italic');
                         waitlistResult.classList.add('text-red-500');
                         return;
