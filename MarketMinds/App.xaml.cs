@@ -340,13 +340,7 @@ namespace MarketMinds
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
             ContractRenewViewModel = new ContractRenewViewModel(ContractService, PDFService, ContractRenewalService, UserService, FileSystem);
             SellerProfileViewModel = new SellerProfileViewModel(SellerService);
-            BuyerProfileViewModel = new BuyerProfileViewModel()
-            {
-                BuyerService = BuyerService,
-                User = CurrentUser,
-                ProductService = BuyProductsService,
-                BuyerLinkageService = BuyerLinkageService,
-            };
+            BuyerProfileViewModel = new BuyerProfileViewModel(BuyerService, BuyProductsService, BuyerLinkageService);
             // Initialize login and register view models with proper callbacks
             AdminViewModel = new AdminViewModel(AdminService, AnalyticsService, UserService);
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());

@@ -79,11 +79,8 @@ builder.Services.AddSingleton<MarketMinds.Shared.ProxyRepository.ChatbotProxyRep
 builder.Services.AddSingleton<ConversationProxyRepository>();
 builder.Services.AddSingleton<MessageProxyRepository>();
 builder.Services.AddSingleton<ReviewProxyRepository>();
-builder.Services.AddSingleton<BuyerProxyRepository>(sp =>
-    new BuyerProxyRepository(sp.GetRequiredService<IConfiguration>()));
-builder.Services.AddSingleton<SellerProxyRepository>(sp =>
-    new SellerProxyRepository(
-        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<BuyerProxyRepository>(sp => new BuyerProxyRepository(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton<SellerProxyRepository>(sp => new SellerProxyRepository(sp.GetRequiredService<IConfiguration>()));
 
 // BuyerLinkage proxy repository
 builder.Services.AddSingleton<BuyerLinkageProxyRepository>(sp =>

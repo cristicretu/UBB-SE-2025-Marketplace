@@ -112,25 +112,10 @@ namespace MarketMinds.Views
                         break;
                     // Only sellers' cases
                     case "Create":
-                        // Show product creation page in frame
+                        ContentFrame.Navigate(typeof(CreateListingView));
                         break;
                 }
             }
-        }
-
-        /// <summary>
-        /// Handles the Create button click for sellers
-        /// </summary>
-        private void CreateButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Navigate to product creation page for sellers
-            // Example: ContentFrame.Navigate(typeof(ProductCreationView));
-
-            // You should implement the appropriate navigation to your product creation page
-            // If you have different types of products (Buy, Auction, Borrow), you might want to show
-            // a dialog asking which type of product the seller wants to create
-
-            // ContentFrame.Navigate(typeof(CreateProductView));
         }
 
         /// <summary>

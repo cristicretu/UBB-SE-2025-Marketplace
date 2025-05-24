@@ -80,7 +80,7 @@
                 </AppBarButton>
 
                 <!-- Seller-only button -->
-                <AppBarButton x:Name="CreateButton" Label="Create" Click="CreateButton_Click">
+                <AppBarButton x:Name="CreateButton" Label="Create" Click="AppNavBarButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE710;" />
                     </AppBarButton.Icon>

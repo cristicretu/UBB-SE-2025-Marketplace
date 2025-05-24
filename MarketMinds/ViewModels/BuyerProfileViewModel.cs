@@ -89,9 +89,12 @@ namespace MarketMinds.ViewModels
             }
         }
 
-        public BuyerProfileViewModel(IBuyerService buyerService)
+        public BuyerProfileViewModel(IBuyerService buyerService, IBuyProductsService productService, IBuyerLinkageService buyerLinkageService)
         {
-            this.BuyerService = buyerService ?? throw new ArgumentNullException(nameof(buyerService));
+            this.BuyerService = buyerService;
+            this.ProductService = productService;
+            this.BuyerLinkageService = buyerLinkageService;
+            // the .User will be instantiated when the BuyerProfileView is loaded because only then we know for sure that we have a non null App.CurrentUser
         }
 
         /// <inheritdoc/>
