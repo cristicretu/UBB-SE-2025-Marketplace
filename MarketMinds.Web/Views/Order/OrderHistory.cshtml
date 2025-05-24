@@ -257,8 +257,14 @@
                                     </div>
                                     <div class="mt-4 space-x-4">
                                         <button onclick="generateContract(${summary.id})" 
+                                                id="generateBtn_${summary.id}"
                                                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                             Generate Contract
+                                        </button>
+                                        <button onclick="downloadContract(${summary.id})" 
+                                                id="downloadBtn_${summary.id}"
+                                                class="hidden inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            Download PDF
                                         </button>
                                     </div>
                                 </div>
@@ -298,6 +304,9 @@
                 data: { orderId: orderId },
                 success: function(response) {
                     if (response.success) {
+                        // Hide generate button and show download button
+                        $(`#generateBtn_${orderId}`).addClass('hidden');
+                        $(`#downloadBtn_${orderId}`).removeClass('hidden');
                         alert('Contract generated successfully!');
                     } else {
                         alert('Error: ' + response.message);
@@ -311,6 +320,18 @@
                     button.disabled = false;
                 }
             });
+        }
+
+        function downloadContract(contractId) {
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = `/api/contracts/${contractId}/download-pdf`;
+            link.download = `contract_${contractId}.pdf`;
+            
+            // Append to body, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 } 

@@ -350,5 +350,32 @@ namespace Server.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while retrieving product details for contract ID {contractId}: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Asynchronously downloads the PDF file for a contract.
+        /// </summary>
+        /// <param name="contractId">The ID of the contract.</param>
+        /// <returns>The PDF file as a downloadable attachment.</returns>
+        [HttpGet("{contractId}/download-pdf")]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> DownloadContractPdf(long contractId)
+        {
+            try
+            {
+                var pdfFile = await this.contractRepository.GetPdfByContractIdAsync(contractId);
+                if (pdfFile == null || pdfFile.Length == 0)
+                {
+                    return this.NotFound($"PDF not found for contract ID {contractId}");
+                }
+
+                return this.File(pdfFile, "application/pdf", $"contract_{contractId}.pdf");
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while downloading PDF for contract ID {contractId}: {ex.Message}");
+            }
+        }
     }
 }
