@@ -1,15 +1,15 @@
 @model List<MarketMinds.Shared.Models.Notification>
 
-<div class="notifications-dropdown-content">
+<div class="notifications-dropdown-content rounded-md overflow-hidden">
     <!-- Header with unread count -->
-    <div class="px-4 py-2 bg-blue-50 border-b border-gray-200 flex justify-between items-center">
+    <div class="px-4 py-3 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-gray-200 flex justify-between items-center">
         <span class="text-sm text-gray-600">
             @{
                 var unreadCount = Model.Count(n => !n.IsRead);
             }
             @if (unreadCount > 0)
             {
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 shadow-sm">
                     @unreadCount unread
                 </span>
             }
@@ -22,20 +22,20 @@
         @if (unreadCount > 0)
         {
             <button id="markAllAsReadBtn" 
-                    class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200">
+                    class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 hover:underline focus:outline-none">
                 Mark all read
             </button>
         }
     </div>
     
     <!-- Notifications List -->
-    <div class="max-h-80 overflow-y-auto">
+    <div class="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         @if (Model.Any())
         {
             <div class="divide-y divide-gray-100">
                 @foreach (var notification in Model.Take(5)) // Limit to recent 5 notifications
                 {
-                    <div class="p-3 hover:bg-gray-50 transition-colors duration-150 @(notification.IsRead ? "" : "bg-blue-50 border-l-2 border-l-blue-500")">
+                    <div class="p-4 hover:bg-gray-50 transition-colors duration-150 @(notification.IsRead ? "" : "bg-blue-50 border-l-2 border-l-blue-500")">
                         <div class="flex items-start space-x-3">
                             <!-- Notification Icon -->
                             <div class="flex-shrink-0 mt-0.5">
@@ -77,10 +77,10 @@
                                     <!-- Individual notification actions -->
                                     @if (!notification.IsRead)
                                     {
-                                        <button class="text-xs text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                                                onclick="markNotificationAsRead(@notification.NotificationID)">
-                                            Mark read
-                                        </button>
+                                        <button class="text-xs text-blue-600 hover:text-blue-800 hover:underline opacity-0 group-hover:opacity-100 transition-opacity duration-200 focus:outline-none"
+                                        onclick="markNotificationAsRead(@notification.NotificationID)">
+                                    Mark read
+                                </button>
                                     }
                                 </div>
                             </div>
@@ -94,8 +94,11 @@
             {
                 <div class="p-3 bg-gray-50 border-t border-gray-200 text-center">
                     <a href="/Notifications/All" 
-                       class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200">
-                        View all @Model.Count notifications →
+                       class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 inline-flex items-center hover:underline">
+                        View all @Model.Count notifications
+                        <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
                     </a>
                 </div>
             }
@@ -104,13 +107,13 @@
         {
             <!-- Empty State -->
             <div class="p-8 text-center">
-                <div class="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                 </div>
-                <h3 class="text-sm font-medium text-gray-900 mb-1">No notifications</h3>
-                <p class="text-sm text-gray-500">You're all caught up! Check back later for updates.</p>
+                <h3 class="text-base font-medium text-gray-900 mb-2">No notifications</h3>
+                <p class="text-sm text-gray-500 max-w-xs mx-auto">You're all caught up! Check back later for updates.</p>
             </div>
         }
     </div>
@@ -120,7 +123,7 @@
     {
         <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-center items-center">
             <button id="clearAllNotificationsBtn" onclick="clearAllNotifications()" 
-                    class="text-xs text-red-600 hover:text-red-800 transition-colors duration-200">
+                    class="text-xs text-red-600 hover:text-red-800 transition-colors duration-200 hover:underline focus:outline-none">
                 Clear all notifications
             </button>
         </div>
