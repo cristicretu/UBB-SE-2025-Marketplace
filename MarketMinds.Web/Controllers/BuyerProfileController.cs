@@ -17,6 +17,7 @@ namespace WebMarketplace.Controllers
         private readonly IBuyerService _buyerService;
         private readonly IUserService _userService;
         private readonly IBuyerLinkageService _buyerLinkageService;
+        private readonly IBuyerSellerFollowService _buyerSellerFollowService;
         private readonly ILogger<BuyerProfileController> _logger;
 
         /// <summary>
@@ -25,19 +26,52 @@ namespace WebMarketplace.Controllers
         /// <param name="buyerService">The buyer service.</param>
         /// <param name="userService">The user service.</param>
         /// <param name="buyerLinkageService">The buyer linkage service.</param>
+        /// <param name="buyerSellerFollowService">The buyer seller follow service.</param>
         /// <param name="logger">The logger.</param>
         public BuyerProfileController(
             IBuyerService buyerService,
             IUserService userService,
             IBuyerLinkageService buyerLinkageService,
+            IBuyerSellerFollowService buyerSellerFollowService,
             ILogger<BuyerProfileController> logger)
         {
             _buyerService = buyerService ?? throw new ArgumentNullException(nameof(buyerService));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _buyerLinkageService = buyerLinkageService ?? throw new ArgumentNullException(nameof(buyerLinkageService));
+            _buyerSellerFollowService = buyerSellerFollowService ?? throw new ArgumentNullException(nameof(buyerSellerFollowService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             
             _logger.LogInformation("CONSTRUCTOR: BuyerProfileController initialized");
+        }
+
+        /// <summary>
+        /// Checks if the current user is a buyer
+        /// </summary>
+        /// <returns>True if current user is a buyer, false otherwise</returns>
+        private bool IsCurrentUserBuyer()
+        {
+            try
+            {
+                // Check UserSession role first (for backward compatibility)
+                if (!string.IsNullOrEmpty(UserSession.CurrentUserRole))
+                {
+                    return UserSession.CurrentUserRole == "Buyer" || UserSession.CurrentUserRole == "2";
+                }
+
+                // Check claims-based role
+                var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role);
+                if (roleClaim != null)
+                {
+                    return roleClaim.Value == "Buyer";
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error checking if current user is buyer");
+                return false;
+            }
         }
 
         /// <summary>
@@ -121,6 +155,54 @@ namespace WebMarketplace.Controllers
             {
                 _logger.LogError(ex, "Error loading linked buyers for buyer ID: {BuyerId}", buyerId);
                 return new List<LinkedBuyerInfo>();
+            }
+        }
+
+        /// <summary>
+        /// Loads following sellers information for a specific buyer
+        /// </summary>
+        /// <param name="buyerId">The buyer ID to get followed sellers for</param>
+        /// <returns>List of followed seller information</returns>
+        private async Task<List<FollowedSellerInfo>> LoadFollowingSellersAsync(int buyerId)
+        {
+            try
+            {
+                _logger.LogInformation("Loading following sellers for buyer ID: {BuyerId}", buyerId);
+
+                // Get followed sellers directly from the service
+                var followedSellers = await _buyerSellerFollowService.GetFollowedSellersAsync(buyerId);
+                
+                var followedSellerInfoList = new List<FollowedSellerInfo>();
+
+                foreach (var seller in followedSellers)
+                {
+                    try
+                    {
+                        var followedSellerInfo = new FollowedSellerInfo
+                        {
+                            SellerId = seller.Id,
+                            StoreName = seller.StoreName ?? "Unknown Store",
+                            FirstName = seller.User?.Username ?? "Unknown", // Use Username as name since FirstName doesn't exist
+                            LastName = string.Empty, // Seller model doesn't have LastName
+                            Email = seller.User?.Email ?? string.Empty,
+                            FollowedDate = DateTime.UtcNow // Default for now since we don't have this in the old system
+                        };
+                        followedSellerInfoList.Add(followedSellerInfo);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to process followed seller {SellerId} for buyer {BuyerId}", seller.Id, buyerId);
+                        // Continue with other followed sellers
+                    }
+                }
+
+                _logger.LogInformation("Loaded {Count} followed sellers for buyer ID: {BuyerId}", followedSellerInfoList.Count, buyerId);
+                return followedSellerInfoList;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading followed sellers for buyer ID: {BuyerId}", buyerId);
+                return new List<FollowedSellerInfo>();
             }
         }
 
@@ -525,6 +607,9 @@ namespace WebMarketplace.Controllers
                 // Load linked buyers information
                 var linkedBuyers = await LoadLinkedBuyersAsync(buyer.Id);
 
+                // Load following sellers information
+                var followedSellers = await LoadFollowingSellersAsync(buyer.Id);
+
                 // Create the view model
                 var viewModel = new BuyerProfileViewModel
                 {
@@ -551,6 +636,9 @@ namespace WebMarketplace.Controllers
                     Discount = buyer.Discount,
                     LinkedBuyers = linkedBuyers
                 };
+
+                // Assign the followed sellers separately to avoid compilation issues
+                viewModel.FollowingSellers = followedSellers;
 
                 // Set ViewBag to indicate this is the editable version
                 ViewBag.IsOwnProfile = true;
@@ -598,15 +686,18 @@ namespace WebMarketplace.Controllers
                 // Get current user ID for linkage checking
                 int currentUserId = GetCurrentUserId();
                 
-                // Get linkage information if user is authenticated
+                // Get linkage information if user is authenticated AND is a buyer
                 BuyerLinkageInfo? linkageInfo = null;
-                if (currentUserId > 0 && currentUserId != id)
+                if (currentUserId > 0 && currentUserId != id && IsCurrentUserBuyer())
                 {
                     linkageInfo = await _buyerLinkageService.GetLinkageStatusAsync(currentUserId, id);
                 }
 
                 // Load linked buyers information
                 var linkedBuyers = await LoadLinkedBuyersAsync(targetBuyer.Id);
+
+                // Load following sellers information
+                var followedSellers = await LoadFollowingSellersAsync(targetBuyer.Id);
 
                 // Create the view model with public information only
                 var viewModel = new BuyerProfileViewModel
@@ -630,6 +721,9 @@ namespace WebMarketplace.Controllers
                     Discount = 0, // Don't expose discount information
                     LinkedBuyers = linkedBuyers
                 };
+
+                // Assign the followed sellers separately to avoid compilation issues
+                viewModel.FollowingSellers = followedSellers;
 
                 // Set ViewBag to indicate this is a public read-only profile
                 ViewBag.IsOwnProfile = false;
@@ -663,6 +757,14 @@ namespace WebMarketplace.Controllers
                 {
                     _logger.LogWarning("User not authenticated for link action");
                     return RedirectToAction("Login", "Account");
+                }
+
+                // Check if current user is a buyer
+                if (!IsCurrentUserBuyer())
+                {
+                    _logger.LogWarning("Non-buyer user {UserId} attempted to link with buyer {TargetBuyerId}", currentUserId, targetBuyerId);
+                    TempData["ErrorMessage"] = "Only buyers can link with other buyers.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
                 }
 
                 if (currentUserId == targetBuyerId)
@@ -716,6 +818,14 @@ namespace WebMarketplace.Controllers
                 {
                     _logger.LogWarning("User not authenticated for unlink action");
                     return RedirectToAction("Login", "Account");
+                }
+
+                // Check if current user is a buyer
+                if (!IsCurrentUserBuyer())
+                {
+                    _logger.LogWarning("Non-buyer user {UserId} attempted to unlink from buyer {TargetBuyerId}", currentUserId, targetBuyerId);
+                    TempData["ErrorMessage"] = "Only buyers can manage buyer links.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
                 }
 
                 if (currentUserId == targetBuyerId)

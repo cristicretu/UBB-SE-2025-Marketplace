@@ -111,6 +111,11 @@ namespace WebMarketplace.Models
         /// Gets or sets the list of linked buyers
         /// </summary>
         public List<LinkedBuyerInfo> LinkedBuyers { get; set; } = new List<LinkedBuyerInfo>();
+
+        /// <summary>
+        /// Gets or sets the list of sellers that this buyer follows
+        /// </summary>
+        public List<FollowedSellerInfo> FollowingSellers { get; set; } = new List<FollowedSellerInfo>();
     }
 
     /// <summary>
@@ -147,5 +152,41 @@ namespace WebMarketplace.Models
         /// Gets or sets the date when the link was created
         /// </summary>
         public DateTime LinkedDate { get; set; }
+    }
+
+    /// <summary>
+    /// Information about a followed seller for display purposes
+    /// </summary>
+    public class FollowedSellerInfo
+    {
+        /// <summary>
+        /// Gets or sets the seller ID
+        /// </summary>
+        public int SellerId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the store name
+        /// </summary>
+        public string StoreName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the first name
+        /// </summary>
+        public string FirstName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the last name
+        /// </summary>
+        public string LastName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the email
+        /// </summary>
+        public string Email { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date when the follow relationship was created
+        /// </summary>
+        public DateTime FollowedDate { get; set; }
     }
 }

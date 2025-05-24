@@ -91,6 +91,14 @@ builder.Services.AddSingleton<BuyerLinkageProxyRepository>(sp =>
     return new BuyerLinkageProxyRepository(httpClient);
 });
 
+// BuyerSellerFollow proxy repository
+builder.Services.AddSingleton<BuyerSellerFollowProxyRepository>(sp =>
+{
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var httpClient = httpClientFactory.CreateClient("ApiClient");
+    return new BuyerSellerFollowProxyRepository(httpClient);
+});
+
 // Contract-related proxy repositories
 builder.Services.AddSingleton<ContractProxyRepository>(sp =>
     new ContractProxyRepository(
@@ -169,6 +177,18 @@ builder.Services.AddTransient<IBuyerLinkageService>(sp =>
     return new BuyerLinkageService(repository, buyerService, logger);
 });
 
+// BuyerSellerFollow service
+builder.Services.AddTransient<IBuyerSellerFollowService>(sp =>
+{
+    var repository = sp.GetRequiredService<BuyerSellerFollowProxyRepository>();
+    var buyerService = sp.GetRequiredService<IBuyerService>();
+    var sellerService = sp.GetRequiredService<ISellerService>();
+    var logger = sp.GetRequiredService<ILogger<BuyerSellerFollowService>>();
+    
+    // Create the actual service implementation
+    return new BuyerSellerFollowService(repository, buyerService, sellerService, logger);
+});
+
 // Register IBuyerRepository and IBuyerService
 builder.Services.AddTransient<IBuyerRepository, BuyerProxyRepository>();
 builder.Services.AddTransient<IBuyerService, BuyerService>();
@@ -203,6 +223,9 @@ builder.Services.AddTransient<IDummyWalletRepository>(sp => sp.GetRequiredServic
 
 // BuyerLinkage repository
 builder.Services.AddTransient<IBuyerLinkageRepository>(sp => sp.GetRequiredService<BuyerLinkageProxyRepository>());
+
+// BuyerSellerFollow repository
+builder.Services.AddTransient<IBuyerSellerFollowRepository>(sp => sp.GetRequiredService<BuyerSellerFollowProxyRepository>());
 
 var app = builder.Build();
 

@@ -26,6 +26,7 @@ namespace WebMarketplace.Models
         private List<Product> _filteredProducts = new List<Product>();
         private string _searchText = string.Empty;
         private bool _isSortedByPrice;
+        private List<Buyer> _followersList = new List<Buyer>();
 
         public SellerProfileViewModel() { }
 
@@ -125,6 +126,19 @@ namespace WebMarketplace.Models
                     _isSortedByPrice = value;
                     OnPropertyChanged();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the list of followers for this seller.
+        /// </summary>
+        public List<Buyer> FollowersList
+        {
+            get => _followersList;
+            set
+            {
+                _followersList = value;
+                OnPropertyChanged();
             }
         }
 

@@ -333,6 +333,26 @@
         margin: 0 auto;
     }
 
+    .public-info-item {
+        margin-bottom: 1rem;
+    }
+
+    .public-info-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        display: block;
+    }
+
+    .public-info-value {
+        font-size: 1rem;
+        color: #343a40;
+        font-weight: 500;
+        padding: 0.25rem 0;
+        min-height: 20px;
+    }
+
     .link-btn, .unlink-btn {
         background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
         border: none;
@@ -519,6 +539,137 @@
             padding: 0 1rem 1rem 1rem;
         }
     }
+
+    /* Following Section Styles */
+    .following-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .following-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .following-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .following-content {
+        padding: 2rem;
+        margin: 0;
+    }
+
+    .followed-sellers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .followed-seller-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .followed-seller-card:hover {
+        border-color: #3B82F6;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+        transform: translateY(-3px);
+    }
+
+    .followed-seller-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .followed-seller-link:hover {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .followed-seller-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .followed-seller-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .followed-seller-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #343a40;
+        margin-bottom: 0.3rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .followed-seller-store {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+        margin-bottom: 0.3rem;
+    }
+
+    .followed-seller-email {
+        color: #6c757d;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Responsive design for Following */
+    @@media (max-width: 768px) {
+        .followed-sellers-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .following-header {
+            padding: 1rem;
+            margin: -2rem -1rem 1rem -1rem;
+        }
+        
+        .following-content {
+            padding: 0 1rem 1rem 1rem;
+        }
+    }
 </style>
 
 <div class="profile-container">
@@ -675,21 +826,21 @@
                         }
                         
                         <div class="public-info-grid">
-                            <div class="form-group">
-                                <label class="form-label">First Name</label>
-                                <input value="@Model.FirstName" class="form-control" readonly />
+                            <div class="public-info-item">
+                                <label class="public-info-label">First Name</label>
+                                <div class="public-info-value">@Model.FirstName</div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Last Name</label>
-                                <input value="@Model.LastName" class="form-control" readonly />
+                            <div class="public-info-item">
+                                <label class="public-info-label">Last Name</label>
+                                <div class="public-info-value">@Model.LastName</div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Email</label>
-                                <input value="@Model.Email" class="form-control" readonly />
+                            <div class="public-info-item">
+                                <label class="public-info-label">Email</label>
+                                <div class="public-info-value">@Model.Email</div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Member Since</label>
-                                <input value="@DateTime.Now.ToString("MMMM yyyy")" class="form-control" readonly />
+                            <div class="public-info-item">
+                                <label class="public-info-label">Member Since</label>
+                                <div class="public-info-value">@DateTime.Now.ToString("MMMM yyyy")</div>
                             </div>
                         </div>
                     </div>
@@ -726,6 +877,48 @@
                                         @if (!string.IsNullOrEmpty(linkedBuyer.Email))
                                         {
                                             <div class="linked-buyer-email">@linkedBuyer.Email</div>
+                                        }
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Following Section -->
+        @if (Model.FollowingSellers != null && Model.FollowingSellers.Any())
+        {
+            <div class="profile-card">
+                <div class="following-header">
+                    <h3 class="following-title">
+                        <i class="fas fa-store"></i> Following
+                        <span class="following-count">(@Model.FollowingSellers.Count)</span>
+                    </h3>
+                </div>
+                <div class="following-content">
+                    <div class="followed-sellers-grid">
+                        @foreach (var followedSeller in Model.FollowingSellers)
+                        {
+                            <div class="followed-seller-card">
+                                <a href="@Url.Action("PublicProfile", "SellerProfile", new { id = followedSeller.SellerId })" class="followed-seller-link">
+                                    <div class="followed-seller-avatar">
+                                        @{
+                                            var firstInitial = !string.IsNullOrEmpty(followedSeller.FirstName) ? followedSeller.FirstName.First().ToString().ToUpper() : "?";
+                                            var lastInitial = !string.IsNullOrEmpty(followedSeller.LastName) ? followedSeller.LastName.First().ToString().ToUpper() : "";
+                                        }
+                                        @firstInitial@lastInitial
+                                    </div>
+                                    <div class="followed-seller-info">
+                                        <div class="followed-seller-name">@followedSeller.FirstName @followedSeller.LastName</div>
+                                        @if (!string.IsNullOrEmpty(followedSeller.StoreName))
+                                        {
+                                            <div class="followed-seller-store">@followedSeller.StoreName</div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(followedSeller.Email))
+                                        {
+                                            <div class="followed-seller-email">@followedSeller.Email</div>
                                         }
                                     </div>
                                 </a>
