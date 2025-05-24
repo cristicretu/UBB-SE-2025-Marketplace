@@ -4,6 +4,7 @@
 
 namespace MarketMinds.ViewModels
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
@@ -11,6 +12,7 @@ namespace MarketMinds.ViewModels
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
+    using MarketMinds.Shared.Services.BuyProductsService;
 
     /// <summary>
     /// View model class for managing buyer wishlist data and operations.
@@ -37,6 +39,8 @@ namespace MarketMinds.ViewModels
         /// <inheritdoc/>
         public IBuyerService BuyerService { get; set; } = null!;
 
+        public IBuyProductsService ProductService { get; set; } = null!;
+
         /// <inheritdoc/>
         public string SearchText
         {
@@ -48,7 +52,7 @@ namespace MarketMinds.ViewModels
             set
             {
                 this.searchText = value;
-                this.UpdateItems();
+                _ = UpdateItemsAsync();
             }
         }
 
@@ -59,8 +63,10 @@ namespace MarketMinds.ViewModels
             {
                 if (this.items == null)
                 {
-                    this.allItems = this.ComputeAllItems();
-                    this.UpdateItems();
+                    // Initialize with empty collection
+                    this.items = new ObservableCollection<IBuyerWishlistItemViewModel>();
+                    // Load items asynchronously
+                    _ = LoadItemsAsync();
                 }
 
                 return this.items!;
@@ -77,11 +83,11 @@ namespace MarketMinds.ViewModels
         /// <inheritdoc/>
         public string? SelectedSort
         {
-            get => this.selectedSort;
+            get => this.selectedSort ?? this.SortOptions.FirstOrDefault();
             set
             {
                 this.selectedSort = value;
-                this.UpdateItems();
+                _ = UpdateItemsAsync();
             }
         }
 
@@ -92,7 +98,7 @@ namespace MarketMinds.ViewModels
             set
             {
                 this.familySyncActive = value;
-                this.UpdateItems();
+                _ = UpdateItemsAsync();
             }
         }
 
@@ -104,6 +110,7 @@ namespace MarketMinds.ViewModels
                 Buyer = this.Buyer,
                 ItemDetailsProvider = this.ItemDetailsProvider,
                 BuyerService = this.BuyerService,
+                ProductService = this.ProductService,
                 searchText = this.searchText,
                 familySyncActive = this.familySyncActive,
                 selectedSort = this.selectedSort,
@@ -116,6 +123,7 @@ namespace MarketMinds.ViewModels
             await this.BuyerService.RemoveWishilistItem(this.Buyer, productId);
             this.items = null;
             this.OnPropertyChanged(nameof(this.Items));
+            await LoadItemsAsync();
         }
 
         /// <summary>
@@ -150,54 +158,147 @@ namespace MarketMinds.ViewModels
         /// <returns>A wishlist item view model with loaded details.</returns>
         private IBuyerWishlistItemViewModel GetWishlistItemDetails(BuyerWishlistItem wishlistItem, bool canDelete = false)
         {
+            var product = this.ProductService.GetProductById(wishlistItem.ProductId);
             // merge-nicusor, fetch the product from the wishlistItem.productId
-            var item = this.ItemDetailsProvider.LoadWishlistItemDetails(new BuyerWishlistItemViewModel
+            var item = new BuyerWishlistItemViewModel
             {
                 ProductId = wishlistItem.ProductId,
                 OwnItem = canDelete,
                 RemoveCallback = this,
-                Product = new BuyProduct(
-                    "Sample Product Name", // Replace with actual product name
-                    "Sample Product Description", // Replace with actual product description
-                    1, // Replace with actual seller ID
-                    null, // conditionId (null for default)
-                    null, // categoryId (null for default)
-                    10.0), // Replace with actual product
-            });
+                Product = product,
+                Title = product?.Title ?? "Unknown Product",
+                Description = product?.Description ?? string.Empty,
+                Price = (decimal)(product?.Price ?? 0)
+            };
             return item;
         }
 
-        /// <summary>
-        /// Updates the filtered and sorted items collection.
-        /// </summary>
-        private void UpdateItems()
+        public async Task LoadItemsAsync()
         {
-            var newItems = this.allItems!;
-            var enumerable = newItems.AsEnumerable();
-
-            if (!this.familySyncActive)
-            {
-                enumerable = enumerable.Where(x => x.OwnItem);
-            }
-
-            if (this.searchText.Length > 0)
-            {
-                enumerable = enumerable
-                    .Where(x => x.Title.ToUpper().Contains(this.searchText.ToUpper()));
-            }
-
-            if (this.selectedSort == "Sort by: Price Descending")
-            {
-                enumerable = enumerable.OrderByDescending(x => x.Price);
-            }
-            else if (this.selectedSort == "Sort by: Price Ascending")
-            {
-                enumerable = enumerable.OrderBy(x => x.Price);
-            }
-
-            this.items = new ObservableCollection<IBuyerWishlistItemViewModel>(enumerable.ToList());
-
+            var allItems = await ComputeAllItemsAsync();
+            this.items = new ObservableCollection<IBuyerWishlistItemViewModel>(allItems);
             this.OnPropertyChanged(nameof(this.Items));
+        }
+
+        private async Task<List<IBuyerWishlistItemViewModel>> ComputeAllItemsAsync()
+        {
+            try
+            {
+                // Load own items
+                var ownItems = await Task.WhenAll(this.Buyer.Wishlist.Items.Select(x => GetWishlistItemDetailsAsync(x, true)));
+
+                // Load linked items if family sync is active
+                var linkedItems = new List<IBuyerWishlistItemViewModel>();
+                if (this.familySyncActive)
+                {
+                    var confirmedLinkages = this.Buyer.Linkages.Where(link => link.Status == BuyerLinkageStatus.Confirmed);
+                    foreach (var linkage in confirmedLinkages)
+                    {
+                        var linkedBuyerItems = await Task.WhenAll(linkage.Buyer.Wishlist.Items.Select(wishlistItem => GetWishlistItemDetailsAsync(wishlistItem)));
+                        linkedItems.AddRange(linkedBuyerItems);
+                    }
+                }
+
+                // Combine and deduplicate items
+                var allItems = ownItems.Concat(linkedItems)
+                    .GroupBy(x => x.ProductId)
+                    .Select(itemsWithSameProduct => itemsWithSameProduct
+                        .OrderByDescending(item => item.OwnItem)
+                        .First())
+                    .ToList();
+
+                return allItems;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error computing wishlist items: {ex.Message}");
+                return new List<IBuyerWishlistItemViewModel>();
+            }
+        }
+
+        private async Task<IBuyerWishlistItemViewModel> GetWishlistItemDetailsAsync(BuyerWishlistItem wishlistItem, bool canDelete = false)
+        {
+            try
+            {
+                var product = await ProductService.GetProductByIdAsync(wishlistItem.ProductId) as BuyProduct;
+                if (product == null)
+                {
+                    return new BuyerWishlistItemViewModel
+                    {
+                        ProductId = wishlistItem.ProductId,
+                        OwnItem = canDelete,
+                        RemoveCallback = this,
+                        Title = "Product Not Found",
+                        Description = "This product is no longer available",
+                        Price = 0,
+                        ImageSource = "ms-appx:///Assets/Products/default-product.png"
+                    };
+                }
+
+                string imageUrl = product.Images?.FirstOrDefault()?.Url ?? "ms-appx:///Assets/Products/default-product.png";
+                return new BuyerWishlistItemViewModel
+                {
+                    ProductId = wishlistItem.ProductId,
+                    OwnItem = canDelete,
+                    RemoveCallback = this,
+                    Product = product,
+                    Title = product.Title ?? "Unknown Product",
+                    Description = product.Description ?? string.Empty,
+                    Price = (decimal)product.Price,
+                    ImageSource = imageUrl
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading wishlist item {wishlistItem.ProductId}: {ex.Message}");
+                return new BuyerWishlistItemViewModel
+                {
+                    ProductId = wishlistItem.ProductId,
+                    OwnItem = canDelete,
+                    RemoveCallback = this,
+                    Title = "Error Loading Product",
+                    Description = "There was an error loading this product",
+                    Price = 0,
+                    ImageSource = "ms-appx:///Assets/Products/default-product.png"
+                };
+            }
+        }
+
+        private async Task UpdateItemsAsync()
+        {
+            try
+            {
+                var newItems = await ComputeAllItemsAsync();
+                var enumerable = newItems.AsEnumerable();
+
+                if (!this.familySyncActive)
+                {
+                    enumerable = enumerable.Where(x => x.OwnItem);
+                }
+
+                if (this.searchText.Length > 0)
+                {
+                    enumerable = enumerable
+                        .Where(x => x.Title.ToUpper().Contains(this.searchText.ToUpper()));
+                }
+
+                if (this.selectedSort == "Sort by: Price Descending")
+                {
+                    enumerable = enumerable.OrderByDescending(x => x.Price);
+                }
+                else if (this.selectedSort == "Sort by: Price Ascending")
+                {
+                    enumerable = enumerable.OrderBy(x => x.Price);
+                }
+
+                this.items = new ObservableCollection<IBuyerWishlistItemViewModel>(enumerable.ToList());
+                this.OnPropertyChanged(nameof(this.Items));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error updating wishlist items: {ex.Message}");
+                // You might want to show an error message to the user here
+            }
         }
     }
 }

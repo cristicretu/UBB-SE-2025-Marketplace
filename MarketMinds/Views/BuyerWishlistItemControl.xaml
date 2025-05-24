@@ -11,6 +11,7 @@
 
     <UserControl.Resources>
         <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter" />
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
     </UserControl.Resources>
 
     <Border BorderThickness="2" BorderBrush="#1976D2" Padding="10"
@@ -18,8 +19,17 @@
             Width="260" Height="260">
         <StackPanel HorizontalAlignment="Center">
             <!-- Mock Image -->
-            <Image Source="{x:Bind ViewModel.ImageSource}" Width="80" Height="80"
-                   Stretch="Uniform" Margin="0,5,0,5" />
+            <Grid Width="80" Height="80" Margin="0,5,0,5">
+                <Image Source="{x:Bind ViewModel.ImageSource}" 
+                       Stretch="Uniform"
+                       ImageFailed="OnImageFailed"/>
+                <Image x:Name="FallbackImage" 
+                       Source="ms-appx:///Assets/Products/default-product.png"
+                       Stretch="Uniform"
+                       Visibility="Collapsed"/>
+                <ProgressRing IsActive="True" 
+                             Visibility="{x:Bind ViewModel.ImageSource, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}"/>
+            </Grid>
 
             <!-- Item Name -->
             <TextBlock Text="{x:Bind ViewModel.Title}" FontSize="16" FontWeight="Bold"
@@ -51,14 +61,13 @@
                 <Button Width="35" Height="35"
                         ToolTipService.ToolTip="Add To Cart" Padding="0"
                         Command="{x:Bind ViewModel.AddToCartCommand}"
-                        CommandParameter="{x:Bind ViewModel.Product}"
-                        Visibility="{x:Bind ViewModel.OwnItem, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
-                                    <Image Width="17" Height="17">
-                                        <Image.Source>
-                                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/cart-add.svg" />
-                                        </Image.Source>
-                                    </Image>
-                                </Button>
+                        CommandParameter="{x:Bind ViewModel.Product}">
+                    <Image Width="17" Height="17">
+                        <Image.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/cart-add.svg" />
+                        </Image.Source>
+                    </Image>
+                </Button>
             </StackPanel>
         </StackPanel>
     </Border>

@@ -78,6 +78,15 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
                 throw new KeyNotFoundException($"BorrowProduct with ID {id} not found.");
             }
 
+            if (product.SellerId != null)
+            {
+                var seller = context.Users.FirstOrDefault(u => u.Id == product.SellerId);
+                if (seller != null)
+                {
+                    product.Seller = seller;
+                }
+            }
+
             LoadProductRelationships(product);
 
             return product;

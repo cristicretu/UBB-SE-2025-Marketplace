@@ -49,19 +49,21 @@ namespace MarketMinds.Shared.ProxyRepository
             response.EnsureSuccessStatusCode();
         }
 
-        public string GetProductById(int id)
+        public async Task<string> GetProductByIdAsync(int id)
         {
             if (httpClient == null || httpClient.BaseAddress == null)
             {
                 throw new InvalidOperationException("HTTP client is not properly initialized");
             }
 
-            var response = httpClient.GetAsync($"buyproducts/{id}").Result;
+            var response = await httpClient.GetAsync($"buyproducts/{id}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
             response.EnsureSuccessStatusCode();
-            return response.Content.ReadAsStringAsync().Result;
+            return await response.Content.ReadAsStringAsync();
         }
-
-
 
         // merge-nicusor
 

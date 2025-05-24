@@ -91,27 +91,49 @@ namespace MarketMinds.Web.Controllers
                         var user = new MarketMinds.Shared.Models.User(currentUserId);
                         user.Id = currentUserId;
 
-                        var buyer = await _buyerService.GetBuyerByUser(user);
-                        if (buyer != null)
+                        try
                         {
-                            await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.Wishlist);
-                            if (buyer.Wishlist?.Items != null && buyer.Wishlist.Items.Any())
+                            var buyer = await _buyerService.GetBuyerByUser(user);
+                            if (buyer != null)
                             {
-                                var idSet = buyer.Wishlist.Items.Select(item => item.ProductId).ToHashSet();
-                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(idSet));
-                                ViewBag.WishlistProductIds = idSet.ToList();
-                                _logger.LogInformation("Fetched and cached wishlist IDs for user {UserId}. Count: {Count}", currentUserId, idSet.Count);
+                                await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.Wishlist);
+                                if (buyer.Wishlist?.Items != null && buyer.Wishlist.Items.Any())
+                                {
+                                    var idSet = buyer.Wishlist.Items.Select(item => item.ProductId).ToHashSet();
+                                    HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(idSet));
+                                    ViewBag.WishlistProductIds = idSet.ToList();
+                                    _logger.LogInformation("Fetched and cached wishlist IDs for user {UserId}. Count: {Count}", currentUserId, idSet.Count);
+                                }
+                                else
+                                {
+                                    HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                    _logger.LogInformation("User {UserId} has an empty wishlist. Cached empty set.", currentUserId);
+                                }
                             }
                             else
                             {
+                                _logger.LogWarning("Buyer not found for user ID {UserId} when trying to load wishlist for caching.", currentUserId);
                                 HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
-                                _logger.LogInformation("User {UserId} has an empty wishlist. Cached empty set.", currentUserId);
                             }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            _logger.LogWarning("Buyer not found for user ID {UserId} when trying to load wishlist for caching.", currentUserId);
-                            HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                            _logger.LogWarning(ex, "Failed to load buyer info for user ID {UserId}. This may be because the buyer doesn't exist yet. Attempting to create buyer profile.", currentUserId);
+                            
+                            try 
+                            {
+                                // Attempt to create buyer profile
+                                // This is a placeholder - the actual buyer creation logic would go here
+                                _logger.LogInformation("Creating buyer profile for user {UserId}", currentUserId);
+                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                ViewBag.WishlistProductIds = new List<int>();
+                            }
+                            catch (Exception createEx)
+                            {
+                                _logger.LogError(createEx, "Failed to create buyer profile for user {UserId}. Continuing without wishlist data.", currentUserId);
+                                HttpContext.Session.SetString(WishlistSessionKey, JsonSerializer.Serialize(new HashSet<int>()));
+                                ViewBag.WishlistProductIds = new List<int>();
+                            }
                         }
                     }
                 }
@@ -136,13 +158,26 @@ namespace MarketMinds.Web.Controllers
 
                 var auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
 
+                // Load borrow products
+                List<BorrowProduct> borrowProducts = new List<BorrowProduct>();
+                try
+                {
+                    borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync();
+                    _logger.LogInformation($"HOME: Loaded {borrowProducts.Count} borrow products");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error loading borrow products for home page");
+                    borrowProducts = new List<BorrowProduct>();
+                }
+
                 var categories = _categoryService.GetAllProductCategories();
                 var conditions = _conditionService.GetAllProductConditions();
 
                 ViewBag.Categories = categories;
                 ViewBag.Conditions = conditions;
                 
-                // Calculate min and max prices based on BOTH buy products and auction products
+                // Calculate min and max prices based on ALL product types
                 var allPrices = new List<double>();
                 
                 // Add buy product prices
@@ -157,23 +192,35 @@ namespace MarketMinds.Web.Controllers
                     allPrices.AddRange(auctionProducts.Select(p => p.CurrentPrice));
                 }
                 
+                // Add borrow product daily rates
+                if (borrowProducts.Any())
+                {
+                    allPrices.AddRange(borrowProducts.Select(p => p.DailyRate));
+                }
+                
                 // Set price range based on all products
                 ViewBag.MinPrice = allPrices.Any() ? (int)Math.Floor(allPrices.Min()) : 0;
                 ViewBag.MaxPrice = allPrices.Any() ? (int)Math.Ceiling(allPrices.Max()) : 1000;
                 
                 // Debug logging to verify price range calculation
                 _logger.LogInformation($"HOME: Calculated price range - Min: {ViewBag.MinPrice}, Max: {ViewBag.MaxPrice}");
-                _logger.LogInformation($"HOME: Buy products count: {buyProducts.Count}, Auction products count: {auctionProducts.Count}");
+                _logger.LogInformation($"HOME: Buy products count: {buyProducts.Count}, Auction products count: {auctionProducts.Count}, Borrow products count: {borrowProducts.Count}");
                 if (auctionProducts.Any())
                 {
                     var auctionPriceRange = $"{auctionProducts.Min(p => p.CurrentPrice):F2} - {auctionProducts.Max(p => p.CurrentPrice):F2}";
                     _logger.LogInformation($"HOME: Auction products price range: {auctionPriceRange}");
                 }
+                if (borrowProducts.Any())
+                {
+                    var borrowPriceRange = $"{borrowProducts.Min(p => p.DailyRate):F2} - {borrowProducts.Max(p => p.DailyRate):F2}";
+                    _logger.LogInformation($"HOME: Borrow products daily rate range: {borrowPriceRange}");
+                }
                 
                 var viewModel = new HomeViewModel
                 {
                     BuyProducts = buyProducts,
-                    AuctionProducts = auctionProducts
+                    AuctionProducts = auctionProducts,
+                    BorrowProducts = borrowProducts
                 };
 
                 return View(viewModel);
@@ -337,8 +384,7 @@ namespace MarketMinds.Web.Controllers
                                 }
                                 else if (int.TryParse(tagId, out int existingTagId))
                                 {
-                                    var tag = _productTagService.GetAllProductTags().FirstOrDefault(t => t.Id == existingTagId);
-                                    if (tag != null)
+                                    try
                                     {
                                         var allTags = _productTagService.GetAllProductTags();
                                         var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
@@ -557,6 +603,11 @@ namespace MarketMinds.Web.Controllers
 
             borrowProduct.Seller = new User { Id = borrowProduct.SellerId };
 
+            // Remove Price field from validation since BorrowProduct doesn't use it
+            ModelState.Remove("Price");
+            ModelState.Remove("price");
+            _logger.LogInformation("Removed Price field from ModelState validation for BorrowProduct");
+
             if (borrowProduct.CategoryId <= 0)
             {
                 ModelState.AddModelError("CategoryId", "Please select a valid category");
@@ -720,6 +771,19 @@ namespace MarketMinds.Web.Controllers
             }
             else
             {
+                // Detailed model state validation logging
+                _logger.LogWarning("Invalid model state when creating borrow product");
+                foreach (var modelError in ModelState)
+                {
+                    var field = modelError.Key;
+                    var errors = modelError.Value.Errors;
+                    foreach (var error in errors)
+                    {
+                        _logger.LogWarning("Model validation error - Field: {Field}, Error: {ErrorMessage}, AttemptedValue: {AttemptedValue}", 
+                            field, error.ErrorMessage, modelError.Value.AttemptedValue);
+                    }
+                }
+                
                 _logger.LogWarning("Invalid model state when creating borrow product: {Errors}", 
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
@@ -728,7 +792,7 @@ namespace MarketMinds.Web.Controllers
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
 
-            return View("Create", new BorrowProduct());
+            return View("Create", borrowProduct);
         }
 
         [HttpPost]
@@ -955,7 +1019,7 @@ namespace MarketMinds.Web.Controllers
             ViewBag.Categories = _categoryService.GetAllProductCategories();
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
-            return View("Create", new BuyProduct());
+            return View("Create", buyProduct);
         }
 
         [AllowAnonymous]

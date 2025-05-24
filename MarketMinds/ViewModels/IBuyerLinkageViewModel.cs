@@ -51,9 +51,9 @@ namespace MarketMinds.ViewModels
         Visibility RequestSyncVsbl { get; }
 
         /// <summary>
-        /// Gets the visibility state of the unsync button.
+        /// Gets the visibility state of the cancel request button.
         /// </summary>
-        Visibility UnsyncVsbl { get; }
+        Visibility CancelRequestVsbl { get; }
 
         /// <summary>
         /// Gets the visibility state of the accept button.
@@ -66,27 +66,38 @@ namespace MarketMinds.ViewModels
         Visibility DeclineVsbl { get; }
 
         /// <summary>
-        /// Requests synchronization with another buyer.
+        /// Gets the visibility state of the unsync button.
+        /// </summary>
+        Visibility UnsyncVsbl { get; }
+
+        /// <summary>
+        /// Requests synchronization with the linked buyer.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task RequestSync();
 
         /// <summary>
-        /// Removes synchronization with another buyer.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task Unsync();
-
-        /// <summary>
-        /// Accepts a synchronization request from another buyer.
+        /// Accepts a synchronization request.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task Accept();
 
         /// <summary>
-        /// Declines a synchronization request from another buyer.
+        /// Declines a synchronization request.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task Decline();
+
+        /// <summary>
+        /// Cancels a synchronization request.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task Cancel();
+
+        /// <summary>
+        /// Unsynchronizes with the linked buyer.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task Unsync();
     }
 }
