@@ -1,8 +1,10 @@
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Repositories;
+using MarketMinds.Shared.Services;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using Server.DataModels;
+using BuyerLinkageStatus = MarketMinds.Shared.Services.BuyerLinkageStatus;
 
 namespace Server.MarketMinds.Repositories
 {
@@ -23,34 +25,31 @@ namespace Server.MarketMinds.Repositories
         }
 
         /// <summary>
-        /// Creates a new linkage between two buyers
+        /// Creates a new pending linkage request between two buyers
         /// </summary>
-        /// <param name="buyerId1">First buyer ID</param>
-        /// <param name="buyerId2">Second buyer ID</param>
-        /// <returns>The created buyer linkage</returns>
-        public async Task<BuyerLinkage> CreateLinkageAsync(int buyerId1, int buyerId2)
+        /// <param name="requestingBuyerId">Requesting buyer ID</param>
+        /// <param name="receivingBuyerId">Receiving buyer ID</param>
+        /// <returns>The created buyer linkage request</returns>
+        public async Task<BuyerLinkage> CreateLinkageRequestAsync(int requestingBuyerId, int receivingBuyerId)
         {
-            if (buyerId1 == buyerId2)
+            if (requestingBuyerId == receivingBuyerId)
             {
                 throw new ArgumentException("A buyer cannot link to themselves");
             }
 
-            // Check if linkage already exists
-            var existingLinkage = await GetLinkageAsync(buyerId1, buyerId2);
+            // Check if any linkage already exists (pending or approved)
+            var existingLinkage = await GetLinkageEntityAsync(requestingBuyerId, receivingBuyerId);
             if (existingLinkage != null)
             {
-                throw new InvalidOperationException("Buyers are already linked");
+                throw new InvalidOperationException("A linkage request already exists between these buyers");
             }
 
-            // Create entity with consistent ordering (requesting = smaller ID, receiving = larger ID)
-            var requestingBuyerId = Math.Min(buyerId1, buyerId2);
-            var receivingBuyerId = Math.Max(buyerId1, buyerId2);
-
+            // Create entity with requesting and receiving buyer IDs (maintain order)
             var linkageEntity = new BuyerLinkageEntity
             {
                 RequestingBuyerId = requestingBuyerId,
                 ReceivingBuyerId = receivingBuyerId,
-                IsApproved = true // For now, auto-approve linkages
+                IsApproved = false // Start as pending
             };
 
             _context.BuyerLinkages.Add(linkageEntity);
@@ -61,7 +60,41 @@ namespace Server.MarketMinds.Repositories
         }
 
         /// <summary>
-        /// Removes a linkage between two buyers
+        /// Creates a new linkage between two buyers (DEPRECATED - use CreateLinkageRequestAsync)
+        /// </summary>
+        /// <param name="buyerId1">First buyer ID</param>
+        /// <param name="buyerId2">Second buyer ID</param>
+        /// <returns>The created buyer linkage</returns>
+        public async Task<BuyerLinkage> CreateLinkageAsync(int buyerId1, int buyerId2)
+        {
+            // For backward compatibility, redirect to the new request-based system
+            return await CreateLinkageRequestAsync(buyerId1, buyerId2);
+        }
+
+        /// <summary>
+        /// Approves a pending linkage request
+        /// </summary>
+        /// <param name="requestingBuyerId">Requesting buyer ID</param>
+        /// <param name="receivingBuyerId">Receiving buyer ID</param>
+        /// <returns>True if request was approved, false if not found</returns>
+        public async Task<bool> ApproveLinkageRequestAsync(int requestingBuyerId, int receivingBuyerId)
+        {
+            var linkageEntity = await _context.BuyerLinkages
+                .FirstOrDefaultAsync(bl => bl.RequestingBuyerId == requestingBuyerId && bl.ReceivingBuyerId == receivingBuyerId);
+
+            if (linkageEntity == null || linkageEntity.IsApproved)
+            {
+                return false; // Request not found or already approved
+            }
+
+            linkageEntity.IsApproved = true;
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes a linkage or linkage request between two buyers
         /// </summary>
         /// <param name="buyerId1">First buyer ID</param>
         /// <param name="buyerId2">Second buyer ID</param>
@@ -81,7 +114,7 @@ namespace Server.MarketMinds.Repositories
         }
 
         /// <summary>
-        /// Checks if two buyers are linked
+        /// Checks if two buyers are linked (approved linkage only)
         /// </summary>
         /// <param name="buyerId1">First buyer ID</param>
         /// <param name="buyerId2">Second buyer ID</param>
@@ -98,11 +131,46 @@ namespace Server.MarketMinds.Repositories
         }
 
         /// <summary>
-        /// Gets a specific linkage between two buyers
+        /// Gets the linkage status between two buyers
+        /// </summary>
+        /// <param name="currentBuyerId">Current buyer ID</param>
+        /// <param name="targetBuyerId">Target buyer ID</param>
+        /// <returns>The linkage status</returns>
+        public async Task<BuyerLinkageStatus> GetLinkageStatusAsync(int currentBuyerId, int targetBuyerId)
+        {
+            if (currentBuyerId == targetBuyerId)
+            {
+                return BuyerLinkageStatus.None;
+            }
+
+            var linkageEntity = await GetLinkageEntityAsync(currentBuyerId, targetBuyerId);
+            if (linkageEntity == null)
+            {
+                return BuyerLinkageStatus.None;
+            }
+
+            if (linkageEntity.IsApproved)
+            {
+                return BuyerLinkageStatus.Linked;
+            }
+
+            // Check if current user is the one who sent the request or received it
+            if (linkageEntity.RequestingBuyerId == currentBuyerId)
+            {
+                return BuyerLinkageStatus.PendingSent;
+            }
+            else
+            {
+                return BuyerLinkageStatus.PendingReceived;
+            }
+        }
+
+        /// <summary>
+        /// Gets a specific linkage between two buyers (approved only)
         /// </summary>
         /// <param name="buyerId1">First buyer ID</param>
         /// <param name="buyerId2">Second buyer ID</param>
-        /// <returns>The buyer linkage if it exists, null otherwise</returns>
+        /// <returns>The buyer linkage if it exists and is approved, null otherwise</returns>
         public async Task<BuyerLinkage?> GetLinkageAsync(int buyerId1, int buyerId2)
         {
             var linkageEntity = await GetLinkageEntityAsync(buyerId1, buyerId2);
@@ -115,7 +183,7 @@ namespace Server.MarketMinds.Repositories
         }
 
         /// <summary>
-        /// Gets all linkages for a specific buyer
+        /// Gets all approved linkages for a specific buyer
         /// </summary>
         /// <param name="buyerId">Buyer ID</param>
         /// <returns>List of buyer linkages involving the specified buyer</returns>
@@ -129,7 +197,7 @@ namespace Server.MarketMinds.Repositories
         }
 
         /// <summary>
-        /// Gets all linked buyer IDs for a specific buyer
+        /// Gets all linked buyer IDs for a specific buyer (approved linkages only)
         /// </summary>
         /// <param name="buyerId">Buyer ID</param>
         /// <returns>List of buyer IDs that are linked to the specified buyer</returns>
@@ -156,7 +224,7 @@ namespace Server.MarketMinds.Repositories
         }
 
         /// <summary>
-        /// Helper method to get a linkage entity with consistent ordering
+        /// Helper method to get a linkage entity between two buyers (checks both directions)
         /// </summary>
         /// <param name="buyerId1">First buyer ID</param>
         /// <param name="buyerId2">Second buyer ID</param>
@@ -168,12 +236,11 @@ namespace Server.MarketMinds.Repositories
                 return null;
             }
 
-            // Use consistent ordering to match how we store linkages
-            var requestingBuyerId = Math.Min(buyerId1, buyerId2);
-            var receivingBuyerId = Math.Max(buyerId1, buyerId2);
-
+            // Check both directions since we maintain the requesting/receiving order
             return await _context.BuyerLinkages
-                .FirstOrDefaultAsync(bl => bl.RequestingBuyerId == requestingBuyerId && bl.ReceivingBuyerId == receivingBuyerId);
+                .FirstOrDefaultAsync(bl => 
+                    (bl.RequestingBuyerId == buyerId1 && bl.ReceivingBuyerId == buyerId2) ||
+                    (bl.RequestingBuyerId == buyerId2 && bl.ReceivingBuyerId == buyerId1));
         }
     }
 } 

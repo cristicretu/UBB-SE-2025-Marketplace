@@ -51,24 +51,78 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <summary>
-        /// Creates a new linkage between two buyers
+        /// Creates a new pending linkage request between two buyers
+        /// </summary>
+        /// <param name="requestingBuyerId">Requesting buyer ID</param>
+        /// <param name="receivingBuyerId">Receiving buyer ID</param>
+        /// <returns>The created buyer linkage request</returns>
+        public async Task<BuyerLinkage> CreateLinkageRequestAsync(int requestingBuyerId, int receivingBuyerId)
+        {
+            var response = await _httpClient.PostAsync(
+                $"buyerlinkage/sendrequest?currentBuyerId={requestingBuyerId}&targetBuyerId={receivingBuyerId}", 
+                null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return new BuyerLinkage(requestingBuyerId, receivingBuyerId);
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"Failed to create linkage request: {errorContent}");
+        }
+
+        /// <summary>
+        /// Approves a pending linkage request
+        /// </summary>
+        /// <param name="requestingBuyerId">Requesting buyer ID</param>
+        /// <param name="receivingBuyerId">Receiving buyer ID</param>
+        /// <returns>True if request was approved, false if not found</returns>
+        public async Task<bool> ApproveLinkageRequestAsync(int requestingBuyerId, int receivingBuyerId)
+        {
+            var response = await _httpClient.PostAsync(
+                $"buyerlinkage/acceptrequest?currentBuyerId={receivingBuyerId}&requestingBuyerId={requestingBuyerId}", 
+                null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<bool>(content, _jsonOptions);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the linkage status between two buyers
+        /// </summary>
+        /// <param name="currentBuyerId">Current buyer ID</param>
+        /// <param name="targetBuyerId">Target buyer ID</param>
+        /// <returns>The linkage status</returns>
+        public async Task<MarketMinds.Shared.Services.BuyerLinkageStatus> GetLinkageStatusAsync(int currentBuyerId, int targetBuyerId)
+        {
+            var response = await _httpClient.GetAsync(
+                $"buyerlinkage/status?currentBuyerId={currentBuyerId}&targetBuyerId={targetBuyerId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                // The API now returns the enum directly as JSON, not as a string
+                return JsonSerializer.Deserialize<MarketMinds.Shared.Services.BuyerLinkageStatus>(content, _jsonOptions);
+            }
+
+            return MarketMinds.Shared.Services.BuyerLinkageStatus.None;
+        }
+
+        /// <summary>
+        /// Creates a new linkage between two buyers (DEPRECATED - use CreateLinkageRequestAsync)
         /// </summary>
         /// <param name="buyerId1">First buyer ID</param>
         /// <param name="buyerId2">Second buyer ID</param>
         /// <returns>The created buyer linkage</returns>
         public async Task<BuyerLinkage> CreateLinkageAsync(int buyerId1, int buyerId2)
         {
-            var response = await _httpClient.PostAsync(
-                $"buyerlinkage/link?currentBuyerId={buyerId1}&targetBuyerId={buyerId2}", 
-                null);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return new BuyerLinkage(buyerId1, buyerId2);
-            }
-
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new InvalidOperationException($"Failed to create linkage: {errorContent}");
+            // For backward compatibility, redirect to the new request-based system
+            return await CreateLinkageRequestAsync(buyerId1, buyerId2);
         }
 
         /// <summary>
@@ -80,7 +134,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public async Task<bool> RemoveLinkageAsync(int buyerId1, int buyerId2)
         {
             var response = await _httpClient.PostAsync(
-                $"buyerlinkage/unlink?currentBuyerId={buyerId1}&targetBuyerId={buyerId2}", 
+                $"buyerlinkage/removelink?currentBuyerId={buyerId1}&targetBuyerId={buyerId2}", 
                 null);
 
             if (response.IsSuccessStatusCode)
@@ -100,16 +154,8 @@ namespace MarketMinds.Shared.ProxyRepository
         /// <returns>True if buyers are linked, false otherwise</returns>
         public async Task<bool> AreBuyersLinkedAsync(int buyerId1, int buyerId2)
         {
-            var response = await _httpClient.GetAsync(
-                $"buyerlinkage/check?buyerId1={buyerId1}&buyerId2={buyerId2}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<bool>(content, _jsonOptions);
-            }
-
-            return false;
+            var status = await GetLinkageStatusAsync(buyerId1, buyerId2);
+            return status == MarketMinds.Shared.Services.BuyerLinkageStatus.Linked;
         }
 
         /// <summary>

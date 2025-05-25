@@ -39,7 +39,12 @@
                                 }
                                 else
                                 {
-                                    <span>Buyer Profile</span>
+                                    <span class="flex items-center gap-3">
+                                        <span class="font-medium">@Model.Username</span>
+                                        <span class="bg-white bg-opacity-20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-blue-100 border border-white border-opacity-30">
+                                            Buyer
+                                        </span>
+                                    </span>
                                 }
                             </p>
                         </div>
@@ -60,6 +65,52 @@
             <div class="p-8">
                 @if (canEdit)
                 {
+                    <!-- Error Messages -->
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-red-800 font-medium">@TempData["ErrorMessage"]</p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-red-800 font-medium mb-2">Please correct the following errors:</p>
+                                    <ul class="text-red-700 text-sm list-disc list-inside space-y-1">
+                                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                        {
+                                            <li>@error.ErrorMessage</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Success Messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-green-800 font-medium">@TempData["SuccessMessage"]</p>
+                            </div>
+                        </div>
+                    }
+
                     <form asp-action="Update" method="post" class="space-y-8">
                         <input type="hidden" asp-for="BuyerId" />
 
@@ -209,29 +260,93 @@
                         {
                             <!-- Link/Unlink Section -->
                             <div class="text-center">
-                                @if (linkageInfo.IsLinked)
+                                @if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.None)
                                 {
-                                    <form asp-action="Unlink" method="post">
+                                    <!-- Send Link Request -->
+                                    <form asp-action="SendRequest" method="post">
                                         <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
                                         <button type="submit" 
-                                                class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center mx-auto">
-                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path>
-                                            </svg>
-                                            Unlink from this buyer
-                                        </button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <form asp-action="Link" method="post">
-                                        <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
-                                        <button type="submit" 
-                                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center mx-auto">
+                                                class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center mx-auto">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                                             </svg>
-                                            Link with this buyer
+                                            @linkageInfo.ButtonText
+                                        </button>
+                                    </form>
+                                }
+                                else if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingSent)
+                                {
+                                    <!-- Request Pending - Show Cancel Option -->
+                                    <div class="space-y-3">
+                                        <div class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg shadow-sm flex items-center mx-auto cursor-default">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            @linkageInfo.ButtonText
+                                        </div>
+                                        <form asp-action="CancelRequest" method="post">
+                                            <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                            <button type="submit" 
+                                                    class="@linkageInfo.SecondaryButtonCssClass text-white font-medium py-1.5 px-4 rounded text-sm transition-colors shadow-sm flex items-center mx-auto">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                @linkageInfo.SecondaryButtonText
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived)
+                                {
+                                    <!-- Pending Request Received - Show Accept/Reject Options -->
+                                    <div class="space-y-3">
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                            <div class="flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <p class="text-blue-800 font-medium">This buyer has sent you a link request</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-3 justify-center">
+                                            <form asp-action="AcceptRequest" method="post" class="inline">
+                                                <input type="hidden" name="requestingBuyerId" value="@Model.BuyerId" />
+                                                <button type="submit" 
+                                                        class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    @linkageInfo.ButtonText
+                                                </button>
+                                            </form>
+                                            <form asp-action="RejectRequest" method="post" class="inline">
+                                                <input type="hidden" name="requestingBuyerId" value="@Model.BuyerId" />
+                                                <button type="submit" 
+                                                        class="@linkageInfo.SecondaryButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                    @linkageInfo.SecondaryButtonText
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
+                                else if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.Linked)
+                                {
+                                    <!-- Already Linked - Show Remove Link Option with Hover Effect -->
+                                    <form asp-action="RemoveLink" method="post">
+                                        <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                        <button type="submit" 
+                                                class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 shadow-sm flex items-center justify-center mx-auto group hover:bg-red-600 w-32"
+                                                data-default-text="@linkageInfo.ButtonText"
+                                                data-hover-text="Remove"
+                                                onmouseover="this.querySelector('.button-text').textContent = 'Remove'; this.querySelector('.button-icon').innerHTML = '<path stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6&quot;></path>'"
+                                                onmouseout="this.querySelector('.button-text').textContent = '@linkageInfo.ButtonText'; this.querySelector('.button-icon').innerHTML = '<path stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z&quot;></path>'">
+                                            <svg class="w-4 h-4 mr-2 button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span class="button-text">@linkageInfo.ButtonText</span>
                                         </button>
                                     </form>
                                 }
@@ -295,13 +410,33 @@
                                 <div class="flex items-center space-x-4">
                                     <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-lg">
                                         @{
-                                            var firstInitial = !string.IsNullOrEmpty(linkedBuyer.FirstName) ? linkedBuyer.FirstName.First().ToString().ToUpper() : "?";
-                                            var lastInitial = !string.IsNullOrEmpty(linkedBuyer.LastName) ? linkedBuyer.LastName.First().ToString().ToUpper() : "";
+                                            string initials = "?";
+                                            if (!string.IsNullOrEmpty(linkedBuyer.Username))
+                                            {
+                                                initials = linkedBuyer.Username.Length >= 2 ? linkedBuyer.Username.Substring(0, 2).ToUpper() : linkedBuyer.Username.ToUpper();
+                                            }
+                                            else if (!string.IsNullOrEmpty(linkedBuyer.FirstName))
+                                            {
+                                                initials = linkedBuyer.FirstName.Substring(0, 1).ToUpper();
+                                                if (!string.IsNullOrEmpty(linkedBuyer.LastName))
+                                                {
+                                                    initials += linkedBuyer.LastName.Substring(0, 1).ToUpper();
+                                                }
+                                            }
                                         }
-                                        @firstInitial@lastInitial
+                                        @initials
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <h4 class="font-semibold text-gray-900 truncate">@linkedBuyer.FirstName @linkedBuyer.LastName</h4>
+                                        <h4 class="font-semibold text-gray-900 truncate">
+                                            @if (!string.IsNullOrEmpty(linkedBuyer.Username))
+                                            {
+                                                @linkedBuyer.Username
+                                            }
+                                            else
+                                            {
+                                                <span class="text-gray-500 italic">Unknown User</span>
+                                            }
+                                        </h4>
                                         <div class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium inline-block mt-1">
                                             @linkedBuyer.Badge
                                         </div>
@@ -501,8 +636,93 @@
             $('form[action*="Update"]').on('submit', function(e) {
                 console.log("Profile form submission started");
                 
+                // Remove any existing client-side error messages
+                $('#clientValidationError').remove();
+                
+                // Client-side validation - check all required fields
+                var validationErrors = [];
+                var hasErrors = false;
+
+                // Check personal information fields
+                if (!$("#FirstName").val().trim()) {
+                    validationErrors.push("First name is required");
+                    hasErrors = true;
+                }
+                if (!$("#LastName").val().trim()) {
+                    validationErrors.push("Last name is required");
+                    hasErrors = true;
+                }
+                if (!$("#PhoneNumber").val().trim()) {
+                    validationErrors.push("Phone number is required");
+                    hasErrors = true;
+                }
+
+                // Check billing address fields
+                if (!$("#BillingStreet").val().trim()) {
+                    validationErrors.push("Billing street address is required");
+                    hasErrors = true;
+                }
+                if (!$("#BillingCity").val().trim()) {
+                    validationErrors.push("Billing city is required");
+                    hasErrors = true;
+                }
+                if (!$("#BillingCountry").val().trim()) {
+                    validationErrors.push("Billing country is required");
+                    hasErrors = true;
+                }
+                if (!$("#BillingPostalCode").val().trim()) {
+                    validationErrors.push("Billing postal code is required");
+                    hasErrors = true;
+                }
+
                 var isChecked = $("#useSameAddress").is(":checked");
                 console.log("UseSameAddress checkbox:", isChecked);
+                
+                // Check shipping address fields if not using same address
+                if (!isChecked) {
+                    if (!$("#ShippingStreet").val().trim()) {
+                        validationErrors.push("Shipping street address is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                    if (!$("#ShippingCity").val().trim()) {
+                        validationErrors.push("Shipping city is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                    if (!$("#ShippingCountry").val().trim()) {
+                        validationErrors.push("Shipping country is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                    if (!$("#ShippingPostalCode").val().trim()) {
+                        validationErrors.push("Shipping postal code is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                }
+
+                // If there are validation errors, prevent submission and show in-page error
+                if (hasErrors) {
+                    e.preventDefault();
+                    
+                    // Create error message HTML
+                    var errorHtml = '<div id="clientValidationError" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">' +
+                        '<div class="flex items-start">' +
+                        '<svg class="w-5 h-5 text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>' +
+                        '</svg>' +
+                        '<div>' +
+                        '<p class="text-red-800 font-medium">All fields must be completed before updating your profile.</p>' +
+                        '</div></div></div>';
+                    
+                    // Insert error message at the top of the form
+                    $('form[action*="Update"]').prepend(errorHtml);
+                    
+                    // Scroll to top to show the error
+                    $('html, body').animate({
+                        scrollTop: $('#clientValidationError').offset().top - 20
+                    }, 500);
+                    
+                    console.log("Form submission prevented due to validation errors:", validationErrors);
+                    return false;
+                }
                 
                 if (isChecked) {
                     console.log("Checkbox checked - ensuring shipping address matches billing");

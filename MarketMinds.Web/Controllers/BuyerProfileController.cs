@@ -130,15 +130,51 @@ namespace WebMarketplace.Controllers
                 {
                     try
                     {
+                        _logger.LogInformation("Processing linked buyer ID: {LinkedBuyerId}, User is null: {UserIsNull}", 
+                            linkedBuyer.Id, linkedBuyer.User == null);
+                        
+                        string username = string.Empty;
+                        string email = string.Empty;
+                        
+                        // If User object is not loaded, try to get it separately
+                        if (linkedBuyer.User == null)
+                        {
+                            _logger.LogWarning("User object is null for linked buyer {LinkedBuyerId}, trying to get user by ID", linkedBuyer.Id);
+                            var user = await _userService.GetUserByIdAsync(linkedBuyer.Id);
+                            if (user != null)
+                            {
+                                username = user.Username ?? string.Empty;
+                                email = user.Email ?? string.Empty;
+                                _logger.LogInformation("Retrieved user data for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'", 
+                                    linkedBuyer.Id, username, email);
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Could not retrieve user data for buyer {LinkedBuyerId}", linkedBuyer.Id);
+                            }
+                        }
+                        else
+                        {
+                            username = linkedBuyer.User.Username ?? string.Empty;
+                            email = linkedBuyer.User.Email ?? string.Empty;
+                            _logger.LogInformation("User object available for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'", 
+                                linkedBuyer.Id, username, email);
+                        }
+
                         var linkedBuyerInfo = new LinkedBuyerInfo
                         {
                             BuyerId = linkedBuyer.Id,
                             FirstName = linkedBuyer.FirstName ?? "Unknown",
                             LastName = linkedBuyer.LastName ?? "User",
-                            Email = linkedBuyer.User?.Email ?? string.Empty,
+                            Email = email,
+                            Username = username,
                             Badge = linkedBuyer.Badge.ToString() ?? "None",
                             LinkedDate = DateTime.UtcNow // Default for now since we don't have this in the old system
                         };
+                        
+                        _logger.LogInformation("Created LinkedBuyerInfo for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'", 
+                            linkedBuyer.Id, linkedBuyerInfo.Username, linkedBuyerInfo.Email);
+                        
                         linkedBuyerInfoList.Add(linkedBuyerInfo);
                     }
                     catch (Exception ex)
@@ -247,6 +283,91 @@ namespace WebMarketplace.Controllers
                 {
                     _logger.LogError("DEBUG: Update() - Model is NULL!");
                     return BadRequest("Model is null");
+                }
+
+                // Comprehensive validation - all fields must be filled
+                var validationErrors = new List<string>();
+
+                // Personal Information validation
+                if (string.IsNullOrWhiteSpace(model.FirstName))
+                {
+                    validationErrors.Add("First name is required.");
+                    ModelState.AddModelError("FirstName", "First name is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.LastName))
+                {
+                    validationErrors.Add("Last name is required.");
+                    ModelState.AddModelError("LastName", "Last name is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.PhoneNumber))
+                {
+                    validationErrors.Add("Phone number is required.");
+                    ModelState.AddModelError("PhoneNumber", "Phone number is required.");
+                }
+
+                // Billing Address validation
+                if (string.IsNullOrWhiteSpace(model.BillingStreet))
+                {
+                    validationErrors.Add("Billing street address is required.");
+                    ModelState.AddModelError("BillingStreet", "Billing street address is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.BillingCity))
+                {
+                    validationErrors.Add("Billing city is required.");
+                    ModelState.AddModelError("BillingCity", "Billing city is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.BillingCountry))
+                {
+                    validationErrors.Add("Billing country is required.");
+                    ModelState.AddModelError("BillingCountry", "Billing country is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.BillingPostalCode))
+                {
+                    validationErrors.Add("Billing postal code is required.");
+                    ModelState.AddModelError("BillingPostalCode", "Billing postal code is required.");
+                }
+
+                // Shipping Address validation (only if not using same address)
+                if (!model.UseSameAddress)
+                {
+                    if (string.IsNullOrWhiteSpace(model.ShippingStreet))
+                    {
+                        validationErrors.Add("Shipping street address is required when not using the same as billing address.");
+                        ModelState.AddModelError("ShippingStreet", "Shipping street address is required.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(model.ShippingCity))
+                    {
+                        validationErrors.Add("Shipping city is required when not using the same as billing address.");
+                        ModelState.AddModelError("ShippingCity", "Shipping city is required.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(model.ShippingCountry))
+                    {
+                        validationErrors.Add("Shipping country is required when not using the same as billing address.");
+                        ModelState.AddModelError("ShippingCountry", "Shipping country is required.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(model.ShippingPostalCode))
+                    {
+                        validationErrors.Add("Shipping postal code is required when not using the same as billing address.");
+                        ModelState.AddModelError("ShippingPostalCode", "Shipping postal code is required.");
+                    }
+                }
+
+                // If there are validation errors, return to the form
+                if (validationErrors.Any())
+                {
+                    _logger.LogWarning("UPDATE: Validation failed with {Count} errors: {Errors}", 
+                        validationErrors.Count, string.Join("; ", validationErrors));
+                    
+                    TempData["ErrorMessage"] = "All fields are required. Please fill in all the information before updating your profile.";
+                    return View("Index", model);
                 }
                 
                 // Log all received model data in detail
@@ -690,7 +811,33 @@ namespace WebMarketplace.Controllers
                 BuyerLinkageInfo? linkageInfo = null;
                 if (currentUserId > 0 && currentUserId != id && IsCurrentUserBuyer())
                 {
-                    linkageInfo = await _buyerLinkageService.GetLinkageStatusAsync(currentUserId, id);
+                    // Get current user's buyer profile to get the buyer ID
+                    var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+                    if (currentUser != null)
+                    {
+                        var currentBuyer = await _buyerService.GetBuyerByUser(currentUser);
+                        if (currentBuyer != null)
+                        {
+                            _logger.LogInformation("Getting linkage status between current buyer {CurrentBuyerId} and target buyer {TargetBuyerId}", 
+                                currentBuyer.Id, targetBuyer.Id);
+                            linkageInfo = await _buyerLinkageService.GetLinkageStatusAsync(currentBuyer.Id, targetBuyer.Id);
+                            _logger.LogInformation("Linkage status: {Status}, CanManageLink: {CanManageLink}", 
+                                linkageInfo?.Status, linkageInfo?.CanManageLink);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Current user {UserId} does not have a buyer profile", currentUserId);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Current user {UserId} not found", currentUserId);
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("Not showing linkage info - CurrentUserId: {CurrentUserId}, TargetUserId: {TargetUserId}, IsCurrentUserBuyer: {IsCurrentUserBuyer}", 
+                        currentUserId, id, IsCurrentUserBuyer());
                 }
 
                 // Load linked buyers information
@@ -706,6 +853,7 @@ namespace WebMarketplace.Controllers
                     FirstName = targetBuyer.FirstName ?? string.Empty,
                     LastName = targetBuyer.LastName ?? string.Empty,
                     Email = targetBuyer.User?.Email ?? string.Empty,
+                    Username = targetBuyer.User?.Username ?? string.Empty,
                     Badge = targetBuyer.Badge.ToString() ?? "None",
                     // Don't expose private information like addresses and phone number
                     PhoneNumber = string.Empty,
@@ -730,6 +878,8 @@ namespace WebMarketplace.Controllers
                 ViewBag.CanEdit = false;
                 ViewBag.LinkageInfo = linkageInfo;
 
+                _logger.LogInformation("Setting ViewBag.LinkageInfo to: {LinkageInfo}", linkageInfo != null ? $"Status: {linkageInfo.Status}, CanManageLink: {linkageInfo.CanManageLink}" : "null");
+
                 return View("Index", viewModel);
             }
             catch (Exception ex)
@@ -740,7 +890,482 @@ namespace WebMarketplace.Controllers
         }
 
         /// <summary>
-        /// Links the current buyer with another buyer
+        /// Sends a linkage request to another buyer
+        /// </summary>
+        /// <param name="targetBuyerId">The ID of the buyer to send request to</param>
+        /// <returns>Redirects back to the public profile</returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SendRequest(int targetBuyerId)
+        {
+            _logger.LogInformation("SendRequest action called for target buyer ID: {TargetBuyerId}", targetBuyerId);
+
+            try
+            {
+                int currentUserId = GetCurrentUserId();
+                if (currentUserId == 0)
+                {
+                    _logger.LogWarning("User not authenticated for send request action");
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Check if current user is a buyer
+                if (!IsCurrentUserBuyer())
+                {
+                    _logger.LogWarning("Non-buyer user {UserId} attempted to send request to buyer {TargetBuyerId}", currentUserId, targetBuyerId);
+                    TempData["ErrorMessage"] = "Only buyers can send link requests to other buyers.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                if (currentUserId == targetBuyerId)
+                {
+                    _logger.LogWarning("User {UserId} attempted to send request to themselves", currentUserId);
+                    TempData["ErrorMessage"] = "You cannot send a link request to yourself.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                // Get current user's buyer profile
+                var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+                if (currentUser == null)
+                {
+                    _logger.LogWarning("Current user {UserId} not found", currentUserId);
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                var currentBuyer = await _buyerService.GetBuyerByUser(currentUser);
+                if (currentBuyer == null)
+                {
+                    _logger.LogWarning("Current user {UserId} does not have a buyer profile", currentUserId);
+                    TempData["ErrorMessage"] = "Buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                // Get target user's buyer profile
+                var targetUser = await _userService.GetUserByIdAsync(targetBuyerId);
+                if (targetUser == null)
+                {
+                    _logger.LogWarning("Target user {UserId} not found", targetBuyerId);
+                    TempData["ErrorMessage"] = "Target user not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                var targetBuyer = await _buyerService.GetBuyerByUser(targetUser);
+                if (targetBuyer == null)
+                {
+                    _logger.LogWarning("Target user {UserId} does not have a buyer profile", targetBuyerId);
+                    TempData["ErrorMessage"] = "Target buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                bool success = await _buyerLinkageService.CreateLinkageRequestAsync(currentBuyer.Id, targetBuyer.Id);
+
+                if (success)
+                {
+                    _logger.LogInformation("Successfully sent link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                        currentBuyer.Id, targetBuyer.Id);
+                    TempData["SuccessMessage"] = "Link request sent successfully!";
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                        currentBuyer.Id, targetBuyer.Id);
+                    TempData["ErrorMessage"] = "Failed to send link request. Please try again.";
+                }
+
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending link request - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
+                    GetCurrentUserId(), targetBuyerId);
+                TempData["ErrorMessage"] = "An error occurred while sending the link request. Please try again.";
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+            }
+        }
+
+        /// <summary>
+        /// Accepts a pending linkage request from another buyer
+        /// </summary>
+        /// <param name="requestingBuyerId">The ID of the buyer who sent the request</param>
+        /// <returns>Redirects back to the public profile</returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AcceptRequest(int requestingBuyerId)
+        {
+            _logger.LogInformation("AcceptRequest action called for requesting buyer ID: {RequestingBuyerId}", requestingBuyerId);
+
+            try
+            {
+                int currentUserId = GetCurrentUserId();
+                if (currentUserId == 0)
+                {
+                    _logger.LogWarning("User not authenticated for accept request action");
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Check if current user is a buyer
+                if (!IsCurrentUserBuyer())
+                {
+                    _logger.LogWarning("Non-buyer user {UserId} attempted to accept request from buyer {RequestingBuyerId}", currentUserId, requestingBuyerId);
+                    TempData["ErrorMessage"] = "Only buyers can manage link requests.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                if (currentUserId == requestingBuyerId)
+                {
+                    _logger.LogWarning("User {UserId} attempted to accept request from themselves", currentUserId);
+                    TempData["ErrorMessage"] = "You cannot accept a request from yourself.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                // Get current user's buyer profile
+                var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+                if (currentUser == null)
+                {
+                    _logger.LogWarning("Current user {UserId} not found", currentUserId);
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                var currentBuyer = await _buyerService.GetBuyerByUser(currentUser);
+                if (currentBuyer == null)
+                {
+                    _logger.LogWarning("Current user {UserId} does not have a buyer profile", currentUserId);
+                    TempData["ErrorMessage"] = "Buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                // Get requesting user's buyer profile
+                var requestingUser = await _userService.GetUserByIdAsync(requestingBuyerId);
+                if (requestingUser == null)
+                {
+                    _logger.LogWarning("Requesting user {UserId} not found", requestingBuyerId);
+                    TempData["ErrorMessage"] = "Requesting user not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                var requestingBuyer = await _buyerService.GetBuyerByUser(requestingUser);
+                if (requestingBuyer == null)
+                {
+                    _logger.LogWarning("Requesting user {UserId} does not have a buyer profile", requestingBuyerId);
+                    TempData["ErrorMessage"] = "Requesting buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                bool success = await _buyerLinkageService.AcceptLinkageRequestAsync(currentBuyer.Id, requestingBuyer.Id);
+
+                if (success)
+                {
+                    _logger.LogInformation("Successfully accepted link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                        requestingBuyer.Id, currentBuyer.Id);
+                    TempData["SuccessMessage"] = "Link request accepted! You are now linked with this buyer.";
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to accept link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                        requestingBuyer.Id, currentBuyer.Id);
+                    TempData["ErrorMessage"] = "Failed to accept link request. Please try again.";
+                }
+
+                return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error accepting link request - Current: {CurrentUserId}, Requesting: {RequestingBuyerId}", 
+                    GetCurrentUserId(), requestingBuyerId);
+                TempData["ErrorMessage"] = "An error occurred while accepting the link request. Please try again.";
+                return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+            }
+        }
+
+        /// <summary>
+        /// Rejects a pending linkage request from another buyer
+        /// </summary>
+        /// <param name="requestingBuyerId">The ID of the buyer who sent the request</param>
+        /// <returns>Redirects back to the public profile</returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> RejectRequest(int requestingBuyerId)
+        {
+            _logger.LogInformation("RejectRequest action called for requesting buyer ID: {RequestingBuyerId}", requestingBuyerId);
+
+            try
+            {
+                int currentUserId = GetCurrentUserId();
+                if (currentUserId == 0)
+                {
+                    _logger.LogWarning("User not authenticated for reject request action");
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Check if current user is a buyer
+                if (!IsCurrentUserBuyer())
+                {
+                    _logger.LogWarning("Non-buyer user {UserId} attempted to reject request from buyer {RequestingBuyerId}", currentUserId, requestingBuyerId);
+                    TempData["ErrorMessage"] = "Only buyers can manage link requests.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                if (currentUserId == requestingBuyerId)
+                {
+                    _logger.LogWarning("User {UserId} attempted to reject request from themselves", currentUserId);
+                    TempData["ErrorMessage"] = "You cannot reject a request from yourself.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                // Get current user's buyer profile
+                var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+                if (currentUser == null)
+                {
+                    _logger.LogWarning("Current user {UserId} not found", currentUserId);
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                var currentBuyer = await _buyerService.GetBuyerByUser(currentUser);
+                if (currentBuyer == null)
+                {
+                    _logger.LogWarning("Current user {UserId} does not have a buyer profile", currentUserId);
+                    TempData["ErrorMessage"] = "Buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                // Get requesting user's buyer profile
+                var requestingUser = await _userService.GetUserByIdAsync(requestingBuyerId);
+                if (requestingUser == null)
+                {
+                    _logger.LogWarning("Requesting user {UserId} not found", requestingBuyerId);
+                    TempData["ErrorMessage"] = "Requesting user not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                var requestingBuyer = await _buyerService.GetBuyerByUser(requestingUser);
+                if (requestingBuyer == null)
+                {
+                    _logger.LogWarning("Requesting user {UserId} does not have a buyer profile", requestingBuyerId);
+                    TempData["ErrorMessage"] = "Requesting buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+                }
+
+                bool success = await _buyerLinkageService.RejectLinkageRequestAsync(currentBuyer.Id, requestingBuyer.Id);
+
+                if (success)
+                {
+                    _logger.LogInformation("Successfully rejected link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                        requestingBuyer.Id, currentBuyer.Id);
+                    TempData["SuccessMessage"] = "Link request rejected.";
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to reject link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                        requestingBuyer.Id, currentBuyer.Id);
+                    TempData["ErrorMessage"] = "Failed to reject link request. Please try again.";
+                }
+
+                return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rejecting link request - Current: {CurrentUserId}, Requesting: {RequestingBuyerId}", 
+                    GetCurrentUserId(), requestingBuyerId);
+                TempData["ErrorMessage"] = "An error occurred while rejecting the link request. Please try again.";
+                return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
+            }
+        }
+
+        /// <summary>
+        /// Cancels a pending linkage request that the current user sent
+        /// </summary>
+        /// <param name="targetBuyerId">The ID of the buyer who received the request</param>
+        /// <returns>Redirects back to the public profile</returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> CancelRequest(int targetBuyerId)
+        {
+            _logger.LogInformation("CancelRequest action called for target buyer ID: {TargetBuyerId}", targetBuyerId);
+
+            try
+            {
+                int currentUserId = GetCurrentUserId();
+                if (currentUserId == 0)
+                {
+                    _logger.LogWarning("User not authenticated for cancel request action");
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Check if current user is a buyer
+                if (!IsCurrentUserBuyer())
+                {
+                    _logger.LogWarning("Non-buyer user {UserId} attempted to cancel request to buyer {TargetBuyerId}", currentUserId, targetBuyerId);
+                    TempData["ErrorMessage"] = "Only buyers can manage link requests.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                if (currentUserId == targetBuyerId)
+                {
+                    _logger.LogWarning("User {UserId} attempted to cancel request to themselves", currentUserId);
+                    TempData["ErrorMessage"] = "You cannot cancel a request to yourself.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                // Get current user's buyer profile
+                var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+                if (currentUser == null)
+                {
+                    _logger.LogWarning("Current user {UserId} not found", currentUserId);
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                var currentBuyer = await _buyerService.GetBuyerByUser(currentUser);
+                if (currentBuyer == null)
+                {
+                    _logger.LogWarning("Current user {UserId} does not have a buyer profile", currentUserId);
+                    TempData["ErrorMessage"] = "Buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                // Get target user's buyer profile
+                var targetUser = await _userService.GetUserByIdAsync(targetBuyerId);
+                if (targetUser == null)
+                {
+                    _logger.LogWarning("Target user {UserId} not found", targetBuyerId);
+                    TempData["ErrorMessage"] = "Target user not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                var targetBuyer = await _buyerService.GetBuyerByUser(targetUser);
+                if (targetBuyer == null)
+                {
+                    _logger.LogWarning("Target user {UserId} does not have a buyer profile", targetBuyerId);
+                    TempData["ErrorMessage"] = "Target buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                bool success = await _buyerLinkageService.CancelLinkageRequestAsync(currentBuyer.Id, targetBuyer.Id);
+
+                if (success)
+                {
+                    _logger.LogInformation("Successfully cancelled link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                        currentBuyer.Id, targetBuyer.Id);
+                    TempData["SuccessMessage"] = "Link request cancelled.";
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to cancel link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                        currentBuyer.Id, targetBuyer.Id);
+                    TempData["ErrorMessage"] = "Failed to cancel link request. Please try again.";
+                }
+
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cancelling link request - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
+                    GetCurrentUserId(), targetBuyerId);
+                TempData["ErrorMessage"] = "An error occurred while cancelling the link request. Please try again.";
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+            }
+        }
+
+        /// <summary>
+        /// Removes an existing link between buyers
+        /// </summary>
+        /// <param name="targetBuyerId">The ID of the buyer to unlink from</param>
+        /// <returns>Redirects back to the public profile</returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> RemoveLink(int targetBuyerId)
+        {
+            _logger.LogInformation("RemoveLink action called for target buyer ID: {TargetBuyerId}", targetBuyerId);
+
+            try
+            {
+                int currentUserId = GetCurrentUserId();
+                if (currentUserId == 0)
+                {
+                    _logger.LogWarning("User not authenticated for remove link action");
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Check if current user is a buyer
+                if (!IsCurrentUserBuyer())
+                {
+                    _logger.LogWarning("Non-buyer user {UserId} attempted to remove link with buyer {TargetBuyerId}", currentUserId, targetBuyerId);
+                    TempData["ErrorMessage"] = "Only buyers can manage buyer links.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                if (currentUserId == targetBuyerId)
+                {
+                    _logger.LogWarning("User {UserId} attempted to remove link with themselves", currentUserId);
+                    TempData["ErrorMessage"] = "You cannot remove a link with yourself.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                // Get current user's buyer profile
+                var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+                if (currentUser == null)
+                {
+                    _logger.LogWarning("Current user {UserId} not found", currentUserId);
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                var currentBuyer = await _buyerService.GetBuyerByUser(currentUser);
+                if (currentBuyer == null)
+                {
+                    _logger.LogWarning("Current user {UserId} does not have a buyer profile", currentUserId);
+                    TempData["ErrorMessage"] = "Buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                // Get target user's buyer profile
+                var targetUser = await _userService.GetUserByIdAsync(targetBuyerId);
+                if (targetUser == null)
+                {
+                    _logger.LogWarning("Target user {UserId} not found", targetBuyerId);
+                    TempData["ErrorMessage"] = "Target user not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                var targetBuyer = await _buyerService.GetBuyerByUser(targetUser);
+                if (targetBuyer == null)
+                {
+                    _logger.LogWarning("Target user {UserId} does not have a buyer profile", targetBuyerId);
+                    TempData["ErrorMessage"] = "Target buyer profile not found.";
+                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+                }
+
+                bool success = await _buyerLinkageService.UnlinkBuyersAsync(currentBuyer.Id, targetBuyer.Id);
+
+                if (success)
+                {
+                    _logger.LogInformation("Successfully removed link between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
+                        currentBuyer.Id, targetBuyer.Id);
+                    TempData["SuccessMessage"] = "Link removed successfully!";
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to remove link between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
+                        currentBuyer.Id, targetBuyer.Id);
+                    TempData["ErrorMessage"] = "Failed to remove link. Please try again.";
+                }
+
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing link - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
+                    GetCurrentUserId(), targetBuyerId);
+                TempData["ErrorMessage"] = "An error occurred while removing the link. Please try again.";
+                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
+            }
+        }
+
+        /// <summary>
+        /// Links the current buyer with another buyer (DEPRECATED - use SendRequest instead)
         /// </summary>
         /// <param name="targetBuyerId">The ID of the buyer to link with</param>
         /// <returns>Redirects back to the public profile</returns>
@@ -748,60 +1373,12 @@ namespace WebMarketplace.Controllers
         [Authorize]
         public async Task<IActionResult> Link(int targetBuyerId)
         {
-            _logger.LogInformation("Link action called for target buyer ID: {TargetBuyerId}", targetBuyerId);
-
-            try
-            {
-                int currentUserId = GetCurrentUserId();
-                if (currentUserId == 0)
-                {
-                    _logger.LogWarning("User not authenticated for link action");
-                    return RedirectToAction("Login", "Account");
-                }
-
-                // Check if current user is a buyer
-                if (!IsCurrentUserBuyer())
-                {
-                    _logger.LogWarning("Non-buyer user {UserId} attempted to link with buyer {TargetBuyerId}", currentUserId, targetBuyerId);
-                    TempData["ErrorMessage"] = "Only buyers can link with other buyers.";
-                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
-                }
-
-                if (currentUserId == targetBuyerId)
-                {
-                    _logger.LogWarning("User {UserId} attempted to link to themselves", currentUserId);
-                    TempData["ErrorMessage"] = "You cannot link to yourself.";
-                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
-                }
-
-                bool success = await _buyerLinkageService.LinkBuyersAsync(currentUserId, targetBuyerId);
-
-                if (success)
-                {
-                    _logger.LogInformation("Successfully linked buyer {CurrentUserId} with buyer {TargetBuyerId}", 
-                        currentUserId, targetBuyerId);
-                    TempData["SuccessMessage"] = "Successfully linked with buyer!";
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to link buyer {CurrentUserId} with buyer {TargetBuyerId}", 
-                        currentUserId, targetBuyerId);
-                    TempData["ErrorMessage"] = "Failed to link with buyer. Please try again.";
-                }
-
-                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error linking buyers - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
-                    GetCurrentUserId(), targetBuyerId);
-                TempData["ErrorMessage"] = "An error occurred while linking. Please try again.";
-                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
-            }
+            // Redirect to the new SendRequest action for backward compatibility
+            return await SendRequest(targetBuyerId);
         }
 
         /// <summary>
-        /// Unlinks the current buyer from another buyer
+        /// Unlinks the current buyer from another buyer (DEPRECATED - use RemoveLink instead)
         /// </summary>
         /// <param name="targetBuyerId">The ID of the buyer to unlink from</param>
         /// <returns>Redirects back to the public profile</returns>
@@ -809,56 +1386,8 @@ namespace WebMarketplace.Controllers
         [Authorize]
         public async Task<IActionResult> Unlink(int targetBuyerId)
         {
-            _logger.LogInformation("Unlink action called for target buyer ID: {TargetBuyerId}", targetBuyerId);
-
-            try
-            {
-                int currentUserId = GetCurrentUserId();
-                if (currentUserId == 0)
-                {
-                    _logger.LogWarning("User not authenticated for unlink action");
-                    return RedirectToAction("Login", "Account");
-                }
-
-                // Check if current user is a buyer
-                if (!IsCurrentUserBuyer())
-                {
-                    _logger.LogWarning("Non-buyer user {UserId} attempted to unlink from buyer {TargetBuyerId}", currentUserId, targetBuyerId);
-                    TempData["ErrorMessage"] = "Only buyers can manage buyer links.";
-                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
-                }
-
-                if (currentUserId == targetBuyerId)
-                {
-                    _logger.LogWarning("User {UserId} attempted to unlink from themselves", currentUserId);
-                    TempData["ErrorMessage"] = "You cannot unlink from yourself.";
-                    return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
-                }
-
-                bool success = await _buyerLinkageService.UnlinkBuyersAsync(currentUserId, targetBuyerId);
-
-                if (success)
-                {
-                    _logger.LogInformation("Successfully unlinked buyer {CurrentUserId} from buyer {TargetBuyerId}", 
-                        currentUserId, targetBuyerId);
-                    TempData["SuccessMessage"] = "Successfully unlinked from buyer!";
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to unlink buyer {CurrentUserId} from buyer {TargetBuyerId}", 
-                        currentUserId, targetBuyerId);
-                    TempData["ErrorMessage"] = "Failed to unlink from buyer. Please try again.";
-                }
-
-                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error unlinking buyers - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
-                    GetCurrentUserId(), targetBuyerId);
-                TempData["ErrorMessage"] = "An error occurred while unlinking. Please try again.";
-                return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
-            }
+            // Redirect to the new RemoveLink action for backward compatibility
+            return await RemoveLink(targetBuyerId);
         }
     }
 }
