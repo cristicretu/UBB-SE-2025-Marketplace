@@ -6,6 +6,7 @@
     xmlns:local="using:MarketMinds.Views"
     xmlns:models="using:MarketMinds.Shared.Models"
     xmlns:converters="using:MarketMinds.Converters"
+    xmlns:controls="using:MarketMinds.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -19,7 +20,6 @@
         <converters:UserTypeVisibilityConverter x:Key="UserTypeVisibilityConverter"/>
         <converters:FirstImageUrlConverter x:Key="FirstImageUrlConverter"/>
         <converters:UrlToImageSourceConverter x:Key="UrlToImageSourceConverter"/>
-        <converters:AuctionTimeLeftConverter x:Key="AuctionTimeLeftConverter"/>
         
         <DataTemplate x:Key="BuyProductCard" x:DataType="models:BuyProduct">
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -106,7 +106,8 @@
                         <Button HorizontalAlignment="Stretch"
                                Background="{ThemeResource AccentButtonBackground}"
                                Foreground="{ThemeResource AccentButtonForeground}"
-                               CornerRadius="4">
+                               CornerRadius="4"
+                               Click="BuyProductCard_AddToCart_Click">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xE7BF;" FontSize="16"/>
                                 <TextBlock Text="Add to Cart" FontWeight="SemiBold"/>
@@ -191,10 +192,7 @@
                         </Grid>
                         
                         <!-- Time Left -->
-                        <TextBlock Text="{x:Bind EndTime, Mode=OneWay, Converter={StaticResource AuctionTimeLeftConverter}}"
-                                FontSize="14"
-                                FontWeight="SemiBold"
-                                Foreground="#FF6B47"/>
+                        <controls:CountdownTimer EndTime="{x:Bind EndTime, Mode=OneWay}"/>
                     </StackPanel>
 
                     <!-- Action Button -->
@@ -202,8 +200,8 @@
                                Padding="16,0,16,16">
                         <!-- Place Bid Button (Buyer only) -->
                         <Button HorizontalAlignment="Stretch"
-                               Background="#8B5CF6"
-                               Foreground="White"
+                               Background="{ThemeResource AccentButtonBackground}"
+                               Foreground="{ThemeResource AccentButtonForeground}"
                                CornerRadius="4"
                                Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
                             <StackPanel Orientation="Horizontal" Spacing="8">

@@ -217,6 +217,11 @@ namespace MarketMinds.Views
             }
         }
 
+        private void BuyProductCard_AddToCart_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Implement add to cart functionality
+        }
+
         private void AuctionProductCard_Click(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is AuctionProduct product)
