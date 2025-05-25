@@ -29,17 +29,17 @@ namespace MarketMinds.Views
 
         // view models with backing fields for debugging
         private BuyProductsViewModel _buyProductsViewModel;
-        public BuyProductsViewModel BuyProductsViewModel 
-        { 
+        public BuyProductsViewModel BuyProductsViewModel
+        {
             get => _buyProductsViewModel;
-            set 
+            set
             {
                 Debug.WriteLine($"BuyProductsViewModel setter called. Old: {_buyProductsViewModel?.GetType().Name ?? "NULL"}, New: {value?.GetType().Name ?? "NULL"}");
                 Debug.WriteLine($"Setter called from: {Environment.StackTrace}");
                 _buyProductsViewModel = value;
             }
         }
-        
+
         public AuctionProductsViewModel AuctionProductsViewModel { get; set; }
         public BorrowProductsViewModel BorrowProductsViewModel { get; set; }
         public BuyerWishlistItemViewModel BuyerWishlistItemViewModel { get; set; }
@@ -53,19 +53,73 @@ namespace MarketMinds.Views
         public bool IsCurrentUserBuyer => App.CurrentUser?.UserType == 2;
         public bool IsCurrentUserSeller => App.CurrentUser?.UserType == 3;
 
-        // Pagination properties for Buy Products
+        // Current active tab tracking
+        private int activeTabIndex = 0;
+        public int ActiveTabIndex
+        {
+            get => activeTabIndex;
+            private set 
+            {
+                if (SetProperty(ref activeTabIndex, value))
+                {
+                    // Update pagination visibility when tab changes
+                    OnPropertyChanged(nameof(ShowPaginationForCurrentTab));
+                    
+                    // Update all computed visibility properties
+                    OnPropertyChanged(nameof(ShowBuyLoadingIndicator));
+                    OnPropertyChanged(nameof(ShowAuctionLoadingIndicator));
+                    OnPropertyChanged(nameof(ShowBorrowLoadingIndicator));
+                    OnPropertyChanged(nameof(ShowBuyEmptyState));
+                    OnPropertyChanged(nameof(ShowAuctionEmptyStateForTab));
+                    OnPropertyChanged(nameof(ShowBorrowEmptyStateForTab));
+                }
+            }
+        }
+
+        // Property to control pagination visibility based on current tab
+        public bool ShowPaginationForCurrentTab
+        {
+            get
+            {
+                // Show pagination for Buy Products (0) and Auction Products (1)
+                // Hide for Borrow Products (2) until we implement pagination for it
+                return ActiveTabIndex == 0 || ActiveTabIndex == 1;
+            }
+        }
+
+        // Properties to control which loading indicator and empty state to show
+        public bool ShowBuyLoadingIndicator => ActiveTabIndex == 0 && IsLoading;
+        public bool ShowAuctionLoadingIndicator => ActiveTabIndex == 1 && IsAuctionLoading;
+        public bool ShowBorrowLoadingIndicator => ActiveTabIndex == 2 && IsBorrowLoading;
+
+        public bool ShowBuyEmptyState => ActiveTabIndex == 0 && ShowEmptyState;
+        public bool ShowAuctionEmptyStateForTab => ActiveTabIndex == 1 && ShowAuctionEmptyState;
+        public bool ShowBorrowEmptyStateForTab => ActiveTabIndex == 2 && ShowBorrowEmptyState;
+
+        // Pagination properties - now shared between tabs
         private int currentPageIndex = 0;
         private bool isInitializing = true; // Flag to prevent data loading during initialization
-        
+
         public int CurrentPageIndex
         {
             get => currentPageIndex;
-            set 
+            set
             {
                 if (SetProperty(ref currentPageIndex, value) && !isInitializing)
                 {
-                    // Only load data if we're not in the initialization phase
-                    LoadBuyDataAsync();
+                    // Load data based on active tab
+                    switch (ActiveTabIndex)
+                    {
+                        case 0: // Buy Products
+                            LoadBuyDataAsync();
+                            break;
+                        case 1: // Auction Products
+                            LoadAuctionDataAsync();
+                            break;
+                        // case 2: // Borrow Products - will be added later
+                        //     LoadBorrowDataAsync();
+                        //     break;
+                    }
                 }
             }
         }
@@ -85,10 +139,21 @@ namespace MarketMinds.Views
             {
                 if (SetProperty(ref itemsPerPage, value) && !isInitializing)
                 {
-                    // Reset to first page and always trigger data loading when items per page changes
+                    // Reset to first page and trigger data loading based on active tab
                     CurrentPageIndex = 0;
-                    // If CurrentPageIndex was already 0, the setter won't trigger LoadBuyDataAsync, so call it explicitly
-                    LoadBuyDataAsync();
+                    // Explicitly call load method based on active tab
+                    switch (ActiveTabIndex)
+                    {
+                        case 0: // Buy Products
+                            LoadBuyDataAsync();
+                            break;
+                        case 1: // Auction Products
+                            LoadAuctionDataAsync();
+                            break;
+                        // case 2: // Borrow Products - will be added later
+                        //     LoadBorrowDataAsync();
+                        //     break;
+                    }
                 }
             }
         }
@@ -105,48 +170,84 @@ namespace MarketMinds.Views
         public bool IsLoading
         {
             get => isLoading;
-            private set => SetProperty(ref isLoading, value);
+            private set 
+            {
+                if (SetProperty(ref isLoading, value))
+                {
+                    OnPropertyChanged(nameof(ShowBuyLoadingIndicator));
+                }
+            }
         }
 
         private bool showEmptyState;
         public bool ShowEmptyState
         {
             get => showEmptyState;
-            private set => SetProperty(ref showEmptyState, value);
+            private set 
+            {
+                if (SetProperty(ref showEmptyState, value))
+                {
+                    OnPropertyChanged(nameof(ShowBuyEmptyState));
+                }
+            }
         }
 
         private bool isAuctionLoading;
         public bool IsAuctionLoading
         {
             get => isAuctionLoading;
-            private set => SetProperty(ref isAuctionLoading, value);
+            private set 
+            {
+                if (SetProperty(ref isAuctionLoading, value))
+                {
+                    OnPropertyChanged(nameof(ShowAuctionLoadingIndicator));
+                }
+            }
         }
 
         private bool showAuctionEmptyState;
         public bool ShowAuctionEmptyState
         {
             get => showAuctionEmptyState;
-            private set => SetProperty(ref showAuctionEmptyState, value);
+            private set 
+            {
+                if (SetProperty(ref showAuctionEmptyState, value))
+                {
+                    OnPropertyChanged(nameof(ShowAuctionEmptyStateForTab));
+                }
+            }
         }
 
         private bool isBorrowLoading;
         public bool IsBorrowLoading
         {
             get => isBorrowLoading;
-            private set => SetProperty(ref isBorrowLoading, value);
+            private set 
+            {
+                if (SetProperty(ref isBorrowLoading, value))
+                {
+                    OnPropertyChanged(nameof(ShowBorrowLoadingIndicator));
+                }
+            }
         }
 
         private bool showBorrowEmptyState;
         public bool ShowBorrowEmptyState
         {
             get => showBorrowEmptyState;
-            private set => SetProperty(ref showBorrowEmptyState, value);
+            private set 
+            {
+                if (SetProperty(ref showBorrowEmptyState, value))
+                {
+                    OnPropertyChanged(nameof(ShowBorrowEmptyStateForTab));
+                }
+            }
         }
 
         public MarketMindsPage()
         {
             this.InitializeComponent();
-            
+
             // Get ViewModels from App with null checks to ensure they're initialized
             this.BuyProductsViewModel = App.BuyProductsViewModel ?? throw new InvalidOperationException("BuyProductsViewModel not initialized");
             this.AuctionProductsViewModel = App.AuctionProductsViewModel ?? throw new InvalidOperationException("AuctionProductsViewModel not initialized");
@@ -157,11 +258,8 @@ namespace MarketMinds.Views
             this.AuctionProductsCollection = new ObservableCollection<AuctionProduct>();
             this.BorrowProductsCollection = new ObservableCollection<BorrowProduct>();
 
-            // Set Buy Products as the default selection
+            // Set Buy Products as the default selection - this will trigger ProductsPivot_SelectionChanged
             ProductsPivot.SelectedIndex = 0;
-
-            // Load data when page is initialized
-            LoadBuyDataAsync();
         }
 
         /// <summary>
@@ -281,8 +379,24 @@ namespace MarketMinds.Views
             {
                 IsAuctionLoading = true;
 
-                // Get auction products using proper async method
-                var auctionProducts = await this.AuctionProductsViewModel.GetAllProductsAsync();
+                // Calculate offset for current page
+                int offset = CurrentPageIndex * ItemsPerPage;
+
+                // Get total count first
+                var totalCount = await this.AuctionProductsViewModel.GetProductCountAsync();
+                
+                // Calculate total pages
+                TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
+                
+                // Ensure current page is valid
+                if (CurrentPageIndex >= TotalPages)
+                {
+                    CurrentPageIndex = Math.Max(0, TotalPages - 1);
+                    offset = CurrentPageIndex * ItemsPerPage;
+                }
+
+                // Get auction products for current page using proper async method
+                var auctionProducts = await this.AuctionProductsViewModel.GetProductsAsync(offset, ItemsPerPage);
 
                 // Update UI on the UI thread
                 AuctionProductsCollection.Clear();
@@ -291,15 +405,19 @@ namespace MarketMinds.Views
                     AuctionProductsCollection.Add(product);
                 }
 
+                // Update pagination info
+                UpdatePaginationInfo(totalCount);
+
                 // Update empty state based on collection
-                ShowAuctionEmptyState = AuctionProductsCollection.Count == 0;
-                Debug.WriteLine($"AuctionProductsCollection: {AuctionProductsCollection.Count}");
+                ShowAuctionEmptyState = AuctionProductsCollection.Count == 0 && totalCount == 0;
+                Debug.WriteLine($"AuctionProductsCollection: {AuctionProductsCollection.Count}, Total: {totalCount}, Page: {CurrentPageIndex + 1}/{TotalPages}");
             }
             catch (Exception ex)
             {
                 // TODO: Add proper error handling
                 // Could show an error message to the user
                 System.Diagnostics.Debug.WriteLine($"Error loading auction products: {ex.Message}");
+                ShowAuctionEmptyState = true;
             }
             finally
             {
@@ -358,34 +476,38 @@ namespace MarketMinds.Views
         }
 
         /// <summary>
+        /// Helper method to manually trigger property change notifications
+        /// </summary>
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        /// <summary>
         /// Handle pivot selection changes
         /// </summary>
         private void ProductsPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Update button styles based on pivot selection
+            // Update active tab index
+            ActiveTabIndex = ProductsPivot.SelectedIndex;
+            
+            // Reset pagination when switching tabs
+            CurrentPageIndex = 0;
+            
+            // Always load data when switching tabs to ensure fresh data with current pagination settings
             switch (ProductsPivot.SelectedIndex)
             {
-                case 0:
-                    // Load buy products if needed
-                    if (BuyProductsCollection.Count == 0)
-                    {
-                        CurrentPageIndex = 0; // Reset to first page
-                        LoadBuyDataAsync();
-                    }
+                case 0: // Buy Products
+                    LoadBuyDataAsync();
                     break;
-                case 1:
-                    // Load auction products if needed
-                    if (AuctionProductsCollection.Count == 0)
-                    {
-                        LoadAuctionDataAsync();
-                    }
+                case 1: // Auction Products
+                    LoadAuctionDataAsync();
                     break;
-                case 2:
-                    // Load borrow products if needed
-                    if (BorrowProductsCollection.Count == 0)
-                    {
-                        LoadBorrowDataAsync();
-                    }
+                case 2: // Borrow Products
+                    LoadBorrowDataAsync();
+                    // For borrow products, clear pagination info since no pagination yet
+                    PageInfoText = "";
+                    TotalPages = 1;
                     break;
             }
         }
@@ -398,12 +520,22 @@ namespace MarketMinds.Views
             // Reset filter values here
             PriceRangeSlider.Value = PriceRangeSlider.Maximum;
 
-            // Reset pagination to first page - this will trigger LoadBuyDataAsync()
+            // Reset pagination to first page - this will trigger data loading for the active tab
             CurrentPageIndex = 0;
 
-            // Reload data with cleared filters for other tabs
-            LoadAuctionDataAsync();
-            LoadBorrowDataAsync();
+            // Reload data for the current active tab with cleared filters
+            switch (ActiveTabIndex)
+            {
+                case 0: // Buy Products
+                    LoadBuyDataAsync();
+                    break;
+                case 1: // Auction Products
+                    LoadAuctionDataAsync();
+                    break;
+                case 2: // Borrow Products
+                    LoadBorrowDataAsync();
+                    break;
+            }
         }
 
         private void BuyProductCard_Click(object sender, ItemClickEventArgs e)

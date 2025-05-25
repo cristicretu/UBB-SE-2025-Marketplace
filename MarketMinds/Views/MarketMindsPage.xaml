@@ -346,11 +346,16 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0.20*"/> <!-- Utility bar - 20% width -->
-            <ColumnDefinition Width="0.80*"/> <!-- Pivot content - 80% width -->
+            <ColumnDefinition Width="0.80*"/> <!-- Content area - 80% width -->
         </Grid.ColumnDefinitions>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/> <!-- Main content -->
+            <RowDefinition Height="Auto"/> <!-- Shared pagination controls -->
+        </Grid.RowDefinitions>
 
         <!-- Vertical Utility Bar -->
-        <Grid Grid.Column="0" Background="{ThemeResource SystemControlBackgroundAltMediumLowBrush}" Padding="12">
+        <Grid Grid.Column="0" Grid.Row="0" Background="{ThemeResource SystemControlBackgroundAltMediumLowBrush}" Padding="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Filters header -->
                 <RowDefinition Height="Auto"/> <!-- Search box -->
@@ -426,29 +431,22 @@
         </Grid>
 
         <!-- Pivot Control -->
-        <Pivot Grid.Column="1" x:Name="ProductsPivot" SelectionChanged="ProductsPivot_SelectionChanged">
+        <Pivot Grid.Column="1" Grid.Row="0" x:Name="ProductsPivot" SelectionChanged="ProductsPivot_SelectionChanged">
             <PivotItem Header="Buy Products">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    
                     <!-- Loading indicator -->
                     <ProgressRing x:Name="LoadingRing" 
                                  IsActive="{x:Bind IsLoading, Mode=OneWay}"
                                  HorizontalAlignment="Center" 
                                  VerticalAlignment="Center"
                                  Width="50" Height="50"
-                                 Foreground="{ThemeResource SystemAccentColor}"
-                                 Grid.Row="0"/>
+                                 Foreground="{ThemeResource SystemAccentColor}"/>
                     
                     <!-- Products GridView -->
                     <ScrollViewer ZoomMode="Disabled" 
                                  HorizontalScrollMode="Disabled" 
                                  VerticalScrollBarVisibility="Auto"
-                                 Visibility="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}"
-                                 Grid.Row="0">
+                                 Visibility="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}">
                         <GridView x:Name="BuyProductsGridView"
                                  ItemTemplate="{StaticResource BuyProductCard}"
                                  ItemsSource="{x:Bind BuyProductsCollection, Mode=OneWay}"
@@ -469,50 +467,10 @@
                     <StackPanel HorizontalAlignment="Center" 
                                VerticalAlignment="Center"
                                Spacing="16"
-                               Visibility="{x:Bind ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"
-                               Grid.Row="0">
+                               Visibility="{x:Bind ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
                         <FontIcon Glyph="&#xE7C4;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         <TextBlock Text="No products found" 
                                   Style="{StaticResource SubtitleTextBlockStyle}"
-                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-                    
-                    <!-- Pagination Controls -->
-                    <StackPanel Grid.Row="1" 
-                               Orientation="Horizontal" 
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center"
-                               Spacing="16"
-                               Margin="16">
-                        
-                        <!-- Items per page selector -->
-                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <TextBlock Text="Items per page:" 
-                                      VerticalAlignment="Center"
-                                      Style="{StaticResource CaptionTextBlockStyle}"/>
-                            <ComboBox x:Name="ItemsPerPageComboBox"
-                                     SelectedIndex="1"
-                                     SelectionChanged="ItemsPerPageComboBox_SelectionChanged"
-                                     MinWidth="60">
-                                <ComboBoxItem Content="5" Tag="5"/>
-                                <ComboBoxItem Content="10" Tag="10"/>
-                                <ComboBoxItem Content="15" Tag="15"/>
-                                <ComboBoxItem Content="20" Tag="20"/>
-                                <ComboBoxItem Content="25" Tag="25"/>
-                            </ComboBox>
-                        </StackPanel>
-                        
-                        <!-- PipsPager -->
-                        <PipsPager x:Name="BuyProductsPager"
-                                  NumberOfPages="{x:Bind TotalPages, Mode=OneWay}"
-                                  SelectedPageIndex="{x:Bind CurrentPageIndex, Mode=TwoWay}"
-                                  PreviousButtonVisibility="Visible"
-                                  NextButtonVisibility="Visible"/>
-                        
-                        <!-- Page info -->
-                        <TextBlock Text="{x:Bind PageInfoText, Mode=OneWay}"
-                                  VerticalAlignment="Center"
-                                  Style="{StaticResource CaptionTextBlockStyle}"
                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </Grid>
@@ -604,5 +562,45 @@
                 </Grid>
             </PivotItem>
         </Pivot>
+        
+        <!-- Shared Pagination Controls -->
+        <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
+                   Orientation="Horizontal" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center"
+                   Spacing="16"
+                   Margin="16"
+                   Visibility="{x:Bind ShowPaginationForCurrentTab, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+            
+            <!-- Items per page selector -->
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock Text="Items per page:" 
+                          VerticalAlignment="Center"
+                          Style="{StaticResource CaptionTextBlockStyle}"/>
+                <ComboBox x:Name="ItemsPerPageComboBox"
+                         SelectedIndex="1"
+                         SelectionChanged="ItemsPerPageComboBox_SelectionChanged"
+                         MinWidth="60">
+                    <ComboBoxItem Content="5" Tag="5"/>
+                    <ComboBoxItem Content="10" Tag="10"/>
+                    <ComboBoxItem Content="15" Tag="15"/>
+                    <ComboBoxItem Content="20" Tag="20"/>
+                    <ComboBoxItem Content="25" Tag="25"/>
+                </ComboBox>
+            </StackPanel>
+            
+            <!-- PipsPager -->
+            <PipsPager x:Name="SharedPager"
+                      NumberOfPages="{x:Bind TotalPages, Mode=OneWay}"
+                      SelectedPageIndex="{x:Bind CurrentPageIndex, Mode=TwoWay}"
+                      PreviousButtonVisibility="Visible"
+                      NextButtonVisibility="Visible"/>
+            
+            <!-- Page info -->
+            <TextBlock Text="{x:Bind PageInfoText, Mode=OneWay}"
+                      VerticalAlignment="Center"
+                      Style="{StaticResource CaptionTextBlockStyle}"
+                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
     </Grid>
 </Page>
