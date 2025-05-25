@@ -26,6 +26,20 @@ namespace MarketMinds.Shared.IRepository
         List<BuyProduct> GetProducts();
 
         /// <summary>
+        /// Retrieves buy products with pagination support.
+        /// </summary>
+        /// <param name="offset">The number of products to skip (0 for first page).</param>
+        /// <param name="count">The number of products to return (0 for all products).</param>
+        /// <returns>A list of buy products for the specified page.</returns>
+        List<BuyProduct> GetProducts(int offset, int count);
+
+        /// <summary>
+        /// Gets the total count of buy products.
+        /// </summary>
+        /// <returns>The total number of buy products.</returns>
+        int GetProductCount();
+
+        /// <summary>
         /// Retrieves a buy product by its ID.
         /// </summary>
         /// <param name="productId">The ID of the product.</param>

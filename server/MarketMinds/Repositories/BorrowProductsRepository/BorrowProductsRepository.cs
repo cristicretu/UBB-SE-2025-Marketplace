@@ -29,6 +29,39 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
             return products;
         }
 
+        public List<BorrowProduct> GetProducts(int offset, int count)
+        {
+            var query = context.BorrowProducts
+                .Include(product => product.Condition)
+                .Include(product => product.Category)
+                .OrderBy(p => p.Id); // Ensure consistent ordering for pagination
+
+            List<BorrowProduct> products;
+            
+            if (count > 0)
+            {
+                // Apply pagination
+                products = query.Skip(offset).Take(count).ToList();
+            }
+            else
+            {
+                // Return all products if count is 0
+                products = query.ToList();
+            }
+
+            foreach (var product in products)
+            {
+                LoadProductRelationships(product);
+            }
+
+            return products;
+        }
+
+        public int GetProductCount()
+        {
+            return context.BorrowProducts.Count();
+        }
+
         public void DeleteProduct(BorrowProduct product)
         {
             context.BorrowProducts.Remove(product);
