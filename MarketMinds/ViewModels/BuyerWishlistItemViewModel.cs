@@ -11,6 +11,7 @@ namespace MarketMinds.ViewModels
     using MarketMinds.Shared.Services;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Helper;
+    using System.Diagnostics;
 
     /// <summary>
     /// View model class for managing buyer wishlist item data and operations.
@@ -40,14 +41,18 @@ namespace MarketMinds.ViewModels
 
         public bool IsInWishlist(int productId)
         {
+            foreach (var prod in wishlistProductIds)
+            {
+                Debug.WriteLine("In wishlist: " + prod.ProductId);
+            }
             return wishlistProductIds.Exists(item => item.ProductId == productId);
         }
 
-        // public event PropertyChangedEventHandler? PropertyChanged;
-        // protected void OnPropertyChanged(string propertyName)
-        // {
-        //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        // }
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public BuyerWishlistItemViewModel()
         {
@@ -69,6 +74,11 @@ namespace MarketMinds.ViewModels
             });
         }
 
+        // Dummy property to force UI update
+        public bool WishlistChanged => true;
+
+        private void NotifyWishlistChanged() => OnPropertyChanged(nameof(WishlistChanged));
+
         public async void AddToWishlist(int productId)
         {
             int userId = UserSession.CurrentUserId ?? 1;
@@ -81,7 +91,7 @@ namespace MarketMinds.ViewModels
             System.Diagnostics.Debug.WriteLine($"[AddToWishlist] Attempting to add product ID: {productId}");
             await buyerService.AddWishlistItem(buyer, productId);
             wishlistProductIds.Add(new BuyerWishlistItem(productId));
-            // OnPropertyChanged(nameof(wishlistProductIds)); // Notify change for converters if needed
+            NotifyWishlistChanged();
         }
 
         public async void RemoveFromWishlist(int productId)
@@ -96,7 +106,7 @@ namespace MarketMinds.ViewModels
             System.Diagnostics.Debug.WriteLine($"[RemoveFromWishlist] Attempting to add product ID: {productId}");
             await buyerService.RemoveWishilistItem(buyer, productId);
             wishlistProductIds.RemoveAll(item => item.ProductId == productId);
-            // OnPropertyChanged(nameof(wishlistProductIds)); // Notify change for converters if needed
+            NotifyWishlistChanged();
         }
 
         public async void Remove()

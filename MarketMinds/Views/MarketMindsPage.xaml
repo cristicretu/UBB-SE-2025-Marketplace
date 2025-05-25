@@ -119,6 +119,9 @@
                             </StackPanel>
                         </Button>
                     </StackPanel>
+
+                    <!-- Hidden binding to force reevaluation of wishlist glyphs -->
+                    <TextBlock Visibility="Collapsed" Text="{Binding Source={StaticResource BuyerWishlistItemViewModel}, Path=WishlistChanged}" />
                 </Grid>
             </Border>
         </DataTemplate>
