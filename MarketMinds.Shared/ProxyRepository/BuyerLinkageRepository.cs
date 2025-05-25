@@ -1,6 +1,8 @@
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Repositories;
 using MarketMinds.Shared.Services;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http;
 using System.Text.Json;
 
 namespace MarketMinds.Shared.ProxyRepository
@@ -20,6 +22,28 @@ namespace MarketMinds.Shared.ProxyRepository
         public BuyerLinkageProxyRepository(HttpClient httpClient)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+        }
+
+        public BuyerLinkageProxyRepository(IConfiguration configuration)
+        {
+            _httpClient = new HttpClient();
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            if (string.IsNullOrEmpty(apiBaseUrl))
+            {
+                throw new InvalidOperationException("API base URL is null or empty");
+            }
+
+            if (!apiBaseUrl.EndsWith("/"))
+            {
+                apiBaseUrl += "/";
+            }
+
+            _httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase

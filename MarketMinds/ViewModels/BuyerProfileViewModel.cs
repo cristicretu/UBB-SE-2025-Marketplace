@@ -29,6 +29,9 @@ namespace MarketMinds.ViewModels
         /// <inheritdoc/>
         public IBuyerService BuyerService { get; set; } = null!;
 
+        // Add this property to the BuyerProfileViewModel class
+        public IBuyerLinkageService BuyerLinkageService { get; set; } = null!;
+
         /// <inheritdoc/>
         public IBuyerWishlistItemDetailsProvider WishlistItemDetailsProvider { get; set; } = null!;
 
@@ -158,7 +161,7 @@ namespace MarketMinds.ViewModels
 
             this.BillingAddress = new BuyerAddressViewModel(this.Buyer.BillingAddress);
             this.ShippingAddress = new BuyerAddressViewModel(this.Buyer.ShippingAddress);
-            this.FamilySync = new BuyerFamilySyncViewModel(this.BuyerService, this.Buyer, this);
+            this.FamilySync = new BuyerFamilySyncViewModel(this.BuyerService, this.Buyer, this, this.BuyerLinkageService);
             await this.FamilySync.LoadLinkages();
             this.Wishlist = new BuyerWishlistViewModel
             {

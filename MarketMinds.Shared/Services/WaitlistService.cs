@@ -36,6 +36,18 @@ namespace MarketMinds.Shared.Services
         }
 
         /// <summary>
+        /// Adds a user to the waitlist for a product with a preferred end date
+        /// </summary>
+        /// <param name="userId">The user ID</param>
+        /// <param name="productId">The product ID</param>
+        /// <param name="preferredEndDate">The user's preferred end date for borrowing</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task AddUserToWaitlist(int userId, int productId, DateTime? preferredEndDate)
+        {
+            await _waitListRepository.AddUserToWaitlist(userId, productId, preferredEndDate);
+        }
+
+        /// <summary>
         /// Gets a user's position in the waitlist for a product
         /// </summary>
         /// <param name="userId">The user ID</param>
@@ -97,5 +109,16 @@ namespace MarketMinds.Shared.Services
         {
             return await _waitListRepository.GetWaitlistSize(productId);
         }
+
+        /// <summary>
+        /// Gets a specific user's waitlist entry for a product
+        /// </summary>
+        /// <param name="userId">The user ID</param>
+        /// <param name="productId">The product ID</param>
+        /// <returns>The waitlist entry or null if not found</returns>
+        public async Task<UserWaitList?> GetUserWaitlistEntry(int userId, int productId)
+        {
+            return await _waitListRepository.GetUserWaitlistEntry(userId, productId);
+        }
     }
-} 
+}
