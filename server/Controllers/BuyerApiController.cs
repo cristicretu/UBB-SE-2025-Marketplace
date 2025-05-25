@@ -8,6 +8,7 @@ namespace Server.Controllers
     using global::MarketMinds.Shared.Models;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using System.Diagnostics;
 
     /// <summary>
     /// API controller for managing buyer data.
@@ -307,6 +308,11 @@ namespace Server.Controllers
             try
             {
                 var wishlist = await this.buyerRepository.GetWishlist(userId);
+
+                foreach (var w in wishlist.Items)
+                {
+                    Debug.WriteLine("wishlistitem: " + w.ProductId);
+                }
                 return this.Ok(wishlist);
             }
             catch (Exception ex)
