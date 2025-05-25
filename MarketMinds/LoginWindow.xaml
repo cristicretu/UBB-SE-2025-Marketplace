@@ -3,5 +3,12 @@
     x:Class="MarketMinds.LoginWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Frame x:Name="ContentFrame"/>
+    
+    <ScrollViewer ZoomMode="Disabled" 
+                  HorizontalScrollMode="Auto" 
+                  VerticalScrollMode="Auto" 
+                  HorizontalScrollBarVisibility="Auto" 
+                  VerticalScrollBarVisibility="Auto">
+        <Frame x:Name="ContentFrame"/>
+    </ScrollViewer>
 </Window> 
