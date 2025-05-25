@@ -29,9 +29,11 @@ namespace MarketMinds.Views
 
         // view models
         public BuyProductsViewModel BuyProductsViewModel { get; set; }
+        public AuctionProductsViewModel AuctionProductsViewModel { get; set; }
 
         // observable collections
         public ObservableCollection<BuyProduct> BuyProductsCollection { get; private set; }
+        public ObservableCollection<AuctionProduct> AuctionProductsCollection { get; private set; }
 
         // User role properties
         public bool IsCurrentUserBuyer => App.CurrentUser?.UserType == 2;
@@ -52,23 +54,39 @@ namespace MarketMinds.Views
             private set => SetProperty(ref showEmptyState, value);
         }
 
+        private bool isAuctionLoading;
+        public bool IsAuctionLoading
+        {
+            get => isAuctionLoading;
+            private set => SetProperty(ref isAuctionLoading, value);
+        }
+
+        private bool showAuctionEmptyState;
+        public bool ShowAuctionEmptyState
+        {
+            get => showAuctionEmptyState;
+            private set => SetProperty(ref showAuctionEmptyState, value);
+        }
+
         public MarketMindsPage()
         {
             this.InitializeComponent();
             this.BuyProductsViewModel = App.BuyProductsViewModel;
+            this.AuctionProductsViewModel = App.AuctionProductsViewModel;
             this.BuyProductsCollection = new ObservableCollection<BuyProduct>();
+            this.AuctionProductsCollection = new ObservableCollection<AuctionProduct>();
 
             // Set Buy Products as the default selection
             ProductsPivot.SelectedIndex = 0;
 
             // Load data when page is initialized
-            LoadDataAsync();
+            LoadBuyDataAsync();
         }
 
         /// <summary>
         /// Loads data asynchronously
         /// </summary>
-        private async void LoadDataAsync()
+        private async void LoadBuyDataAsync()
         {
             try
             {
@@ -101,6 +119,41 @@ namespace MarketMinds.Views
         }
 
         /// <summary>
+        /// Loads auction data asynchronously
+        /// </summary>
+        private async void LoadAuctionDataAsync()
+        {
+            try
+            {
+                IsAuctionLoading = true;
+
+                // Get auction products
+                var auctionProducts = await Task.Run(() => this.AuctionProductsViewModel.GetAllProducts());
+
+                // Update UI on the UI thread
+                AuctionProductsCollection.Clear();
+                foreach (var product in auctionProducts)
+                {
+                    AuctionProductsCollection.Add(product);
+                }
+
+                // Update empty state based on collection
+                ShowAuctionEmptyState = AuctionProductsCollection.Count == 0;
+                Debug.WriteLine($"AuctionProductsCollection: {AuctionProductsCollection.Count}");
+            }
+            catch (Exception ex)
+            {
+                // TODO: Add proper error handling
+                // Could show an error message to the user
+                System.Diagnostics.Debug.WriteLine($"Error loading auction products: {ex.Message}");
+            }
+            finally
+            {
+                IsAuctionLoading = false;
+            }
+        }
+
+        /// <summary>
         /// Helper method to set property and notify changes
         /// </summary>
         private void SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
@@ -124,9 +177,17 @@ namespace MarketMinds.Views
             {
                 case 0:
                     // Load buy products if needed
+                    if (BuyProductsCollection.Count == 0)
+                    {
+                        LoadBuyDataAsync();
+                    }
                     break;
                 case 1:
                     // Load auction products if needed
+                    if (AuctionProductsCollection.Count == 0)
+                    {
+                        LoadAuctionDataAsync();
+                    }
                     break;
                 case 2:
                     // Load borrow products if needed
@@ -143,7 +204,8 @@ namespace MarketMinds.Views
             PriceRangeSlider.Value = PriceRangeSlider.Maximum;
 
             // Reload data with cleared filters
-            LoadDataAsync();
+            LoadBuyDataAsync();
+            LoadAuctionDataAsync();
         }
 
         private void BuyProductCard_Click(object sender, ItemClickEventArgs e)
@@ -152,6 +214,15 @@ namespace MarketMinds.Views
             {
                 // Navigate to product details page
                 // Frame.Navigate(typeof(ProductDetailsPage), product);
+            }
+        }
+
+        private void AuctionProductCard_Click(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is AuctionProduct product)
+            {
+                // Navigate to auction product details page
+                // Frame.Navigate(typeof(AuctionProductDetailsPage), product);
             }
         }
     }
