@@ -94,6 +94,8 @@ namespace MarketMinds.ViewModels
             await buyerService.AddWishlistItem(buyer, productId);
             wishlistProductIds.Add(new BuyerWishlistItem(productId));
             NotifyWishlistChanged();
+
+            wishlistProductIds = await buyerService.GetWishlistItems(UserSession.CurrentUserId ?? 1);
         }
 
         public async void RemoveFromWishlist(int productId)
@@ -109,6 +111,8 @@ namespace MarketMinds.ViewModels
             await buyerService.RemoveWishilistItem(buyer, productId);
             wishlistProductIds.RemoveAll(item => item.ProductId == productId);
             NotifyWishlistChanged();
+
+            wishlistProductIds = await buyerService.GetWishlistItems(UserSession.CurrentUserId ?? 1);
         }
 
         public async void Remove()
