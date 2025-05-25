@@ -346,6 +346,9 @@ namespace Server.Repository
                         case "All Orders":
                             orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
                             break;
+                        case "all":
+                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            break;
                         default:
                             throw new ArgumentException($"GetOrdersWithProductInfoAsync: Invalid time period: {timePeriod}");
                     }
