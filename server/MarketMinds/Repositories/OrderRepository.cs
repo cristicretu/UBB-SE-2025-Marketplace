@@ -340,6 +340,9 @@ namespace Server.Repository
                         case "This Year" when order.OrderDate.Year == DateTime.Now.Year:
                             orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
                             break;
+                        case "All Orders":
+                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            break;
                         default:
                             throw new ArgumentException($"GetOrdersWithProductInfoAsync: Invalid time period: {timePeriod}");
                     }

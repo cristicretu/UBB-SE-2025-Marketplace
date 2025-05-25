@@ -209,8 +209,7 @@ namespace MarketMinds.Views
                         }
                         break;
                     case "OrderHistory":
-                        // Navigate to orders history page
-                        // Example: ContentFrame.Navigate(typeof(OrderHistoryView));
+                        ContentFrame.Navigate(typeof(OrderHistoryView));
                         break;
                     case "MyReviews":
                         // Navigate to user reviews page

@@ -12,10 +12,10 @@ using Microsoft.UI.Text;
 namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
-    public sealed partial class OrderHistoryView : Window
+    public sealed partial class OrderHistoryView : Page
     {
         /// <summary>
-        /// The oder history view window;
+        /// The oder history view page;
         /// </summary>
         private readonly int userId;
         private IOrderViewModel orderViewModel;
@@ -23,28 +23,28 @@ namespace MarketMinds.Views
         private Dictionary<int, string> orderProductCategoryTypes = new Dictionary<int, string>();
 
         /// <summary>
-        /// Initializes a new instance of the OrderHistoryUI window.
+        /// Initializes a new instance of the OrderHistoryUI page.
         /// </summary>
         /// <param name="userId">The ID of the user whose order history to display. Must be a positive integer.</param>
         /// <exception cref="ArgumentException">Thrown when userId is less than or equal to zero.</exception>
-        public OrderHistoryView(int userId)
+        public OrderHistoryView()
         {
             InitializeComponent();
-            this.userId = userId;
+            this.userId = App.CurrentUser.Id;
             orderViewModel = new OrderViewModel();
             contractViewModel = new ContractViewModel();
 
-            this.Activated += Window_Activated;
+            this.Loaded += Page_Loaded;
         }
 
         /// <summary>
-        /// Event handler triggered when the window is activated. Loads initial order data.
+        /// Event handler triggered when the page is loaded. Loads initial order data.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">Event data.</param>
-        private async void Window_Activated(object sender, WindowActivatedEventArgs args)
+        private async void Page_Loaded(object sender, RoutedEventArgs args)
         {
-            this.Activated -= Window_Activated;
+            this.Loaded -= Page_Loaded;
             await LoadOrders(SearchTextBox.Text);
         }
 
@@ -406,42 +406,6 @@ namespace MarketMinds.Views
         {
             await Task.Delay(300); // 300ms delay
             await LoadOrders(SearchTextBox.Text);
-        }
-
-        /// <summary>
-        /// Shows a PDF document in a dialog.
-        /// </summary>
-        /// <param name="pdfBytes">The PDF document as a byte array. Must not be null or empty.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        /// <exception cref="IOException">Thrown when there is an error writing the PDF to a temporary file.</exception>
-        /// <exception cref="ArgumentNullException">Thrown when pdfBytes is null.</exception>
-        private async Task ShowPdfDialog(byte[] pdfBytes)
-        {
-            var contractFilePath = Path.Combine(Path.GetTempPath(), $"contract_{Guid.NewGuid()}.pdf");
-            await File.WriteAllBytesAsync(contractFilePath, pdfBytes);
-
-            var pdfDialog = new ContentDialog
-            {
-                Title = "Contract PDF",
-                CloseButtonText = "Close",
-                XamlRoot = this.Content.XamlRoot,
-                Content = new WebView2
-                {
-                    Width = 800,
-                    Height = 1000,
-                    Source = new Uri(contractFilePath)
-                }
-            };
-
-            await pdfDialog.ShowAsync();
-
-            try
-            {
-                File.Delete(contractFilePath);
-            }
-            catch
-            {
-            }
         }
 
         /// <summary>

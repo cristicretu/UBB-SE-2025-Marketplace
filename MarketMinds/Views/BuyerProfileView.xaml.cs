@@ -212,10 +212,9 @@ namespace MarketMinds.Views
 
         private void OrderHistoryButton_Clicked(object sender, RoutedEventArgs e)
         {
-            // merge-nicusor FIX :)
-            int user_id = UserSession.CurrentUserId ?? 1;
-            var orderhistorywindow = new OrderHistoryView(user_id);
-            orderhistorywindow.Activate();
+            var orderhistorywindow = new OrderHistoryView();
+            // will delete the button anyways
+            //orderhistorywindow.Activate();
         }
 
         private async void RenewContractButton_Clicked(object sender, RoutedEventArgs e)
