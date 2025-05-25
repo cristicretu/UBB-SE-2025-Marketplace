@@ -1,5 +1,6 @@
 @using MarketMinds.Shared.Services
 @using System.Security.Claims
+@inject INotificationContentService NotificationService
 <!DOCTYPE html>
 <html lang="en">
 
@@ -119,14 +120,57 @@
                             @if (isBuyer || isAdmin)
                             {
                                 <!-- Notifications -->
-                                <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                                    </svg>
-                                    <!-- Notification badge (hidden by default) -->
-                                    <span class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full hidden"></span>
-                                </button>
+                                <div class="relative inline-block">
+                                    @{
+                                        var currentUserId = UserSession.CurrentUserId;
+                                        var unreadCount = currentUserId.HasValue ? NotificationService.GetUnreadCount(currentUserId.Value) : 0;
+                                    }
+                                    <!-- Notification Button -->
+                                    <button id="notificationsButton" 
+                                            class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative"
+                                            aria-label="Open notifications">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                        </svg>
+                                        
+                                        <!-- Unread Count Badge -->
+                                        @if (unreadCount > 0)
+                                        {
+                                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-medium">
+                                                @(unreadCount > 9 ? "9+" : unreadCount.ToString())
+                                            </span>
+                                        }
+                                    </button>
 
+                                    <!-- Notifications Dropdown -->
+                                    <div id="notificationsDropdown" 
+                                        class="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 hidden transform opacity-0 scale-95 transition-all duration-200 ease-out origin-top-right">
+                                        
+                                        <!-- Header -->
+                                        <div class="px-4 py-3 bg-blue-500 text-white rounded-t-lg">
+                                            <div class="flex justify-between items-center">
+                                                <h3 class="text-lg font-semibold">Notifications</h3>
+                                                <button id="closeNotificationsDropdown" 
+                                                        class="text-gray-300 hover:text-white transition-colors duration-200"
+                                                        aria-label="Close notifications">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Content Container -->
+                                        <div id="notificationsContent" class="relative">
+                                            <!-- Loading State -->
+                                            <div id="loadingState" class="flex justify-center items-center py-8">
+                                                <div class="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-600"></div>
+                                                <span class="ml-3 text-gray-500">Loading notifications...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <!-- Wishlist -->
                                 <a href="@Url.Action("Index", "BuyerWishlist")" class="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-lg transition-colors">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -401,7 +445,281 @@
             // User dropdown functionality
             const userDropdown = document.getElementById('userDropdown');
             const dropdownContent = document.getElementById('userDropdownContent');
+            
+            // Notifications functionality
+            const notificationsBtn = document.getElementById('notificationsButton');
+            const notificationsMenu = document.getElementById('notificationsDropdown');
+            const closeNotificationsBtn = document.getElementById('closeNotificationsDropdown');
+            const notificationsContentArea = document.getElementById('notificationsContent');
+            const notificationsLoadingState = document.getElementById('loadingState');
+            
+            let isNotificationsOpen = false;
 
+            // Only initialize if notification elements exist
+            if (notificationsBtn && notificationsMenu) {
+                // Toggle notifications dropdown
+                notificationsBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (isNotificationsOpen) {
+                        closeNotifications();
+                    } else {
+                        openNotifications();
+                    }
+                });
+
+                // Close notifications dropdown with X button
+                if (closeNotificationsBtn) {
+                    closeNotificationsBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        closeNotifications();
+                    });
+                }
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (isNotificationsOpen && !notificationsMenu.contains(e.target) && e.target !== notificationsBtn) {
+                        closeNotifications();
+                    }
+                });
+
+                // Prevent clicks inside dropdown from closing it
+                notificationsMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+
+            /**
+             * Opens the notifications dropdown and loads content
+             */
+            function openNotifications() {
+                if (isNotificationsOpen) return;
+                
+                isNotificationsOpen = true;
+                notificationsMenu.classList.remove('hidden');
+                
+                // Trigger reflow for smooth animation
+                notificationsMenu.offsetHeight;
+                
+                notificationsMenu.classList.remove('opacity-0', 'scale-95');
+                notificationsMenu.classList.add('opacity-100', 'scale-100');
+                
+                loadNotifications();
+            }
+
+            /**
+             * Closes the notifications dropdown
+             */
+            function closeNotifications() {
+                if (!isNotificationsOpen) return;
+                
+                isNotificationsOpen = false;
+                notificationsMenu.classList.remove('opacity-100', 'scale-100');
+                notificationsMenu.classList.add('opacity-0', 'scale-95');
+                
+                setTimeout(() => {
+                    notificationsMenu.classList.add('hidden');
+                }, 200);
+            }
+
+            /**
+             * Loads notifications content via AJAX
+             */
+            function loadNotifications() {
+                if (!notificationsContentArea || !notificationsLoadingState) return;
+                
+                // Reset to loading state
+                notificationsLoadingState.style.display = 'flex';
+                
+                fetch('/Notifications', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    notificationsLoadingState.style.display = 'none';
+                    notificationsContentArea.innerHTML = html;
+                    
+                    // Setup event listeners for the loaded content
+                    setupNotificationEvents();
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                    notificationsLoadingState.style.display = 'none';
+                    notificationsContentArea.innerHTML = `
+                        <div class="p-4 text-center text-red-600">
+                            <div class="mb-2">⚠️ Failed to load notifications</div>
+                            <div class="text-sm text-gray-500">${error.message}</div>
+                            <button onclick="window.loadNotifications()" class="mt-2 text-blue-600 hover:text-blue-800 text-sm underline">
+                                Try again
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
+            /**
+             * Sets up event listeners for notification content
+             */
+            function setupNotificationEvents() {
+                const clearAllBtn = document.getElementById('clearAllNotificationsBtn');
+                if (clearAllBtn) {
+                    clearAllBtn.addEventListener('click', clearAllNotifications);
+                }
+                const markAllAsReadBtn = document.getElementById('markAllAsReadBtn');
+                if (markAllAsReadBtn) {
+                    markAllAsReadBtn.addEventListener('click', markAllAsRead);
+                }
+                
+
+            }
+            
+            /**
+             * Marks all notifications as read
+             */
+            function markAllAsRead() {
+                fetch('/Notifications/MarkAllAsRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Update all notification items to appear as read
+                        document.querySelectorAll('[data-notification-id]').forEach(el => {
+                            el.classList.remove('bg-blue-50', 'border-l-2', 'border-l-blue-500');
+                            
+
+                        });
+                        
+                        // Update UI counters and state
+                        updateUIAfterMarkingRead(0);
+                    } else {
+                        console.error('Failed to mark all notifications as read:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marking all notifications as read:', error);
+                });
+            }
+            
+            /**
+             * Clears all notifications
+             */
+            function clearAllNotifications() {
+                if (!confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+                    return;
+                }
+                
+                // Get the button
+                const clearButton = document.getElementById('clearAllNotificationsBtn');
+                if (!clearButton) {
+                    console.error('Clear button not found!');
+                    return;
+                }
+                
+                const originalText = clearButton.textContent;
+                
+                // Update button state
+                clearButton.textContent = 'Clearing...';
+                clearButton.disabled = true;
+                
+                // Use the web controller endpoint
+                fetch('/Notifications/ClearAll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Remove notification badge from bell icon
+                        const bellBadge = document.querySelector('#notificationsButton .bg-red-500');
+                        if (bellBadge) {
+                            bellBadge.remove();
+                        }
+                        
+                        // Reload notifications
+                        loadNotifications();
+                    } else {
+                        throw new Error(data.error || 'Failed to clear notifications');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error clearing notifications:', error);
+                    alert('Failed to clear notifications. Please try again.');
+                    clearButton.textContent = originalText;
+                    clearButton.disabled = false;
+                });
+            }
+
+            /**
+             * Updates UI elements after marking notifications as read
+             */
+            function updateUIAfterMarkingRead(unreadCount) {
+                // Update notification items in dropdown
+                document.querySelectorAll('.bg-blue-50').forEach(el => {
+                    el.classList.remove('bg-blue-50');
+                });
+                document.querySelectorAll('.font-semibold').forEach(el => {
+                    el.classList.remove('font-semibold');
+                });
+                
+                // Update unread count in dropdown header
+                const unreadBadge = document.querySelector('.bg-red-100');
+                if (unreadBadge && unreadBadge.textContent.includes('unread')) {
+                    unreadBadge.textContent = `${unreadCount} unread`;
+                }
+                
+                // Update notification bell badge
+                const bellBadge = document.querySelector('#notificationsButton .bg-red-500');
+                if (bellBadge) {
+                    if (unreadCount === 0) {
+                        bellBadge.remove();
+                    } else {
+                        bellBadge.textContent = unreadCount > 9 ? '9+' : unreadCount.toString();
+                    }
+                }
+                
+                // Update UI for marked notifications
+                const markAllBtn = document.getElementById('markAllAsReadBtn');
+                if (markAllBtn) {
+                    if (unreadCount === 0) {
+                        markAllBtn.parentElement.innerHTML = '<span class="text-green-600 font-medium">All caught up!</span>';
+                    }
+                }
+            }
+
+            // Make functions available globally for other components
+            window.loadNotifications = loadNotifications;
+            window.updateUIAfterMarkingRead = updateUIAfterMarkingRead;
+            
+
+            
+            /**
+             * Sets up event listeners for notification content
+             */
             if (userDropdown && dropdownContent) {
                 userDropdown.addEventListener('click', function (e) {
                     e.preventDefault();

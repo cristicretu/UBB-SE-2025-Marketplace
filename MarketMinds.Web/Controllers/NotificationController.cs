@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Services;
 using System.Diagnostics;
+using System;
+using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace WebMarketplace.Controllers
 {
@@ -15,7 +19,6 @@ namespace WebMarketplace.Controllers
             _notificationService = notificationService;
         }
 
-
         /// <summary>
         /// Fetches notifications for the user.
         /// </summary>
@@ -25,32 +28,54 @@ namespace WebMarketplace.Controllers
         [HttpGet]
         public async Task<IActionResult> Notifications()
         {
-            int userId = UserSession.CurrentUserId ?? 0; // Replace with actual user ID logic
+            int userId = UserSession.CurrentUserId ?? throw new InvalidOperationException("User ID is not available.");
             var notifications = await _notificationService.GetNotificationsForUser(userId);
-            Debug.WriteLine($"Notifications count: {notifications.Count}");
+        Debug.WriteLine($"Notifications count: {notifications.Count}");
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        // For AJAX requests, check if client wants HTML
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        {
+            if (Request.Headers["Accept"].ToString().Contains("text/html"))
             {
-                // Return JSON for fetch()
-                var jsonResult = notifications.Select(n => new
-                {
-                    content = n.Content,
-                    timestamp = n.Timestamp,
-                    isRead = n.IsRead
-                });
-
-                return Json(jsonResult);
+                // Return the partial view for AJAX requests that want HTML
+                return PartialView("_Notifications", notifications);
             }
+            
+            // Return JSON only when client specifically wants JSON
+            var jsonResult = notifications.Select(n => {
+                // Initialize all possible properties
+                int? orderID = null;
+                string shippingState = null;
+                DateTime? deliveryDate = null;
+                
+                // Add specific properties based on notification type
+                if (n is MarketMinds.Shared.Models.OrderShippingProgressNotification orderShipping)
+                {
+                    orderID = orderShipping.OrderID;
+                    shippingState = orderShipping.ShippingState;
+                    deliveryDate = orderShipping.DeliveryDate;
+                }
+                
+                // Return a consistent object structure with all possible properties
+                return new
+                {
+                    id = n.NotificationID,
+                    content = n.Content,
+                    title = n.Title,
+                    category = n.Category.ToString(),
+                    timestamp = n.Timestamp,
+                    orderID,
+                    shippingState,
+                    deliveryDate
+                };
+            });
+            
+            return Json(jsonResult);
+    }
 
-            // Otherwise return the partial view for normal requests
-            var unreadCount = notifications.Count(n => !n.IsRead);
-            var unreadCountText = _notificationService.GetUnreadNotificationsCountText(unreadCount);
-            ViewData["UnreadCountText"] = unreadCountText;
-
-            return PartialView("_NotificationsButton", notifications);
-        }
-
-
+    // Return the partial view for normal requests
+    return PartialView("_Notifications", notifications);
+}
         /// <summary>
         /// Fetches the count of unread notifications for the user.
         /// </summary>
@@ -60,41 +85,63 @@ namespace WebMarketplace.Controllers
         [HttpGet("Count")]
         public async Task<IActionResult> GetUnreadCount()
         {
-            int userId = UserSession.CurrentUserId ?? 0; // Replace with actual user logic
-            var notifications = await _notificationService.GetNotificationsForUser(userId);
-            var unreadCount = notifications.Count(n => !n.IsRead);
+            int userId = UserSession.CurrentUserId ?? throw new InvalidOperationException("User ID is not available.");
+            var unreadNotifications = await _notificationService.GetUnreadNotificationsForUser(userId);
+            var unreadCount = unreadNotifications.Count;
             return Json(new { count = unreadCount });
         }
-
 
         /// <summary>
         /// Marks all notifications as read for the user.
         /// </summary>
         /// <returns>
-        /// Partial view with updated notifications.
+        /// JSON result indicating success and the updated unread count.
         /// </returns>
         [HttpPost("MarkAllAsRead")]
         public async Task<IActionResult> MarkAllAsRead()
         {
-            int userId = UserSession.CurrentUserId ?? 0; // Replace with your actual user identity method
-            var notifications = await _notificationService.GetNotificationsForUser(userId);
-
-            foreach (var notification in notifications)
+            try
             {
-                if (!notification.IsRead)
-                {
-                    _notificationService.MarkAllAsRead(notification.NotificationID);
-                }
+                int userId = UserSession.CurrentUserId ?? throw new InvalidOperationException("User ID is not available.");
+                
+                // Call the service with the correct parameter (userId)
+                await _notificationService.MarkAllAsRead(userId);
+
+                // Get updated notifications to calculate the new unread count
+                var unreadNotifications = await _notificationService.GetUnreadNotificationsForUser(userId);
+                var unreadCount = unreadNotifications.Count;
+
+                // Return JSON response with success status and updated count
+                return Json(new { success = true, unreadCount });
             }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Debug.WriteLine($"Error marking notifications as read: {ex.Message}");
+                return Json(new { success = false, error = ex.Message });
+            }
+        }
 
-            // Return the updated partial view
-            notifications = await _notificationService.GetNotificationsForUser(userId);
-            var unreadCount = notifications.Count(n => !n.IsRead);
-            var unreadCountText = _notificationService.GetUnreadNotificationsCountText(unreadCount);
 
-            ViewData["UnreadCountText"] = unreadCountText;
-            return PartialView("_NotificationListPartial", notifications);
+
+        /// <summary>
+        /// Clears all notifications for the current user.
+        /// </summary>
+        /// <returns>JSON result indicating success.</returns>
+        [HttpPost("ClearAll")]
+        public async Task<IActionResult> ClearAll()
+        {
+            try
+            {
+                int userId = UserSession.CurrentUserId ?? throw new InvalidOperationException("User ID is not available.");
+                await _notificationService.ClearAllNotifications(userId);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error clearing notifications: {ex.Message}");
+                return Json(new { success = false, error = ex.Message });
+            }
         }
     }
-
 }

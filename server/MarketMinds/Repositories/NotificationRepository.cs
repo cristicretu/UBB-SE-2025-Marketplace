@@ -1,4 +1,4 @@
-﻿// <copyright file="NotificationRepository.cs" company="PlaceholderCompany">
+// <copyright file="NotificationRepository.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -54,17 +54,49 @@ namespace Server.Repository
         }
 
         /// <summary>
-        /// Marks a notification as read in the database using the notification ID.
+        /// Marks all notifications for a user as read in the database.
         /// </summary>
-        /// <param name="notificationId">Notification ID of the notification to be marked as read.</param>
-        /// <exception cref="ArgumentException">Thrown when the notification is not found.</exception>
+        /// <param name="userId">User ID whose notifications should be marked as read.</param>
+        /// <exception cref="ArgumentException">Thrown when no notifications are found or updated.</exception>
         public async Task MarkAsRead(int userId)
         {
             int affected = await dbContext.Database.ExecuteSqlRawAsync(
                 "UPDATE OrderNotifications SET IsRead = 1 WHERE RecipientID = {0}", userId);
 
             if (affected == 0)
-                throw new ArgumentException("MarkAsRead: Notification not found or not updated");
+                throw new ArgumentException($"MarkAsRead: No notifications found for user {userId}");
+        }
+
+        /// <summary>
+        /// Marks a specific notification as read in the database.
+        /// </summary>
+        /// <param name="notificationId">ID of the notification to mark as read.</param>
+        /// <exception cref="ArgumentException">Thrown when the notification is not found.</exception>
+        public async Task MarkNotificationAsRead(int notificationId)
+        {
+            // Find the notification
+            var notification = await dbContext.OrderNotifications.FindAsync(notificationId);
+            if (notification == null)
+                throw new ArgumentException($"MarkNotificationAsRead: Notification with ID {notificationId} not found");
+            
+            // Mark it as read
+            notification.IsRead = true;
+            await dbContext.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Clears (deletes) all notifications for a user.
+        /// </summary>
+        /// <param name="userId">User ID whose notifications should be deleted.</param>
+        /// <exception cref="ArgumentException">Thrown when no notifications are found to delete.</exception>
+        public async Task ClearAllNotifications(int userId)
+        {
+            // Remove all notifications for the user
+            int affected = await dbContext.Database.ExecuteSqlRawAsync(
+                "DELETE FROM OrderNotifications WHERE RecipientID = {0}", userId);
+
+            if (affected == 0)
+                throw new ArgumentException($"ClearAllNotifications: No notifications found for user {userId}");
         }
 
         /// <summary>

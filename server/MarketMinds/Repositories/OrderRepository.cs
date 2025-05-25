@@ -21,14 +21,17 @@ namespace Server.Repository
         // private readonly string connectionString;
         // private readonly IDatabaseProvider databaseProvider;
         private readonly ApplicationDbContext dbContext;
+    private readonly INotificationRepository notificationRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public OrderRepository(ApplicationDbContext dbContext)
+        /// <param name="notificationRepository">The notification repository.</param>
+        public OrderRepository(ApplicationDbContext dbContext, INotificationRepository notificationRepository)
         {
             this.dbContext = dbContext;
+            this.notificationRepository = notificationRepository;
         }
 
         /// <summary>
@@ -117,6 +120,15 @@ namespace Server.Repository
                 await this.dbContext.Orders.AddAsync(order);
                 await this.dbContext.SaveChangesAsync();
 
+                // Create and send payment confirmation notification to the buyer
+                PaymentConfirmationNotification notification = new PaymentConfirmationNotification(
+                    recipientId: buyerId,
+                    timestamp: DateTime.UtcNow,
+                    productId: productId,
+                    orderId: order.Id,
+                    isRead: false);
+                
+                await this.notificationRepository.AddNotification(notification);
             }
             catch (Exception ex)
             {
