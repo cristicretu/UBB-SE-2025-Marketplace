@@ -82,6 +82,12 @@
 
         private async void TrackOrderButton_Clicked(object sender, RoutedEventArgs e)
         {
+            if (trackedOrderViewModel == null)
+            {
+                await ShowNoTrackedOrderDialogAsync("Unable to track orders at this time. Please try again later.");
+                return;
+            }
+
             var inputID = await ShowTrackedOrderInputDialogAsync();
             if (inputID == null)
             {
@@ -90,7 +96,7 @@
 
             if (inputID == -1)
             {
-                await ShowNoTrackedOrderDialogAsync("Please enter an integer!");
+                await ShowNoTrackedOrderDialogAsync("Please enter a valid order ID number!");
             }
             else
             {
@@ -98,6 +104,12 @@
                 try
                 {
                     var order = await trackedOrderViewModel.GetTrackedOrderByIDAsync(trackedOrderID);
+                    if (order == null)
+                    {
+                        await ShowNoTrackedOrderDialogAsync($"No tracked order found with ID {trackedOrderID}. Please verify the order ID and try again.");
+                        return;
+                    }
+
                     bool hasControlAccess = true;
 
                     TrackedOrderWindow trackedOrderWindow = new TrackedOrderWindow();
@@ -114,9 +126,9 @@
 
                     trackedOrderWindow.Activate();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    await ShowNoTrackedOrderDialogAsync("No TrackedOrder has been found with ID " + trackedOrderID.ToString());
+                    await ShowNoTrackedOrderDialogAsync($"Unable to retrieve tracked order {trackedOrderID}. Error: {ex.Message}");
                 }
             }
         }
