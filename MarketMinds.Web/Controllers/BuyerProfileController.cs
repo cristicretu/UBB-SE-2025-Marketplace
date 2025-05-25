@@ -6,8 +6,6 @@ using WebMarketplace.Models;
 using MarketMinds.Shared.Services.UserService;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace WebMarketplace.Controllers
 {
@@ -20,8 +18,6 @@ namespace WebMarketplace.Controllers
         private readonly IUserService _userService;
         private readonly IBuyerLinkageService _buyerLinkageService;
         private readonly IBuyerSellerFollowService _buyerSellerFollowService;
-        private readonly IBuyerLinkageService _buyerLinkageService;
-        private readonly IBuyerSellerFollowService _buyerSellerFollowService;
         private readonly ILogger<BuyerProfileController> _logger;
 
         /// <summary>
@@ -31,22 +27,16 @@ namespace WebMarketplace.Controllers
         /// <param name="userService">The user service.</param>
         /// <param name="buyerLinkageService">The buyer linkage service.</param>
         /// <param name="buyerSellerFollowService">The buyer seller follow service.</param>
-        /// <param name="buyerLinkageService">The buyer linkage service.</param>
-        /// <param name="buyerSellerFollowService">The buyer seller follow service.</param>
         /// <param name="logger">The logger.</param>
         public BuyerProfileController(
             IBuyerService buyerService,
             IUserService userService,
             IBuyerLinkageService buyerLinkageService,
             IBuyerSellerFollowService buyerSellerFollowService,
-            IBuyerLinkageService buyerLinkageService,
-            IBuyerSellerFollowService buyerSellerFollowService,
             ILogger<BuyerProfileController> logger)
         {
             _buyerService = buyerService ?? throw new ArgumentNullException(nameof(buyerService));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-            _buyerLinkageService = buyerLinkageService ?? throw new ArgumentNullException(nameof(buyerLinkageService));
-            _buyerSellerFollowService = buyerSellerFollowService ?? throw new ArgumentNullException(nameof(buyerSellerFollowService));
             _buyerLinkageService = buyerLinkageService ?? throw new ArgumentNullException(nameof(buyerLinkageService));
             _buyerSellerFollowService = buyerSellerFollowService ?? throw new ArgumentNullException(nameof(buyerSellerFollowService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -82,42 +72,9 @@ namespace WebMarketplace.Controllers
                 _logger.LogWarning(ex, "Error checking if current user is buyer");
                 return false;
             }
-            
-            _logger.LogInformation("CONSTRUCTOR: BuyerProfileController initialized");
         }
 
         /// <summary>
-        /// Checks if the current user is a buyer
-        /// </summary>
-        /// <returns>True if current user is a buyer, false otherwise</returns>
-        private bool IsCurrentUserBuyer()
-        {
-            try
-            {
-                // Check UserSession role first (for backward compatibility)
-                if (!string.IsNullOrEmpty(UserSession.CurrentUserRole))
-                {
-                    return UserSession.CurrentUserRole == "Buyer" || UserSession.CurrentUserRole == "2";
-                }
-
-                // Check claims-based role
-                var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role);
-                if (roleClaim != null)
-                {
-                    return roleClaim.Value == "Buyer";
-                }
-
-                return false;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Error checking if current user is buyer");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Gets the current user ID from authentication claims
         /// Gets the current user ID from authentication claims
         /// </summary>
         /// <returns>The current user ID</returns>
@@ -291,7 +248,6 @@ namespace WebMarketplace.Controllers
         /// <returns>A simple text response</returns>
         public IActionResult Test()
         {
-            _logger.LogInformation("DEBUG: Test() method called");
             _logger.LogInformation("DEBUG: Test() method called");
             return Content("BuyerProfileController is working!");
         }
@@ -490,300 +446,7 @@ namespace WebMarketplace.Controllers
                     }
                     _logger.LogInformation("DEBUG: Update() - Shipping address validation passed");
                 }
-                _logger.LogInformation("UPDATE: Updating profile for user ID: {UserId}", userId);
 
-                if (userId == 0)
-                {
-                    _logger.LogError("DEBUG: Update() - User ID is 0, user not authenticated");
-                    return RedirectToAction("Login", "Account");
-                }
-
-                // Log the incoming model data
-                _logger.LogInformation("UPDATE: Received data - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}", 
-                    model.FirstName, model.LastName, model.PhoneNumber);
-                _logger.LogInformation("UPDATE: Billing Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}", 
-                    model.BillingStreet, model.BillingCity, model.BillingCountry, model.BillingPostalCode);
-                _logger.LogInformation("UPDATE: Shipping Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, UseSameAddress: {UseSameAddress}", 
-                    model.ShippingStreet, model.ShippingCity, model.ShippingCountry, model.ShippingPostalCode, model.UseSameAddress);
-
-                // Validate shipping address values when UseSameAddress is false
-                if (!model.UseSameAddress)
-                {
-                    _logger.LogInformation("DEBUG: Update() - Validating separate shipping address fields...");
-                    if (string.IsNullOrWhiteSpace(model.ShippingStreet) || 
-                        string.IsNullOrWhiteSpace(model.ShippingCity) || 
-                        string.IsNullOrWhiteSpace(model.ShippingCountry) || 
-                        string.IsNullOrWhiteSpace(model.ShippingPostalCode))
-                    {
-                        _logger.LogWarning("UPDATE: Shipping address has empty fields when UseSameAddress is false");
-                        ModelState.AddModelError("", "All shipping address fields are required when not using the same as billing address.");
-                        return View("Index", model);
-                    }
-                    _logger.LogInformation("DEBUG: Update() - Shipping address validation passed");
-                }
-
-                // Create a basic User object instead of fetching all users
-                _logger.LogInformation("DEBUG: Update() - Creating User object...");
-                var user = new User(userId);
-
-                // Add timeout to prevent hanging
-                _logger.LogInformation("UPDATE: Getting buyer by user...");
-                var buyerTask = _buyerService.GetBuyerByUser(user);
-                if (await Task.WhenAny(buyerTask, Task.Delay(5000)) != buyerTask)
-                {
-                    _logger.LogWarning("UPDATE: GetBuyerByUser operation timed out during update");
-                    TempData["ErrorMessage"] = "Operation timed out while updating your profile. Please try again.";
-                    return View("Index", model);
-                }
-
-                var buyer = await buyerTask;
-                if (buyer == null)
-                {
-                    _logger.LogWarning("UPDATE: No buyer found for user ID: {UserId}", userId);
-                    return NotFound();
-                }
-
-                _logger.LogInformation("UPDATE: Found buyer with ID: {BuyerId}", buyer.Id);
-
-                // Log the current buyer data before update
-                _logger.LogInformation("UPDATE: Current buyer data BEFORE update - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}", 
-                    buyer.FirstName, buyer.LastName, buyer.User?.PhoneNumber, buyer.UseSameAddress);
-                
-                if (buyer.BillingAddress != null)
-                {
-                    _logger.LogInformation("UPDATE: Current billing address BEFORE update - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, AddressId: {AddressId}", 
-                        buyer.BillingAddress.StreetLine, buyer.BillingAddress.City, buyer.BillingAddress.Country, buyer.BillingAddress.PostalCode, buyer.BillingAddress.Id);
-                }
-                else
-                {
-                    _logger.LogWarning("UPDATE: Billing address is NULL before update");
-                }
-                
-                if (buyer.ShippingAddress != null)
-                {
-                    _logger.LogInformation("UPDATE: Current shipping address BEFORE update - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, AddressId: {AddressId}", 
-                        buyer.ShippingAddress.StreetLine, buyer.ShippingAddress.City, buyer.ShippingAddress.Country, buyer.ShippingAddress.PostalCode, buyer.ShippingAddress.Id);
-                }
-                else
-                {
-                    _logger.LogWarning("UPDATE: Shipping address is NULL before update");
-                }
-
-                // Update buyer information
-                _logger.LogInformation("UPDATE: Updating buyer information...");
-                buyer.FirstName = model.FirstName;
-                buyer.LastName = model.LastName;
-                
-                // Ensure User object exists before setting phone number
-                if (buyer.User == null)
-                {
-                    _logger.LogWarning("UPDATE: buyer.User is null, creating new User object");
-                    buyer.User = new User(userId);
-                }
-                buyer.User.PhoneNumber = model.PhoneNumber;
-                buyer.UseSameAddress = model.UseSameAddress;
-
-                _logger.LogInformation("UPDATE: Updated buyer info - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}", 
-                    buyer.FirstName, buyer.LastName, buyer.User.PhoneNumber, buyer.UseSameAddress);
-
-                // Update billing address
-                _logger.LogInformation("UPDATE: Updating billing address...");
-                if (buyer.BillingAddress == null)
-                {
-                    _logger.LogInformation("UPDATE: Creating new billing address");
-                    buyer.BillingAddress = new Address();
-                }
-
-                // Update the existing billing address object instead of creating a new one
-                var oldBillingStreet = buyer.BillingAddress.StreetLine;
-                var oldBillingCity = buyer.BillingAddress.City;
-                var oldBillingCountry = buyer.BillingAddress.Country;
-                var oldBillingPostal = buyer.BillingAddress.PostalCode;
-                
-                buyer.BillingAddress.StreetLine = model.BillingStreet;
-                buyer.BillingAddress.City = model.BillingCity;
-                buyer.BillingAddress.Country = model.BillingCountry;
-                buyer.BillingAddress.PostalCode = model.BillingPostalCode;
-
-                _logger.LogInformation("UPDATE: Billing address CHANGED from:");
-                _logger.LogInformation("UPDATE:   OLD - Street: '{OldStreet}', City: '{OldCity}', Country: '{OldCountry}', PostalCode: '{OldPostal}'", 
-                    oldBillingStreet, oldBillingCity, oldBillingCountry, oldBillingPostal);
-                _logger.LogInformation("UPDATE:   NEW - Street: '{NewStreet}', City: '{NewCity}', Country: '{NewCountry}', PostalCode: '{NewPostal}', AddressId: {AddressId}", 
-                    buyer.BillingAddress.StreetLine, buyer.BillingAddress.City, buyer.BillingAddress.Country, buyer.BillingAddress.PostalCode, buyer.BillingAddress.Id);
-
-                // Update shipping address 
-                if (model.UseSameAddress)
-                {
-                    _logger.LogInformation("UPDATE: Using same address - copying billing address values to shipping address");
-                    
-                    // Ensure shipping address exists as a separate entity
-                    if (buyer.ShippingAddress == null)
-                    {
-                        _logger.LogInformation("UPDATE: Creating new shipping address for same-as-billing");
-                        buyer.ShippingAddress = new Address();
-                    }
-                    
-                    // Check if shipping address is the same object as billing address (this would be a problem)
-                    if (ReferenceEquals(buyer.ShippingAddress, buyer.BillingAddress))
-                    {
-                        _logger.LogWarning("UPDATE: Shipping and billing addresses are the same object! Creating separate shipping address.");
-                        buyer.ShippingAddress = new Address();
-                    }
-                    
-                    // Copy values from billing to shipping (don't make them the same object)
-                    var oldShippingStreet = buyer.ShippingAddress.StreetLine;
-                    var oldShippingCity = buyer.ShippingAddress.City;
-                    var oldShippingCountry = buyer.ShippingAddress.Country;
-                    var oldShippingPostal = buyer.ShippingAddress.PostalCode;
-                    
-                    buyer.ShippingAddress.StreetLine = buyer.BillingAddress.StreetLine;
-                    buyer.ShippingAddress.City = buyer.BillingAddress.City;
-                    buyer.ShippingAddress.Country = buyer.BillingAddress.Country;
-                    buyer.ShippingAddress.PostalCode = buyer.BillingAddress.PostalCode;
-                    
-                    _logger.LogInformation("UPDATE: Shipping address CHANGED from (same as billing):");
-                    _logger.LogInformation("UPDATE:   OLD - Street: '{OldStreet}', City: '{OldCity}', Country: '{OldCountry}', PostalCode: '{OldPostal}'", 
-                        oldShippingStreet, oldShippingCity, oldShippingCountry, oldShippingPostal);
-                    _logger.LogInformation("UPDATE:   NEW - Street: '{NewStreet}', City: '{NewCity}', Country: '{NewCountry}', PostalCode: '{NewPostal}', AddressId: {AddressId}", 
-                        buyer.ShippingAddress.StreetLine, buyer.ShippingAddress.City, buyer.ShippingAddress.Country, buyer.ShippingAddress.PostalCode, buyer.ShippingAddress.Id);
-                }
-                else
-                {
-                    _logger.LogInformation("UPDATE: Updating separate shipping address...");
-                    if (buyer.ShippingAddress == null)
-                    {
-                        _logger.LogInformation("UPDATE: Creating new shipping address");
-                        buyer.ShippingAddress = new Address();
-                    }
-
-                    // Check if shipping address is the same object as billing address (this would be a problem)
-                    if (ReferenceEquals(buyer.ShippingAddress, buyer.BillingAddress))
-                    {
-                        _logger.LogWarning("UPDATE: Shipping and billing addresses are the same object! Creating separate shipping address.");
-                        buyer.ShippingAddress = new Address();
-                    }
-
-                    // Update the existing shipping address object instead of creating a new one
-                    var oldShippingStreet = buyer.ShippingAddress.StreetLine;
-                    var oldShippingCity = buyer.ShippingAddress.City;
-                    var oldShippingCountry = buyer.ShippingAddress.Country;
-                    var oldShippingPostal = buyer.ShippingAddress.PostalCode;
-                    
-                    buyer.ShippingAddress.StreetLine = model.ShippingStreet;
-                    buyer.ShippingAddress.City = model.ShippingCity;
-                    buyer.ShippingAddress.Country = model.ShippingCountry;
-                    buyer.ShippingAddress.PostalCode = model.ShippingPostalCode;
-
-                    _logger.LogInformation("UPDATE: Shipping address CHANGED from (separate):");
-                    _logger.LogInformation("UPDATE:   OLD - Street: '{OldStreet}', City: '{OldCity}', Country: '{OldCountry}', PostalCode: '{OldPostal}'", 
-                        oldShippingStreet, oldShippingCity, oldShippingCountry, oldShippingPostal);
-                    _logger.LogInformation("UPDATE:   NEW - Street: '{NewStreet}', City: '{NewCity}', Country: '{NewCountry}', PostalCode: '{NewPostal}', AddressId: {AddressId}", 
-                        buyer.ShippingAddress.StreetLine, buyer.ShippingAddress.City, buyer.ShippingAddress.Country, buyer.ShippingAddress.PostalCode, buyer.ShippingAddress.Id);
-                }
-
-                // Add timeout for save operation
-                _logger.LogInformation("UPDATE: ===== CALLING _buyerService.SaveInfo() =====");
-                _logger.LogInformation("UPDATE: About to save buyer with the following data:");
-                _logger.LogInformation("UPDATE: Buyer ID: {BuyerId}", buyer.Id);
-                _logger.LogInformation("UPDATE: FirstName: '{FirstName}', LastName: '{LastName}'", buyer.FirstName, buyer.LastName);
-                _logger.LogInformation("UPDATE: PhoneNumber: '{PhoneNumber}', UseSameAddress: {UseSameAddress}", buyer.User?.PhoneNumber, buyer.UseSameAddress);
-                _logger.LogInformation("UPDATE: Billing Address - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}", 
-                    buyer.BillingAddress?.StreetLine, buyer.BillingAddress?.City, buyer.BillingAddress?.Country, buyer.BillingAddress?.PostalCode, buyer.BillingAddress?.Id);
-                _logger.LogInformation("UPDATE: Shipping Address - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}", 
-                    buyer.ShippingAddress?.StreetLine, buyer.ShippingAddress?.City, buyer.ShippingAddress?.Country, buyer.ShippingAddress?.PostalCode, buyer.ShippingAddress?.Id);
-                
-                var saveTask = _buyerService.SaveInfo(buyer);
-                if (await Task.WhenAny(saveTask, Task.Delay(5000)) != saveTask)
-                {
-                    _logger.LogWarning("UPDATE: SaveInfo operation timed out");
-                    TempData["ErrorMessage"] = "Operation timed out while saving your profile. Please try again.";
-                    return View("Index", model);
-                }
-
-                await saveTask;
-                _logger.LogInformation("UPDATE: ===== _buyerService.SaveInfo() COMPLETED =====");
-
-                // Verify what was actually saved by re-loading the buyer
-                _logger.LogInformation("UPDATE: ===== VERIFYING SAVED DATA =====");
-                var verifyUser = new User(userId);
-                var verifyBuyer = await _buyerService.GetBuyerByUser(verifyUser);
-                
-                _logger.LogInformation("UPDATE: VERIFICATION - Buyer data after save - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}", 
-                    verifyBuyer.FirstName, verifyBuyer.LastName, verifyBuyer.User?.PhoneNumber, verifyBuyer.UseSameAddress);
-                
-                if (verifyBuyer.BillingAddress != null)
-                {
-                    _logger.LogInformation("UPDATE: VERIFICATION - Billing address after save - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}", 
-                        verifyBuyer.BillingAddress.StreetLine, verifyBuyer.BillingAddress.City, verifyBuyer.BillingAddress.Country, verifyBuyer.BillingAddress.PostalCode, verifyBuyer.BillingAddress.Id);
-                }
-                else
-                {
-                    _logger.LogWarning("UPDATE: VERIFICATION - Billing address is NULL after save");
-                }
-                
-                if (verifyBuyer.ShippingAddress != null)
-                {
-                    _logger.LogInformation("UPDATE: VERIFICATION - Shipping address after save - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}", 
-                        verifyBuyer.ShippingAddress.StreetLine, verifyBuyer.ShippingAddress.City, verifyBuyer.ShippingAddress.Country, verifyBuyer.ShippingAddress.PostalCode, verifyBuyer.ShippingAddress.Id);
-                }
-                else
-                {
-                    _logger.LogWarning("UPDATE: VERIFICATION - Shipping address is NULL after save");
-                }
-
-                // Log what was actually saved to verify the update
-                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - Buyer ID: {BuyerId}", buyer.Id);
-                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}", 
-                    buyer.FirstName, buyer.LastName, buyer.User?.PhoneNumber, buyer.UseSameAddress);
-                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - Billing Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}", 
-                    buyer.BillingAddress?.StreetLine, buyer.BillingAddress?.City, buyer.BillingAddress?.Country, buyer.BillingAddress?.PostalCode);
-                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - Shipping Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}", 
-                    buyer.ShippingAddress?.StreetLine, buyer.ShippingAddress?.City, buyer.ShippingAddress?.Country, buyer.ShippingAddress?.PostalCode);
-
-                TempData["SuccessMessage"] = "Profile updated successfully!";
-                _logger.LogInformation("UPDATE: Profile update completed successfully for user ID: {UserId}, redirecting to Manage", userId);
-                
-                _logger.LogInformation("DEBUG: ================================");
-                _logger.LogInformation("DEBUG: Update() method called - END (SUCCESS)");
-                _logger.LogInformation("DEBUG: ================================");
-                
-                return RedirectToAction(nameof(Manage));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "UPDATE: Error updating buyer profile for user ID: {UserId}", GetCurrentUserId());
-                _logger.LogError("DEBUG: Exception details - Type: {ExceptionType}, Message: {Message}, StackTrace: {StackTrace}", 
-                    ex.GetType().Name, ex.Message, ex.StackTrace);
-                TempData["ErrorMessage"] = $"Failed to update profile: {ex.Message}";
-                
-                _logger.LogInformation("DEBUG: ================================");
-                _logger.LogInformation("DEBUG: Update() method called - END (ERROR)");
-                _logger.LogInformation("DEBUG: ================================");
-                
-                return View("Index", model);
-            }
-        }
-
-        /// <summary>
-        /// Manages the buyer profile (private, editable version)
-        /// </summary>
-        /// <returns>The manage buyer profile view</returns>
-        [Authorize]
-        public async Task<IActionResult> Manage()
-        {
-            _logger.LogInformation("Loading private editable Buyer Profile page");
-            
-            int userId = GetCurrentUserId();
-            _logger.LogInformation("Got user ID {UserId} from claims", userId);
-            
-            if (userId == 0)
-            {
-                _logger.LogWarning("User not authenticated, redirecting to login");
-                return RedirectToAction("Login", "Account");
-            }
-
-            try
-            {
                 // Create a basic User object instead of fetching all users
                 _logger.LogInformation("DEBUG: Update() - Creating User object...");
                 var user = new User(userId);
@@ -1059,25 +722,9 @@ namespace WebMarketplace.Controllers
                     _logger.LogError("GetBuyerByUser() returned null");
                     return Content("Error: No buyer profile found for this user.");
                 }
-                // Get buyer information
-                Buyer buyer = await _buyerService.GetBuyerByUser(user);
-                _logger.LogInformation("GetBuyerByUser() completed successfully");
-
-                if (buyer == null)
-                {
-                    _logger.LogError("GetBuyerByUser() returned null");
-                    return Content("Error: No buyer profile found for this user.");
-                }
 
                 _logger.LogInformation("Found buyer: {BuyerId}, loading view model", buyer.Id);
 
-                // Load linked buyers information
-                var linkedBuyers = await LoadLinkedBuyersAsync(buyer.Id);
-
-                // Load following sellers information
-                var followedSellers = await LoadFollowingSellersAsync(buyer.Id);
-
-                // Create the view model
                 // Load linked buyers information
                 var linkedBuyers = await LoadLinkedBuyersAsync(buyer.Id);
 

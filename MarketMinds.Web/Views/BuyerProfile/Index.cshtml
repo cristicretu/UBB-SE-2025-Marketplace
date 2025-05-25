@@ -8,13 +8,6 @@
     
     var canEdit = ViewBag.CanEdit == true;
     var isOwnProfile = ViewBag.IsOwnProfile == true;
-    ViewData["Title"] = ViewBag.CanEdit == true ? "Manage Buyer Profile" : $"{Model.FirstName} {Model.LastName} - Buyer Profile";
-    // Get user ID from claims instead of UserSession to avoid null reference
-    var UserId = User?.Identity?.IsAuthenticated == true ? 
-        int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0") : 0;
-    
-    var canEdit = ViewBag.CanEdit == true;
-    var isOwnProfile = ViewBag.IsOwnProfile == true;
 }
 
 <div class="min-h-screen bg-gray-50 py-8">
@@ -211,127 +204,7 @@
                                     </label>
                                 </div>
                             </div>
-                        <!-- Personal Information -->
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                </svg>
-                                Personal Information
-                            </h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label asp-for="FirstName" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                                    <input asp-for="FirstName" 
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                    <span asp-validation-for="FirstName" class="text-red-500 text-sm mt-1 block"></span>
-                                </div>
-                                <div>
-                                    <label asp-for="LastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                                    <input asp-for="LastName" 
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                    <span asp-validation-for="LastName" class="text-red-500 text-sm mt-1 block"></span>
-                                </div>
-                                <div>
-                                    <label asp-for="Email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                                    <input asp-for="Email" 
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" 
-                                           readonly />
-                                </div>
-                                <div>
-                                    <label asp-for="PhoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                    <input asp-for="PhoneNumber" 
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                    <span asp-validation-for="PhoneNumber" class="text-red-500 text-sm mt-1 block"></span>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Address Information -->
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                Address Information
-                            </h3>
-                            
-                            <!-- Billing Address -->
-                            <div class="mb-8">
-                                <h4 class="font-semibold text-gray-800 mb-4">Billing Address</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label asp-for="BillingStreet" class="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
-                                        <input asp-for="BillingStreet" 
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                        <span asp-validation-for="BillingStreet" class="text-red-500 text-sm mt-1 block"></span>
-                                    </div>
-                                    <div>
-                                        <label asp-for="BillingPostalCode" class="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
-                                        <input asp-for="BillingPostalCode" 
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                        <span asp-validation-for="BillingPostalCode" class="text-red-500 text-sm mt-1 block"></span>
-                                    </div>
-                                    <div>
-                                        <label asp-for="BillingCity" class="block text-sm font-medium text-gray-700 mb-2">City</label>
-                                        <input asp-for="BillingCity" 
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                        <span asp-validation-for="BillingCity" class="text-red-500 text-sm mt-1 block"></span>
-                                    </div>
-                                    <div>
-                                        <label asp-for="BillingCountry" class="block text-sm font-medium text-gray-700 mb-2">Country</label>
-                                        <input asp-for="BillingCountry" 
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                        <span asp-validation-for="BillingCountry" class="text-red-500 text-sm mt-1 block"></span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Same Address Toggle -->
-                            <div class="bg-white rounded-lg p-4 border border-gray-300 mb-6">
-                                <div class="flex items-center space-x-3">
-                                    <input asp-for="UseSameAddress" 
-                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" 
-                                           id="useSameAddress" />
-                                    <label class="text-sm font-medium text-gray-700 cursor-pointer" for="useSameAddress">
-                                        Use same address for shipping
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Shipping Address -->
-                            <div id="shippingAddressFields">
-                                <h4 class="font-semibold text-gray-800 mb-4">Shipping Address</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label asp-for="ShippingStreet" class="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
-                                        <input asp-for="ShippingStreet" 
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                        <span asp-validation-for="ShippingStreet" class="text-red-500 text-sm mt-1 block"></span>
-                                    </div>
-                                    <div>
-                                        <label asp-for="ShippingPostalCode" class="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
-                                        <input asp-for="ShippingPostalCode" 
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                        <span asp-validation-for="ShippingPostalCode" class="text-red-500 text-sm mt-1 block"></span>
-                                    </div>
-                                    <div>
-                                        <label asp-for="ShippingCity" class="block text-sm font-medium text-gray-700 mb-2">City</label>
-                                        <input asp-for="ShippingCity" 
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                        <span asp-validation-for="ShippingCity" class="text-red-500 text-sm mt-1 block"></span>
-                                    </div>
-                                    <div>
-                                        <label asp-for="ShippingCountry" class="block text-sm font-medium text-gray-700 mb-2">Country</label>
-                                        <input asp-for="ShippingCountry" 
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                        <span asp-validation-for="ShippingCountry" class="text-red-500 text-sm mt-1 block"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                             <!-- Shipping Address -->
                             <div id="shippingAddressFields">
                                 <h4 class="font-semibold text-gray-800 mb-4">Shipping Address</h4>
@@ -627,100 +500,7 @@
                             </a>
                         }
                     </div>
-            </div>
-        }
-
-        <!-- Following Section -->
-        @if (Model.FollowingSellers != null && Model.FollowingSellers.Any())
-        {
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-                <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-8 py-6 rounded-t-xl">
-                    <h3 class="text-xl font-bold flex items-center">
-                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
-                        Following Sellers
-                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium ml-3">
-                            @Model.FollowingSellers.Count
-                        </span>
-                    </h3>
                 </div>
-                <div class="p-8">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach (var followedSeller in Model.FollowingSellers)
-                        {
-                            <a href="@Url.Action("PublicProfile", "SellerProfile", new { id = followedSeller.SellerId })" 
-                               class="block bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors border border-gray-200 hover:border-purple-300 hover:shadow-md">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg">
-                                        @{
-                                            var firstInitial = !string.IsNullOrEmpty(followedSeller.FirstName) ? followedSeller.FirstName.First().ToString().ToUpper() : "?";
-                                            var lastInitial = !string.IsNullOrEmpty(followedSeller.LastName) ? followedSeller.LastName.First().ToString().ToUpper() : "";
-                                        }
-                                        @firstInitial@lastInitial
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="font-semibold text-gray-900 truncate">@followedSeller.FirstName @followedSeller.LastName</h4>
-                                        @if (!string.IsNullOrEmpty(followedSeller.StoreName))
-                                        {
-                                            <div class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium inline-block mt-1">
-                                                @followedSeller.StoreName
-                                            </div>
-                                        }
-                                        @if (!string.IsNullOrEmpty(followedSeller.Email))
-                                        {
-                                            <p class="text-sm text-gray-500 truncate mt-1">@followedSeller.Email</p>
-                                        }
-                                    </div>
-                                </div>
-                            </a>
-                        }
-                    </div>
-                </div>
-            </div>
-        }
-
-        @if (canEdit)
-        {
-            <!-- Contract Management -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                    <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Contract Management
-                </h3>
-                
-                <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
-                    <!-- Renew Contract -->
-                    <a href="@Url.Action("Index", "RenewContract")" 
-                       class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        Renew Contract
-                    </a>
-                    
-                    <!-- Generate Contract Form -->
-                    <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="flex items-end gap-4">
-                        <div>
-                            <label for="contractId" class="block text-sm font-medium text-gray-700 mb-2">Contract ID</label>
-                            <input type="number" 
-                                   class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                                   id="contractId" name="contractId" 
-                                   placeholder="Enter ID" required />
-                        </div>
-                        <button type="submit" 
-                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            Generate Contract
-                        </button>
-                    </form>
-                </div>
-            </div>
-        }
             </div>
         }
 
@@ -802,37 +582,6 @@
                 });
             }
 
-            console.log("Document ready - initializing address logic");
-            
-            // Function to copy billing address to shipping address
-            function copyBillingToShipping() {
-                console.log("copyBillingToShipping called");
-                
-                var billingStreet = $("#BillingStreet").val();
-                var billingCity = $("#BillingCity").val();
-                var billingCountry = $("#BillingCountry").val();
-                var billingPostalCode = $("#BillingPostalCode").val();
-                
-                console.log("Billing address values:", {
-                    street: billingStreet,
-                    city: billingCity,
-                    country: billingCountry,
-                    postalCode: billingPostalCode
-                });
-                
-                $("#ShippingStreet").val(billingStreet);
-                $("#ShippingCity").val(billingCity);
-                $("#ShippingCountry").val(billingCountry);
-                $("#ShippingPostalCode").val(billingPostalCode);
-                
-                console.log("Shipping address updated to:", {
-                    street: $("#ShippingStreet").val(),
-                    city: $("#ShippingCity").val(),
-                    country: $("#ShippingCountry").val(),
-                    postalCode: $("#ShippingPostalCode").val()
-                });
-            }
-
             // Function to toggle shipping address fields based on checkbox
             function toggleShippingFields() {
                 var isChecked = $("#useSameAddress").is(":checked");
@@ -844,19 +593,7 @@
                     copyBillingToShipping();
                     // Then hide the shipping address fields
                     $("#shippingAddressFields").slideUp(300);
-                var isChecked = $("#useSameAddress").is(":checked");
-                console.log("toggleShippingFields called, checkbox checked:", isChecked);
-                
-                if (isChecked) {
-                    console.log("Checkbox is checked - copying billing to shipping and hiding fields");
-                    // Copy billing address to shipping address FIRST
-                    copyBillingToShipping();
-                    // Then hide the shipping address fields
-                    $("#shippingAddressFields").slideUp(300);
                 } else {
-                    console.log("Checkbox is unchecked - showing shipping fields");
-                    // Show the shipping address fields
-                    $("#shippingAddressFields").slideDown(300);
                     console.log("Checkbox is unchecked - showing shipping fields");
                     // Show the shipping address fields
                     $("#shippingAddressFields").slideDown(300);

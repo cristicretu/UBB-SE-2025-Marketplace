@@ -5,14 +5,12 @@
 namespace MarketMinds.ViewModels
 {
     using System;
-    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
-    using MarketMinds.Server.Services;
     using MarketMinds.Server.Services;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
@@ -25,13 +23,10 @@ namespace MarketMinds.ViewModels
     /// <param name="linkageUpdatedCallback">Callback for linkage updates.</param>
     /// <param name="buyerLinkageService">The buyer linkage service.</param>
     public class BuyerFamilySyncViewModel(IBuyerService service, Buyer buyer, IOnBuyerLinkageUpdatedCallback linkageUpdatedCallback, IBuyerLinkageService buyerLinkageService) : IBuyerFamilySyncViewModel
-    /// <param name="buyerLinkageService">The buyer linkage service.</param>
-    public class BuyerFamilySyncViewModel(IBuyerService service, Buyer buyer, IOnBuyerLinkageUpdatedCallback linkageUpdatedCallback, IBuyerLinkageService buyerLinkageService) : IBuyerFamilySyncViewModel
     {
         private readonly Buyer currentBuyer = buyer;
         private readonly IBuyerService service = service;
         private readonly IOnBuyerLinkageUpdatedCallback linkageUpdatedCallback = linkageUpdatedCallback;
-        private readonly IBuyerLinkageService buyerLinkageService = buyerLinkageService;
         private readonly IBuyerLinkageService buyerLinkageService = buyerLinkageService;
         private List<IBuyerLinkageViewModel>? allItems;
         private BuyerLinkageStatus status = BuyerLinkageStatus.None;
@@ -43,20 +38,6 @@ namespace MarketMinds.ViewModels
 
         /// <inheritdoc/>
         public ObservableCollection<IBuyerLinkageViewModel>? Items { get; set; } = new();
-
-        /// <inheritdoc/>
-        public BuyerLinkageStatus Status
-        {
-            get => this.status;
-            private set
-            {
-                if (this.status != value)
-                {
-                    this.status = value;
-                    this.OnPropertyChanged();
-                }
-            }
-        }
 
         /// <inheritdoc/>
         public BuyerLinkageStatus Status

@@ -1,9 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using MarketMinds.Shared.Models;
 
-using System.ComponentModel.DataAnnotations;
-using MarketMinds.Shared.Models;
-
 namespace WebMarketplace.Models
 {
     /// <summary>
@@ -21,8 +18,6 @@ namespace WebMarketplace.Models
         /// </summary>
         [Required(ErrorMessage = "First name is required")]
         [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
-        [Required(ErrorMessage = "First name is required")]
-        [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
         public string FirstName { get; set; } = string.Empty;
 
         /// <summary>
@@ -30,14 +25,11 @@ namespace WebMarketplace.Models
         /// </summary>
         [Required(ErrorMessage = "Last name is required")]
         [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
-        [Required(ErrorMessage = "Last name is required")]
-        [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
         public string LastName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the email
         /// </summary>
-        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
         [EmailAddress(ErrorMessage = "Please enter a valid email address")]
         public string Email { get; set; } = string.Empty;
 
@@ -51,15 +43,11 @@ namespace WebMarketplace.Models
         /// </summary>
         [Required(ErrorMessage = "Phone number is required")]
         [Phone(ErrorMessage = "Please enter a valid phone number")]
-        [Required(ErrorMessage = "Phone number is required")]
-        [Phone(ErrorMessage = "Please enter a valid phone number")]
         public string PhoneNumber { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the billing address street
         /// </summary>
-        [Required(ErrorMessage = "Billing street address is required")]
-        [StringLength(100, ErrorMessage = "Street address cannot exceed 100 characters")]
         [Required(ErrorMessage = "Billing street address is required")]
         [StringLength(100, ErrorMessage = "Street address cannot exceed 100 characters")]
         public string BillingStreet { get; set; } = string.Empty;
@@ -69,15 +57,11 @@ namespace WebMarketplace.Models
         /// </summary>
         [Required(ErrorMessage = "Billing city is required")]
         [StringLength(50, ErrorMessage = "City cannot exceed 50 characters")]
-        [Required(ErrorMessage = "Billing city is required")]
-        [StringLength(50, ErrorMessage = "City cannot exceed 50 characters")]
         public string BillingCity { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the billing address country
         /// </summary>
-        [Required(ErrorMessage = "Billing country is required")]
-        [StringLength(50, ErrorMessage = "Country cannot exceed 50 characters")]
         [Required(ErrorMessage = "Billing country is required")]
         [StringLength(50, ErrorMessage = "Country cannot exceed 50 characters")]
         public string BillingCountry { get; set; } = string.Empty;
@@ -87,14 +71,11 @@ namespace WebMarketplace.Models
         /// </summary>
         [Required(ErrorMessage = "Billing postal code is required")]
         [StringLength(20, ErrorMessage = "Postal code cannot exceed 20 characters")]
-        [Required(ErrorMessage = "Billing postal code is required")]
-        [StringLength(20, ErrorMessage = "Postal code cannot exceed 20 characters")]
         public string BillingPostalCode { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the shipping address street
         /// </summary>
-        [StringLength(100, ErrorMessage = "Street address cannot exceed 100 characters")]
         [StringLength(100, ErrorMessage = "Street address cannot exceed 100 characters")]
         public string ShippingStreet { get; set; } = string.Empty;
 
@@ -102,20 +83,17 @@ namespace WebMarketplace.Models
         /// Gets or sets the shipping address city
         /// </summary>
         [StringLength(50, ErrorMessage = "City cannot exceed 50 characters")]
-        [StringLength(50, ErrorMessage = "City cannot exceed 50 characters")]
         public string ShippingCity { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the shipping address country
         /// </summary>
         [StringLength(50, ErrorMessage = "Country cannot exceed 50 characters")]
-        [StringLength(50, ErrorMessage = "Country cannot exceed 50 characters")]
         public string ShippingCountry { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the shipping address postal code
         /// </summary>
-        [StringLength(20, ErrorMessage = "Postal code cannot exceed 20 characters")]
         [StringLength(20, ErrorMessage = "Postal code cannot exceed 20 characters")]
         public string ShippingPostalCode { get; set; } = string.Empty;
 
