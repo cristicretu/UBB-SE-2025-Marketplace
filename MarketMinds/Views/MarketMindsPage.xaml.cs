@@ -30,7 +30,6 @@ namespace MarketMinds.Views
         // view models
         public BuyProductsViewModel BuyProductsViewModel { get; set; }
         public AuctionProductsViewModel AuctionProductsViewModel { get; set; }
-        public BuyerWishlistItemViewModel BuyerWishlistItemViewModel { get; set; }
 
         // observable collections
         public ObservableCollection<BuyProduct> BuyProductsCollection { get; private set; }
@@ -74,7 +73,6 @@ namespace MarketMinds.Views
             this.InitializeComponent();
             this.BuyProductsViewModel = App.BuyProductsViewModel;
             this.AuctionProductsViewModel = App.AuctionProductsViewModel;
-            this.BuyerWishlistItemViewModel = App.BuyerWishlistItemViewModel;
             this.BuyProductsCollection = new ObservableCollection<BuyProduct>();
             this.AuctionProductsCollection = new ObservableCollection<AuctionProduct>();
 
@@ -221,45 +219,7 @@ namespace MarketMinds.Views
 
         private void BuyProductCard_AddToCart_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            if (button == null)
-            {
-                return;
-            }
-
-            var product = button.DataContext as BuyProduct;
-            if (product == null)
-            {
-                Debug.WriteLine("[BuyProductCard_AddToCart_Click] Product is null");
-                return;
-            }
-
-            this.BuyerWishlistItemViewModel.AddToCartCommand.Execute(product);
-        }
-
-        private void BuyProductCard_AddToWishlist_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            if (button == null)
-            {
-                return;
-            }
-
-            var product = button.DataContext as BuyProduct;
-            if (product == null)
-            {
-                Debug.WriteLine("[BuyProductCard_AddToWishlist_Click] Product is null");
-                return;
-            }
-
-            if (this.BuyerWishlistItemViewModel.IsInWishlist(product.Id))
-            {
-                this.BuyerWishlistItemViewModel.RemoveFromWishlist(product.Id);
-            }
-            else
-            {
-                this.BuyerWishlistItemViewModel.AddToWishlist(product.Id);
-            }
+            // TODO: Implement add to cart functionality
         }
 
         private void AuctionProductCard_Click(object sender, ItemClickEventArgs e)
