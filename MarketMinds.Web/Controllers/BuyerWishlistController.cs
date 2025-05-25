@@ -19,6 +19,7 @@ namespace WebMarketplace.Controllers
     {
         private readonly IBuyerService _buyerService;
         private readonly IBuyProductsService _productService;
+        private readonly IBuyerLinkageService _buyerLinkageService;
         private readonly ILogger<BuyerWishlistController> _logger;
         private const string WishlistSessionKey = "WishlistProductIds";
 
@@ -27,14 +28,17 @@ namespace WebMarketplace.Controllers
         /// </summary>
         /// <param name="buyerService">The buyer service</param>
         /// <param name="productService">The product service</param>
+        /// <param name="buyerLinkageService">The buyer linkage service</param>
         /// <param name="logger">The logger</param>
         public BuyerWishlistController(
             IBuyerService buyerService,
             IBuyProductsService productService,
+            IBuyerLinkageService buyerLinkageService,
             ILogger<BuyerWishlistController> logger)
         {
             _buyerService = buyerService ?? throw new ArgumentNullException(nameof(buyerService));
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+            _buyerLinkageService = buyerLinkageService ?? throw new ArgumentNullException(nameof(buyerLinkageService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -79,18 +83,26 @@ namespace WebMarketplace.Controllers
         }
 
         /// <summary>
-        /// Displays the buyer's wishlist with extensive error handling
+        /// Displays the buyer's wishlist with support for both individual and friends views
         /// </summary>
+        /// <param name="mode">View mode: "my" for individual wishlist, "friends" for shared wishlist</param>
         /// <returns>The view with wishlist items or appropriate error</returns>
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string mode = "my")
         {
             var stopwatch = Stopwatch.StartNew();
             var debugInfo = new StringBuilder();
 
             try
             {
-                _logger.LogInformation("Loading wishlist for user");
-                debugInfo.AppendLine("Starting wishlist load process...");
+                // Normalize and validate the mode parameter
+                mode = mode?.ToLower() ?? "my";
+                if (mode != "my" && mode != "friends")
+                {
+                    mode = "my";
+                }
+
+                _logger.LogInformation("Loading wishlist for user in mode: {Mode}", mode);
+                debugInfo.AppendLine($"Starting wishlist load process in mode: {mode}...");
 
                 // STEP 1: Get current user ID
                 int userId = GetCurrentUserId();
@@ -130,85 +142,28 @@ namespace WebMarketplace.Controllers
                     return Content($"Error retrieving buyer: {ex.Message}\n\nDebug info: {debugInfo}");
                 }
 
-                // STEP 4: Load the buyer's wishlist
+                // STEP 4: Create view model based on mode
+                BuyerWishlistViewModel viewModel;
                 try
                 {
-                    debugInfo.AppendLine("About to load buyer wishlist...");
-                    await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.Wishlist);
-                    debugInfo.AppendLine("LoadBuyer completed");
-
-                    var itemCount = buyer.Wishlist?.Items?.Count ?? 0;
-                    _logger.LogInformation("Wishlist loaded for buyer {BuyerId} with {ItemCount} items", buyer.Id, itemCount);
-                    debugInfo.AppendLine($"Wishlist contains {itemCount} items");
-
-                    // Check if Wishlist is null
-                    if (buyer.Wishlist == null)
-                    {
-                        debugInfo.AppendLine("WARNING: buyer.Wishlist is null after LoadBuyer call");
-                    }
-                    // Check if Items collection is null
-                    else if (buyer.Wishlist.Items == null)
-                    {
-                        debugInfo.AppendLine("WARNING: buyer.Wishlist.Items is null");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error loading wishlist for buyer {BuyerId}", buyer.Id);
-                    return Content($"Error loading wishlist: {ex.Message}\n\nDebug info: {debugInfo}");
-                }
-
-                // STEP 5: Convert BuyerWishlistItem objects to Product objects
-                var products = new List<BuyProduct>();
-                try
-                {
-                    debugInfo.AppendLine("Starting conversion of wishlist items to products...");
-                    if (buyer.Wishlist?.Items != null)
-                    {
-                        foreach (var wishlistItem in buyer.Wishlist.Items)
-                        {
-                            try
-                            {
-                                debugInfo.AppendLine($"Getting product for wishlist item: ProductId={wishlistItem.ProductId}");
-                                var product = _productService.GetProductById(wishlistItem.ProductId);
-
-                                if (product != null)
-                                {
-                                    debugInfo.AppendLine($"Product found: {product.Title}, Adding to list");
-                                    products.Add(product);
-                                }
-                                else
-                                {
-                                    debugInfo.AppendLine($"WARNING: Product {wishlistItem.ProductId} not found");
-                                    _logger.LogWarning("Product not found for wishlist item ID {ProductId}", wishlistItem.ProductId);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error getting product {ProductId}", wishlistItem.ProductId);
-                                debugInfo.AppendLine($"Error getting product {wishlistItem.ProductId}: {ex.Message}");
-                                // Continue trying other products instead of failing the entire request
-                            }
-                        }
-                    }
-                    debugInfo.AppendLine($"Converted {products.Count} products");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error converting wishlist items to products");
-                    return Content($"Error converting wishlist items: {ex.Message}\n\nDebug info: {debugInfo}");
-                }
-
-                // STEP 6: Create view model
-                try
-                {
-                    debugInfo.AppendLine("Creating view model...");
-                    var viewModel = new BuyerWishlistViewModel
+                    viewModel = new BuyerWishlistViewModel
                     {
                         BuyerId = buyer.Id,
-                        WishlistItems = products
+                        ViewMode = mode,
+                        CurrentBuyerFirstName = buyer.FirstName ?? string.Empty,
+                        CurrentBuyerLastName = buyer.LastName ?? string.Empty
                     };
-                    debugInfo.AppendLine($"View model created with {products.Count} items");
+
+                    if (mode == "my")
+                    {
+                        // Load current buyer's wishlist
+                        await LoadMyWishlist(buyer, viewModel, debugInfo);
+                    }
+                    else if (mode == "friends")
+                    {
+                        // Load friends' wishlists
+                        await LoadFriendsWishlists(buyer, viewModel, debugInfo);
+                    }
 
                     _logger.LogInformation("Wishlist loaded successfully in {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
 
@@ -233,6 +188,230 @@ namespace WebMarketplace.Controllers
 
                 return Content($"Unhandled error: {ex.Message}\n\nStack trace: {ex.StackTrace}\n\nDebug info: {debugInfo}");
             }
+        }
+
+        /// <summary>
+        /// Loads the current buyer's wishlist items
+        /// </summary>
+        /// <param name="buyer">The buyer</param>
+        /// <param name="viewModel">The view model to populate</param>
+        /// <param name="debugInfo">Debug information</param>
+        private async Task LoadMyWishlist(Buyer buyer, BuyerWishlistViewModel viewModel, StringBuilder debugInfo)
+        {
+            try
+            {
+                debugInfo.AppendLine("Loading current buyer's wishlist...");
+                await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.Wishlist);
+                debugInfo.AppendLine("LoadBuyer completed");
+
+                var itemCount = buyer.Wishlist?.Items?.Count ?? 0;
+                _logger.LogInformation("Wishlist loaded for buyer {BuyerId} with {ItemCount} items", buyer.Id, itemCount);
+                debugInfo.AppendLine($"Wishlist contains {itemCount} items");
+
+                // Convert BuyerWishlistItem objects to Product objects
+                var products = new List<BuyProduct>();
+                if (buyer.Wishlist?.Items != null)
+                {
+                    foreach (var wishlistItem in buyer.Wishlist.Items)
+                    {
+                        try
+                        {
+                            debugInfo.AppendLine($"Getting product for wishlist item: ProductId={wishlistItem.ProductId}");
+                            var product = _productService.GetProductById(wishlistItem.ProductId);
+
+                            if (product != null)
+                            {
+                                debugInfo.AppendLine($"Product found: {product.Title}, Adding to list");
+                                products.Add(product);
+                            }
+                            else
+                            {
+                                debugInfo.AppendLine($"WARNING: Product {wishlistItem.ProductId} not found");
+                                _logger.LogWarning("Product not found for wishlist item ID {ProductId}", wishlistItem.ProductId);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error getting product {ProductId}", wishlistItem.ProductId);
+                            debugInfo.AppendLine($"Error getting product {wishlistItem.ProductId}: {ex.Message}");
+                        }
+                    }
+                }
+
+                viewModel.WishlistItems = products;
+                debugInfo.AppendLine($"Loaded {products.Count} products for current buyer");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading current buyer's wishlist for buyer {BuyerId}", buyer.Id);
+                debugInfo.AppendLine($"Error loading current buyer's wishlist: {ex.Message}");
+                viewModel.WishlistItems = new List<BuyProduct>();
+            }
+        }
+
+        /// <summary>
+        /// Loads all linked buyers' wishlist items grouped by buyer
+        /// </summary>
+        /// <param name="buyer">The current buyer</param>
+        /// <param name="viewModel">The view model to populate</param>
+        /// <param name="debugInfo">Debug information</param>
+        private async Task LoadFriendsWishlists(Buyer buyer, BuyerWishlistViewModel viewModel, StringBuilder debugInfo)
+        {
+            try
+            {
+                debugInfo.AppendLine("Loading friends' wishlists...");
+                debugInfo.AppendLine($"Current buyer ID: {buyer.Id}");
+
+                // Get linked buyers
+                var linkedBuyers = await _buyerLinkageService.GetLinkedBuyersAsync(buyer.Id);
+                var linkedBuyersList = linkedBuyers.ToList(); // Convert to list to avoid multiple enumeration
+                debugInfo.AppendLine($"Found {linkedBuyersList.Count} linked buyers");
+
+                // Log details about each linked buyer
+                foreach (var linkedBuyer in linkedBuyersList)
+                {
+                    debugInfo.AppendLine($"Linked buyer: ID={linkedBuyer.Id}, Name={linkedBuyer.FirstName} {linkedBuyer.LastName}");
+                }
+
+                var groupedWishlists = new List<BuyerWishlistGroup>();
+
+                // Add current buyer's wishlist as first group
+                debugInfo.AppendLine("Creating group for current buyer...");
+                var currentBuyerGroup = await CreateWishlistGroup(buyer, debugInfo, "Current Buyer");
+                groupedWishlists.Add(currentBuyerGroup); // Always add, regardless of item count
+                debugInfo.AppendLine($"Added current buyer group with {currentBuyerGroup.ItemCount} items");
+
+                // Add linked buyers' wishlists
+                foreach (var linkedBuyer in linkedBuyersList)
+                {
+                    try
+                    {
+                        debugInfo.AppendLine($"Creating group for linked buyer {linkedBuyer.Id}...");
+                        var group = await CreateWishlistGroup(linkedBuyer, debugInfo, $"Linked Buyer {linkedBuyer.Id}");
+                        groupedWishlists.Add(group); // Always add, regardless of item count
+                        debugInfo.AppendLine($"Added linked buyer {linkedBuyer.Id} group with {group.ItemCount} items");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to load wishlist for linked buyer {BuyerId}", linkedBuyer.Id);
+                        debugInfo.AppendLine($"Error loading wishlist for linked buyer {linkedBuyer.Id}: {ex.Message}");
+                        
+                        // Even if there's an error, add an empty group so we can see the buyer
+                        var emptyGroup = new BuyerWishlistGroup
+                        {
+                            BuyerId = linkedBuyer.Id,
+                            FirstName = linkedBuyer.FirstName ?? "Unknown",
+                            LastName = linkedBuyer.LastName ?? "User",
+                            WishlistItems = new List<BuyProduct>()
+                        };
+                        groupedWishlists.Add(emptyGroup);
+                        debugInfo.AppendLine($"Added empty group for linked buyer {linkedBuyer.Id} due to error");
+                    }
+                }
+
+                viewModel.GroupedWishlistItems = groupedWishlists;
+                debugInfo.AppendLine($"Final result: {groupedWishlists.Count} wishlist groups with total {groupedWishlists.Sum(g => g.ItemCount)} items");
+                
+                // Log each group for debugging
+                for (int i = 0; i < groupedWishlists.Count; i++)
+                {
+                    var group = groupedWishlists[i];
+                    debugInfo.AppendLine($"Group {i + 1}: {group.DisplayName} (ID: {group.BuyerId}) - {group.ItemCount} items");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading friends' wishlists for buyer {BuyerId}", buyer.Id);
+                debugInfo.AppendLine($"Error loading friends' wishlists: {ex.Message}");
+                debugInfo.AppendLine($"Stack trace: {ex.StackTrace}");
+                viewModel.GroupedWishlistItems = new List<BuyerWishlistGroup>();
+            }
+        }
+
+        /// <summary>
+        /// Creates a wishlist group for a specific buyer
+        /// </summary>
+        /// <param name="buyer">The buyer</param>
+        /// <param name="debugInfo">Debug information</param>
+        /// <param name="context">Context for logging</param>
+        /// <returns>A wishlist group for the buyer</returns>
+        private async Task<BuyerWishlistGroup> CreateWishlistGroup(Buyer buyer, StringBuilder debugInfo, string context)
+        {
+            debugInfo.AppendLine($"Creating wishlist group for {context} (ID: {buyer.Id})");
+            debugInfo.AppendLine($"  Buyer name: {buyer.FirstName} {buyer.LastName}");
+
+            var group = new BuyerWishlistGroup
+            {
+                BuyerId = buyer.Id,
+                FirstName = buyer.FirstName ?? "Unknown",
+                LastName = buyer.LastName ?? "User"
+            };
+
+            try
+            {
+                // For the current buyer, use the already loaded wishlist if available
+                List<BuyerWishlistItem> wishlistItems;
+                if (context.Contains("Current Buyer") && buyer.Wishlist?.Items != null)
+                {
+                    debugInfo.AppendLine($"  Using already loaded wishlist for current buyer with {buyer.Wishlist.Items.Count} items");
+                    wishlistItems = buyer.Wishlist.Items;
+                }
+                else
+                {
+                    // For linked buyers, get wishlist items directly by buyer ID
+                    debugInfo.AppendLine($"  Getting wishlist items directly for buyer {buyer.Id}...");
+                    wishlistItems = await _buyerService.GetWishlistItems(buyer.Id);
+                    debugInfo.AppendLine($"  Got {wishlistItems.Count} wishlist items for buyer {buyer.Id}");
+                }
+
+                // Convert wishlist items to products
+                var products = new List<BuyProduct>();
+                if (wishlistItems != null && wishlistItems.Any())
+                {
+                    debugInfo.AppendLine($"  Processing {wishlistItems.Count} wishlist items for buyer {buyer.Id}");
+                    foreach (var wishlistItem in wishlistItems)
+                    {
+                        try
+                        {
+                            debugInfo.AppendLine($"    Getting product {wishlistItem.ProductId}...");
+                            var product = _productService.GetProductById(wishlistItem.ProductId);
+                            if (product != null)
+                            {
+                                products.Add(product);
+                                debugInfo.AppendLine($"    Added product {wishlistItem.ProductId}: {product.Title}");
+                            }
+                            else
+                            {
+                                debugInfo.AppendLine($"    Product {wishlistItem.ProductId} not found");
+                                _logger.LogWarning("Product not found for wishlist item ID {ProductId} (buyer {BuyerId})", 
+                                    wishlistItem.ProductId, buyer.Id);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            debugInfo.AppendLine($"    Error getting product {wishlistItem.ProductId}: {ex.Message}");
+                            _logger.LogError(ex, "Error getting product {ProductId} for buyer {BuyerId}", 
+                                wishlistItem.ProductId, buyer.Id);
+                        }
+                    }
+                }
+                else
+                {
+                    debugInfo.AppendLine($"  No wishlist items found for buyer {buyer.Id}");
+                }
+
+                group.WishlistItems = products;
+                debugInfo.AppendLine($"Group for {context} created with {products.Count} items");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating wishlist group for {Context} (buyer {BuyerId})", context, buyer.Id);
+                debugInfo.AppendLine($"Error creating group for {context}: {ex.Message}");
+                debugInfo.AppendLine($"Stack trace: {ex.StackTrace}");
+                group.WishlistItems = new List<BuyProduct>();
+            }
+
+            return group;
         }
 
         /// <summary>
