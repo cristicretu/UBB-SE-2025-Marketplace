@@ -227,9 +227,13 @@
 
         private void OrderHistoryButton_Clicked(object sender, RoutedEventArgs e)
         {
-            // merge-nicusor FIX :)
-            int user_id = 1;
-            var orderhistorywindow = new OrderHistoryView(user_id);
+            int? user_id = UserSession.CurrentUserId;
+            if (user_id == null || user_id <= 0)
+            {
+                _ = ShowErrorDialogAsync("Not logged in", "You must be logged in to view your order history.");
+                return;
+            }
+            var orderhistorywindow = new OrderHistoryView(user_id.Value);
             orderhistorywindow.Activate();
         }
 

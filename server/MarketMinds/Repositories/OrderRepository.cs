@@ -331,13 +331,19 @@ namespace Server.Repository
                         case null:
                             orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
                             break;
-                        case "Last 3 Months" when order.OrderDate >= DateTime.Now.AddMonths(-3):
-                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                        case "Last 3 Months":
+                            if(order.OrderDate >= DateTime.Now.AddMonths(-3))
+                                orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
                             break;
-                        case "Last 6 Months" when order.OrderDate >= DateTime.Now.AddMonths(-6):
-                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                        case "Last 6 Months":
+                            if(order.OrderDate >= DateTime.Now.AddMonths(-6))
+                                orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
                             break;
-                        case "This Year" when order.OrderDate.Year == DateTime.Now.Year:
+                        case "This Year":
+                            if(order.OrderDate.Year == DateTime.Now.Year)
+                                orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            break;
+                        case "All Orders":
                             orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
                             break;
                         default:
@@ -402,7 +408,7 @@ namespace Server.Repository
             {
                 OrderID = order.Id,
                 ProductName = product.Title,
-                ProductTypeName = "merge-nicusor",
+                ProductTypeName = order.ProductType,
                 OrderDate = order.OrderDate.ToString("yyyy-MM-dd"),
                 PaymentMethod = order.PaymentMethod,
                 OrderSummaryID = order.OrderSummaryID,
