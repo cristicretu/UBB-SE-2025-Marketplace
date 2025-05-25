@@ -37,10 +37,23 @@ namespace Server.Repository
         /// </summary>
         /// <param name="checkpoint">The checkpoint data to add.</param>
         /// <returns>The ID of the newly created checkpoint.</returns>
+        /// <summary>
+        /// Adds a new order checkpoint to the database.
+        /// </summary>
+        /// <param name="checkpoint">The checkpoint data to add.</param>
+        /// <returns>The ID of the newly created checkpoint.</returns>
         public async Task<int> AddOrderCheckpointAsync(OrderCheckpoint checkpoint)
         {
             await dbContext.OrderCheckpoints.AddAsync(checkpoint);
             await dbContext.SaveChangesAsync();
+            
+            // Get the associated tracked order
+            var trackedOrder = await dbContext.TrackedOrders.FindAsync(checkpoint.TrackedOrderID);
+            if (trackedOrder != null)
+            {
+                await CreateAndSendShippingNotificationAsync(trackedOrder, checkpoint.Status, checkpoint.Timestamp);
+            }
+            
             return checkpoint.CheckpointID;
         }
 
