@@ -59,14 +59,6 @@ namespace Server.Repository
                 throw new Exception($"AddProductToCartAsync: Quantity must be greater than 0.");
             }
 
-            //BuyerCartItemEntity buyerCartItem = new BuyerCartItemEntity(buyerId, productId, quantity);
-
-            //this.dbContext.BuyerCartItems.Add(buyerCartItem);
-            //await this.dbContext.SaveChangesAsync();
-
-            // MODIFIED SO ADD TO CART DOESN'T CRASH WHEN THE PRODUCT IS ALREADY IN THE CART,
-            // JUST INCREASE THE QUANTITY
-
             // Check if the product is already in the cart
             var existingCartItem = await this.dbContext.BuyerCartItems
                 .FirstOrDefaultAsync(item => item.BuyerId == buyerId && item.ProductId == productId);
