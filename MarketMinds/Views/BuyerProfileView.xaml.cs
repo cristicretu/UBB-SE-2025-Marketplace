@@ -214,7 +214,7 @@ namespace MarketMinds.Views
         {
             var orderhistorywindow = new OrderHistoryView();
             // will delete the button anyways
-            //orderhistorywindow.Activate();
+            // orderhistorywindow.Activate();
         }
 
         private async void RenewContractButton_Clicked(object sender, RoutedEventArgs e)

@@ -23,4 +23,14 @@ public class BuyProductsViewModel
         // return buyProducts;
         return buyProductsService.GetProducts(); // not to complicate stuff
     }
+
+    public List<BuyProduct> GetProducts(int offset, int count)
+    {
+        return buyProductsService.GetProducts(offset, count);
+    }
+
+    public int GetProductCount()
+    {
+        return buyProductsService.GetProductCount();
+    }
 }
