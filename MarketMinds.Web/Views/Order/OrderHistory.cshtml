@@ -3,6 +3,53 @@
     ViewData["Title"] = "Order History";
 }
 
+<!-- TempData Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="fixed top-4 right-4 z-[10001] bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg" role="alert" id="successAlert">
+        <div class="flex">
+            <div class="py-1">
+                <svg class="fill-current h-6 w-6 text-green-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="font-bold">Success!</p>
+                <p class="text-sm">@TempData["Success"]</p>
+            </div>
+            <button type="button" class="ml-4" onclick="document.getElementById('successAlert').style.display='none'">
+                <svg class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <title>Close</title>
+                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="fixed top-4 right-4 z-[10001] bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg" role="alert" id="errorAlert">
+        <div class="flex">
+            <div class="py-1">
+                <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="font-bold">Error!</p>
+                <p class="text-sm">@TempData["Error"]</p>
+            </div>
+            <button type="button" class="ml-4" onclick="document.getElementById('errorAlert').style.display='none'">
+                <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <title>Close</title>
+                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+}
+
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
@@ -120,7 +167,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="ml-6 flex-shrink-0">
+                                <div class="ml-6 flex-shrink-0 space-x-2">
                                     <button onclick="showOrderDetails(@order.OrderSummaryID)" 
                                             class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,6 +176,36 @@
                                         </svg>
                                         View Details
                                     </button>
+                                    
+                                    @{
+                                        var orderContracts = ViewBag.OrderContracts as Dictionary<int, long>;
+                                        var hasContract = orderContracts?.ContainsKey(order.OrderSummaryID) == true;
+                                        var contractId = hasContract ? orderContracts[order.OrderSummaryID] : 0;
+                                    }
+                                    
+                                    @if (hasContract)
+                                    {
+                                        <a href="@Url.Action("DownloadContract", "Order", new { contractId })" 
+                                           class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            Download Contract
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <form method="post" action="@Url.Action("GenerateContract", "Order")" style="display: inline;">
+                                            <input type="hidden" name="orderId" value="@order.OrderSummaryID" />
+                                            <button type="submit" 
+                                                    class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                Generate Contract
+                                            </button>
+                                        </form>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -140,7 +217,7 @@
 </div>
 
 <!-- Order Details Modal -->
-<div id="orderDetailsModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 z-50 hidden">
+<div id="orderDetailsModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 z-[9999] hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
             <!-- Modal Header -->
@@ -173,7 +250,7 @@
 </div>
 
 <!-- Success Modal -->
-<div id="successModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden">
+<div id="successModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 z-[10000] hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div class="px-6 py-4 border-b border-gray-200">
@@ -215,6 +292,22 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             loadOrders();
+            
+            // Auto-dismiss alerts after 5 seconds
+            const successAlert = document.getElementById('successAlert');
+            const errorAlert = document.getElementById('errorAlert');
+            
+            if (successAlert) {
+                setTimeout(() => {
+                    successAlert.style.display = 'none';
+                }, 5000);
+            }
+            
+            if (errorAlert) {
+                setTimeout(() => {
+                    errorAlert.style.display = 'none';
+                }, 5000);
+            }
         });
 
         searchInput.addEventListener('input', function() {
@@ -427,17 +520,26 @@
                                         <p class="text-base text-gray-900">${summary.additionalInfo}</p>
                                     </div>
                                     <div class="mt-4 space-x-4">
-                                        <button onclick="generateContract(${summary.id})" 
-                                                id="generateBtn_${summary.id}"
-                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                            Generate Contract
-                                        </button>
-                                        <button onclick="downloadContract(${summary.id})" 
-                                                id="downloadBtn_${summary.id}"
-                                                data-contract-id=""
-                                                class="hidden inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                            Download PDF
-                                        </button>
+                                        ${summary.existingContractId ? `
+                                            <a href="@Url.Action("DownloadContract", "Order")?contractId=${summary.existingContractId}" 
+                                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                Download Contract
+                                            </a>
+                                        ` : `
+                                            <form method="post" action="@Url.Action("GenerateContract", "Order")" style="display: inline;">
+                                                <input type="hidden" name="orderId" value="${summary.id}" />
+                                                <button type="submit" 
+                                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
+                                                    Generate Contract
+                                                </button>
+                                            </form>
+                                        `}
                                     </div>
                                 </div>
                                 ` : ''}
@@ -502,92 +604,7 @@
             document.getElementById('successModal').classList.add('hidden');
         }
 
-        function generateContract(orderId) {
-            // Show loading state
-            const button = event.target;
-            const originalText = button.textContent;
-            button.textContent = 'Generating...';
-            button.disabled = true;
 
-            $.ajax({
-                url: '@Url.Action("GenerateContract", "Order")',
-                type: 'POST',
-                data: { orderId: orderId },
-                success: function(response) {
-                    console.log("Server response from GenerateContract for OrderSummaryID " + orderId + ":", response);
-
-                    if (response.success && response.generatedContractId) {
-                        const actualGeneratedContractId = response.generatedContractId;
-                        const generateButton = $(`#generateBtn_${orderId}`);
-                        const downloadButton = $(`#downloadBtn_${orderId}`);
-
-                        console.log(`Storing actualGeneratedContractId: ${actualGeneratedContractId} on downloadBtn_${orderId}`);
-
-                        generateButton.addClass('hidden');
-                        downloadButton.attr('data-contract-id', actualGeneratedContractId);
-                        downloadButton.removeClass('hidden');
-                        showSuccessModal('Contract generated successfully! You can now download the PDF.');
-                    } else {
-                        let errorMessage = 'Error generating contract.';
-                        if (response.message) {
-                            errorMessage = 'Error: ' + response.message;
-                        } else if (response.success && !response.generatedContractId) {
-                            errorMessage = 'Error: Contract generated, but its new ID was not returned by the server. (response.generatedContractId is missing)';
-                        }
-                        console.error("GenerateContract error or missing generatedContractId. Response:", response);
-                        showSuccessModal(errorMessage);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    showSuccessModal('Error generating contract: ' + error);
-                },
-                complete: function() {
-                    button.textContent = originalText;   
-                    button.disabled = false;
-                }
-            });
-        }
-
-        function downloadContract(orderIdFromClick) {
-            console.log(`downloadContract called with orderIdFromClick (OrderSummaryID): ${orderIdFromClick}`);
-
-            const apiBaseUrl = '@ViewData["ApiBaseUrl"]';
-            let fullApiUrl = apiBaseUrl;
-            if (!fullApiUrl.endsWith('/')) {
-                fullApiUrl += '/';
-            }
-
-            const downloadButton = $(`#downloadBtn_${orderIdFromClick}`);
-            const storedGeneratedContractId = downloadButton.attr('data-contract-id');
-            console.log(`Value of data-contract-id from #downloadBtn_${orderIdFromClick}: '${storedGeneratedContractId}'`);
-
-            let contractIdToUse;
-            if (storedGeneratedContractId && storedGeneratedContractId.trim() !== "") {
-                contractIdToUse = storedGeneratedContractId;
-                console.log(`Using NEWLY GENERATED contractId from data-contract-id for download: ${contractIdToUse}`);
-            } else {
-                contractIdToUse = orderIdFromClick;
-                console.warn(`data-contract-id was not set or empty on #downloadBtn_${orderIdFromClick}. Falling back to orderIdFromClick (OrderSummaryID): ${contractIdToUse}. This may not be the correct ContractID if generation happened.`);
-            }
-            
-            if (!contractIdToUse) {
-                const errorMsg = "Error: Contract ID is not available for download. Cannot determine ID to use.";
-                showSuccessModal(errorMsg);
-                console.error("downloadContract: contractIdToUse is undefined or empty.", { orderIdFromClick, attrVal: storedGeneratedContractId });
-                return;
-            }
-
-            console.log(`Final contractIdToUse for API call: ${contractIdToUse}`);
-            fullApiUrl += `api/contracts/${contractIdToUse}/download-pdf`;
-
-            const link = document.createElement('a');
-            link.href = fullApiUrl;
-            link.download = `contract_${contractIdToUse}.pdf`;
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
         // Close modal with ESC key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && !document.getElementById('orderDetailsModal').classList.contains('hidden')) {
