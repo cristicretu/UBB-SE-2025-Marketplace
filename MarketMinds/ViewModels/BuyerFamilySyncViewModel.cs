@@ -11,6 +11,7 @@ namespace MarketMinds.ViewModels
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
+    using MarketMinds.Server.Services;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
 
@@ -20,11 +21,13 @@ namespace MarketMinds.ViewModels
     /// <param name="service">The buyer service instance.</param>
     /// <param name="buyer">The current buyer.</param>
     /// <param name="linkageUpdatedCallback">Callback for linkage updates.</param>
-    public class BuyerFamilySyncViewModel(IBuyerService service, Buyer buyer, IOnBuyerLinkageUpdatedCallback linkageUpdatedCallback) : IBuyerFamilySyncViewModel
+    /// <param name="buyerLinkageService">The buyer linkage service.</param>
+    public class BuyerFamilySyncViewModel(IBuyerService service, Buyer buyer, IOnBuyerLinkageUpdatedCallback linkageUpdatedCallback, IBuyerLinkageService buyerLinkageService) : IBuyerFamilySyncViewModel
     {
         private readonly Buyer currentBuyer = buyer;
         private readonly IBuyerService service = service;
         private readonly IOnBuyerLinkageUpdatedCallback linkageUpdatedCallback = linkageUpdatedCallback;
+        private readonly IBuyerLinkageService buyerLinkageService = buyerLinkageService;
         private List<IBuyerLinkageViewModel>? allItems;
         private BuyerLinkageStatus status = BuyerLinkageStatus.Possible;
 
@@ -158,7 +161,7 @@ namespace MarketMinds.ViewModels
             try
             {
                 System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Starting for buyer {this.currentBuyer.Id} (User ID: {this.currentBuyer.User.Id})");
-                
+
                 // Get buyers with the same shipping address
                 var household = (await this.service.FindBuyersWithShippingAddress(this.currentBuyer.ShippingAddress))
                     .Where(householdBuyer => householdBuyer.Id != this.currentBuyer.Id)
@@ -166,44 +169,40 @@ namespace MarketMinds.ViewModels
 
                 System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Found {household.Count} household members");
 
-                // Create a dictionary of existing linkages by LinkedBuyer.Id
-                var linkageDict = this.currentBuyer.Linkages.ToDictionary(l => l.Buyer.Id, l => l);
+                // Get linked buyers using buyerLinkageService
+                var linkedBuyers = await this.buyerLinkageService.GetLinkedBuyersAsync(this.currentBuyer.Id);
+                // make sure to filter out the current buyer from the linked buyers
+                linkedBuyers = linkedBuyers.Where(b => b.Id != this.currentBuyer.Id).ToList();
+                // only keep unique buyers
+                linkedBuyers = linkedBuyers.DistinctBy(b => b.Id).ToList();
+                var linkedBuyersDict = linkedBuyers.ToDictionary(b => b.Id);
 
                 var result = new List<IBuyerLinkageViewModel>();
                 foreach (var buyer in household)
                 {
-                    if (linkageDict.TryGetValue(buyer.Id, out var linkage))
+                    if (linkedBuyersDict.ContainsKey(buyer.Id))
                     {
-                        // For existing linkages, determine status based on who initiated the request
-                        BuyerLinkageStatus status;
-                        
-                        if (linkage.Status == BuyerLinkageStatus.PendingSelf)
-                        {
-                            // If the current user is the receiver (linkage.Buyer.Id == this.currentBuyer.Id)
-                            status = linkage.Buyer.Id == this.currentBuyer.Id ? 
-                                BuyerLinkageStatus.PendingSelf : 
-                                BuyerLinkageStatus.PendingOther;
-                        }
-                        else if (linkage.Status == BuyerLinkageStatus.PendingOther)
-                        {
-                            // If the current user is the sender (linkage.Buyer.Id != this.currentBuyer.Id)
-                            status = linkage.Buyer.Id != this.currentBuyer.Id ? 
-                                BuyerLinkageStatus.PendingSelf : 
-                                BuyerLinkageStatus.PendingOther;
-                        }
-                        else
-                        {
-                            status = linkage.Status;
-                        }
-
-                        System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Existing linkage for buyer {buyer.Id} ({buyer.FirstName} {buyer.LastName}): {status} (Original: {linkage.Status}, CurrentUser: {this.currentBuyer.Id}, LinkageBuyer: {linkage.Buyer.Id})");
-                        result.Add(this.NewBuyerLinkageViewModel(linkage.Buyer, status));
+                        // Buyer is linked - show as confirmed
+                        System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Existing linkage for buyer {buyer.Id} ({buyer.FirstName} {buyer.LastName}): Confirmed");
+                        result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.Confirmed));
                     }
                     else
                     {
-                        // No linkage, possible
-                        System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] No linkage for buyer {buyer.Id} ({buyer.FirstName} {buyer.LastName}), assigning status Possible");
-                        result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.Possible));
+                        // Check if there's a pending linkage by examining the buyer's linkage status
+                        var linkageStatus = await this.buyerLinkageService.GetLinkageStatusAsync(this.currentBuyer.Id, buyer.Id);
+
+                        if (linkageStatus.IsLinked)
+                        {
+                            // Already linked
+                            result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.Confirmed));
+                            System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Buyer {buyer.Id} is linked, status: Confirmed");
+                        }
+                        else
+                        {
+                            // No linkage, possible
+                            System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] No linkage for buyer {buyer.Id} ({buyer.FirstName} {buyer.LastName}), assigning status Possible");
+                            result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.Possible));
+                        }
                     }
                 }
                 return result;

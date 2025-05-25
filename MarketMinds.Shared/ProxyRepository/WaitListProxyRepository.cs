@@ -31,16 +31,31 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
-        public async Task AddUserToWaitlist(int userId, int productWaitListId)
+        public async Task AddUserToWaitlist(int userId, int productId)
         {
-            var response = await this.httpClient.PostAsync($"{ApiBaseRoute}/user/{userId}/product/{productWaitListId}", null);
+            var response = await this.httpClient.PostAsync($"{ApiBaseRoute}/user/{userId}/product/{productId}", null);
             await this.ThrowOnError(nameof(AddUserToWaitlist), response);
         }
 
         /// <inheritdoc />
-        public async Task<List<UserWaitList>> GetUsersInWaitlist(int waitListProductId)
+        /// <summary>
+        /// Implements IWaitListRepository.AddUserToWaitlist(int, int, DateTime?)
+        /// </summary>
+        public async Task AddUserToWaitlist(int userId, int productId, DateTime? preferredEndDate)
         {
-            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/product/{waitListProductId}/users");
+            var requestData = new
+            {
+                preferredEndDate = preferredEndDate?.ToString("yyyy-MM-dd")
+            };
+
+            var response = await this.httpClient.PostAsJsonAsync($"{ApiBaseRoute}/user/{userId}/product/{productId}/with-enddate", requestData);
+            await this.ThrowOnError(nameof(AddUserToWaitlist), response);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<UserWaitList>> GetUsersInWaitlist(int productId)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/product/{productId}/users");
             await this.ThrowOnError(nameof(GetUsersInWaitlist), response);
             var users = await response.Content.ReadFromJsonAsync<List<UserWaitList>>();
             return users ?? new List<UserWaitList>();
@@ -73,9 +88,9 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
-        public async Task<int> GetWaitlistSize(int productWaitListId)
+        public async Task<int> GetWaitlistSize(int productId)
         {
-            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/product/{productWaitListId}/size");
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/product/{productId}/size");
             await this.ThrowOnError(nameof(GetWaitlistSize), response);
             return await response.Content.ReadFromJsonAsync<int>();
         }
@@ -89,10 +104,22 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
-        public async Task RemoveUserFromWaitlist(int userId, int productWaitListId)
+        public async Task RemoveUserFromWaitlist(int userId, int productId)
         {
-            var response = await this.httpClient.DeleteAsync($"{ApiBaseRoute}/user/{userId}/product/{productWaitListId}");
+            var response = await this.httpClient.DeleteAsync($"{ApiBaseRoute}/user/{userId}/product/{productId}");
             await this.ThrowOnError(nameof(RemoveUserFromWaitlist), response);
+        }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Implements IWaitListRepository.GetUserWaitlistEntry(int, int)
+        /// </summary>
+        public async Task<UserWaitList?> GetUserWaitlistEntry(int userId, int productId)
+        {
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/user/{userId}/product/{productId}/entry");
+            await this.ThrowOnError(nameof(GetUserWaitlistEntry), response);
+            var entry = await response.Content.ReadFromJsonAsync<UserWaitList?>();
+            return entry;
         }
 
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)

@@ -18,6 +18,14 @@ namespace MarketMinds.Shared.Services
         /// <param name="userId">The user ID</param>
         /// <returns>The list of notifications</returns>
         Task<List<NotificationModel>> GetUserNotificationsAsync(int userId);
+
+        /// <summary>
+        /// Sends a notification to a user
+        /// </summary>
+        /// <param name="userId">The user ID to send the notification to</param>
+        /// <param name="message">The notification message</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        Task SendNotificationAsync(int userId, string message);
     }
 
     /// <summary>
@@ -45,4 +53,4 @@ namespace MarketMinds.Shared.Services
         /// </summary>
         public bool IsRead { get; set; }
     }
-} 
+}

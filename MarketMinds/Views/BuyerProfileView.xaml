@@ -128,7 +128,7 @@
                         <Button x:Name="generateContractButton" Content="Generate Contract" Click="GenerateContractButton_Clicked" Margin="5"/>
                     </StackPanel>
                     <!-- Bind TextBlock to the GenerateContractErrorMessage property -->
-                    <TextBlock Text="{x:Bind contractViewModel.GenerateContractErrorMessage, Mode=OneWay}"
+                    <TextBlock Text="{x:Bind ContractViewModel.GenerateContractErrorMessage, Mode=OneWay}"
                                Foreground="Red" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
             </StackPanel>

@@ -17,6 +17,9 @@ using Server.MarketMinds.Repositories.UserRepository;
 // Additional repository namespaces
 using MarketMinds.Repositories;
 using Server.Repository;
+using MarketMinds.Shared.Repositories;
+using MarketMinds.Shared.Services;
+using Server.MarketMinds.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,10 +78,23 @@ builder.Services.AddScoped<IDummyCardRepository, DummyCardRepository>();
 builder.Services.AddScoped<IContractRepository, ContractRepository>();
 builder.Services.AddScoped<IContractRenewalRepository, ContractRenewalRepository>();
 builder.Services.AddScoped<IBuyerRepository, BuyerRepository>();
+builder.Services.AddScoped<IBuyerLinkageRepository, BuyerLinkageRepository>();
+builder.Services.AddScoped<IBuyerSellerFollowRepository>(sp =>
+{
+    var context = sp.GetRequiredService<Server.DataAccessLayer.ApplicationDbContext>();
+    var buyerRepository = sp.GetRequiredService<IBuyerRepository>();
+    return new Server.MarketMinds.Repositories.BuyerSellerFollowRepository(context, buyerRepository);
+});
 // If IChatRepository has an implementation, register it
 // builder.Services.AddScoped<IChatRepository, ChatRepository>();
 // If IBasketRepository has an implementation, register it
 // builder.Services.AddScoped<IBasketRepository, BasketRepository>();
+
+// Register services
+// Removed IBuyerLinkageService registration since we handle logic in controller
+builder.Services.AddScoped<IBuyerService, MarketMinds.Shared.Services.BuyerService>();
+builder.Services.AddScoped<ISellerService, MarketMinds.Shared.Services.SellerService>();
+builder.Services.AddScoped<IBuyerSellerFollowService, MarketMinds.Shared.Services.BuyerSellerFollowService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

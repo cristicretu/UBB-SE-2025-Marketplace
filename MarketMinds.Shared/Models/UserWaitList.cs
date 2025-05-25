@@ -10,5 +10,6 @@ namespace MarketMinds.Shared.Models
         public int UserID { get; set; }
         public DateTime JoinedTime { get; set; }
         public int PositionInQueue { get; set; }
+        public DateTime? PreferredEndDate { get; set; }
     }
 }
