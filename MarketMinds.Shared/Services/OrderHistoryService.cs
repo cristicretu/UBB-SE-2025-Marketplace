@@ -25,6 +25,12 @@ namespace MarketMinds.Shared.Services
             this.orderHistoryRepository = new OrderHistoryProxyRepository(AppConfig.GetBaseApiUrl());
         }
 
+        // Add this constructor for testing and DI
+        public OrderHistoryService(IOrderHistoryRepository orderHistoryRepository)
+        {
+            this.orderHistoryRepository = orderHistoryRepository;
+        }
+
 
         /// <inheritdoc/>
         public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryId)
