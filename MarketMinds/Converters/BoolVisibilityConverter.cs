@@ -5,8 +5,11 @@
 namespace MarketMinds.Converters
 {
     using System;
+    using System.Diagnostics;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Data;
+    using MarketMinds.ViewModels;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Converts a boolean value to a Visibility value.
@@ -49,6 +52,36 @@ namespace MarketMinds.Converters
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             return value is Visibility visibility && visibility == Visibility.Visible;
+        }
+    }
+
+    public class WishlistGlyphConverter : IValueConverter
+    {
+        private const string FullHeartGlyph = "\uEB52";
+        private const string EmptyHeartGlyph = "\uEB51";
+
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            Debug.WriteLine("WishlistGlyphConverter called");
+            Debug.WriteLine("Value: " + value);
+            Debug.WriteLine("Parameter: " + parameter);
+
+            // value is the product Id
+            // parameter is the BuyerWishlistItemViewModel
+            if (value is int productId && parameter is BuyerWishlistItemViewModel wishlistVM)
+            {
+                Debug.WriteLine("Product ID: " + productId);
+                bool isInWishlist = wishlistVM.IsInWishlist(productId);
+                Debug.WriteLine("isInWishlist: " + isInWishlist);
+                Debug.WriteLine("Glyph :" + (isInWishlist ? FullHeartGlyph : EmptyHeartGlyph));
+                return isInWishlist ? FullHeartGlyph : EmptyHeartGlyph;
+            }
+            return EmptyHeartGlyph;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -114,7 +147,10 @@ namespace MarketMinds.Converters
             if (parameter is string expectedRole)
             {
                 var currentUser = MarketMinds.App.CurrentUser;
-                if (currentUser == null) return Visibility.Collapsed;
+                if (currentUser == null)
+                {
+                    return Visibility.Collapsed;
+                }
 
                 bool isMatch = expectedRole.ToLower() switch
                 {

@@ -15,7 +15,7 @@ namespace MarketMinds
     }
     public sealed partial class LoginWindow : Window
     {
-        private DispatcherTimer _resizeTimer;
+        private DispatcherTimer resizeTimer;
 
         public LoginWindow()
         {
@@ -23,9 +23,9 @@ namespace MarketMinds
             this.Title = "MarketMinds";
 
             // Initialize resize timer
-            _resizeTimer = new DispatcherTimer();
-            _resizeTimer.Interval = TimeSpan.FromMilliseconds(300); // Wait 300ms after resize stops
-            _resizeTimer.Tick += ResizeTimer_Tick;
+            resizeTimer = new DispatcherTimer();
+            resizeTimer.Interval = TimeSpan.FromMilliseconds(300); // Wait 300ms after resize stops
+            resizeTimer.Tick += ResizeTimer_Tick;
 
             // Set initial window size to 2/3 of screen and handle minimum size constraints
             SetInitialWindowSize();
@@ -60,14 +60,14 @@ namespace MarketMinds
         {
             // Reset the timer each time the window is resized
             // This ensures we only check minimum size after resizing stops
-            _resizeTimer.Stop();
-            _resizeTimer.Start();
+            resizeTimer.Stop();
+            resizeTimer.Start();
         }
 
         private void ResizeTimer_Tick(object sender, object e)
         {
             // Stop the timer
-            _resizeTimer.Stop();
+            resizeTimer.Stop();
 
             // Enforce minimum window size (1/3 of screen)
             var displayArea = DisplayArea.Primary;

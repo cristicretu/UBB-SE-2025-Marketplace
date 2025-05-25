@@ -111,6 +111,7 @@ namespace MarketMinds
         public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
         public static LoginViewModel LoginViewModel { get; private set; }
         public static RegisterViewModel RegisterViewModel { get; private set; }
+        public static BuyerWishlistItemViewModel BuyerWishlistItemViewModel { get; private set; }
         public static MarketMinds.Shared.Models.User CurrentUser { get; set; } // this acts like the session user (desktop session)
         public static ContractRenewViewModel ContractRenewViewModel { get; private set; }
 
@@ -326,6 +327,7 @@ namespace MarketMinds
             BuyerLinkageService = new BuyerLinkageService(BuyerLinkageRepository, BuyerService, logger);
 
             // Initialize non-user dependent view models
+            BuyerWishlistItemViewModel = new BuyerWishlistItemViewModel();
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
             ProductCategoryViewModel = new ProductCategoryViewModel(CategoryService);

@@ -4,12 +4,13 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Diagnostics;
 
 namespace MarketMinds.Shared.ProxyRepository
 {
     public class ShoppingCartProxyRepository : IShoppingCartRepository
     {
-        private const string ApiBaseRoute = "shoppingcart";
+        private const string ApiBaseRoute = "api/shoppingcart";
         private readonly HttpClient httpClient;
         private readonly JsonSerializerOptions jsonOptions;
 
@@ -65,10 +66,8 @@ namespace MarketMinds.Shared.ProxyRepository
         public async Task AddProductToCartAsync(int buyerId, int productId, int quantity)
         {
             var requestUri = $"{ApiBaseRoute}/{buyerId}/items?productId={productId}&quantity={quantity}";
-            //System.Diagnostics.Debug.WriteLine($"[ShoppingCartProxyRepository] POST {requestUri}");
             var response = await this.httpClient.PostAsync(requestUri, null);
-            //var responseContent = await response.Content.ReadAsStringAsync();
-            //System.Diagnostics.Debug.WriteLine($"[ShoppingCartProxyRepository] Response: {(int)response.StatusCode} {response.StatusCode} - {responseContent}");
+            
             await this.ThrowOnError(nameof(AddProductToCartAsync), response);
         }
 

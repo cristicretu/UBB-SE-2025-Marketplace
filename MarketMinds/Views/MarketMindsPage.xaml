@@ -7,6 +7,7 @@
     xmlns:models="using:MarketMinds.Shared.Models"
     xmlns:converters="using:MarketMinds.Converters"
     xmlns:controls="using:MarketMinds.Controls"
+    xmlns:viewModels="using:MarketMinds.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -16,11 +17,14 @@
     <Page.Resources>
         <!-- Pivot underline color override -->
         <SolidColorBrush x:Key="PivotHeaderItemSelectedPipeFill" Color="{ThemeResource SystemAccentColor}"/>
+
+        <viewModels:BuyerWishlistItemViewModel x:Key="BuyerWishlistItemViewModel" />
         
         <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
         <converters:InvertedBoolVisibilityConverter x:Key="InvertedBoolVisibilityConverter"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
         <converters:UserTypeVisibilityConverter x:Key="UserTypeVisibilityConverter"/>
+        <converters:WishlistGlyphConverter x:Key="WishlistGlyphConverter"/>
         <converters:FirstImageUrlConverter x:Key="FirstImageUrlConverter"/>
         <converters:UrlToImageSourceConverter x:Key="UrlToImageSourceConverter"/>
         <converters:BoolToAvailabilityConverter x:Key="BoolToAvailabilityConverter"/>
@@ -98,8 +102,11 @@
                                    BorderThickness="0"
                                    Padding="8"
                                    VerticalAlignment="Center"
-                                   Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
-                                <FontIcon Glyph="&#xEB51;" Foreground="{ThemeResource SystemAccentColor}"/>
+                                   Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}"
+                                   Click="BuyProductCard_AddToWishlist_Click">
+                                <FontIcon FontSize="20"
+                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                          Glyph="{Binding Id, Converter={StaticResource WishlistGlyphConverter}, ConverterParameter={StaticResource BuyerWishlistItemViewModel}}"/>
                             </Button>
                         </Grid>
                     </StackPanel>
@@ -120,6 +127,9 @@
                             </StackPanel>
                         </Button>
                     </StackPanel>
+
+                    <!-- Hidden binding to force reevaluation of wishlist glyphs -->
+                    <TextBlock Visibility="Collapsed" Text="{Binding Source={StaticResource BuyerWishlistItemViewModel}, Path=WishlistChanged}" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -219,6 +229,8 @@
                 </Grid>
             </Border>
         </DataTemplate>
+
+        
 
         <DataTemplate x:Key="BorrowProductCard" x:DataType="models:BorrowProduct">
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -546,4 +558,4 @@
             </PivotItem>
         </Pivot>
     </Grid>
-</Page> 
+</Page>

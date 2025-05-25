@@ -6,9 +6,9 @@ namespace MarketMinds.Controls
 {
     public sealed class CountdownTimer : UserControl
     {
-        private TextBlock _textBlock;
-        private Microsoft.UI.Xaml.DispatcherTimer _timer;
-        private DateTime _endTime;
+        private TextBlock textBlock;
+        private Microsoft.UI.Xaml.DispatcherTimer timer;
+        private DateTime endTime;
 
         public static readonly DependencyProperty EndTimeProperty =
             DependencyProperty.Register(
@@ -26,23 +26,23 @@ namespace MarketMinds.Controls
         public CountdownTimer()
         {
             this.DefaultStyleKey = typeof(CountdownTimer);
-            
+
             // Create the TextBlock
-            _textBlock = new TextBlock
+            textBlock = new TextBlock
             {
                 FontSize = 14,
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                     Microsoft.UI.Colors.Orange)
             };
-            
-            this.Content = _textBlock;
-            
+
+            this.Content = textBlock;
+
             // Initialize timer
-            _timer = new Microsoft.UI.Xaml.DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(1);
-            _timer.Tick += Timer_Tick;
-            
+            timer = new Microsoft.UI.Xaml.DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += Timer_Tick;
+
             this.Loaded += CountdownTimer_Loaded;
             this.Unloaded += CountdownTimer_Unloaded;
         }
@@ -51,28 +51,28 @@ namespace MarketMinds.Controls
         {
             if (d is CountdownTimer timer)
             {
-                timer._endTime = (DateTime)e.NewValue;
+                timer.endTime = (DateTime)e.NewValue;
                 timer.UpdateDisplay();
-                
+
                 // Start timer if we have a valid end time
-                if (timer._endTime > DateTime.MinValue)
+                if (timer.endTime > DateTime.MinValue)
                 {
-                    timer._timer.Start();
+                    timer.timer.Start();
                 }
             }
         }
 
         private void CountdownTimer_Loaded(object sender, RoutedEventArgs e)
         {
-            if (_endTime > DateTime.MinValue)
+            if (endTime > DateTime.MinValue)
             {
-                _timer.Start();
+                timer.Start();
             }
         }
 
         private void CountdownTimer_Unloaded(object sender, RoutedEventArgs e)
         {
-            _timer?.Stop();
+            timer?.Stop();
         }
 
         private void Timer_Tick(object sender, object e)
@@ -82,16 +82,19 @@ namespace MarketMinds.Controls
 
         private void UpdateDisplay()
         {
-            if (_textBlock == null) return;
+            if (textBlock == null)
+            {
+                return;
+            }
 
-            var timeLeft = _endTime - DateTime.Now;
+            var timeLeft = endTime - DateTime.Now;
 
             if (timeLeft <= TimeSpan.Zero)
             {
-                _textBlock.Text = "Auction Ended";
-                _textBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                textBlock.Text = "Auction Ended";
+                textBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                     Microsoft.UI.Colors.Red);
-                _timer?.Stop();
+                timer?.Stop();
                 return;
             }
 
@@ -110,7 +113,7 @@ namespace MarketMinds.Controls
                 timeText = $"{timeLeft.Minutes}m {timeLeft.Seconds}s";
             }
 
-            _textBlock.Text = timeText;
+            textBlock.Text = timeText;
         }
     }
-} 
+}
