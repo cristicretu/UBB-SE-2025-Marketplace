@@ -17,6 +17,12 @@ namespace MarketMinds.Shared.Services
             this.notificationRepository = new NotificationProxyRepository(baseUrl);
         }
 
+        // Add this constructor for testing and DI
+        public NotificationContentService(INotificationRepository notificationRepository)
+        {
+            this.notificationRepository = notificationRepository;
+        }
+
         public string GetUnreadNotificationsCountText(int unreadCount)
         {
             return $"You've got #{unreadCount} unread notifications.";
