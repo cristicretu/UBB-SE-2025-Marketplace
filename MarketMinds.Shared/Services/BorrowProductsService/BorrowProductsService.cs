@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net.Http;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Shared.Services.BorrowProductsService
 {
@@ -56,9 +58,9 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             };
 
             ApplyDefaultDates(product);
-            
+
             borrowProductsRepository.CreateListing(product);
-            
+
             if (productDTO.Images != null && productDTO.Images.Any())
             {
                 foreach (var imageInfo in productDTO.Images)
@@ -77,7 +79,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                     borrowProductsRepository.AddImageToProduct(product.Id, image);
                 }
             }
-            
+
             return (BorrowProduct)GetProductById(product.Id);
         }
 
@@ -136,7 +138,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
 
             DateTime startDate = product.StartDate ?? DateTime.Now;
             DateTime endDate = product.EndDate ?? startDate.AddDays(7);
-            
+
             if (endDate < startDate)
             {
                 product.EndDate = startDate.AddDays(7);
@@ -149,8 +151,30 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             {
                 throw new ArgumentException("Product ID must be set for delete.", nameof(product.Id));
             }
-            
+
             borrowProductsRepository.DeleteListing(product);
+        }
+
+        public void UpdateListing(Product product)
+        {
+            if (!(product is BorrowProduct borrowProduct))
+            {
+                throw new ArgumentException("Product must be a BorrowProduct.", nameof(product));
+            }
+
+            if (borrowProduct.Id == 0)
+            {
+                throw new ArgumentException("Product ID must be set for update.", nameof(borrowProduct.Id));
+            }
+
+            try
+            {
+                ((IBorrowProductsRepository)borrowProductsRepository).UpdateProduct(borrowProduct);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public List<Product> GetProducts()
@@ -164,10 +188,10 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             {
                 throw new ArgumentException("Product ID must be greater than 0", nameof(id));
             }
-            
+
             try
             {
-                var product = borrowProductsRepository.GetProductById(id);
+                var product = borrowProductsRepository.GetProductByID(id);
                 if (product == null)
                 {
                     throw new KeyNotFoundException($"Borrow product with ID {id} not found.");
@@ -244,17 +268,16 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
 
         public async Task<BorrowProduct> GetBorrowProductByIdAsync(int id)
         {
+            // In your existing sync GetProductById you already return or throw NotFound.
+            // Here we just wrap it in a Task so that callers get an actual product instead of null.
             try
             {
                 var product = GetProductById(id);
-                if (product is BorrowProduct borrowProduct)
-                {
-                    return borrowProduct;
-                }
-                return null;
+                return product as BorrowProduct;
             }
-            catch (Exception exception)
+            catch (KeyNotFoundException)
             {
+                // let the caller know there is no product
                 return null;
             }
         }
@@ -267,27 +290,27 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 {
                     throw new ArgumentNullException(nameof(borrowProduct), "BorrowProduct cannot be null");
                 }
-                
+
                 if (string.IsNullOrWhiteSpace(borrowProduct.Title))
                 {
                     throw new ArgumentException("Title is required", nameof(borrowProduct.Title));
                 }
-                
+
                 if (borrowProduct.CategoryId <= 0)
                 {
                     throw new ArgumentException("CategoryId must be greater than zero", nameof(borrowProduct.CategoryId));
                 }
-                
+
                 if (borrowProduct.ConditionId <= 0)
                 {
                     throw new ArgumentException("ConditionId must be greater than zero", nameof(borrowProduct.ConditionId));
                 }
-                
+
                 if (borrowProduct.DailyRate <= 0)
                 {
                     throw new ArgumentException("DailyRate must be greater than zero", nameof(borrowProduct.DailyRate));
                 }
-                
+
                 CreateListing(borrowProduct);
                 return true;
             }
@@ -298,7 +321,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 {
                     Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
                 }
-                
+
                 throw;
             }
         }
@@ -319,7 +342,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         {
             try
             {
-                CreateListing(borrowProduct);
+                UpdateListing(borrowProduct);
                 return true;
             }
             catch (Exception exception)
@@ -353,21 +376,19 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 return new Dictionary<string, string[]>();
             }
         }
+        Task<Product> IProductService.GetProductByIdAsync(int productId)
+        => Task.FromResult<Product>(GetBorrowProductByIdAsync(productId).Result);
 
         #endregion
 
         // merge-nicusor
-        Task<Product> IProductService.GetProductByIdAsync(int productId)
-        {
-            throw new NotImplementedException();
-        }
 
         Task<string> IProductService.GetSellerNameAsync(int? sellerId)
         {
             // Not implemented in borrow products service
             return Task.FromResult<string>(null);
         }
-        
+
         /// <summary>
         /// Gets a list of products that can be borrowed.
         /// Implementation for IProductService interface.
@@ -379,5 +400,14 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             var borrowProducts = await GetAllBorrowProductsAsync();
             return borrowProducts.Cast<Product>().ToList();
         }
+
+        public async Task BorrowProductAsync(int userId, int productId, DateTime start, DateTime end)
+        {
+            await borrowProductsRepository.BorrowProductAsync(userId, productId, start, end);
+        }
+
+
+
+
     }
 }

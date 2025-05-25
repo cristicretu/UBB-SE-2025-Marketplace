@@ -113,6 +113,14 @@ builder.Services.AddSingleton<NotificationProxyRepository>(sp =>
     new NotificationProxyRepository(
         builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
 
+// Add waitlist and notification proxy repositories
+builder.Services.AddSingleton<WaitListProxyRepository>(sp =>
+    new WaitListProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<NotificationProxyRepository>(sp =>
+    new NotificationProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+
 // Merged: Register all unique proxy repositories from both branches
 builder.Services.AddSingleton<OrderProxyRepository>(sp =>
     new OrderProxyRepository(
@@ -157,6 +165,10 @@ builder.Services.AddTransient<IContractService, ContractService>();
 builder.Services.AddTransient<IPDFService, PDFService>();
 builder.Services.AddTransient<IContractRenewalService, ContractRenewalService>();
 builder.Services.AddTransient<INotificationContentService, NotificationContentService>();
+
+// Add waitlist and notification services
+builder.Services.AddTransient<IWaitlistService, WaitlistService>();
+builder.Services.AddTransient<INotificationService, NotificationService>();
 
 // Merged: Register all unique services from both branches
 builder.Services.AddTransient<IOrderService, OrderService>();
@@ -211,6 +223,10 @@ builder.Services.AddTransient<ISellerRepository>(sp => sp.GetRequiredService<Sel
 builder.Services.AddTransient<IContractRepository>(sp => sp.GetRequiredService<ContractProxyRepository>());
 builder.Services.AddTransient<IPDFRepository>(sp => sp.GetRequiredService<PDFProxyRepository>());
 builder.Services.AddTransient<IContractRenewalRepository>(sp => sp.GetRequiredService<ContractRenewalProxyRepository>());
+builder.Services.AddTransient<INotificationRepository>(sp => sp.GetRequiredService<NotificationProxyRepository>());
+
+// Add waitlist and notification repository interfaces
+builder.Services.AddTransient<IWaitListRepository>(sp => sp.GetRequiredService<WaitListProxyRepository>());
 builder.Services.AddTransient<INotificationRepository>(sp => sp.GetRequiredService<NotificationProxyRepository>());
 
 // Merged: Register all unique repository interfaces from both branches

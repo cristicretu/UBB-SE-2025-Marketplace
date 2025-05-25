@@ -207,11 +207,8 @@
         {
             try
             {
-                // merge-nicusor FIX :)
-                int productId = 1;
-
-                var borrowWindow = new BorrowProductWindow(productId);
-                borrowWindow.Activate();
+                var borrowProductListView = MarketMinds.Helpers.ViewFactory.CreateBorrowProductListView();
+                borrowProductListView.Activate();
             }
             catch (Exception ex)
             {
@@ -228,7 +225,7 @@
         private void OrderHistoryButton_Clicked(object sender, RoutedEventArgs e)
         {
             // merge-nicusor FIX :)
-            int user_id = 1;
+            int user_id = UserSession.CurrentUserId ?? 1;
             var orderhistorywindow = new OrderHistoryView(user_id);
             orderhistorywindow.Activate();
         }
