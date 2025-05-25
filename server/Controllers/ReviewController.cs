@@ -122,7 +122,7 @@ namespace MarketMinds.Controllers
             try
             {
                 var review = ReviewMapper.ToModel(reviewDto);
-                
+
                 // Load existing review to ensure it exists
                 var existingReview = _reviewRepository.GetAllReviewsByBuyer(new User { Id = review.BuyerId })
                     .FirstOrDefault(r => r.Id == review.Id && r.SellerId == review.SellerId && r.BuyerId == review.BuyerId);
