@@ -191,8 +191,13 @@ namespace MarketMinds.Shared.Services.ReviewService
             }
         }
 
-        public void EditReview(string description, List<Image> images, double rating, int sellerId, int buyerId, string newDescription, double newRating)
+        public void EditReview(int reviewId, string description, List<Image> images, double rating, int sellerId, int buyerId, string newDescription, double newRating)
         {
+            if (reviewId <= 0)
+            {
+                throw new ArgumentException("Invalid review ID.", nameof(reviewId));
+            }
+
             if (string.IsNullOrWhiteSpace(newDescription))
             {
                 throw new ArgumentException("New review description cannot be null or empty.", nameof(newDescription));
@@ -213,20 +218,10 @@ namespace MarketMinds.Shared.Services.ReviewService
                 // Ensure the new rating is within the expected range (0-5)
                 double validRating = Math.Max(0, Math.Min(5, newRating));
 
-                // Get the review ID from the repository
-                var reviews = repository.GetReviewsByBuyerRaw(buyerId);
-                var sharedReviews = JsonSerializer.Deserialize<List<MarketMinds.Shared.Models.Review>>(reviews, jsonOptions);
-                var reviewToEdit = sharedReviews?.FirstOrDefault(r => r.SellerId == sellerId && r.BuyerId == buyerId);
-
-                if (reviewToEdit == null)
-                {
-                    throw new ArgumentException("Review not found.");
-                }
-
-                // Create a shared Review object with updated values
+                // Use the specific review ID instead of searching by seller/buyer
                 var updatedReview = new MarketMinds.Shared.Models.Review
                 {
-                    Id = reviewToEdit.Id,
+                    Id = reviewId,
                     Description = newDescription,
                     Images = images ?? new List<Image>(),
                     Rating = validRating,
@@ -244,8 +239,13 @@ namespace MarketMinds.Shared.Services.ReviewService
             }
         }
 
-        public void DeleteReview(string description, List<Image> images, double rating, int sellerId, int buyerId)
+        public void DeleteReview(int reviewId, string description, List<Image> images, double rating, int sellerId, int buyerId)
         {
+            if (reviewId <= 0)
+            {
+                throw new ArgumentException("Invalid review ID.", nameof(reviewId));
+            }
+
             if (sellerId <= 0)
             {
                 throw new ArgumentException("Invalid seller ID.", nameof(sellerId));
@@ -258,19 +258,10 @@ namespace MarketMinds.Shared.Services.ReviewService
 
             try
             {
-                // Get the review ID from the repository
-                var reviews = repository.GetReviewsByBuyerRaw(buyerId);
-                var sharedReviews = JsonSerializer.Deserialize<List<MarketMinds.Shared.Models.Review>>(reviews, jsonOptions);
-                var reviewToDelete = sharedReviews?.FirstOrDefault(r => r.SellerId == sellerId && r.BuyerId == buyerId);
-
-                if (reviewToDelete == null)
-                {
-                    throw new ArgumentException("Review not found.");
-                }
-
+                // Use the specific review ID instead of searching by seller/buyer
                 var deleteRequest = new
                 {
-                    ReviewId = reviewToDelete.Id,
+                    ReviewId = reviewId,
                     SellerId = sellerId,
                     BuyerId = buyerId
                 };

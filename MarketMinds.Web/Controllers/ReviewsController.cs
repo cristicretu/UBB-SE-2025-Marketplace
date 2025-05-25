@@ -133,13 +133,8 @@ namespace MarketMinds.Web.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Check if user has already reviewed this seller
-                var existingReviews = _reviewsService.GetReviewsByBuyer(currentUser);
-                if (existingReviews.Any(r => r.SellerId == sellerId))
-                {
-                    _logger.LogWarning("User {UserId} has already reviewed seller {SellerId}", currentUser.Id, sellerId);
-                    return BadRequest("You have already reviewed this seller");
-                }
+                // Allow multiple reviews for the same seller
+                // Removed restriction that prevented multiple reviews
 
                 _logger.LogInformation("Preparing review creation view for seller {SellerId}", sellerId);
                 ViewBag.Seller = seller;
@@ -155,7 +150,7 @@ namespace MarketMinds.Web.Controllers
         // POST: Reviews/Create
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Review review, string imageUrls)
+        public async Task<IActionResult> Create(Review review, string imageUrls = "")
         {
             try
             {
@@ -188,14 +183,15 @@ namespace MarketMinds.Web.Controllers
                         return View(review);
                     }
 
-                    try {
+                    try
+                    {
                         _reviewsService.AddReview(
                             review.Description,
                             reviewImages,
                             review.Rating,
                             seller,
                             currentUser);
-                        
+
                         _logger.LogInformation($"Review created successfully for seller: {seller.Id} by buyer: {currentUser.Id}");
                         return RedirectToAction(nameof(ReviewsGiven));
                     }
@@ -239,11 +235,11 @@ namespace MarketMinds.Web.Controllers
                 }
 
                 var reviews = _reviewsService.GetReviewsByBuyer(currentUser);
-                var review = reviews.FirstOrDefault(r => r.SellerId == sellerId && r.BuyerId == buyerId);
+                var review = reviews.FirstOrDefault(r => r.Id == id && r.SellerId == sellerId && r.BuyerId == buyerId);
 
                 if (review == null)
                 {
-                    _logger.LogWarning("Review not found: sellerId={SellerId}, buyerId={BuyerId}", sellerId, buyerId);
+                    _logger.LogWarning("Review not found: id={Id}, sellerId={SellerId}, buyerId={BuyerId}", id, sellerId, buyerId);
                     return NotFound("Review not found");
                 }
 
@@ -267,7 +263,7 @@ namespace MarketMinds.Web.Controllers
         // POST: Reviews/Edit/{id}/{sellerId}/{buyerId}
         [HttpPost("Edit/{id:int}/{sellerId:int}/{buyerId:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, int sellerId, int buyerId, Review review, string imageUrls)
+        public async Task<IActionResult> Edit(int id, int sellerId, int buyerId, Review review, string imageUrls = "")
         {
             try
             {
@@ -279,9 +275,9 @@ namespace MarketMinds.Web.Controllers
                         return RedirectToAction("Login", "Account");
                     }
 
-                    // Get the current review first
+                    // Get the current review first using the specific ID
                     var currentReview = _reviewsService.GetReviewsByBuyer(currentUser)
-                        .FirstOrDefault(r => r.SellerId == review.SellerId && r.BuyerId == review.BuyerId);
+                        .FirstOrDefault(r => r.Id == id && r.SellerId == review.SellerId && r.BuyerId == review.BuyerId);
 
                     if (currentReview == null)
                     {
@@ -291,9 +287,16 @@ namespace MarketMinds.Web.Controllers
                         return View(review);
                     }
 
+                    // Process NEW image URLs if provided (same logic as Create method)
+                    var newReviewImages = new List<Image>();
+                    if (!string.IsNullOrEmpty(imageUrls))
+                    {
+                        newReviewImages = _imageUploadService.ParseImagesString(imageUrls);
+                    }
                     _reviewsService.EditReview(
+                        currentReview.Id,
                         currentReview.Description,
-                        currentReview.Images.ToList(),
+                        newReviewImages,  // Use NEW images from form, not old ones!
                         currentReview.Rating,
                         currentReview.SellerId,
                         currentReview.BuyerId,
@@ -334,11 +337,11 @@ namespace MarketMinds.Web.Controllers
                 }
 
                 var reviews = _reviewsService.GetReviewsByBuyer(currentUser);
-                var review = reviews.FirstOrDefault(r => r.SellerId == sellerId && r.BuyerId == buyerId);
+                var review = reviews.FirstOrDefault(r => r.Id == id && r.SellerId == sellerId && r.BuyerId == buyerId);
 
                 if (review == null)
                 {
-                    _logger.LogWarning("Review not found for deletion: sellerId={SellerId}, buyerId={BuyerId}", sellerId, buyerId);
+                    _logger.LogWarning("Review not found for deletion: id={Id}, sellerId={SellerId}, buyerId={BuyerId}", id, sellerId, buyerId);
                     return NotFound("Review not found");
                 }
 
@@ -379,7 +382,7 @@ namespace MarketMinds.Web.Controllers
                 }
 
                 var reviews = _reviewsService.GetReviewsByBuyer(currentUser);
-                var review = reviews.FirstOrDefault(r => r.SellerId == sellerId && r.BuyerId == buyerId);
+                var review = reviews.FirstOrDefault(r => r.Id == id && r.SellerId == sellerId && r.BuyerId == buyerId);
 
                 if (review == null)
                 {
@@ -387,6 +390,7 @@ namespace MarketMinds.Web.Controllers
                 }
 
                 _reviewsService.DeleteReview(
+                    review.Id,
                     review.Description,
                     review.Images.ToList(),
                     review.Rating,
@@ -408,7 +412,7 @@ namespace MarketMinds.Web.Controllers
             // Get the user ID from claims
             int userId;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            
+
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out userId))
             {
                 // User ID found in the standard claim
@@ -429,9 +433,9 @@ namespace MarketMinds.Web.Controllers
                     return null;
                 }
             }
-            
+
             // Get the user from the service
             return await _userService.GetUserByIdAsync(userId);
         }
     }
-} 
+}

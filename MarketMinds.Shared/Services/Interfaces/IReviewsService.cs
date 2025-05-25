@@ -35,6 +35,7 @@ namespace MarketMinds.Shared.Services.ReviewService
         /// <summary>
         /// Edits an existing review.
         /// </summary>
+        /// <param name="reviewId">The ID of the review to edit.</param>
         /// <param name="description">The current description of the review.</param>
         /// <param name="images">The current images associated with the review.</param>
         /// <param name="rating">The current rating of the review.</param>
@@ -42,17 +43,18 @@ namespace MarketMinds.Shared.Services.ReviewService
         /// <param name="buyerid">The ID of the buyer writing the review.</param>
         /// <param name="newDescription">The new description for the review.</param>
         /// <param name="newRating">The new rating for the review.</param>
-        void EditReview(string description, List<Image> images, double rating, int sellerid, int buyerid, string newDescription, double newRating);
+        void EditReview(int reviewId, string description, List<Image> images, double rating, int sellerid, int buyerid, string newDescription, double newRating);
 
         /// <summary>
         /// Deletes a review.
         /// </summary>
+        /// <param name="reviewId">The ID of the review to delete.</param>
         /// <param name="description">The description of the review.</param>
         /// <param name="images">The images associated with the review.</param>
         /// <param name="rating">The rating of the review.</param>
         /// <param name="sellerid">The ID of the seller being reviewed.</param>
         /// <param name="buyerid">The ID of the buyer writing the review.</param>
-        void DeleteReview(string description, List<Image> images, double rating, int sellerid, int buyerid);
+        void DeleteReview(int reviewId, string description, List<Image> images, double rating, int sellerid, int buyerid);
     }
 }
 
