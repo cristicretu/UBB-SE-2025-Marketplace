@@ -125,14 +125,14 @@
 						<ComboBox SelectedValue="{Binding Role, Mode=TwoWay}" 
                                   SelectedValuePath="Tag" 
                                   SelectedIndex="0" 
-                                  Width="Auto" 
                                   Height="48" 
                                   Padding="40,12,12,12" 
                                   BorderThickness="1" 
                                   CornerRadius="6"
                                   FontSize="14"
                                   PlaceholderText="Select your role"
-                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  HorizontalAlignment="Stretch">
 							<ComboBoxItem Content="Admin" Tag="1"/>
 							<ComboBoxItem Content="Buyer" Tag="2"/>
 							<ComboBoxItem Content="Seller" Tag="3"/>
