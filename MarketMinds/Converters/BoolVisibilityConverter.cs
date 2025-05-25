@@ -5,8 +5,11 @@
 namespace MarketMinds.Converters
 {
     using System;
+    using System.Diagnostics;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Data;
+    using MarketMinds.ViewModels;
+    using MarketMinds.Shared.Models;
 
     /// <summary>
     /// Converts a boolean value to a Visibility value.
@@ -54,23 +57,24 @@ namespace MarketMinds.Converters
 
     public class WishlistGlyphConverter : IValueConverter
     {
-        private const string FullHeartGlyph = "&#xEB52;";
-        private const string EmptyHeartGlyph = "&#xEB51;";
+        private const string FullHeartGlyph = "\uEB52";
+        private const string EmptyHeartGlyph = "\uEB51";
 
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is bool boolValue)
-            {
-                if (boolValue)
-                {
-                    return FullHeartGlyph;
-                }
-                else
-                {
-                    return EmptyHeartGlyph;
-                }
-            }
+            Debug.WriteLine("WishlistGlyphConverter called");
+            Debug.WriteLine("Value: " + value);
+            Debug.WriteLine("Parameter: " + parameter);
 
+            // value is the product Id
+            // parameter is the BuyerWishlistItemViewModel
+            if (value is Product product && parameter is BuyerWishlistItemViewModel wishlistVM)
+            {
+                Debug.WriteLine("Product ID: " + product.Id);
+                bool isInWishlist = wishlistVM.IsInWishlist(product.Id);
+                Debug.WriteLine("Glyph :" + (isInWishlist ? FullHeartGlyph : EmptyHeartGlyph));
+                return isInWishlist ? FullHeartGlyph : EmptyHeartGlyph;
+            }
             return EmptyHeartGlyph;
         }
 
