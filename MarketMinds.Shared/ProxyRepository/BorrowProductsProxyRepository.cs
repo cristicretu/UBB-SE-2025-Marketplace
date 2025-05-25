@@ -146,6 +146,33 @@ namespace MarketMinds.Shared.ProxyRepository
             return products ?? new List<BorrowProduct>();
         }
 
+        List<BorrowProduct> IBorrowProductsRepository.GetProducts(int offset, int count)
+        {
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            serializerOptions.Converters.Add(new UserJsonConverter());
+            
+            string url = $"borrowproducts?offset={offset}&count={count}";
+            var response = httpClient.GetAsync(url).Result;
+            response.EnsureSuccessStatusCode();
+            var json = response.Content.ReadAsStringAsync().Result;
+
+            var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
+            return products ?? new List<BorrowProduct>();
+        }
+
+        int IBorrowProductsRepository.GetProductCount()
+        {
+            var response = httpClient.GetAsync("borrowproducts/count").Result;
+            response.EnsureSuccessStatusCode();
+            var countString = response.Content.ReadAsStringAsync().Result;
+            return int.Parse(countString);
+        }
+
         void IBorrowProductsRepository.DeleteProduct(BorrowProduct product)
         {
             var response = httpClient.DeleteAsync($"borrowproducts/{product.Id}").Result;
@@ -250,6 +277,71 @@ namespace MarketMinds.Shared.ProxyRepository
             await ThrowOnError(nameof(BorrowProductAsync), response);
         }
 
+        public async Task<List<BorrowProduct>> GetAllBorrowProductsAsync()
+        {
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
+
+                var response = await httpClient.GetAsync("borrowproducts");
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
+
+                var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
+                return products ?? new List<BorrowProduct>();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error getting all borrow products: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<List<BorrowProduct>> GetAllBorrowProductsAsync(int offset, int count)
+        {
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
+
+                string url = $"borrowproducts?offset={offset}&count={count}";
+                var response = await httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
+
+                var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
+                return products ?? new List<BorrowProduct>();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error getting borrow products with pagination (offset: {offset}, count: {count}): {ex.Message}", ex);
+            }
+        }
+
+        public async Task<int> GetBorrowProductCountAsync()
+        {
+            try
+            {
+                var response = await httpClient.GetAsync("borrowproducts/count");
+                response.EnsureSuccessStatusCode();
+                var countString = await response.Content.ReadAsStringAsync();
+                return int.Parse(countString);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error getting borrow product count: {ex.Message}", ex);
+            }
+        }
 
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {

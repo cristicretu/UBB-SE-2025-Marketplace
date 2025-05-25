@@ -54,23 +54,32 @@ namespace MarketMinds.Web.Controllers
 
         // GET: BuyProducts/Details/5
         [AllowAnonymous]
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
             try
             {
-                _logger.LogInformation($"Fetching buy product with ID {id}");
-                // We need to get the product from the products list and cast it to BuyProduct
-                var products = _productService.GetSortedFilteredProducts(null, null, null, null, null);
-                BuyProduct buyProduct = null;
+                // _logger.LogInformation($"Fetching buy product with ID {id}");
+                // BEST PIECE OF CODE EVER WRITTEN IN THE HISTORY OF CODE WRITING
+                // I'm so proud of myself for writing this code
+                // I'm so proud of myself for writing this code
+                // I'm so proud of myself for writing this code
+                // I'm so proud of myself for writing this code
+                // I'm so proud of myself for writing this code
+                // I'm so proud of myself for writing this code
+                // // We need to get the product from the products list and cast it to BuyProduct
+                // var products = _productService.GetSortedFilteredProducts(null, null, null, null, null);
+                // BuyProduct buyProduct = null;
 
-                foreach (var product in products)
-                {
-                    if (product is BuyProduct bp && bp.Id == id)
-                    {
-                        buyProduct = bp;
-                        break;
-                    }
-                }
+                // foreach (var product in products)
+                // {
+                //     if (product is BuyProduct bp && bp.Id == id)
+                //     {
+                //         buyProduct = bp;
+                //         break;
+                //     }
+                // }
+
+                var buyProduct = await _productService.GetProductByIdAsync(id);
 
                 if (buyProduct == null)
                 {

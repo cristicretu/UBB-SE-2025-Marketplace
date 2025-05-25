@@ -21,13 +21,45 @@ namespace MarketMinds.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<BuyProductDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetBuyProducts()
+        public IActionResult GetBuyProducts([FromQuery] int offset = 0, [FromQuery] int count = 0)
         {
             try
             {
-                var products = _buyProductsRepository.GetProducts();
+                List<BuyProduct> products;
+                
+                if (count > 0)
+                {
+                    // Use pagination
+                    products = _buyProductsRepository.GetProducts(offset, count);
+                }
+                else
+                {
+                    // Get all products (backward compatibility)
+                    products = _buyProductsRepository.GetProducts();
+                }
+                
                 var dtos = BuyProductMapper.ToDTOList(products);
                 return Ok(dtos);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+            }
+        }
+
+        [HttpGet("count")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetBuyProductsCount()
+        {
+            try
+            {
+                var count = _buyProductsRepository.GetProductCount();
+                return Ok(count);
             }
             catch (ApplicationException ex)
             {

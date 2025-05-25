@@ -17,39 +17,81 @@ namespace MarketMinds.Shared.Services
             this.notificationRepository = new NotificationProxyRepository(baseUrl);
         }
 
-        public string GetUnreadNotificationsCountText(int unreadCount)
+        /// <summary>
+        /// Gets a formatted text describing the count of unread notifications
+        /// </summary>
+        /// <param name="userId">The user ID to get unread count for</param>
+        /// <returns>Formatted text with unread count</returns>
+        public string GetUnreadNotificationsCountText(int userId)
         {
-            return $"You've got #{unreadCount} unread notifications.";
+            try
+            {
+                // Get the actual count of unread notifications
+                var unreadCount = GetUnreadNotificationsForUser(userId).Result.Count;
+                if (unreadCount == 0)
+                    return "No unread notifications";
+                return $"{unreadCount} unread notification{(unreadCount != 1 ? "s" : "")}";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetUnreadNotificationsCountText: Exception: {ex.Message}");
+                return "0 unread notifications";
+            }
         }
 
+        public int GetUnreadCount(int userId)
+        {
+            try
+            {
+                // Get the actual count of unread notifications
+                return GetUnreadNotificationsForUser(userId).Result.Count;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetUnreadCount: Exception: {ex.Message}");
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets all notifications for a user
+        /// </summary>
+        /// <param name="recipientId">The recipient user ID</param>
+        /// <returns>List of all notifications for the user</returns>
         public async Task<List<Notification>> GetNotificationsForUser(int recipientId)
         {
-            return await notificationRepository.GetNotificationsForUser(recipientId);
+            try
+            {
+                return await notificationRepository.GetNotificationsForUser(recipientId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetNotificationsForUser: Exception: {ex.Message}");
+                return new List<Notification>();
+            }
         }
 
+        /// <summary>
+        /// Gets only unread notifications for a user
+        /// </summary>
+        /// <param name="recipientId">The recipient user ID</param>
+        /// <returns>List of unread notifications</returns>
         public async Task<List<Notification>> GetUnreadNotificationsForUser(int recipientId)
         {
             try
             {
-                var allNotificationsTask = notificationRepository.GetNotificationsForUser(recipientId);
-                var allNotifications = await allNotificationsTask;
+                var allNotifications = await notificationRepository.GetNotificationsForUser(recipientId);
 
                 if (allNotifications == null)
                 {
                     return new List<Notification>();
                 }
 
-                List<Notification> allUnreadNotifications = new List<Notification>();
-                foreach (var notification in allNotifications)
-                {
-                    if (!notification.IsRead)
-                    {
-                        allUnreadNotifications.Add(notification);
-                    }
-                }
-                allUnreadNotifications = allUnreadNotifications.OrderBy(n => n.Timestamp).ToList();
-
-                return allUnreadNotifications;
+                // Filter for only unread notifications and sort by timestamp (newest first)
+                return allNotifications
+                    .Where(n => !n.IsRead)
+                    .OrderByDescending(n => n.Timestamp)
+                    .ToList();
             }
             catch (Exception ex)
             {
@@ -58,18 +100,63 @@ namespace MarketMinds.Shared.Services
             }
         }
 
-        public async Task MarkAllAsRead(int userID)
+        /// <summary>
+        /// Marks all notifications as read for a specific user
+        /// </summary>
+        /// <param name="userId">The user ID whose notifications to mark as read</param>
+        public async Task MarkAllAsRead(int userId)
         {
             try
             {
-                await notificationRepository.MarkAsRead(userID);
+                await notificationRepository.MarkAsRead(userId);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in NotificationContentService.MarkAsRead: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error in NotificationContentService.MarkAllAsRead: {ex.Message}");
+                throw; // Rethrow to let the controller handle it
             }
         }
 
+        /// <summary>
+        /// Marks a specific notification as read
+        /// </summary>
+        /// <param name="notificationId">The ID of the notification to mark as read</param>
+        public async Task MarkNotificationAsRead(int notificationId)
+        {
+            try
+            {
+                // This needs to be implemented in the repository
+                await notificationRepository.MarkNotificationAsRead(notificationId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in NotificationContentService.MarkNotificationAsRead: {ex.Message}");
+                throw; // Rethrow to let the controller handle it
+            }
+        }
+
+        /// <summary>
+        /// Clears (deletes) all notifications for a user
+        /// </summary>
+        /// <param name="userId">The user ID whose notifications to clear</param>
+        public async Task ClearAllNotifications(int userId)
+        {
+            try
+            {
+                // This needs to be implemented in the repository
+                await notificationRepository.ClearAllNotifications(userId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in NotificationContentService.ClearAllNotifications: {ex.Message}");
+                throw; // Rethrow to let the controller handle it
+            }
+        }
+
+        /// <summary>
+        /// Adds a new notification
+        /// </summary>
+        /// <param name="notification">The notification to add</param>
         public async Task AddNotification(Notification notification)
         {
             try
@@ -79,6 +166,7 @@ namespace MarketMinds.Shared.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error in NotificationContentService.AddNotification: {ex.Message}");
+                throw; // Rethrow to let the controller handle it
             }
         }
     }

@@ -62,7 +62,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int offset = 0, int count = 12, string tab = "buy")
         {
             try
             {
@@ -143,33 +143,91 @@ namespace MarketMinds.Web.Controllers
                     ViewBag.WishlistProductIds = new List<int>();
                 }
 
+                // Load products with pagination based on the active tab
                 List<BuyProduct> buyProducts = new List<BuyProduct>();
-
-                if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService concreteService)
-                {
-                    var methodInfo = concreteService.GetType().GetMethod("GetProducts", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                    if (methodInfo != null)
-                    {
-                        buyProducts = (List<BuyProduct>)methodInfo.Invoke(concreteService, null);
-
-                        buyProducts = buyProducts.Where(p => p.Stock > 0).ToList();
-                    }
-                }
-
-                var auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
-
-                // Load borrow products
+                List<AuctionProduct> auctionProducts = new List<AuctionProduct>();
                 List<BorrowProduct> borrowProducts = new List<BorrowProduct>();
+                
+                // Get total counts for all product types
+                int totalBuyProducts = 0;
+                int totalAuctionProducts = 0;
+                int totalBorrowProducts = 0;
+                
                 try
                 {
-                    borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync();
-                    _logger.LogInformation($"HOME: Loaded {borrowProducts.Count} borrow products");
+                    // Get total counts
+                    if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService concreteService)
+                    {
+                        totalBuyProducts = concreteService.GetProductCount();
+                    }
+                    totalAuctionProducts = await _auctionProductService.GetAuctionProductCountAsync();
+                    totalBorrowProducts = await _borrowProductsService.GetBorrowProductCountAsync();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error loading borrow products for home page");
-                    borrowProducts = new List<BorrowProduct>();
+                    _logger.LogError(ex, "Error getting product counts");
                 }
+
+                // Load products based on pagination parameters
+                if (count > 0)
+                {
+                    // Apply pagination to the active tab only
+                    switch (tab.ToLower())
+                    {
+                        case "auction":
+                            auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync(offset, count);
+                            // Load first page of other tabs for tab switching
+                            if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService)
+                            {
+                                buyProducts = buyService.GetProducts(0, 12);
+                            }
+                            borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync(0, 12);
+                            break;
+                            
+                        case "borrow":
+                            borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync(offset, count);
+                            // Load first page of other tabs for tab switching
+                            if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService2)
+                            {
+                                buyProducts = buyService2.GetProducts(0, 12);
+                            }
+                            auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync(0, 12);
+                            break;
+                            
+                        default: // "buy"
+                            if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService3)
+                            {
+                                buyProducts = buyService3.GetProducts(offset, count);
+                                buyProducts = buyProducts.Where(p => p.Stock > 0).ToList();
+                            }
+                            // Load first page of other tabs for tab switching
+                            auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync(0, 12);
+                            borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync(0, 12);
+                            break;
+                    }
+                }
+                else
+                {
+                    // Load all products when count = 0
+                    if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService allBuyService)
+                    {
+                        buyProducts = allBuyService.GetProducts();
+                        buyProducts = buyProducts.Where(p => p.Stock > 0).ToList();
+                    }
+                    auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
+                    borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync();
+                }
+
+                // Calculate total products for the active tab
+                int totalProducts = tab.ToLower() switch
+                {
+                    "auction" => totalAuctionProducts,
+                    "borrow" => totalBorrowProducts,
+                    _ => totalBuyProducts
+                };
+                
+                bool hasNextPage = count > 0 && (offset + count) < totalProducts;
+                bool hasPreviousPage = offset > 0;
 
                 var categories = _categoryService.GetAllProductCategories();
                 var conditions = _conditionService.GetAllProductConditions();
@@ -177,7 +235,7 @@ namespace MarketMinds.Web.Controllers
                 ViewBag.Categories = categories;
                 ViewBag.Conditions = conditions;
                 
-                // Calculate min and max prices based on ALL product types
+                // Calculate min and max prices based on ALL product types (not just paginated ones)
                 var allPrices = new List<double>();
                 
                 // Add buy product prices
@@ -201,20 +259,22 @@ namespace MarketMinds.Web.Controllers
                 // Set price range based on all products
                 ViewBag.MinPrice = allPrices.Any() ? (int)Math.Floor(allPrices.Min()) : 0;
                 ViewBag.MaxPrice = allPrices.Any() ? (int)Math.Ceiling(allPrices.Max()) : 1000;
+
+                // Add pagination metadata
+                ViewBag.CurrentOffset = offset;
+                ViewBag.CurrentCount = count;
+                ViewBag.CurrentTab = tab;
+                ViewBag.TotalProducts = totalProducts;
+                ViewBag.TotalBuyProducts = totalBuyProducts;
+                ViewBag.TotalAuctionProducts = totalAuctionProducts;
+                ViewBag.TotalBorrowProducts = totalBorrowProducts;
+                ViewBag.HasNextPage = hasNextPage;
+                ViewBag.HasPreviousPage = hasPreviousPage;
                 
                 // Debug logging to verify price range calculation
                 _logger.LogInformation($"HOME: Calculated price range - Min: {ViewBag.MinPrice}, Max: {ViewBag.MaxPrice}");
-                _logger.LogInformation($"HOME: Buy products count: {buyProducts.Count}, Auction products count: {auctionProducts.Count}, Borrow products count: {borrowProducts.Count}");
-                if (auctionProducts.Any())
-                {
-                    var auctionPriceRange = $"{auctionProducts.Min(p => p.CurrentPrice):F2} - {auctionProducts.Max(p => p.CurrentPrice):F2}";
-                    _logger.LogInformation($"HOME: Auction products price range: {auctionPriceRange}");
-                }
-                if (borrowProducts.Any())
-                {
-                    var borrowPriceRange = $"{borrowProducts.Min(p => p.DailyRate):F2} - {borrowProducts.Max(p => p.DailyRate):F2}";
-                    _logger.LogInformation($"HOME: Borrow products daily rate range: {borrowPriceRange}");
-                }
+                _logger.LogInformation($"HOME: Pagination - Offset: {offset}, Count: {count}, Total: {totalProducts}");
+                _logger.LogInformation($"HOME: Returned products - Buy: {buyProducts.Count}, Auction: {auctionProducts.Count}, Borrow: {borrowProducts.Count}");
                 
                 var viewModel = new HomeViewModel
                 {
@@ -388,8 +448,7 @@ namespace MarketMinds.Web.Controllers
                                 {
                                     try
                                     {
-                                        var allTags = _productTagService.GetAllProductTags();
-                                        var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
+                                        var tag = _productTagService.GetAllProductTags().FirstOrDefault(t => t.Id == existingTagId);
                                         if (tag != null)
                                         {
                                             productTags.Add(tag);
@@ -674,8 +733,7 @@ namespace MarketMinds.Web.Controllers
                         {
                             try
                             {
-                                var allTags = _productTagService.GetAllProductTags();
-                                var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
+                                var tag = _productTagService.GetAllProductTags().FirstOrDefault(t => t.Id == existingTagId);
                                 if (tag != null)
                                 {
                                     productTags.Add(tag);
@@ -883,8 +941,7 @@ namespace MarketMinds.Web.Controllers
                         {
                             try
                             {
-                                var allTags = _productTagService.GetAllProductTags();
-                                var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
+                                var tag = _productTagService.GetAllProductTags().FirstOrDefault(t => t.Id == existingTagId);
                                 if (tag != null)
                                 {
                                     productTags.Add(tag);

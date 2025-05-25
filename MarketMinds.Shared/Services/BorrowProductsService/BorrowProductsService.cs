@@ -256,13 +256,38 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         {
             try
             {
-                var products = GetProducts();
-                var borrowProducts = products.Select(p => p as BorrowProduct).Where(p => p != null).ToList();
-                return borrowProducts;
+                return await borrowProductsRepository.GetAllBorrowProductsAsync();
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error getting all borrow products: {ex.Message}");
                 return new List<BorrowProduct>();
+            }
+        }
+
+        public async Task<List<BorrowProduct>> GetAllBorrowProductsAsync(int offset, int count)
+        {
+            try
+            {
+                return await borrowProductsRepository.GetAllBorrowProductsAsync(offset, count);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting borrow products with pagination (offset: {offset}, count: {count}): {ex.Message}");
+                return new List<BorrowProduct>();
+            }
+        }
+
+        public async Task<int> GetBorrowProductCountAsync()
+        {
+            try
+            {
+                return await borrowProductsRepository.GetBorrowProductCountAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting borrow product count: {ex.Message}");
+                return 0;
             }
         }
 

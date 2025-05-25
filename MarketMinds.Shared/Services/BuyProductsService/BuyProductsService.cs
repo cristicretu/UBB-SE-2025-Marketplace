@@ -55,6 +55,46 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             }
         }
 
+        public List<BuyProduct> GetProducts(int offset, int count)
+        {
+            try
+            {
+                var json = buyProductsRepository.GetProducts(offset, count);
+                Console.WriteLine($"Received JSON from server (offset: {offset}, count: {count}):");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+
+                // First deserialize to DTOs
+                var productDTOs = JsonSerializer.Deserialize<List<BuyProductDTO>>(json, jsonOptions);
+
+                // Then map DTOs to domain models
+                var products = BuyProductMapper.FromDTOList(productDTOs);
+
+                return products ?? new List<BuyProduct>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting products with pagination: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                return new List<BuyProduct>();
+            }
+        }
+
+        public int GetProductCount()
+        {
+            try
+            {
+                return buyProductsRepository.GetProductCount();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting product count: {ex.Message}");
+                return 0;
+            }
+        }
+
         public void CreateListing(BuyProduct product)
         {
             if (product == null)
