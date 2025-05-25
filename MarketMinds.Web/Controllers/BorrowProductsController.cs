@@ -16,14 +16,14 @@ namespace MarketMinds.Web.Controllers
         private readonly IBorrowProductsService _borrowProductsService;
         private readonly IWaitlistService _waitlistService;
         private readonly IProductService _productService;
-        private readonly INotificationService _notificationService;
+        private readonly INotificationContentService _notificationService;
 
         public BorrowProductsController(
             ILogger<BorrowProductsController> logger,
             IBorrowProductsService borrowProductsService,
             IWaitlistService waitlistService,
             IProductService productService,
-            INotificationService notificationService)
+            INotificationContentService notificationService)
         {
             _logger = logger;
             _borrowProductsService = borrowProductsService;
@@ -302,7 +302,7 @@ namespace MarketMinds.Web.Controllers
             try
             {
                 int currentUserId = GetCurrentUserId();
-                var notifications = await _notificationService.GetUserNotificationsAsync(currentUserId);
+                var notifications = await _notificationService.GetNotificationsForUser(currentUserId);
 
                 return PartialView("_Notifications", notifications);
             }
@@ -323,7 +323,7 @@ namespace MarketMinds.Web.Controllers
             try
             {
                 int currentUserId = GetCurrentUserId();
-                var notifications = await _notificationService.GetUserNotificationsAsync(currentUserId);
+                var notifications = await _notificationService.GetNotificationsForUser(currentUserId);
 
                 return Json(notifications);
             }
@@ -770,14 +770,16 @@ namespace MarketMinds.Web.Controllers
                                 // Send notification to the user (optional)
                                 try
                                 {
-                                    string notificationMessage = firstInLine.PreferredEndDate.HasValue
-                                        ? $"Good news! The product you were waiting for is now assigned to you until your requested date {endDate:yyyy-MM-dd}."
-                                        : $"Good news! The product you were waiting for is now assigned to you until {endDate:yyyy-MM-dd}.";
-
-                                    await _notificationService.SendNotificationAsync(
-                                        firstInLine.UserID,
-                                        notificationMessage
+                                    // Create a ProductAvailableNotification using the NotificationContentService
+                                    var notification = new ProductAvailableNotification(
+                                        recipientId: firstInLine.UserID,
+                                        timestamp: DateTime.Now,
+                                        productId: productId,
+                                        isRead: false
                                     );
+                                    
+                                    // Add the notification
+                                    await _notificationService.AddNotification(notification);
                                 }
                                 catch (Exception notifEx)
                                 {

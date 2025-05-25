@@ -6,7 +6,10 @@ namespace MarketMinds.ViewModels
 {
     using System.Windows; // Ensure this namespace is included for Visibility
     using System;
+    using System.Windows; // Ensure this namespace is included for Visibility
+    using System;
     using System.ComponentModel;
+    using System.Runtime.CompilerServices;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
@@ -14,9 +17,11 @@ namespace MarketMinds.ViewModels
 
     /// <summary>
     /// View model for managing buyer linkage operations and data between two buyers.
+    /// View model for managing buyer linkage operations and data between two buyers.
     /// </summary>
     public class BuyerLinkageViewModel : IBuyerLinkageViewModel
     {
+        private BuyerLinkageStatus status;
         private BuyerLinkageStatus status;
 
         /// <summary>
@@ -27,13 +32,22 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Gets or sets the buyer service instance.
         /// </summary>
+        /// <summary>
+        /// Gets or sets the buyer service instance.
+        /// </summary>
         public IBuyerService Service { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the current user's buyer profile.
         /// </summary>
+        /// <summary>
+        /// Gets or sets the current user's buyer profile.
+        /// </summary>
         public Buyer UserBuyer { get; set; } = null!;
 
+        /// <summary>
+        /// Gets or sets the linked buyer profile.
+        /// </summary>
         /// <summary>
         /// Gets or sets the linked buyer profile.
         /// </summary>
@@ -43,12 +57,22 @@ namespace MarketMinds.ViewModels
         /// Gets the display name for the linked buyer.
         /// </summary>
         public string DisplayName => $"{LinkedBuyer.FirstName} {LinkedBuyer.LastName}";
+        /// <summary>
+        /// Gets the display name for the linked buyer.
+        /// </summary>
+        public string DisplayName => $"{LinkedBuyer.FirstName} {LinkedBuyer.LastName}";
 
+        /// <summary>
+        /// Gets or sets the callback for linkage updates.
+        /// </summary>
         /// <summary>
         /// Gets or sets the callback for linkage updates.
         /// </summary>
         public IOnBuyerLinkageUpdatedCallback LinkageUpdatedCallback { get; set; } = null!;
 
+        /// <summary>
+        /// Gets or sets the status of the linkage between buyers.
+        /// </summary>
         /// <summary>
         /// Gets or sets the status of the linkage between buyers.
         /// </summary>
@@ -147,6 +171,7 @@ namespace MarketMinds.ViewModels
         public async Task RequestSync()
         {
             try
+            try
             {
                 System.Diagnostics.Debug.WriteLine($"[RequestSync] Creating linkage request from {UserBuyer.Id} to {LinkedBuyer.Id}");
                 await Service.CreateLinkageRequest(UserBuyer, LinkedBuyer);
@@ -157,9 +182,16 @@ namespace MarketMinds.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine($"[RequestSync] Error: {ex.Message}");
                 throw;
+                System.Diagnostics.Debug.WriteLine($"[RequestSync] Error: {ex.Message}");
+                throw;
             }
         }
 
+        /// <summary>
+        /// Accepts a synchronization request.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task Accept()
         /// <summary>
         /// Accepts a synchronization request.
         /// </summary>
@@ -186,6 +218,11 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task Decline()
+        /// <summary>
+        /// Declines a synchronization request.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task Decline()
         {
             try
             {
@@ -201,6 +238,11 @@ namespace MarketMinds.ViewModels
             }
         }
 
+        /// <summary>
+        /// Cancels a synchronization request.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task Cancel()
         /// <summary>
         /// Cancels a synchronization request.
         /// </summary>
@@ -228,6 +270,7 @@ namespace MarketMinds.ViewModels
         public async Task Unsync()
         {
             try
+            try
             {
                 System.Diagnostics.Debug.WriteLine($"[Unsync] Breaking linkage between {UserBuyer.Id} and {LinkedBuyer.Id}");
                 await Service.BreakLinkage(UserBuyer, LinkedBuyer);
@@ -235,7 +278,10 @@ namespace MarketMinds.ViewModels
                 await NotifyLinkageUpdated();
             }
             catch (Exception ex)
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[Unsync] Error: {ex.Message}");
+                throw;
                 System.Diagnostics.Debug.WriteLine($"[Unsync] Error: {ex.Message}");
                 throw;
             }
@@ -247,18 +293,27 @@ namespace MarketMinds.ViewModels
         /// <param name="propertyName">The name of the property that changed. This parameter is optional
         /// and can be provided automatically when invoked from a property.</param>
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        /// <param name="propertyName">The name of the property that changed. This parameter is optional
+        /// and can be provided automatically when invoked from a property.</param>
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         /// <summary>
         /// Notifies that a linkage has been updated.
+        /// Notifies that a linkage has been updated.
         /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task NotifyLinkageUpdated()
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task NotifyLinkageUpdated()
         {
             if (LinkageUpdatedCallback != null)
+            if (LinkageUpdatedCallback != null)
             {
+                await LinkageUpdatedCallback.OnBuyerLinkageUpdated();
                 await LinkageUpdatedCallback.OnBuyerLinkageUpdated();
             }
         }

@@ -1,4 +1,4 @@
-﻿// <copyright file="NotificationProxyRepository.cs" company="PlaceholderCompany">
+// <copyright file="NotificationProxyRepository.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -70,6 +70,20 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             var response = await this.httpClient.PutAsync($"{ApiBaseRoute}/{userId}/mark-read", null);
             await this.ThrowOnError(nameof(MarkAsRead), response);
+        }
+
+        /// <inheritdoc />
+        public async Task MarkNotificationAsRead(int notificationId)
+        {
+            var response = await this.httpClient.PutAsync($"{ApiBaseRoute}/notification/{notificationId}/mark-read", null);
+            await this.ThrowOnError(nameof(MarkNotificationAsRead), response);
+        }
+
+        /// <inheritdoc />
+        public async Task ClearAllNotifications(int userId)
+        {
+            var response = await this.httpClient.DeleteAsync($"{ApiBaseRoute}/{userId}/clear-all");
+            await this.ThrowOnError(nameof(ClearAllNotifications), response);
         }
 
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)

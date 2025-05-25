@@ -146,6 +146,15 @@ namespace MarketMinds.Shared.Services
                         await this.buyerRepo.LoadBuyerInfo(linkedBuyer);
                         linkedBuyerList.Add(linkedBuyer);
                     }
+                    // Get the other buyer ID from the linkage
+                    var otherBuyerId = linkage.GetOtherBuyerId(buyer.Id);
+                    if (otherBuyerId.HasValue)
+                    {
+                        // Create a buyer with just the ID and load their info
+                        var linkedBuyer = new Buyer { Id = otherBuyerId.Value };
+                        await this.buyerRepo.LoadBuyerInfo(linkedBuyer);
+                        linkedBuyerList.Add(linkedBuyer);
+                    }
                 }
 
                 // For the main buyer, ensure we have basic info and user data
@@ -392,7 +401,37 @@ namespace MarketMinds.Shared.Services
 
             // Calculate purchase count progress (weighted)
             decimal purchaseProgress = Math.Min(buyer.NumberOfPurchases / PurchasesBase, 1.0m) * PurchasesWeight;
+            if (buyer == null)
+            {
+                return (int)MinimumBadgeProgress;
+            }
 
+            // Calculate spending progress (weighted)
+            decimal spendingProgress = Math.Min(buyer.TotalSpending / SpendingBase, 1.0m) * SpendingWeight;
+
+            // Calculate purchase count progress (weighted)
+            decimal purchaseProgress = Math.Min(buyer.NumberOfPurchases / PurchasesBase, 1.0m) * PurchasesWeight;
+
+            // Combine both factors
+            decimal totalProgress = (spendingProgress + purchaseProgress) * 100;
+
+            // Clamp between minimum and maximum
+            return (int)Math.Max(MinimumBadgeProgress, Math.Min(MaxBadgeProgress, totalProgress));
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<BuyerWishlistItem>> GetWishlistItems(int buyerId)
+        {
+            try
+            {
+                var wishlist = await this.buyerRepo.GetWishlist(buyerId);
+                return wishlist?.Items ?? new List<BuyerWishlistItem>();
+            }
+            catch (Exception)
+            {
+                // Return empty list if any error occurs
+                return new List<BuyerWishlistItem>();
+            }
             // Combine both factors
             decimal totalProgress = (spendingProgress + purchaseProgress) * 100;
 
