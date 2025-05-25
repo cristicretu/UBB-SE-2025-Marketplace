@@ -9,12 +9,14 @@ using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Services.BuyProductsService;
 using Microsoft.AspNetCore.Http; // Required for HttpContext.Session
 using System.Text.Json; // Required for JsonSerializer
+using Microsoft.AspNetCore.Authorization; // Required for [Authorize]
 
 namespace WebMarketplace.Controllers
 {
     /// <summary>
     /// Controller for buyer wishlist functionality with enhanced error handling
     /// </summary>
+    [Authorize]
     public class BuyerWishlistController : Controller
     {
         private readonly IBuyerService _buyerService;
@@ -56,6 +58,7 @@ namespace WebMarketplace.Controllers
         /// Test endpoint to check if controller is working
         /// </summary>
         /// <returns>Simple text message</returns>
+        [AllowAnonymous]
         public IActionResult Test()
         {
             return Content("BuyerWishlistController is working correctly.");
@@ -65,6 +68,7 @@ namespace WebMarketplace.Controllers
         /// Returns basic diagnostic information
         /// </summary>
         /// <returns>JSON with diagnostic information</returns>
+        [AllowAnonymous]
         public IActionResult Diagnostics()
         {
             var diagnostics = new

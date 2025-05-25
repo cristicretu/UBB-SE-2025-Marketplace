@@ -1,7 +1,8 @@
 ﻿@model MarketMinds.Shared.Models.Product
 
 <div
-    class="product-item bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:shadow-md border border-gray-200">
+    class="product-item bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:shadow-md border border-gray-200 cursor-pointer"
+    onclick="window.location.href='@Url.Action("Details", "BuyProducts", new { id = Model.Id })'">
     <div class="relative">
         @{
             string imageUrl = string.Empty;
@@ -84,7 +85,7 @@
             }
         </p>
         <p class="text-gray-600 text-sm mb-4">@(Model.Description?.Length > 100 ? Model.Description.Substring(0, 100) +
-            "..." : Model.Description)</ p >
+            "..." : Model.Description)</p>
         <div class="flex justify-between items-center mt-2 mb-3">
             @{
                 string priceString = Model.Price.ToString("F2");
@@ -97,7 +98,7 @@
             
         </div>
         <div class="flex justify-between items-center w-full gap-2">
-            <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post" class="w-full">
+            <form asp-controller="ShoppingCart" asp-action="AddToCart" method="post" class="w-full" onclick="event.stopPropagation();">
                 <input type="hidden" name="productId" value="@Model.Id" />
                 <input type="hidden" name="quantity" value="1" />
                 <button type="submit"
@@ -110,7 +111,7 @@
                         StringComparison.OrdinalIgnoreCase) &&
                         ViewContext.RouteData.Values["action"].ToString().Equals("Index", StringComparison.OrdinalIgnoreCase)))
             {
-                <form asp-controller="BuyerWishlist" asp-action="AddToWishlist" method="post" class="ml-2">
+                <form asp-controller="BuyerWishlist" asp-action="AddToWishlist" method="post" class="ml-2" onclick="event.stopPropagation();">
                     <input type="hidden" name="productId" value="@Model.Id" />
                     <button type="submit"
                         class="px-3 py-1.5 bg-pink-600 text-white text-sm font-medium rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500">
@@ -118,7 +119,7 @@
                     </button>
                 </form>
             }
-            <form asp-controller="BuyerWishlist" asp-action="RemoveFromWishlist" method="post">
+            <form asp-controller="BuyerWishlist" asp-action="RemoveFromWishlist" method="post" onclick="event.stopPropagation();">
                 <input type="hidden" name="productId" value="@Model.Id" />
                 <button type="submit"
                     class="aspect-square bg-red-500 text-white h-full px-3 rounded-lg hover:bg-red-600 transition flex items-center justify-center">
