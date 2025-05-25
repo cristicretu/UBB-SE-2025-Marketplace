@@ -41,16 +41,10 @@
             </AppBarButton>
             
             <!-- Chat Support Button (buyer only)-->
-            <AppBarButton x:Name="ChatSupportButton"  Grid.ColumnSpan="3" Label="Chat Support" Tag="ChatSupport" Click="AppNavBarButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center" LabelPosition="Collapsed">
+            <AppBarButton x:Name="ChatSupportButton"  Grid.ColumnSpan="3" Label="Chat Support" Tag="ChatSupport" Click="AppNavBarButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <AppBarButton.Icon>
                     <FontIcon Glyph="&#xE8BD;" />
                 </AppBarButton.Icon>
-                <AppBarButton.Content>
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon Glyph="&#xE8BD;" Margin="0,0,8,0" />
-                        <TextBlock Text="Chat Support" VerticalAlignment="Center" />
-                    </StackPanel>
-                </AppBarButton.Content>
             </AppBarButton>
 
             <CommandBar Grid.Column="2" DefaultLabelPosition="Right" Background="Transparent" IsOpen="False" HorizontalAlignment="Right">

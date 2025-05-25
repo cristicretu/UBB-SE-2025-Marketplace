@@ -99,7 +99,7 @@
                                    Padding="8"
                                    VerticalAlignment="Center"
                                    Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
-                                <FontIcon Glyph="&#xEB51;" FontSize="20" Foreground="{ThemeResource SystemAccentColor}"/>
+                                <FontIcon Glyph="&#xEB51;" Foreground="{ThemeResource SystemAccentColor}"/>
                             </Button>
                         </Grid>
                     </StackPanel>
@@ -115,7 +115,7 @@
                                CornerRadius="4"
                                Click="BuyProductCard_AddToCart_Click">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <FontIcon Glyph="&#xE7BF;" FontSize="16"/>
+                                <FontIcon Glyph="&#xE7BF;"/>
                                 <TextBlock Text="Add to Cart" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
@@ -211,7 +211,7 @@
                                CornerRadius="4"
                                Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <FontIcon Glyph="&#xE8A7;" FontSize="16"/>
+                                <FontIcon Glyph="&#xEC08;"/>
                                 <TextBlock Text="Place Bid" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
@@ -321,7 +321,7 @@
                                CornerRadius="4"
                                Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <FontIcon Glyph="&#xE8F4;" FontSize="16"/>
+                                <FontIcon Glyph="&#xE787;" />
                                 <TextBlock Text="Rent Now" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
