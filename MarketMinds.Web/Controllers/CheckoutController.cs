@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using System.Text.Json;
+using System.Security.Claims;
 
 namespace WebMarketplace.Controllers
 {
@@ -21,6 +22,7 @@ namespace WebMarketplace.Controllers
         private readonly IDummyWalletService _dummyWalletService;
         private readonly IShoppingCartService _shoppingCartService;
         private readonly IBuyProductsService _buyProductsService;
+        private readonly IBuyerService _buyerService;
 
         public CheckoutController(
             IOrderHistoryService orderHistoryService,
@@ -29,7 +31,8 @@ namespace WebMarketplace.Controllers
             IProductService productService,
             IDummyWalletService dummyWalletService,
             IShoppingCartService shoppingCartService,
-            IBuyProductsService buyProductsService)
+            IBuyProductsService buyProductsService,
+            IBuyerService buyerService)
         {
             _orderHistoryService = orderHistoryService;
             _orderSummaryService = orderSummaryService;
@@ -38,6 +41,80 @@ namespace WebMarketplace.Controllers
             _dummyWalletService = dummyWalletService;
             _shoppingCartService = shoppingCartService;
             _buyProductsService = buyProductsService;
+            _buyerService = buyerService;
+        }
+
+        /// <summary>
+        /// Gets the current user ID from authentication claims
+        /// </summary>
+        /// <returns>The current user ID or 0 if not authenticated</returns>
+        private int GetCurrentUserId()
+        {
+            // Get the user ID from claims (proper authentication approach)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return userId;
+            }
+
+            // Try custom claim as fallback
+            var customIdClaim = User.FindFirst("UserId");
+            if (customIdClaim != null && int.TryParse(customIdClaim.Value, out int customUserId))
+            {
+                return customUserId;
+            }
+
+            // Fallback to UserSession (for backward compatibility)
+            if (UserSession.CurrentUserId.HasValue)
+            {
+                return UserSession.CurrentUserId.Value;
+            }
+
+            // If no authentication found, return 0 to indicate unauthorized
+            return 0;
+        }
+
+        /// <summary>
+        /// API endpoint to get buyer billing information for auto-filling the form
+        /// </summary>
+        /// <returns>JSON with buyer billing information</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetBuyerBillingInfo()
+        {
+            try
+            {
+                int userId = GetCurrentUserId();
+                if (userId == 0)
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                // Get buyer information
+                var user = new User(userId);
+                var buyer = await _buyerService.GetBuyerByUser(user);
+
+                if (buyer == null)
+                {
+                    return Json(new { success = false, message = "Buyer profile not found" });
+                }
+
+                // Return billing information
+                var billingInfo = new
+                {
+                    success = true,
+                    fullName = $"{buyer.FirstName} {buyer.LastName}".Trim(),
+                    email = buyer.User?.Email ?? "",
+                    phoneNumber = buyer.User?.PhoneNumber ?? "",
+                    address = buyer.BillingAddress?.StreetLine ?? "",
+                    zipCode = buyer.BillingAddress?.PostalCode ?? ""
+                };
+
+                return Json(billingInfo);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error loading buyer information: {ex.Message}" });
+            }
         }
 
         public async Task<IActionResult> BillingInfo(int orderHistoryId)

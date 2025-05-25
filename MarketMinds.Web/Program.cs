@@ -14,6 +14,8 @@ using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Repositories;
+using MarketMinds.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +77,41 @@ builder.Services.AddSingleton<MarketMinds.Shared.ProxyRepository.ChatbotProxyRep
 builder.Services.AddSingleton<ConversationProxyRepository>();
 builder.Services.AddSingleton<MessageProxyRepository>();
 builder.Services.AddSingleton<ReviewProxyRepository>();
+builder.Services.AddSingleton<BuyerProxyRepository>(sp =>
+    new BuyerProxyRepository(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton<SellerProxyRepository>(sp =>
+    new SellerProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+
+// BuyerLinkage proxy repository
+builder.Services.AddSingleton<BuyerLinkageProxyRepository>(sp =>
+{
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var httpClient = httpClientFactory.CreateClient("ApiClient");
+    return new BuyerLinkageProxyRepository(httpClient);
+});
+
+// BuyerSellerFollow proxy repository
+builder.Services.AddSingleton<BuyerSellerFollowProxyRepository>(sp =>
+{
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var httpClient = httpClientFactory.CreateClient("ApiClient");
+    return new BuyerSellerFollowProxyRepository(httpClient);
+});
+
+// Contract-related proxy repositories
+builder.Services.AddSingleton<ContractProxyRepository>(sp =>
+    new ContractProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<PDFProxyRepository>(sp =>
+    new PDFProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<ContractRenewalProxyRepository>(sp =>
+    new ContractRenewalProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
+builder.Services.AddSingleton<NotificationProxyRepository>(sp =>
+    new NotificationProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
 
 // Merged: Register all unique proxy repositories from both branches
 builder.Services.AddSingleton<OrderProxyRepository>(sp =>
@@ -112,6 +149,14 @@ builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatbotServi
 builder.Services.AddTransient<IConversationService, ConversationService>();
 builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();
+builder.Services.AddTransient<IBuyerService, BuyerService>();
+builder.Services.AddTransient<ISellerService, SellerService>();
+
+// Contract-related services
+builder.Services.AddTransient<IContractService, ContractService>();
+builder.Services.AddTransient<IPDFService, PDFService>();
+builder.Services.AddTransient<IContractRenewalService, ContractRenewalService>();
+builder.Services.AddTransient<INotificationContentService, NotificationContentService>();
 
 // Merged: Register all unique services from both branches
 builder.Services.AddTransient<IOrderService, OrderService>();
@@ -120,6 +165,29 @@ builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
 builder.Services.AddTransient<IOrderSummaryService, OrderSummaryService>();
 builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddTransient<IDummyWalletService, DummyWalletService>();
+
+// BuyerLinkage service
+builder.Services.AddTransient<IBuyerLinkageService>(sp =>
+{
+    var repository = sp.GetRequiredService<BuyerLinkageProxyRepository>();
+    var buyerService = sp.GetRequiredService<IBuyerService>();
+    var logger = sp.GetRequiredService<ILogger<BuyerLinkageService>>();
+    
+    // Create the actual service implementation
+    return new BuyerLinkageService(repository, buyerService, logger);
+});
+
+// BuyerSellerFollow service
+builder.Services.AddTransient<IBuyerSellerFollowService>(sp =>
+{
+    var repository = sp.GetRequiredService<BuyerSellerFollowProxyRepository>();
+    var buyerService = sp.GetRequiredService<IBuyerService>();
+    var sellerService = sp.GetRequiredService<ISellerService>();
+    var logger = sp.GetRequiredService<ILogger<BuyerSellerFollowService>>();
+    
+    // Create the actual service implementation
+    return new BuyerSellerFollowService(repository, buyerService, sellerService, logger);
+});
 
 // Register IBuyerRepository and IBuyerService
 builder.Services.AddTransient<IBuyerRepository, BuyerProxyRepository>();
@@ -136,6 +204,14 @@ builder.Services.AddTransient<MarketMinds.Shared.IRepository.IChatbotRepository>
 builder.Services.AddTransient<IConversationRepository>(sp => sp.GetRequiredService<ConversationProxyRepository>());
 builder.Services.AddTransient<IMessageRepository>(sp => sp.GetRequiredService<MessageProxyRepository>());
 builder.Services.AddTransient<IReviewRepository>(sp => sp.GetRequiredService<ReviewProxyRepository>());
+builder.Services.AddTransient<IBuyerRepository>(sp => sp.GetRequiredService<BuyerProxyRepository>());
+builder.Services.AddTransient<ISellerRepository>(sp => sp.GetRequiredService<SellerProxyRepository>());
+
+// Contract-related repository interfaces
+builder.Services.AddTransient<IContractRepository>(sp => sp.GetRequiredService<ContractProxyRepository>());
+builder.Services.AddTransient<IPDFRepository>(sp => sp.GetRequiredService<PDFProxyRepository>());
+builder.Services.AddTransient<IContractRenewalRepository>(sp => sp.GetRequiredService<ContractRenewalProxyRepository>());
+builder.Services.AddTransient<INotificationRepository>(sp => sp.GetRequiredService<NotificationProxyRepository>());
 
 // Merged: Register all unique repository interfaces from both branches
 builder.Services.AddTransient<IOrderHistoryRepository>(sp => sp.GetRequiredService<OrderHistoryProxyRepository>());
@@ -144,6 +220,12 @@ builder.Services.AddTransient<IOrderSummaryRepository>(sp => sp.GetRequiredServi
 builder.Services.AddTransient<ITrackedOrderRepository>(sp => sp.GetRequiredService<TrackedOrderProxyRepository>());
 builder.Services.AddTransient<IShoppingCartRepository>(sp => sp.GetRequiredService<ShoppingCartProxyRepository>());
 builder.Services.AddTransient<IDummyWalletRepository>(sp => sp.GetRequiredService<DummyWalletProxyRepository>());
+
+// BuyerLinkage repository
+builder.Services.AddTransient<IBuyerLinkageRepository>(sp => sp.GetRequiredService<BuyerLinkageProxyRepository>());
+
+// BuyerSellerFollow repository
+builder.Services.AddTransient<IBuyerSellerFollowRepository>(sp => sp.GetRequiredService<BuyerSellerFollowProxyRepository>());
 
 var app = builder.Build();
 

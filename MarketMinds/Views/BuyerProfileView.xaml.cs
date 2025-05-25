@@ -12,15 +12,15 @@
 
     public sealed partial class BuyerProfileView : Page
     {
-        public IContractViewModel contractViewModel { get; private set; }
+        public IContractViewModel ContractViewModel { get; private set; }
         private ITrackedOrderViewModel? trackedOrderViewModel;
 
         public BuyerProfileView()
         {
             this.InitializeComponent();
 
-            // Initialize contractViewModel
-            contractViewModel = new ContractViewModel();
+            // Initialize ContractViewModel
+            ContractViewModel = new ContractViewModel();
 
             // Initialize trackedOrderViewModel
             trackedOrderViewModel = new TrackedOrderViewModel();
@@ -181,10 +181,10 @@
         {
             if (long.TryParse(this.contractID.Text, out long contractId))
             {
-                await contractViewModel.GenerateAndSaveContractAsync(contractId);
+                await ContractViewModel.GenerateAndSaveContractAsync(contractId);
 
                 // Check if the ViewModel set an error message
-                if (string.IsNullOrEmpty(contractViewModel.GenerateContractErrorMessage))
+                if (string.IsNullOrEmpty(ContractViewModel.GenerateContractErrorMessage))
                 {
                     var successDialog = new ContentDialog
                     {
@@ -200,13 +200,13 @@
                     var successDialog = new ContentDialog
                     {
                         Title = "Fatal fumble",
-                        Content = contractViewModel.GenerateContractErrorMessage,
+                        Content = ContractViewModel.GenerateContractErrorMessage,
                         CloseButtonText = "I shall proceed",
                         XamlRoot = this.Content.XamlRoot
                     };
                     await successDialog.ShowAsync();
                 }
-                // If contractViewModel.GenerateContractErrorMessage is not empty,
+                // If ContractViewModel.GenerateContractErrorMessage is not empty,
                 // the TextBlock in XAML bound to it will display the error.
             }
             else

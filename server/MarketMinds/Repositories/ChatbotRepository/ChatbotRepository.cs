@@ -23,7 +23,7 @@ namespace MarketMinds.Repositories.ChatbotRepository
 
         public async Task<User> GetUserAsync(int userId)
         {
-            if (userId <= 0)
+            if (userId < 0)
             {
                 return null;
             }

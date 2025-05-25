@@ -55,11 +55,13 @@ namespace MarketMinds.Shared.Models
 
         public User(int id = 0, string username = "", string email = "", string phoneNumber = "", int userType = (int)UserRole.Unassigned, double balance = 0, DateTime? bannedUntil = null, bool isBanned = false, int failedLogins = 0, string passwordHash = "", string token = "")
         {
+            Id = id;
             Username = username;
             Email = email;
             PhoneNumber = phoneNumber;
             PasswordHash = passwordHash;
             UserType = userType;
+            Balance = balance;
             BannedUntil = bannedUntil;
             IsBanned = isBanned;
             FailedLogIns = failedLogins;

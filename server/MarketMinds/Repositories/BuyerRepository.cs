@@ -74,64 +74,203 @@ namespace Server.Repository
         }
 
         /// <inheritdoc/>
-        public async Task SaveInfo(Buyer buyerEntity)
+        public async Task<Buyer> LoadBuyerInfo(int buyerId)
         {
-            if (!await this.CheckIfBuyerExists(buyerEntity.Id)) // This likely uses a different context or check logic? Be careful if it uses the same context.
-            {
-                throw new Exception("SaveInfo: Buyer not found");
-            }
+            Buyer buyer = await this.dbContext.Buyers.FindAsync(buyerId)
+                                ?? throw new Exception("LoadBuyerInfo: Buyer not found");
 
-            // --- Address Handling ---
+            int billingAddressId = await this.dbContext.Buyers.Where(b => b.Id == buyerId)
+                                .Select(b => EF.Property<int>(b, "BillingAddressId"))
+                                .FirstOrDefaultAsync();
+            int shippingAddressId = await this.dbContext.Buyers.Where(b => b.Id == buyerId)
+                                .Select(b => EF.Property<int>(b, "ShippingAddressId"))
+                                .FirstOrDefaultAsync();
 
-            // 1. Handle Billing Address: Check if it's already tracked locally
-            var trackedBillingAddress = this.dbContext.Set<Address>().Local.FirstOrDefault(address => address.Id == buyerEntity.BillingAddress.Id && address.Id != 0);
-            if (trackedBillingAddress != null)
-            {
-                // If tracked, copy updated values from the incoming entity to the tracked entity
-                this.dbContext.Entry(trackedBillingAddress).CurrentValues.SetValues(buyerEntity.BillingAddress);
+            User user = await this.dbContext.Users.FindAsync(buyerId)
+                                ?? throw new Exception("LoadBuyerInfo: User not found");
 
-                // **Crucially, update the buyerEntity to point to the tracked instance**
-                buyerEntity.BillingAddress = trackedBillingAddress;
-            }
-            else
+            var buyerEntity = new Buyer
             {
-                // If not tracked locally, tell EF Core to handle this instance.
-                // Update will mark it as Added (if Id=0) or Modified (if Id!=0 and detached).
-                this.dbContext.Update(buyerEntity.BillingAddress);
-            }
+                Id = buyerId,
+                Badge = buyer.Badge,
+                Wishlist = await this.GetWishlist(buyerId),
+                Linkages = await this.GetBuyerLinkages(buyerId),
+                TotalSpending = buyer.TotalSpending,
+                NumberOfPurchases = buyer.NumberOfPurchases,
+                Discount = buyer.Discount,
+                UseSameAddress = buyer.UseSameAddress,
+                FollowingUsersIds = await this.GetFollowingUsersIds(buyerId),
+                User = user,
+                FirstName = buyer.FirstName,
+                LastName = buyer.LastName,
+                BillingAddress = await this.LoadAddress(billingAddressId)
+                                ?? throw new Exception("LoadBuyerInfo: Billing address not found")
+            };
 
-            // 2. Handle Shipping Address:
-            if (buyerEntity.UseSameAddress)
+            if (buyer.UseSameAddress)
             {
-                // **Ensure ShippingAddress points to the exact same instance as BillingAddress**
-                // This instance is now either the pre-tracked one or the one Update() will handle.
                 buyerEntity.ShippingAddress = buyerEntity.BillingAddress;
             }
             else
             {
-                // If using a different shipping address, handle its tracking status
-                var trackedShippingAddress = this.dbContext.Set<Address>().Local.FirstOrDefault(address => address.Id == buyerEntity.ShippingAddress.Id && address.Id != 0);
-                if (trackedShippingAddress != null)
-                {
-                    this.dbContext.Entry(trackedShippingAddress).CurrentValues.SetValues(buyerEntity.ShippingAddress);
+                buyerEntity.ShippingAddress = await this.LoadAddress(shippingAddressId)
+                                ?? throw new Exception("LoadBuyerInfo: Shipping address not found");
+            }
 
-                    // **Update buyerEntity to point to the tracked instance**
-                    buyerEntity.ShippingAddress = trackedShippingAddress;
+            return buyerEntity;
+        }
+
+        /// <inheritdoc/>
+        public async Task SaveInfo(Buyer buyerEntity)
+        {
+            Console.WriteLine("=== REPOSITORY: SaveInfo called ===");
+            Console.WriteLine($"REPOSITORY: Buyer ID: {buyerEntity.Id}");
+            Console.WriteLine($"REPOSITORY: FirstName: '{buyerEntity.FirstName}', LastName: '{buyerEntity.LastName}'");
+            Console.WriteLine($"REPOSITORY: PhoneNumber: '{buyerEntity.User?.PhoneNumber}', UseSameAddress: {buyerEntity.UseSameAddress}");
+            
+            if (buyerEntity.BillingAddress != null)
+            {
+                Console.WriteLine($"REPOSITORY: Input Billing Address - Street: '{buyerEntity.BillingAddress.StreetLine}', City: '{buyerEntity.BillingAddress.City}', Country: '{buyerEntity.BillingAddress.Country}', PostalCode: '{buyerEntity.BillingAddress.PostalCode}', Id: {buyerEntity.BillingAddress.Id}");
+            }
+            if (buyerEntity.ShippingAddress != null)
+            {
+                Console.WriteLine($"REPOSITORY: Input Shipping Address - Street: '{buyerEntity.ShippingAddress.StreetLine}', City: '{buyerEntity.ShippingAddress.City}', Country: '{buyerEntity.ShippingAddress.Country}', PostalCode: '{buyerEntity.ShippingAddress.PostalCode}', Id: {buyerEntity.ShippingAddress.Id}");
+            }
+
+            var buyerId = buyerEntity.Id;
+
+            Console.WriteLine("REPOSITORY: Checking if buyer exists...");
+            var buyerExists = await dbContext.Buyers.AnyAsync(b => b.Id == buyerId);
+            
+            if (!buyerExists)
+            {
+                Console.WriteLine("REPOSITORY: Buyer does not exist, creating new buyer");
+                dbContext.Buyers.Add(buyerEntity);
+            }
+            else
+            {
+                Console.WriteLine("REPOSITORY: Buyer exists, proceeding with save");
+                
+                Console.WriteLine("REPOSITORY: Starting address handling...");
+                
+                // Handle addresses properly based on UseSameAddress flag
+                if (buyerEntity.UseSameAddress)
+                {
+                    Console.WriteLine("REPOSITORY: UseSameAddress is true, making addresses the same");
+                    
+                    // When using same address, both should point to the same address record
+                    if (buyerEntity.BillingAddress != null)
+                    {
+                        var billingAddress = buyerEntity.BillingAddress;
+                        
+                        // Update or create the billing address
+                        var trackedBilling = dbContext.ChangeTracker.Entries<Address>()
+                            .FirstOrDefault(e => e.Entity.Id == billingAddress.Id)?.Entity;
+                            
+                        if (trackedBilling != null)
+                        {
+                            Console.WriteLine($"REPOSITORY: Found tracked billing address, updating values");
+                            trackedBilling.StreetLine = billingAddress.StreetLine;
+                            trackedBilling.City = billingAddress.City;
+                            trackedBilling.Country = billingAddress.Country;
+                            trackedBilling.PostalCode = billingAddress.PostalCode;
+                            buyerEntity.BillingAddress = trackedBilling;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"REPOSITORY: No tracked billing address found, calling dbContext.Update()");
+                            dbContext.Update(billingAddress);
+                            Console.WriteLine($"REPOSITORY: Called dbContext.Update() for billing address with ID: {billingAddress.Id}");
+                        }
+                        
+                        // Make shipping address point to the same record
+                        buyerEntity.ShippingAddress = buyerEntity.BillingAddress;
+                        Console.WriteLine($"REPOSITORY: Set shipping address to same as billing address (ID: {buyerEntity.BillingAddress.Id})");
+                    }
                 }
                 else
                 {
-                    // If not tracked locally, let EF Core handle this instance.
-                    this.dbContext.Update(buyerEntity.ShippingAddress);
+                    Console.WriteLine("REPOSITORY: UseSameAddress is false, handling separate addresses");
+                    
+                    // Handle billing address
+                    if (buyerEntity.BillingAddress != null)
+                    {
+                        Console.WriteLine("REPOSITORY: Handling billing address...");
+                        var billingAddress = buyerEntity.BillingAddress;
+                        
+                        var trackedBilling = dbContext.ChangeTracker.Entries<Address>()
+                            .FirstOrDefault(e => e.Entity.Id == billingAddress.Id)?.Entity;
+                            
+                        if (trackedBilling != null)
+                        {
+                            Console.WriteLine($"REPOSITORY: Found tracked billing address, updating values");
+                            Console.WriteLine($"REPOSITORY: Tracked billing address before update - Street: '{trackedBilling.StreetLine}', City: '{trackedBilling.City}', Country: '{trackedBilling.Country}', PostalCode: '{trackedBilling.PostalCode}'");
+                            trackedBilling.StreetLine = billingAddress.StreetLine;
+                            trackedBilling.City = billingAddress.City;
+                            trackedBilling.Country = billingAddress.Country;
+                            trackedBilling.PostalCode = billingAddress.PostalCode;
+                            Console.WriteLine($"REPOSITORY: Tracked billing address after update - Street: '{trackedBilling.StreetLine}', City: '{trackedBilling.City}', Country: '{trackedBilling.Country}', PostalCode: '{trackedBilling.PostalCode}'");
+                            buyerEntity.BillingAddress = trackedBilling;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"REPOSITORY: No tracked billing address found, calling dbContext.Update()");
+                            dbContext.Update(billingAddress);
+                            Console.WriteLine($"REPOSITORY: Called dbContext.Update() for billing address with ID: {billingAddress.Id}");
+                        }
+                    }
+                    
+                    // Handle shipping address - CREATE NEW if it's different from billing
+                    if (buyerEntity.ShippingAddress != null)
+                    {
+                        Console.WriteLine("REPOSITORY: Handling shipping address...");
+                        var shippingAddress = buyerEntity.ShippingAddress;
+                        
+                        // Check if shipping and billing addresses are actually different
+                        bool addressesAreDifferent = buyerEntity.BillingAddress == null ||
+                            shippingAddress.StreetLine != buyerEntity.BillingAddress.StreetLine ||
+                            shippingAddress.City != buyerEntity.BillingAddress.City ||
+                            shippingAddress.Country != buyerEntity.BillingAddress.Country ||
+                            shippingAddress.PostalCode != buyerEntity.BillingAddress.PostalCode;
+                            
+                        if (addressesAreDifferent)
+                        {
+                            Console.WriteLine("REPOSITORY: Shipping address is different from billing, creating new address record");
+                            // Create a completely new address for shipping
+                            var newShippingAddress = new Address
+                            {
+                                StreetLine = shippingAddress.StreetLine,
+                                City = shippingAddress.City,
+                                Country = shippingAddress.Country,
+                                PostalCode = shippingAddress.PostalCode
+                            };
+                            
+                            dbContext.Addresses.Add(newShippingAddress);
+                            buyerEntity.ShippingAddress = newShippingAddress;
+                            Console.WriteLine($"REPOSITORY: Created new shipping address - Street: '{newShippingAddress.StreetLine}', City: '{newShippingAddress.City}', Country: '{newShippingAddress.Country}', PostalCode: '{newShippingAddress.PostalCode}'");
+                        }
+                        else
+                        {
+                            Console.WriteLine("REPOSITORY: Shipping address is same as billing, reusing billing address");
+                            buyerEntity.ShippingAddress = buyerEntity.BillingAddress;
+                        }
+                    }
                 }
+
+                Console.WriteLine("REPOSITORY: Updating buyer entity...");
+                dbContext.Buyers.Update(buyerEntity);
+                Console.WriteLine("REPOSITORY: Called dbContext.Buyers.Update()");
             }
 
-            // --- Buyer Update ---
-            // Now that the Address navigation properties point to instances EF Core
-            // can manage without conflict, update the Buyer entity itself.
-            this.dbContext.Buyers.Update(buyerEntity);
+            Console.WriteLine("REPOSITORY: Final state before SaveChangesAsync:");
+            Console.WriteLine($"REPOSITORY: Final Buyer - FirstName: '{buyerEntity.FirstName}', LastName: '{buyerEntity.LastName}', UseSameAddress: {buyerEntity.UseSameAddress}");
+            Console.WriteLine($"REPOSITORY: Final Billing Address - Street: '{buyerEntity.BillingAddress?.StreetLine}', City: '{buyerEntity.BillingAddress?.City}', Country: '{buyerEntity.BillingAddress?.Country}', PostalCode: '{buyerEntity.BillingAddress?.PostalCode}', Id: {buyerEntity.BillingAddress?.Id}");
+            Console.WriteLine($"REPOSITORY: Final Shipping Address - Street: '{buyerEntity.ShippingAddress?.StreetLine}', City: '{buyerEntity.ShippingAddress?.City}', Country: '{buyerEntity.ShippingAddress?.Country}', PostalCode: '{buyerEntity.ShippingAddress?.PostalCode}', Id: {buyerEntity.ShippingAddress?.Id}");
 
-            // --- Save ---
-            await this.dbContext.SaveChangesAsync();
+            Console.WriteLine("REPOSITORY: Calling SaveChangesAsync...");
+            await dbContext.SaveChangesAsync();
+            Console.WriteLine("REPOSITORY: SaveChangesAsync completed successfully");
+            Console.WriteLine("=== REPOSITORY: SaveInfo completed successfully ===");
         }
 
         /// <inheritdoc/>
@@ -156,7 +295,10 @@ namespace Server.Repository
             foreach (BuyerLinkageEntity linkageEntity in buyerLinkagesEntities)
             {
                 BuyerLinkage buyerLinkage = ReadBuyerLinkage(linkageEntity, buyerId);
-                buyerLinkages.Add(buyerLinkage);
+                if (buyerLinkage != null) // Only add approved linkages
+                {
+                    buyerLinkages.Add(buyerLinkage);
+                }
             }
 
             return buyerLinkages;
@@ -353,36 +495,18 @@ namespace Server.Repository
         /// <returns>A BuyerLinkage object containing the read information.</returns>
         private static BuyerLinkage ReadBuyerLinkage(BuyerLinkageEntity linkageEntity, int buyerId)
         {
-            int requestingBuyerId = linkageEntity.RequestingBuyerId;
-            int receivingBuyerId = linkageEntity.ReceivingBuyerId;
-            bool isApproved = linkageEntity.IsApproved;
-            int linkedBuyerId = requestingBuyerId;
-            BuyerLinkageStatus buyerLinkageStatus = BuyerLinkageStatus.Confirmed;
-
-            if (requestingBuyerId == buyerId)
+            // Only process approved linkages for the new simple system
+            if (!linkageEntity.IsApproved)
             {
-                linkedBuyerId = receivingBuyerId;
-                if (!isApproved)
-                {
-                    buyerLinkageStatus = BuyerLinkageStatus.PendingSelf;
-                }
-            }
-            else if (receivingBuyerId == buyerId)
-            {
-                linkedBuyerId = requestingBuyerId;
-                if (!isApproved)
-                {
-                    buyerLinkageStatus = BuyerLinkageStatus.PendingOther;
-                }
+                return null; // Skip non-approved linkages
             }
 
+            // Map the old entity structure to the new BuyerLinkage model
             return new BuyerLinkage
             {
-                Buyer = new Buyer
-                {
-                    User = new User { Id = linkedBuyerId },
-                },
-                Status = buyerLinkageStatus,
+                BuyerId1 = Math.Min(linkageEntity.RequestingBuyerId, linkageEntity.ReceivingBuyerId),
+                BuyerId2 = Math.Max(linkageEntity.RequestingBuyerId, linkageEntity.ReceivingBuyerId),
+                LinkedDate = DateTime.UtcNow // Default since old entity doesn't have this field
             };
         }
 

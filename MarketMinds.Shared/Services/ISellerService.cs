@@ -51,6 +51,13 @@ namespace MarketMinds.Shared.Services
         Task<double> CalculateAverageReviewScore(int sellerId);
 
         /// <summary>
+        /// Gets a seller by their ID.
+        /// </summary>
+        /// <param name="sellerId">The ID of the seller to retrieve.</param>
+        /// <returns>A task containing the seller if found, null otherwise.</returns>
+        Task<Seller?> GetSellerByIdAsync(int sellerId);
+
+        /// <summary>
         /// Generates notification for followers count change.
         /// </summary>
         /// <param name="sellerId">The seller ID.</param>
