@@ -44,6 +44,11 @@ namespace MarketMinds.ViewModels
         private string password;
 
         /// <summary>
+        /// ConfirmPassword property.
+        /// </summary>
+        private string confirmPassword;
+
+        /// <summary>
         /// Role property.
         /// </summary>
         private int role;
@@ -60,6 +65,7 @@ namespace MarketMinds.ViewModels
             this.email = string.Empty;
             this.phoneNumber = string.Empty;
             this.password = string.Empty;
+            this.confirmPassword = string.Empty;
         }
 
         /// <summary>
@@ -125,6 +131,19 @@ namespace MarketMinds.ViewModels
         }
 
         /// <summary>
+        /// Gets or sets ConfirmPassword property.
+        /// </summary>
+        public string ConfirmPassword
+        {
+            get => this.confirmPassword;
+            set
+            {
+                this.confirmPassword = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets Role property.
         /// </summary>
         public int Role
@@ -159,6 +178,10 @@ namespace MarketMinds.ViewModels
         {
             try
             {
+                if (this.Password != this.ConfirmPassword)
+                {
+                    throw new Exception("Passwords do not match.");
+                } // put this here so that I do not change the user service implementation + this is frontend validation
                 await this.userService.RegisterUser(this.Username, this.Password, this.Email, this.PhoneNumber, this.Role);
                 await this.ShowDialog("Success", "Your account has been created successfully!");
                 this.NavigateToLogin?.Invoke();

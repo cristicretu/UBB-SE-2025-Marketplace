@@ -1,144 +1,332 @@
 @model WebMarketplace.Models.SellerProfileViewModel
 @{
     ViewData["Title"] = "Seller Profile";
+    bool isOwnProfile = ViewBag.IsOwnProfile ?? false;
+    int? profileSellerId = isOwnProfile ? null : Model.Seller?.User?.Id;
 }
 
-<div class="bg-white shadow rounded-lg p-6">
-    <div class="flex flex-col md:flex-row justify-between mb-6 pb-6 border-b">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Seller Profile</h1>
-            <p class="text-gray-600">Manage your store and products</p>
-        </div>
-        <div class="mt-4 md:mt-0 flex space-x-4">
-            <a asp-controller="UpdateProfile" asp-action="Index" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                <svg class="w-8 h-8 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                 </svg>
-                Update Profile
-            </a>
+                Seller Profile
+            </h1>
+            <p class="text-gray-600 mt-2">@(isOwnProfile ? "Manage your store and products" : "Browse this seller's store")</p>
         </div>
-    </div>
 
-    @if (Model.Seller == null)
-    {
-        <div class="bg-yellow-50 p-4 border border-yellow-300 rounded-lg">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        <!-- Success/Error Messages -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-green-800 font-medium">@TempData["SuccessMessage"]</p>
+                </div>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-red-800 font-medium">@TempData["ErrorMessage"]</p>
+                </div>
+            </div>
+        }
+
+        @if (Model.Seller == null)
+        {
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+                <div class="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">Seller Profile Not Found</h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        <p>No seller profile was found for this user. This could be because:</p>
-                        <ul class="list-disc pl-5 mt-1 space-y-1">
-                            <li>You are not logged in as a seller</li>
-                            <li>Your seller account has not been created yet</li>
-                            <li>There was an error loading your seller information</li>
-                        </ul>
-                    </div>
-                </div>
+                <h3 class="text-lg font-semibold text-yellow-800 mb-2">Seller Profile Not Found</h3>
+                <p class="text-yellow-700 mb-4">No seller profile was found for this user. This could be because:</p>
+                <ul class="text-yellow-700 text-left max-w-md mx-auto space-y-1">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        You are not logged in as a seller
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Your seller account has not been created yet
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        There was an error loading your seller information
+                    </li>
+                </ul>
             </div>
-        </div>
-    }
-    else
-    {
-        <!-- Show seller information only if Seller is not null -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Left Column: Store Information -->
-            <div class="space-y-6">
-                <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Store Information</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Store Name</h3>
-                            <p class="text-lg text-gray-900">@Model.Seller.StoreName</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Store Description</h3>
-                            <p class="text-gray-900">@Model.Seller.StoreDescription</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Store Address</h3>
-                            <p class="text-gray-900">@Model.Seller.StoreAddress</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Email</h3>
-                            <p class="text-gray-900">@Model.Seller.Email</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Phone</h3>
-                            <p class="text-gray-900">@Model.Seller.PhoneNumber</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Trust Score</h3>
-                            <div class="flex items-center">
-                                <span class="text-yellow-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        }
+        else
+        {
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Sidebar - Store Information -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Store Information Card -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                     </svg>
-                                </span>
-                                <span class="ml-1 text-gray-900">@Model.Seller.TrustScore.ToString("F1")</span>
+                                    Store Information
+                                </h2>
+                                
+                                <!-- Action Buttons -->
+                                <div class="flex space-x-2">
+                                    @if (isOwnProfile)
+                                    {
+                                        <a asp-controller="UpdateProfile" asp-action="Index" 
+                                           class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors shadow-sm">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <!-- Follow/Unfollow Button -->
+                                        bool isCurrentUserBuyer = ViewBag.IsCurrentUserBuyer ?? false;
+                                        var followStatus = ViewBag.FollowStatus as MarketMinds.Shared.Services.BuyerSellerFollowInfo;
+                                        int? currentUserId = ViewBag.CurrentUserId as int?;
+
+                                        if (isCurrentUserBuyer && !isOwnProfile && currentUserId.HasValue && profileSellerId.HasValue && currentUserId != profileSellerId)
+                                        {
+                                            if (followStatus?.IsFollowing == true)
+                                            {
+                                                <form asp-controller="SellerProfile" asp-action="Unfollow" asp-route-sellerId="@profileSellerId" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" 
+                                                            class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors shadow-sm">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path>
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form asp-controller="SellerProfile" asp-action="Follow" asp-route-sellerId="@profileSellerId" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" 
+                                                            class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors shadow-sm">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            
+                            <!-- Store Avatar -->
+                            <div class="flex justify-center mb-6">
+                                <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-white">
+                                        @{
+                                            string storeInitial = !string.IsNullOrEmpty(Model.Seller?.StoreName) ? 
+                                                Model.Seller.StoreName.Substring(0, 1).ToUpper() : "S";
+                                        }
+                                        @storeInitial
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Store Details -->
+                            <div class="space-y-4">
+                                <div class="text-center">
+                                    <h3 class="text-lg font-bold text-gray-900">@(Model.Seller?.StoreName ?? "Store Name")</h3>
+                                    <p class="text-sm text-gray-600 mt-1">@(Model.Seller?.StoreDescription ?? "")</p>
+                                </div>
+                                
+                                <div class="space-y-3 pt-4 border-t border-gray-200">
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <span class="text-sm text-gray-700">@(Model.Seller?.StoreAddress ?? "N/A")</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                                        </svg>
+                                        <span class="text-sm text-gray-700">@(Model.Seller?.Email ?? "N/A")</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                        </svg>
+                                        <span class="text-sm text-gray-700">@(Model.Seller?.PhoneNumber ?? "N/A")</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Trust Score & Stats -->
+                                <div class="pt-4 border-t border-gray-200 space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-medium text-gray-700">Trust Score</span>
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                            </svg>
+                                            <span class="text-sm font-semibold text-gray-900">@(Model.Seller?.TrustScore.ToString("F1") ?? "0.0")</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-medium text-gray-700">Followers</span>
+                                        <span class="text-sm font-semibold text-gray-900">@(Model.Seller?.FollowersCount ?? 0)</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-medium text-gray-700">Products</span>
+                                        <span class="text-sm font-semibold text-gray-900">@(Model.Products?.Count ?? 0)</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Followers</h3>
-                            <p class="text-gray-900">@Model.Seller.FollowersCount</p>
-                        </div>
                     </div>
+
+                    <!-- Followers Section -->
+                    @if (Model.FollowersList != null && Model.FollowersList.Any())
+                    {
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <div class="p-6">
+                                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                    Followers (@Model.FollowersList.Count)
+                                </h2>
+                                <div class="space-y-3">
+                                    @foreach (var follower in Model.FollowersList.Take(3))
+                                    {
+                                        <a href="@Url.Action("PublicProfile", "BuyerProfile", new { id = follower.Id })" 
+                                           class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                                @{
+                                                    string avatarText = !string.IsNullOrEmpty(follower.FirstName) ? 
+                                                        follower.FirstName.Substring(0, 1).ToUpper() : "?";
+                                                }
+                                                <span class="text-sm font-medium text-white">@avatarText</span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">
+                                                    @follower.FirstName @follower.LastName
+                                                </p>
+                                                @if (!string.IsNullOrEmpty(follower.Email))
+                                                {
+                                                    <p class="text-xs text-gray-500 truncate">@follower.Email</p>
+                                                }
+                                            </div>
+                                        </a>
+                                    }
+                                    @if (Model.FollowersList.Count > 3)
+                                    {
+                                        <div class="pt-3 border-t border-gray-200 text-center">
+                                            <span class="text-sm text-gray-500">+@(Model.FollowersList.Count - 3) more followers</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
 
-                <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Statistics</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Total Products</h3>
-                            <p class="text-lg text-gray-900">@(Model.Products?.Count ?? 0)</p>
+                <!-- Main Content - Products -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <!-- Products Header -->
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                                    <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                    </svg>
+                                    @(isOwnProfile ? "Your Products" : "Products")
+                                </h2>
+                                
+                                <!-- Search and Sort Controls -->
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <input id="productSearchInput"
+                                               type="text"
+                                               placeholder="Search products..."
+                                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                               value="@Model.SearchText">
+                                    </div>
+                                    <button id="sortButton" 
+                                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors border border-gray-300 flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                                        </svg>
+                                        Sort by Price
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Products Grid -->
+                        <div class="p-6">
+                            <div id="productsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                @await Html.PartialAsync("_ProductsListPartial", Model)
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Right Column: Products -->
-            <div class="md:col-span-2">
-                <div class="mb-4 flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Your Products</h2>
-                    <div class="flex space-x-4">
-                        <div class="relative">
-                            <input id="productSearchInput"
-                                   type="text"
-                                   placeholder="Search products..."
-                                   class="border rounded-lg px-4 py-2 w-64"
-                                   value="@Model.SearchText">
-                        </div>
-                        <button id="sortButton" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
-                            </svg>
-                            Sort by Price
-                        </button>
-                    </div>
-                </div>
-
-                <div id="productsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @await Html.PartialAsync("_ProductsListPartial", Model)
-                </div>
-            </div>
-        </div>
-    }
+        }
+    </div>
 </div>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
+            var sellerId = @(profileSellerId?.ToString() ?? "null");
+            var isManageMode = @(isOwnProfile ? "true" : "false");
+            
             // Handle product search
             $('#productSearchInput').on('keyup', function() {
                 const searchText = $(this).val();
+                var requestData = { searchText: searchText };
+                
+                // Add sellerId for public profiles
+                if (sellerId !== null) {
+                    requestData.sellerId = sellerId;
+                } else {
+                    // For private profiles, indicate if we're in manage mode
+                    requestData.isManageMode = isManageMode;
+                }
+                
                 $.ajax({
                     url: '@Url.Action("FilterProducts", "SellerProfile")',
                     type: 'POST',
-                    data: { searchText: searchText },
+                    data: requestData,
                     success: function(result) {
                         $('#productsContainer').html(result);
                     }
@@ -147,9 +335,20 @@
 
             // Handle product sorting
             $('#sortButton').on('click', function() {
+                var requestData = {};
+                
+                // Add sellerId for public profiles
+                if (sellerId !== null) {
+                    requestData.sellerId = sellerId;
+                } else {
+                    // For private profiles, indicate if we're in manage mode
+                    requestData.isManageMode = isManageMode;
+                }
+                
                 $.ajax({
                     url: '@Url.Action("SortProducts", "SellerProfile")',
                     type: 'POST',
+                    data: requestData,
                     success: function(result) {
                         $('#productsContainer').html(result);
                     }

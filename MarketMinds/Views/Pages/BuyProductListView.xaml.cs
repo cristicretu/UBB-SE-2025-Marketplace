@@ -1,18 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using MarketMinds.Shared.Models;
-using ViewModelLayer.ViewModel;
+using System.Linq;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds;
-using MarketMinds.Shared.Services;
-using MarketMinds.Views.Pages;
 using MarketMinds.Helpers.ViewModelHelpers;
-using MarketMinds.Shared.Services.ProductPaginationService;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.BuyProductsService;
 using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.ProductPaginationService;
+using MarketMinds.Views.Pages;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using ViewModelLayer.ViewModel;
 
 namespace MarketMinds.Views
 {
@@ -67,6 +68,23 @@ namespace MarketMinds.Views
             foreach (var product in currentPageProducts)
             {
                 buyProducts.Add(product);
+            }
+
+            // Restore sort selection after applying filters
+            RestoreSortSelection();
+        }
+
+        private void RestoreSortSelection()
+        {
+            if (sortAndFilterViewModel.SortCondition != null)
+            {
+                var matchingItem = SortingComboBox.Items.Cast<ComboBoxItem>()
+                    .FirstOrDefault(item => item.Tag.ToString() == sortAndFilterViewModel.SortCondition.InternalAttributeFieldTitle +
+                        (sortAndFilterViewModel.SortCondition.IsAscending ? "Asc" : "Desc"));
+                if (matchingItem != null)
+                {
+                    SortingComboBox.SelectedItem = matchingItem;
+                }
             }
         }
 
@@ -125,8 +143,15 @@ namespace MarketMinds.Views
 
         private void SortButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
+            // Toggle the sorting dropdown visibility
             SortingComboBox.Visibility = SortingComboBox.Visibility == Visibility.Visible ?
                                          Visibility.Collapsed : Visibility.Visible;
+
+            // If we're showing the dropdown, ensure we have a selected item
+            if (SortingComboBox.Visibility == Visibility.Visible)
+            {
+                RestoreSortSelection();
+            }
         }
 
         private void SortingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs routedEventArgs)

@@ -121,10 +121,15 @@
                     <Button x:Name="renewContractButton" Content="Renew Contract" Click="RenewContractButton_Clicked" Margin="5"/>
                     <Button x:Name="trackOrderButton" Content="Track Order" Click="TrackOrderButton_Clicked" Margin="5"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
-                    <TextBlock Text="Contract ID:"></TextBlock>
-                    <TextBox x:Name="contractID" Width="30" InputScope="Number" Text="1" Margin="5" />
-                    <Button x:Name="generateContractButton" Content="Generate Contract" Click="GenerateContractButton_Clicked" Margin="5"/>
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,5">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="Contract ID:" VerticalAlignment="Center"/>
+                        <TextBox x:Name="contractID" Width="30" InputScope="Number" Text="1" Margin="5" />
+                        <Button x:Name="generateContractButton" Content="Generate Contract" Click="GenerateContractButton_Clicked" Margin="5"/>
+                    </StackPanel>
+                    <!-- Bind TextBlock to the GenerateContractErrorMessage property -->
+                    <TextBlock Text="{x:Bind ContractViewModel.GenerateContractErrorMessage, Mode=OneWay}"
+                               Foreground="Red" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
             </StackPanel>
 

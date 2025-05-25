@@ -12,15 +12,15 @@
 
     public sealed partial class BuyerProfileView : Page
     {
-        private IContractViewModel? contractViewModel;
+        public IContractViewModel ContractViewModel { get; private set; }
         private ITrackedOrderViewModel? trackedOrderViewModel;
 
         public BuyerProfileView()
         {
             this.InitializeComponent();
 
-            // Initialize contract and contractViewModel
-            contractViewModel = new ContractViewModel();
+            // Initialize ContractViewModel
+            ContractViewModel = new ContractViewModel();
 
             // Initialize trackedOrderViewModel
             trackedOrderViewModel = new TrackedOrderViewModel();
@@ -169,15 +169,33 @@
         {
             if (long.TryParse(this.contractID.Text, out long contractId))
             {
-                await contractViewModel.GenerateAndSaveContractAsync(contractId);
-                var successDialog = new ContentDialog
+                await ContractViewModel.GenerateAndSaveContractAsync(contractId);
+
+                // Check if the ViewModel set an error message
+                if (string.IsNullOrEmpty(ContractViewModel.GenerateContractErrorMessage))
                 {
-                    Title = "Success",
-                    Content = "Contract generated and saved successfully.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.Content.XamlRoot
-                };
-                await successDialog.ShowAsync();
+                    var successDialog = new ContentDialog
+                    {
+                        Title = "Success",
+                        Content = "Contract generated and saved successfully.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await successDialog.ShowAsync();
+                }
+                else
+                {
+                    var successDialog = new ContentDialog
+                    {
+                        Title = "Fatal fumble",
+                        Content = ContractViewModel.GenerateContractErrorMessage,
+                        CloseButtonText = "I shall proceed",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await successDialog.ShowAsync();
+                }
+                // If ContractViewModel.GenerateContractErrorMessage is not empty,
+                // the TextBlock in XAML bound to it will display the error.
             }
             else
             {
@@ -189,11 +207,8 @@
         {
             try
             {
-                // merge-nicusor FIX :)
-                int productId = 1;
-
-                var borrowWindow = new BorrowProductWindow(productId);
-                borrowWindow.Activate();
+                var borrowProductListView = MarketMinds.Helpers.ViewFactory.CreateBorrowProductListView();
+                borrowProductListView.Activate();
             }
             catch (Exception ex)
             {
@@ -210,7 +225,7 @@
         private void OrderHistoryButton_Clicked(object sender, RoutedEventArgs e)
         {
             // merge-nicusor FIX :)
-            int user_id = 1;
+            int user_id = UserSession.CurrentUserId ?? 1;
             var orderhistorywindow = new OrderHistoryView(user_id);
             orderhistorywindow.Activate();
         }

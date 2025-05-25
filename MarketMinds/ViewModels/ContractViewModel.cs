@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services; // Add this using directive
+using MarketMinds.Shared.Services;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -12,10 +14,33 @@ using Windows.System;
 
 namespace MarketMinds.ViewModels
 {
-    public class ContractViewModel : IContractViewModel
+    public class ContractViewModel : IContractViewModel, INotifyPropertyChanged
     {
         // Change the type from IContractRepository to IContractService
         private readonly IContractService contractService;
+
+        // INotifyPropertyChanged implementation
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        // Property to hold the error message for the UI
+        private string generateContractErrorMessage;
+        public string GenerateContractErrorMessage
+        {
+            get => generateContractErrorMessage;
+            set
+            {
+                if (generateContractErrorMessage != value)
+                {
+                    generateContractErrorMessage = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         /// <summary>
         /// Constructor for the ContractViewModel
@@ -376,38 +401,46 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Generate and save a contract asynchronously
         /// </summary>
-        /// <param name="contract" type="Contract">The contract to generate and save</param>
-        /// <param name="contractType" type="PredefinedContractType">The type of the predefined contract</param>
+        /// <param name="contractID" type="long">The ID of the contract to generate and save</param>
         /// <returns The task></returns>
         public async Task GenerateAndSaveContractAsync(long contractID)
         {
-            IContract contract = new Contract();
-            contract.ContractID = contractID;
-            PredefinedContractType contractType = PredefinedContractType.BorrowingContract; // Example contract type
-            // Check if the contract is null.
-            if (contract == null)
+            GenerateContractErrorMessage = null; // Clear previous error message
+
+            try
             {
-                throw new ArgumentNullException(nameof(contract));
+                IContract contract = new Contract();
+                contract.ContractID = contractID;
+                PredefinedContractType contractType = PredefinedContractType.BorrowingContract; // Example contract type
+
+                var predefinedContract = await GetPredefinedContractByPredefineContractTypeAsync(contractType);
+                if (predefinedContract == null)
+                {
+                    GenerateContractErrorMessage = $"Could not load predefined contract template for type {contractType}.";
+                    return;
+                }
+
+                var fieldReplacements = await GetFieldReplacements(contract);
+
+                // Generate the PDF (synchronously) using the generated replacements.
+                var pdfBytes = GenerateContractPdf(contract, predefinedContract, fieldReplacements);
+
+                // Determine the Downloads folder path.
+                string downloadsPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+                string fileName = $"Contract_{contract.ContractID}.pdf";
+                string filePath = System.IO.Path.Combine(downloadsPath, fileName);
+
+                // Save the PDF file asynchronously.
+                await File.WriteAllBytesAsync(filePath, pdfBytes);
+
+                // Open the saved PDF file using Windows.Storage and Windows.System APIs.
+                StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
+                await Launcher.LaunchFileAsync(file);
             }
-
-            var predefinedContract = await GetPredefinedContractByPredefineContractTypeAsync(contractType);
-
-            var fieldReplacements = await GetFieldReplacements(contract);
-
-            // Generate the PDF (synchronously) using the generated replacements.
-            var pdfBytes = GenerateContractPdf(contract, predefinedContract, fieldReplacements);
-
-            // Determine the Downloads folder path.
-            string downloadsPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-            string fileName = $"Contract_{contract.ContractID}.pdf";
-            string filePath = System.IO.Path.Combine(downloadsPath, fileName);
-
-            // Save the PDF file asynchronously.
-            await File.WriteAllBytesAsync(filePath, pdfBytes);
-
-            // Open the saved PDF file using Windows.Storage and Windows.System APIs.
-            StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
-            await Launcher.LaunchFileAsync(file);
+            catch (Exception ex) // Catches exceptions from ContractProxyRepository (e.g., HttpRequestException) and other operations
+            {
+                GenerateContractErrorMessage = $"Something went horribly wrong when trying to generate your contract with id {contractID}";
+            }
         }
     }
 }

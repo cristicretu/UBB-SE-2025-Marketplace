@@ -9,6 +9,11 @@ namespace MarketMinds.Shared.Models
         public DateTime? EndDate { get; set; }
         public double DailyRate { get; set; }
         public bool IsBorrowed { get; set; }
+        public int? BorrowerId { get; set; }
+
+        // Override Price from base class and mark as NotMapped
+        [NotMapped]
+        public override double Price { get; set; }
 
         // [NotMapped]
         // public new int SellerId { get; set; }

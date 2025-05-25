@@ -4,191 +4,263 @@
 
 namespace MarketMinds.ViewModels
 {
+    using System.Windows; // Ensure this namespace is included for Visibility
+    using System;
     using System.ComponentModel;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
-    using Microsoft.UI.Xaml;
 
     /// <summary>
-    /// View model class for managing buyer linkage operations and UI state.
+    /// View model for managing buyer linkage operations and data between two buyers.
     /// </summary>
     public class BuyerLinkageViewModel : IBuyerLinkageViewModel
     {
-        private BuyerLinkageStatus status = BuyerLinkageStatus.Possible;
-        private Visibility requestSyncVsbl = Visibility.Collapsed;
-        private Visibility unsyncVsbl = Visibility.Collapsed;
-        private Visibility acceptVsbl = Visibility.Collapsed;
-        private Visibility declineVsbl = Visibility.Collapsed;
+        private BuyerLinkageStatus status;
 
         /// <summary>
         /// Event that is raised when a property value changes.
         /// </summary>
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the buyer service instance.
+        /// </summary>
         public IBuyerService Service { get; set; } = null!;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the current user's buyer profile.
+        /// </summary>
         public Buyer UserBuyer { get; set; } = null!;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the linked buyer profile.
+        /// </summary>
         public Buyer LinkedBuyer { get; set; } = null!;
 
-        /// <inheritdoc/>
-        public string DisplayName { get; private set; } = null!;
+        /// <summary>
+        /// Gets the display name for the linked buyer.
+        /// </summary>
+        public string DisplayName => $"{LinkedBuyer.FirstName} {LinkedBuyer.LastName}";
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the callback for linkage updates.
+        /// </summary>
         public IOnBuyerLinkageUpdatedCallback LinkageUpdatedCallback { get; set; } = null!;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the status of the linkage between buyers.
+        /// </summary>
         public BuyerLinkageStatus Status
         {
             get => this.status;
             set
             {
-                this.status = value;
-                this.UpdateDisplayName();
-                this.requestSyncVsbl = Visibility.Collapsed;
-                this.unsyncVsbl = Visibility.Collapsed;
-                this.acceptVsbl = Visibility.Collapsed;
-                this.declineVsbl = Visibility.Collapsed;
-                if (this.status == BuyerLinkageStatus.Possible)
+                if (this.status != value)
                 {
-                    this.requestSyncVsbl = Visibility.Visible;
+                    this.status = value;
+                    this.OnPropertyChanged();
+                    this.OnPropertyChanged(nameof(RequestSyncVsbl));
+                    this.OnPropertyChanged(nameof(CancelRequestVsbl));
+                    this.OnPropertyChanged(nameof(AcceptVsbl));
+                    this.OnPropertyChanged(nameof(DeclineVsbl));
+                    this.OnPropertyChanged(nameof(UnsyncVsbl));
                 }
-                else if (this.status == BuyerLinkageStatus.PendingSelf)
-                {
-                    this.acceptVsbl = Visibility.Visible;
-                    this.declineVsbl = Visibility.Visible;
-                }
-                else if (this.status == BuyerLinkageStatus.PendingOther || this.status == BuyerLinkageStatus.Confirmed)
-                {
-                    this.unsyncVsbl = Visibility.Visible;
-                }
-
-                this.OnPropertyChanged(nameof(this.Status));
-                this.OnPropertyChanged(nameof(this.RequestSyncVsbl));
-                this.OnPropertyChanged(nameof(this.UnsyncVsbl));
-                this.OnPropertyChanged(nameof(this.AcceptVsbl));
-                this.OnPropertyChanged(nameof(this.DeclineVsbl));
             }
         }
 
-        /// <inheritdoc/>
-        public Visibility RequestSyncVsbl
-        {
-            get
-            {
-                return this.requestSyncVsbl;
-            }
-        }
+        /// <summary>
+        /// Gets the visibility state of the request sync button.
+        /// </summary>
+        public System.Windows.Visibility RequestSyncVsbl => Status == BuyerLinkageStatus.Possible
+            ? System.Windows.Visibility.Visible
+            : System.Windows.Visibility.Collapsed;
 
-        /// <inheritdoc/>
-        public Visibility UnsyncVsbl
-        {
-            get
-            {
-                return this.unsyncVsbl;
-            }
-        }
+        /// <summary>
+        /// Gets the visibility state of the cancel request button.
+        /// </summary>
+        public System.Windows.Visibility CancelRequestVsbl => Status == BuyerLinkageStatus.PendingOther
+            ? System.Windows.Visibility.Visible
+            : System.Windows.Visibility.Collapsed;
 
-        /// <inheritdoc/>
-        public Visibility AcceptVsbl
-        {
-            get
-            {
-                return this.acceptVsbl;
-            }
-        }
+        /// <summary>
+        /// Gets the visibility state of the accept button.
+        /// </summary>
+        public System.Windows.Visibility AcceptVsbl => Status == BuyerLinkageStatus.PendingSelf
+            ? System.Windows.Visibility.Visible
+            : System.Windows.Visibility.Collapsed;
 
-        /// <inheritdoc/>
-        public Visibility DeclineVsbl
-        {
-            get
-            {
-                return this.declineVsbl;
-            }
-        }
+        /// <summary>
+        /// Gets the visibility state of the decline button.
+        /// </summary>
+        public System.Windows.Visibility DeclineVsbl => Status == BuyerLinkageStatus.PendingSelf
+            ? System.Windows.Visibility.Visible
+            : System.Windows.Visibility.Collapsed;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the visibility state of the unsync button.
+        /// </summary>
+        public System.Windows.Visibility UnsyncVsbl => Status == BuyerLinkageStatus.Confirmed
+            ? System.Windows.Visibility.Visible
+            : System.Windows.Visibility.Collapsed;
+
+        /// <summary>
+        /// Gets the WinUI visibility state of the request sync button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.RequestSyncVsbl => Status == BuyerLinkageStatus.Possible
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
+
+        /// <summary>
+        /// Gets the WinUI visibility state of the cancel request button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.CancelRequestVsbl => Status == BuyerLinkageStatus.PendingOther
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
+
+        /// <summary>
+        /// Gets the WinUI visibility state of the accept button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.AcceptVsbl => Status == BuyerLinkageStatus.PendingSelf
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
+
+        /// <summary>
+        /// Gets the WinUI visibility state of the decline button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.DeclineVsbl => Status == BuyerLinkageStatus.PendingSelf
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
+
+        /// <summary>
+        /// Gets the WinUI visibility state of the unsync button.
+        /// </summary>
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.UnsyncVsbl => Status == BuyerLinkageStatus.Confirmed
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
+
+        /// <summary>
+        /// Requests synchronization with the linked buyer.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task RequestSync()
         {
-            await this.Service.CreateLinkageRequest(this.UserBuyer, this.LinkedBuyer);
-            this.Status = BuyerLinkageStatus.PendingOther;
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[RequestSync] Creating linkage request from {UserBuyer.Id} to {LinkedBuyer.Id}");
+                await Service.CreateLinkageRequest(UserBuyer, LinkedBuyer);
+                Status = BuyerLinkageStatus.PendingOther;
+                await NotifyLinkageUpdated();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[RequestSync] Error: {ex.Message}");
+                throw;
+            }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Accepts a synchronization request.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task Accept()
         {
-            await this.Service.AcceptLinkageRequest(this.UserBuyer, this.LinkedBuyer);
-            this.Status = BuyerLinkageStatus.Confirmed;
-            await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[Accept] Accepting linkage request from {LinkedBuyer.Id} for {UserBuyer.Id}");
+                await Service.CreateLinkageRequest(UserBuyer, LinkedBuyer);
+                await Service.AcceptLinkageRequest(LinkedBuyer, UserBuyer);
+                Status = BuyerLinkageStatus.Confirmed;
+                await NotifyLinkageUpdated();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Accept] Error: {ex.Message}");
+                throw;
+            }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Declines a synchronization request.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task Decline()
         {
-            if (this.status == BuyerLinkageStatus.PendingSelf)
+            try
             {
-                await this.Service.RefuseLinkageRequest(this.UserBuyer, this.LinkedBuyer);
-                await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
+                System.Diagnostics.Debug.WriteLine($"[Decline] Refusing linkage request from {LinkedBuyer.Id} for {UserBuyer.Id}");
+                await Service.RefuseLinkageRequest(UserBuyer, LinkedBuyer);
+                Status = BuyerLinkageStatus.Possible;
+                await NotifyLinkageUpdated();
             }
-
-            this.Status = BuyerLinkageStatus.Possible;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Decline] Error: {ex.Message}");
+                throw;
+            }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Cancels a synchronization request.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task Cancel()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[Cancel] Canceling linkage request from {UserBuyer.Id} to {LinkedBuyer.Id}");
+                await Service.CancelLinkageRequest(UserBuyer, LinkedBuyer);
+                Status = BuyerLinkageStatus.Possible;
+                await NotifyLinkageUpdated();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Cancel] Error: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Unsynchronizes with the linked buyer.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task Unsync()
         {
-            if (this.status == BuyerLinkageStatus.Confirmed)
+            try
             {
-                await this.Service.BreakLinkage(this.UserBuyer, this.LinkedBuyer);
+                System.Diagnostics.Debug.WriteLine($"[Unsync] Breaking linkage between {UserBuyer.Id} and {LinkedBuyer.Id}");
+                await Service.BreakLinkage(UserBuyer, LinkedBuyer);
+                Status = BuyerLinkageStatus.Possible;
+                await NotifyLinkageUpdated();
             }
-
-            if (this.status == BuyerLinkageStatus.PendingOther)
+            catch (Exception ex)
             {
-                await this.Service.CancelLinkageRequest(this.UserBuyer, this.LinkedBuyer);
+                System.Diagnostics.Debug.WriteLine($"[Unsync] Error: {ex.Message}");
+                throw;
             }
-
-            await this.LinkageUpdatedCallback.OnBuyerLinkageUpdated();
-            this.Status = BuyerLinkageStatus.Possible;
         }
 
         /// <summary>
         /// Raises the PropertyChanged event.
         /// </summary>
-        /// <param name="propertyName">The name of the property that changed.</param>
-        protected void OnPropertyChanged(string propertyName)
+        /// <param name="propertyName">The name of the property that changed. This parameter is optional
+        /// and can be provided automatically when invoked from a property.</param>
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         /// <summary>
-        /// Masks a name by keeping only the first letter visible.
+        /// Notifies that a linkage has been updated.
         /// </summary>
-        /// <param name="name">The name to mask.</param>
-        /// <returns>The masked name with only the first letter visible.</returns>
-        private static string KeepFirstLetter(string name)
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task NotifyLinkageUpdated()
         {
-            return name[0].ToString().ToUpper() + new string('*', name.Length - 1);
-        }
-
-        /// <summary>
-        /// Updates the display name based on the current linkage status.
-        /// </summary>
-        private void UpdateDisplayName()
-        {
-            if (this.status == BuyerLinkageStatus.Possible || this.status == BuyerLinkageStatus.PendingOther)
+            if (LinkageUpdatedCallback != null)
             {
-                this.DisplayName = KeepFirstLetter(this.LinkedBuyer.FirstName) + " " + KeepFirstLetter(this.LinkedBuyer.LastName);
+                await LinkageUpdatedCallback.OnBuyerLinkageUpdated();
             }
-            else
-            {
-                this.DisplayName = this.LinkedBuyer.FirstName + " " + this.LinkedBuyer.LastName;
-            }
-
-            this.OnPropertyChanged(nameof(this.DisplayName));
         }
     }
 }

@@ -33,12 +33,12 @@ namespace MarketMinds.Views
             LeftArrow.Visibility = showingFirstPage ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private void LogOutButton_Click(object sender, RoutedEventArgs e)
         {
             App.ResetLoginState();
-            var loginWindow = new LoginWindow();
+            App.LoginWindow = new LoginWindow();
             this.Close();
-            loginWindow.Activate();
+            App.LoginWindow.Activate();
         }
     }
 }

@@ -25,9 +25,9 @@ namespace MarketMinds.Shared.Services.MessageService
                 throw new ArgumentException("Conversation ID must be greater than zero.", nameof(createMessageDto.ConversationId));
             }
 
-            if (createMessageDto.UserId <= 0)
+            if (createMessageDto.UserId < 0)
             {
-                throw new ArgumentException("User ID must be greater than zero.", nameof(createMessageDto.UserId));
+                throw new ArgumentException("User ID must be greater than or equal to zero.", nameof(createMessageDto.UserId));
             }
 
             if (string.IsNullOrWhiteSpace(createMessageDto.Content))

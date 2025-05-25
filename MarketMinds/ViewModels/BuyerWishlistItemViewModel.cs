@@ -18,8 +18,13 @@ namespace MarketMinds.ViewModels
         public string Title { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public string Description { get; set; } = string.Empty;
-        public string ImageSource { get; set; } = string.Empty;
-        public bool OwnItem { get; set; } = true;
+        private string imageSource = "ms-appx:///Assets/Products/default-product.png";
+        public string ImageSource
+        {
+            get => imageSource;
+            set => imageSource = string.IsNullOrEmpty(value) ? "ms-appx:///Assets/Products/default-product.png" : value;
+        }
+        public bool OwnItem { get; set; }
         public IOnBuyerWishlistItemRemoveCallback RemoveCallback { get; set; } = null!;
         public ICommand AddToCartCommand { get; }
 
@@ -32,15 +37,23 @@ namespace MarketMinds.ViewModels
             {
                 if (product is Product typedProduct)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[AddToCart] Attempting to add product ID: {typedProduct.Id}, Title: {typedProduct.Title}");
                     var shoppingCartViewModel = new ShoppingCartViewModel(new ShoppingCartService(), buyerId: UserSession.CurrentUserId ?? 1);
                     await shoppingCartViewModel.AddToCartAsync(typedProduct, 1);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[AddToCart] Product is null or not of type Product");
                 }
             });
         }
 
         public async void Remove()
         {
-            await this.RemoveCallback.OnBuyerWishlistItemRemove(this.ProductId);
+            if (OwnItem)
+            {
+                await this.RemoveCallback.OnBuyerWishlistItemRemove(this.ProductId);
+            }
         }
     }
 }
