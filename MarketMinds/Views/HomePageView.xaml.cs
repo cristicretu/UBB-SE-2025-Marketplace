@@ -101,7 +101,7 @@ namespace MarketMinds.Views
                         // Show wishlist page in frame
                         break;
                     case "Cart":
-                        // Show cart page in frame
+                        ContentFrame.Navigate(typeof(MyCartView));
                         break;
                     case "MyAccount":
                         // This is handled in the ProfileMenuItem_Click method because it has a submenu of buttons
