@@ -65,6 +65,52 @@
             <div class="p-8">
                 @if (canEdit)
                 {
+                    <!-- Error Messages -->
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-red-800 font-medium">@TempData["ErrorMessage"]</p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-red-800 font-medium mb-2">Please correct the following errors:</p>
+                                    <ul class="text-red-700 text-sm list-disc list-inside space-y-1">
+                                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                        {
+                                            <li>@error.ErrorMessage</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Success Messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-green-800 font-medium">@TempData["SuccessMessage"]</p>
+                            </div>
+                        </div>
+                    }
+
                     <form asp-action="Update" method="post" class="space-y-8">
                         <input type="hidden" asp-for="BuyerId" />
 
@@ -526,8 +572,93 @@
             $('form[action*="Update"]').on('submit', function(e) {
                 console.log("Profile form submission started");
                 
+                // Remove any existing client-side error messages
+                $('#clientValidationError').remove();
+                
+                // Client-side validation - check all required fields
+                var validationErrors = [];
+                var hasErrors = false;
+
+                // Check personal information fields
+                if (!$("#FirstName").val().trim()) {
+                    validationErrors.push("First name is required");
+                    hasErrors = true;
+                }
+                if (!$("#LastName").val().trim()) {
+                    validationErrors.push("Last name is required");
+                    hasErrors = true;
+                }
+                if (!$("#PhoneNumber").val().trim()) {
+                    validationErrors.push("Phone number is required");
+                    hasErrors = true;
+                }
+
+                // Check billing address fields
+                if (!$("#BillingStreet").val().trim()) {
+                    validationErrors.push("Billing street address is required");
+                    hasErrors = true;
+                }
+                if (!$("#BillingCity").val().trim()) {
+                    validationErrors.push("Billing city is required");
+                    hasErrors = true;
+                }
+                if (!$("#BillingCountry").val().trim()) {
+                    validationErrors.push("Billing country is required");
+                    hasErrors = true;
+                }
+                if (!$("#BillingPostalCode").val().trim()) {
+                    validationErrors.push("Billing postal code is required");
+                    hasErrors = true;
+                }
+
                 var isChecked = $("#useSameAddress").is(":checked");
                 console.log("UseSameAddress checkbox:", isChecked);
+                
+                // Check shipping address fields if not using same address
+                if (!isChecked) {
+                    if (!$("#ShippingStreet").val().trim()) {
+                        validationErrors.push("Shipping street address is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                    if (!$("#ShippingCity").val().trim()) {
+                        validationErrors.push("Shipping city is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                    if (!$("#ShippingCountry").val().trim()) {
+                        validationErrors.push("Shipping country is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                    if (!$("#ShippingPostalCode").val().trim()) {
+                        validationErrors.push("Shipping postal code is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                }
+
+                // If there are validation errors, prevent submission and show in-page error
+                if (hasErrors) {
+                    e.preventDefault();
+                    
+                    // Create error message HTML
+                    var errorHtml = '<div id="clientValidationError" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">' +
+                        '<div class="flex items-start">' +
+                        '<svg class="w-5 h-5 text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>' +
+                        '</svg>' +
+                        '<div>' +
+                        '<p class="text-red-800 font-medium">All fields must be completed before updating your profile.</p>' +
+                        '</div></div></div>';
+                    
+                    // Insert error message at the top of the form
+                    $('form[action*="Update"]').prepend(errorHtml);
+                    
+                    // Scroll to top to show the error
+                    $('html, body').animate({
+                        scrollTop: $('#clientValidationError').offset().top - 20
+                    }, 500);
+                    
+                    console.log("Form submission prevented due to validation errors:", validationErrors);
+                    return false;
+                }
                 
                 if (isChecked) {
                     console.log("Checkbox checked - ensuring shipping address matches billing");

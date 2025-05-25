@@ -284,6 +284,91 @@ namespace WebMarketplace.Controllers
                     _logger.LogError("DEBUG: Update() - Model is NULL!");
                     return BadRequest("Model is null");
                 }
+
+                // Comprehensive validation - all fields must be filled
+                var validationErrors = new List<string>();
+
+                // Personal Information validation
+                if (string.IsNullOrWhiteSpace(model.FirstName))
+                {
+                    validationErrors.Add("First name is required.");
+                    ModelState.AddModelError("FirstName", "First name is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.LastName))
+                {
+                    validationErrors.Add("Last name is required.");
+                    ModelState.AddModelError("LastName", "Last name is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.PhoneNumber))
+                {
+                    validationErrors.Add("Phone number is required.");
+                    ModelState.AddModelError("PhoneNumber", "Phone number is required.");
+                }
+
+                // Billing Address validation
+                if (string.IsNullOrWhiteSpace(model.BillingStreet))
+                {
+                    validationErrors.Add("Billing street address is required.");
+                    ModelState.AddModelError("BillingStreet", "Billing street address is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.BillingCity))
+                {
+                    validationErrors.Add("Billing city is required.");
+                    ModelState.AddModelError("BillingCity", "Billing city is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.BillingCountry))
+                {
+                    validationErrors.Add("Billing country is required.");
+                    ModelState.AddModelError("BillingCountry", "Billing country is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.BillingPostalCode))
+                {
+                    validationErrors.Add("Billing postal code is required.");
+                    ModelState.AddModelError("BillingPostalCode", "Billing postal code is required.");
+                }
+
+                // Shipping Address validation (only if not using same address)
+                if (!model.UseSameAddress)
+                {
+                    if (string.IsNullOrWhiteSpace(model.ShippingStreet))
+                    {
+                        validationErrors.Add("Shipping street address is required when not using the same as billing address.");
+                        ModelState.AddModelError("ShippingStreet", "Shipping street address is required.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(model.ShippingCity))
+                    {
+                        validationErrors.Add("Shipping city is required when not using the same as billing address.");
+                        ModelState.AddModelError("ShippingCity", "Shipping city is required.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(model.ShippingCountry))
+                    {
+                        validationErrors.Add("Shipping country is required when not using the same as billing address.");
+                        ModelState.AddModelError("ShippingCountry", "Shipping country is required.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(model.ShippingPostalCode))
+                    {
+                        validationErrors.Add("Shipping postal code is required when not using the same as billing address.");
+                        ModelState.AddModelError("ShippingPostalCode", "Shipping postal code is required.");
+                    }
+                }
+
+                // If there are validation errors, return to the form
+                if (validationErrors.Any())
+                {
+                    _logger.LogWarning("UPDATE: Validation failed with {Count} errors: {Errors}", 
+                        validationErrors.Count, string.Join("; ", validationErrors));
+                    
+                    TempData["ErrorMessage"] = "All fields are required. Please fill in all the information before updating your profile.";
+                    return View("Index", model);
+                }
                 
                 // Log all received model data in detail
                 _logger.LogInformation("DEBUG: Update() - Received model data:");

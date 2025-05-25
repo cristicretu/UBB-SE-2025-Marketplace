@@ -115,7 +115,7 @@
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label for="PhoneNumber" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Phone Number
+                                        Phone Number *
                                     </label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -132,7 +132,7 @@
                                 
                                 <div>
                                     <label for="Address" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Address
+                                        Address *
                                     </label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -161,7 +161,7 @@
                             <div class="space-y-6">
                                 <div>
                                     <label for="StoreName" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Store Name
+                                        Store Name *
                                     </label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -178,7 +178,7 @@
                                 
                                 <div>
                                     <label for="Description" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Store Description
+                                        Store Description *
                                     </label>
                                     <textarea asp-for="Description" rows="4"
                                               class="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none" 
@@ -326,6 +326,92 @@
                     successModal.classList.add('hidden');
                 }
             });
+
+            // Client-side validation for form submission
+            const form = document.querySelector('form[method="post"]');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log("Form submission started");
+                    
+                    // Remove any existing client-side error messages
+                    const existingError = document.getElementById('clientValidationError');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    // Client-side validation - check all required fields
+                    const validationErrors = [];
+                    let hasErrors = false;
+
+                    // Get form field values
+                    const username = document.getElementById('Username').value.trim();
+                    const storeName = document.getElementById('StoreName').value.trim();
+                    const email = document.getElementById('Email').value.trim();
+                    const phoneNumber = document.getElementById('PhoneNumber').value.trim();
+                    const address = document.getElementById('Address').value.trim();
+                    const description = document.getElementById('Description').value.trim();
+
+                    // Check all required fields
+                    if (!username) {
+                        validationErrors.push("Username is required");
+                        hasErrors = true;
+                    }
+                    if (!storeName) {
+                        validationErrors.push("Store name is required");
+                        hasErrors = true;
+                    }
+                    if (!email) {
+                        validationErrors.push("Email is required");
+                        hasErrors = true;
+                    } else if (!email.includes('@@')) {
+                        validationErrors.push("Please enter a valid email address");
+                        hasErrors = true;
+                    }
+                    if (!phoneNumber) {
+                        validationErrors.push("Phone number is required");
+                        hasErrors = true;
+                    }
+                    if (!address) {
+                        validationErrors.push("Address is required");
+                        hasErrors = true;
+                    }
+                    if (!description) {
+                        validationErrors.push("Store description is required");
+                        hasErrors = true;
+                    }
+
+                    // If there are validation errors, prevent submission and show in-page error
+                    if (hasErrors) {
+                        e.preventDefault();
+                        
+                        // Create error message HTML
+                        const errorDiv = document.createElement('div');
+                        errorDiv.id = 'clientValidationError';
+                        errorDiv.className = 'bg-red-50 border border-red-200 rounded-lg p-4 mb-6';
+                        
+                        let errorHtml = '<div class="flex items-start">' +
+                            '<svg class="w-5 h-5 text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>' +
+                            '</svg>' +
+                            '<div>' +
+                            '<p class="text-red-800 font-medium">All fields must be completed before updating your profile.</p>' +
+                            '</div></div>';
+                        
+                        errorDiv.innerHTML = errorHtml;
+                        
+                        // Insert error message at the top of the form
+                        form.insertBefore(errorDiv, form.firstChild);
+                        
+                        // Scroll to top to show the error
+                        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        console.log("Form submission prevented due to validation errors:", validationErrors);
+                        return false;
+                    }
+
+                    console.log("All validation passed, allowing form submission");
+                });
+            }
         });
     </script>
 }
