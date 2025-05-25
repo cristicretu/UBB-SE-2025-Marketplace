@@ -168,6 +168,7 @@ builder.Services.AddTransient<INotificationContentService, NotificationContentSe
 
 // Add waitlist and notification services
 builder.Services.AddTransient<IWaitlistService, WaitlistService>();
+builder.Services.AddTransient<INotificationService, NotificationService>();
 
 // Merged: Register all unique services from both branches
 builder.Services.AddTransient<IOrderService, OrderService>();

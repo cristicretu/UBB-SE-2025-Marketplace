@@ -1,3 +1,4 @@
+@using MarketMinds.Shared.Models
 @model List<MarketMinds.Shared.Models.Notification>
 
 <div class="notifications-dropdown-content rounded-md overflow-hidden">
@@ -23,7 +24,7 @@
         {
             <button id="markAllAsReadBtn" 
                     class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 hover:underline focus:outline-none">
-                Mark all read
+                Mark all as read
             </button>
         }
     </div>
@@ -35,26 +36,131 @@
             <div class="divide-y divide-gray-100">
                 @foreach (var notification in Model.Take(5)) // Limit to recent 5 notifications
                 {
-                    <div class="p-4 hover:bg-gray-50 transition-colors duration-150 @(notification.IsRead ? "" : "bg-blue-50 border-l-2 border-l-blue-500")">
+                    <div class="p-4 hover:bg-gray-50 transition-colors duration-150 @(notification.IsRead ? "" : "bg-blue-50 border-l-2 border-l-blue-500")" data-notification-id="@notification.NotificationID">
                         <div class="flex items-start space-x-3">
                             <!-- Notification Icon -->
                             <div class="flex-shrink-0 mt-0.5">
-                                @if (!notification.IsRead)
-                                {
-                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                @{
+                                    string iconClass = "text-blue-500";
+                                    string iconPath = "";
+                                    
+                                    switch (notification.Category)
+                                    {
+                                        case NotificationCategory.ORDER_SHIPPING_PROGRESS:
+                                            iconClass = "text-purple-500";
+                                            iconPath = "M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4";
+                                            break;
+                                        case NotificationCategory.PAYMENT_CONFIRMATION:
+                                            iconClass = "text-green-500";
+                                            iconPath = "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z";
+                                            break;
+                                        case NotificationCategory.CONTRACT_EXPIRATION:
+                                            iconClass = "text-yellow-500";
+                                            iconPath = "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z";
+                                            break;
+                                        case NotificationCategory.PRODUCT_AVAILABLE:
+                                            iconClass = "text-blue-500";
+                                            iconPath = "M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 5z";
+                                            break;
+                                        case NotificationCategory.PRODUCT_REMOVED:
+                                            iconClass = "text-red-500";
+                                            iconPath = "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16";
+                                            break;
+                                        case NotificationCategory.OUTBIDDED:
+                                            iconClass = "text-pink-500";
+                                            iconPath = "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6";
+                                            break;
+                                        default:
+                                            iconPath = "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9";
+                                            break;
+                                    }
                                 }
-                                else
-                                {
-                                    <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
-                                }
+                                
+                                <div class="w-8 h-8 @(notification.IsRead ? "bg-gray-100" : "bg-blue-50") rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 @iconClass" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="@iconPath" />
+                                    </svg>
+                                </div>
                             </div>
                             
                             <!-- Notification Content -->
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm text-gray-900 @(notification.IsRead ? "" : "font-semibold")">
-                                    @notification.Content
+                                <!-- Title based on notification type -->
+                                <p class="text-sm font-medium text-gray-900 @(notification.IsRead ? "" : "font-semibold")">
+                                    @notification.Title
                                 </p>
-                                <div class="mt-1 flex items-center justify-between">
+                                
+                                <!-- Content with formatted information -->
+                                <p class="text-sm text-gray-600 mt-1">
+                                    @{                                        
+                                        // Extract and format specific IDs from different notification types
+                                        if (notification is OrderShippingProgressNotification orderShipping)
+                                        {
+                                            <span>
+                                                Order <span class="font-medium text-gray-900">#@orderShipping.OrderID</span> - 
+                                                <span class="@(orderShipping.ShippingState == "Delivered" ? "text-green-600" : "text-blue-600") font-medium">@orderShipping.ShippingState</span>
+                                                <span class="block text-xs text-gray-500 mt-1">Expected delivery: @orderShipping.DeliveryDate.ToString("MMM dd, yyyy")</span>
+                                            </span>
+                                        }
+                                        else if (notification is PaymentConfirmationNotification paymentConfirmation)
+                                        {
+                                            <span>
+                                                Your payment for order <span class="font-medium text-gray-900">#@paymentConfirmation.OrderID</span> has been confirmed.
+                                                <span class="block text-xs text-gray-500 mt-1">Product ID: @paymentConfirmation.ProductID</span>
+                                            </span>
+                                        }
+                                        else if (notification is ContractExpirationNotification contractExpiration)
+                                        {
+                                            <span>
+                                                Contract <span class="font-medium text-gray-900">#@contractExpiration.ContractID</span> will expire on 
+                                                <span class="font-medium text-yellow-600">@contractExpiration.ExpirationDate.ToString("MMM dd, yyyy")</span>
+                                            </span>
+                                        }
+                                        else if (notification is ProductAvailableNotification productAvailable)
+                                        {
+                                            <span>
+                                                Product <span class="font-medium text-gray-900">#@productAvailable.ProductID</span> is now back in stock!
+                                            </span>
+                                        }
+                                        else if (notification is ProductRemovedNotification productRemoved)
+                                        {
+                                            <span>
+                                                Product <span class="font-medium text-gray-900">#@productRemoved.ProductID</span> has been removed from the marketplace.
+                                            </span>
+                                        }
+                                        else if (notification is OutbiddedNotification outbidded)
+                                        {
+                                            <span>
+                                                You've been outbid on product <span class="font-medium text-gray-900">#@outbidded.ProductID</span>. Place a new bid now!
+                                            </span>
+                                        }
+                                        else if (notification is ContractRenewalRequestNotification contractRenewal)
+                                        {
+                                            <span>
+                                                Contract renewal request for contract <span class="font-medium text-gray-900">#@contractRenewal.ContractID</span>.
+                                            </span>
+                                        }
+                                        else if (notification is ContractRenewalAnswerNotification contractAnswer)
+                                        {
+                                            <span>
+                                                Contract <span class="font-medium text-gray-900">#@contractAnswer.ContractID</span> renewal request has been 
+                                                <span class="@(contractAnswer.IsAccepted ? "text-green-600" : "text-red-600") font-medium">@(contractAnswer.IsAccepted ? "accepted" : "rejected")</span>.
+                                            </span>
+                                        }
+                                        else if (notification is ContractRenewalWaitlistNotification waitlist)
+                                        {
+                                            <span>
+                                                A user has renewed their contract for product <span class="font-medium text-gray-900">#@waitlist.ProductID</span> that you are on the waitlist for.
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span>@notification.Content</span>
+                                        }
+                                    }
+                                </p>
+                                
+                                <div class="mt-2 flex items-center justify-between">
                                     <span class="text-xs text-gray-500">
                                         @{
                                             var timeSpan = DateTime.Now - notification.Timestamp;
@@ -77,10 +183,11 @@
                                     <!-- Individual notification actions -->
                                     @if (!notification.IsRead)
                                     {
-                                        <button class="text-xs text-blue-600 hover:text-blue-800 hover:underline opacity-0 group-hover:opacity-100 transition-opacity duration-200 focus:outline-none"
-                                        onclick="markNotificationAsRead(@notification.NotificationID)">
-                                    Mark read
-                                </button>
+                                        <button class="text-xs text-blue-600 hover:text-blue-800 hover:underline focus:outline-none"
+                                                onclick="markNotificationAsRead(@notification.NotificationID)"
+                                                data-mark-read="true">
+                                            Mark as read
+                                        </button>
                                     }
                                 </div>
                             </div>
@@ -122,10 +229,12 @@
     @if (Model.Any())
     {
         <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-center items-center">
-            <button id="clearAllNotificationsBtn" onclick="clearAllNotifications()" 
+            <button id="clearAllNotificationsBtn" 
                     class="text-xs text-red-600 hover:text-red-800 transition-colors duration-200 hover:underline focus:outline-none">
                 Clear all notifications
             </button>
         </div>
     }
 </div>
+
+<!-- JavaScript functions for notifications have been moved to _Layout.cshtml -->
