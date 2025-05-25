@@ -28,15 +28,15 @@ namespace MarketMinds.Views
         public event PropertyChangedEventHandler PropertyChanged;
 
         // view models with backing fields for debugging
-        private BuyProductsViewModel _buyProductsViewModel;
+        private BuyProductsViewModel buyProductsViewModel;
         public BuyProductsViewModel BuyProductsViewModel
         {
-            get => _buyProductsViewModel;
+            get => buyProductsViewModel;
             set
             {
-                Debug.WriteLine($"BuyProductsViewModel setter called. Old: {_buyProductsViewModel?.GetType().Name ?? "NULL"}, New: {value?.GetType().Name ?? "NULL"}");
+                Debug.WriteLine($"BuyProductsViewModel setter called. Old: {buyProductsViewModel?.GetType().Name ?? "NULL"}, New: {value?.GetType().Name ?? "NULL"}");
                 Debug.WriteLine($"Setter called from: {Environment.StackTrace}");
-                _buyProductsViewModel = value;
+                buyProductsViewModel = value;
             }
         }
 
@@ -58,13 +58,13 @@ namespace MarketMinds.Views
         public int ActiveTabIndex
         {
             get => activeTabIndex;
-            private set 
+            private set
             {
                 if (SetProperty(ref activeTabIndex, value))
                 {
                     // Update pagination visibility when tab changes
                     OnPropertyChanged(nameof(ShowPaginationForCurrentTab));
-                    
+
                     // Update all computed visibility properties
                     OnPropertyChanged(nameof(ShowBuyLoadingIndicator));
                     OnPropertyChanged(nameof(ShowAuctionLoadingIndicator));
@@ -134,7 +134,7 @@ namespace MarketMinds.Views
         public int ItemsPerPage
         {
             get => itemsPerPage;
-            private set 
+            private set
             {
                 if (SetProperty(ref itemsPerPage, value) && !isInitializing)
                 {
@@ -169,7 +169,7 @@ namespace MarketMinds.Views
         public bool IsLoading
         {
             get => isLoading;
-            private set 
+            private set
             {
                 if (SetProperty(ref isLoading, value))
                 {
@@ -182,7 +182,7 @@ namespace MarketMinds.Views
         public bool ShowEmptyState
         {
             get => showEmptyState;
-            private set 
+            private set
             {
                 if (SetProperty(ref showEmptyState, value))
                 {
@@ -195,7 +195,7 @@ namespace MarketMinds.Views
         public bool IsAuctionLoading
         {
             get => isAuctionLoading;
-            private set 
+            private set
             {
                 if (SetProperty(ref isAuctionLoading, value))
                 {
@@ -208,7 +208,7 @@ namespace MarketMinds.Views
         public bool ShowAuctionEmptyState
         {
             get => showAuctionEmptyState;
-            private set 
+            private set
             {
                 if (SetProperty(ref showAuctionEmptyState, value))
                 {
@@ -221,7 +221,7 @@ namespace MarketMinds.Views
         public bool IsBorrowLoading
         {
             get => isBorrowLoading;
-            private set 
+            private set
             {
                 if (SetProperty(ref isBorrowLoading, value))
                 {
@@ -234,7 +234,7 @@ namespace MarketMinds.Views
         public bool ShowBorrowEmptyState
         {
             get => showBorrowEmptyState;
-            private set 
+            private set
             {
                 if (SetProperty(ref showBorrowEmptyState, value))
                 {
@@ -252,7 +252,7 @@ namespace MarketMinds.Views
             this.AuctionProductsViewModel = App.AuctionProductsViewModel ?? throw new InvalidOperationException("AuctionProductsViewModel not initialized");
             this.BorrowProductsViewModel = App.BorrowProductsViewModel ?? throw new InvalidOperationException("BorrowProductsViewModel not initialized");
             this.BuyerWishlistItemViewModel = App.BuyerWishlistItemViewModel ?? throw new InvalidOperationException("BuyerWishlistItemViewModel not initialized");
-            
+
             this.BuyProductsCollection = new ObservableCollection<BuyProduct>();
             this.AuctionProductsCollection = new ObservableCollection<AuctionProduct>();
             this.BorrowProductsCollection = new ObservableCollection<BorrowProduct>();
@@ -274,12 +274,12 @@ namespace MarketMinds.Views
                 // Alex: I ran with debug and found out that this function is called before the constructor is finished, so I added a delay to the retry, 100% success rate
                 const int maxRetries = 5;
                 int retryCount = 0;
-                
+
                 while (this.BuyProductsViewModel == null && retryCount < maxRetries)
                 {
                     // Try to get it again
                     this.BuyProductsViewModel = App.BuyProductsViewModel;
-                    
+
                     if (this.BuyProductsViewModel == null)
                     {
                         retryCount++;
@@ -290,7 +290,7 @@ namespace MarketMinds.Views
                         Debug.WriteLine($"Successfully got ViewModel on retry {retryCount + 1}");
                     }
                 }
-                
+
                 if (this.BuyProductsViewModel == null)
                 {
                     Debug.WriteLine("BuyProductsViewModel is still null after all retry attempts");
@@ -303,10 +303,10 @@ namespace MarketMinds.Views
 
                 // Get total count first
                 var totalCount = await Task.Run(() => this.BuyProductsViewModel.GetProductCount());
-                
+
                 // Calculate total pages
                 TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
-                
+
                 // Ensure current page is valid
                 if (CurrentPageIndex >= TotalPages)
                 {
@@ -329,7 +329,7 @@ namespace MarketMinds.Views
 
                 // Update empty state and pagination controls visibility
                 ShowEmptyState = BuyProductsCollection.Count == 0 && totalCount == 0;
-                
+
                 Debug.WriteLine($"BuyProductsCollection: {BuyProductsCollection.Count}, Total: {totalCount}, Page: {CurrentPageIndex + 1}/{TotalPages}");
             }
             catch (Exception ex)
@@ -383,10 +383,10 @@ namespace MarketMinds.Views
 
                 // Get total count first
                 var totalCount = await this.AuctionProductsViewModel.GetProductCountAsync();
-                
+
                 // Calculate total pages
                 TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
-                
+
                 // Ensure current page is valid
                 if (CurrentPageIndex >= TotalPages)
                 {
@@ -438,10 +438,10 @@ namespace MarketMinds.Views
 
                 // Get total count first
                 var totalCount = await this.BorrowProductsViewModel.GetProductCountAsync();
-                
+
                 // Calculate total pages
                 TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
-                
+
                 // Ensure current page is valid
                 if (CurrentPageIndex >= TotalPages)
                 {
@@ -509,10 +509,10 @@ namespace MarketMinds.Views
         {
             // Update active tab index
             ActiveTabIndex = ProductsPivot.SelectedIndex;
-            
+
             // Reset pagination when switching tabs
             CurrentPageIndex = 0;
-            
+
             // Always load data when switching tabs to ensure fresh data with current pagination settings
             switch (ProductsPivot.SelectedIndex)
             {

@@ -31,12 +31,117 @@
         <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
         <converters:DateTimeToShortDateConverter x:Key="DateTimeToShortDateConverter"/>
         
+        <!-- Custom GridView Item Container Style with rounded corners -->
+        <Style x:Key="RoundedGridViewItemContainerStyle" TargetType="GridViewItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <Border x:Name="ContentBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="ContentPresenter"
+                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentBorder.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentBorder.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Selected">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentBorder.BorderBrush" Value="{ThemeResource SystemAccentColor}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOverSelected">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentBorder.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}"/>
+                                            <Setter Target="ContentBorder.BorderBrush" Value="{ThemeResource SystemAccentColor}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="PressedSelected">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentBorder.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
+                                            <Setter Target="ContentBorder.BorderBrush" Value="{ThemeResource SystemAccentColor}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- Common Styles for Product Cards -->
+        <Style x:Key="ProductCardBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Width" Value="280"/>
+            <Setter Property="Margin" Value="8"/>
+        </Style>
+        
+        <Style x:Key="ProductImageBorderStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="8,8,0,0"/>
+            <Setter Property="Background" Value="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}"/>
+        </Style>
+        
+        <Style x:Key="ProductTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MaxLines" Value="1"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        </Style>
+        
+        <Style x:Key="ProductMetadataStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </Style>
+        
+        <Style x:Key="ProductPriceStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{ThemeResource SystemAccentColor}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        
+        <Style x:Key="ProductActionButtonStyle" TargetType="Button">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="{ThemeResource SystemAccentColor}"/>
+            <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        
+        <!-- Common GridView Style -->
+        <Style x:Key="ProductGridViewStyle" TargetType="GridView">
+            <Setter Property="ItemContainerStyle" Value="{StaticResource RoundedGridViewItemContainerStyle}"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="IsItemClickEnabled" Value="True"/>
+            <Setter Property="Padding" Value="16"/>
+        </Style>
+        
         <DataTemplate x:Key="BuyProductCard" x:DataType="models:BuyProduct">
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="0"
-                    CornerRadius="8"
-                    Width="280"
+            <Border Style="{StaticResource ProductCardBorderStyle}"
                     MinHeight="300">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -46,9 +151,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Product Image -->
-                    <Border Grid.Row="0" 
-                            CornerRadius="8,8,0,0"
-                            Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}">
+                    <Border Grid.Row="0" Style="{StaticResource ProductImageBorderStyle}">
                         <Image Source="{x:Bind Images, Mode=OneWay, Converter={StaticResource UrlToImageSourceConverter}, ConverterParameter='ms-appx:///Assets/Products/default-product.png'}"
                             Stretch="UniformToFill"
                             HorizontalAlignment="Center"
@@ -62,15 +165,10 @@
                         
                         <!-- Product Title -->
                         <TextBlock Text="{x:Bind Title, Mode=OneWay}"
-                                FontWeight="SemiBold"
-                                FontSize="16"
-                                TextWrapping="Wrap"
-                                MaxLines="2"
-                                TextTrimming="CharacterEllipsis"/>
+                                Style="{StaticResource ProductTitleStyle}"/>
                         
                         <!-- Category and Condition -->
-                        <TextBlock FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                        <TextBlock Style="{StaticResource ProductMetadataStyle}">
                             <Run Text="{x:Bind Category.Name, Mode=OneWay}"/>
                             <Run Text=" • "/>
                             <Run Text="{x:Bind Condition.Name, Mode=OneWay}"/>
@@ -78,8 +176,7 @@
                         
                         <!-- Seller Info -->
                         <TextBlock Text="{x:Bind Seller.Username, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Seller: {0}'}"
-                                FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                Style="{StaticResource ProductMetadataStyle}"/>
                         
                         <!-- Price and Wishlist Row -->
                         <Grid>
@@ -91,10 +188,7 @@
                             <!-- Price -->
                             <TextBlock Grid.Column="0"
                                       Text="{x:Bind Price, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0}'}"
-                                      FontSize="18"
-                                      FontWeight="Bold"
-                                      Foreground="{ThemeResource SystemAccentColor}"
-                                      VerticalAlignment="Center"/>
+                                      Style="{StaticResource ProductPriceStyle}"/>
                             
                             <!-- Wishlist Button (Buyer only) -->
                             <Button Grid.Column="1"
@@ -116,10 +210,7 @@
                                Padding="16,0,16,16" 
                                Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
                         <!-- Add to Cart Button -->
-                        <Button HorizontalAlignment="Stretch"
-                               Background="{ThemeResource SystemAccentColor}"
-                               Foreground="{ThemeResource AccentButtonForeground}"
-                               CornerRadius="4"
+                        <Button Style="{StaticResource ProductActionButtonStyle}"
                                Click="BuyProductCard_AddToCart_Click">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xE7BF;"/>
@@ -135,11 +226,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="AuctionProductCard" x:DataType="models:AuctionProduct">
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="0"
-                    CornerRadius="8"
-                    Width="280"
+            <Border Style="{StaticResource ProductCardBorderStyle}"
                     MinHeight="350">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -149,9 +236,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Product Image -->
-                    <Border Grid.Row="0" 
-                            CornerRadius="8,8,0,0"
-                            Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}">
+                    <Border Grid.Row="0" Style="{StaticResource ProductImageBorderStyle}">
                         <Image Source="{x:Bind Images, Mode=OneWay, Converter={StaticResource UrlToImageSourceConverter}, ConverterParameter='ms-appx:///Assets/Products/default-product.png'}"
                             Stretch="UniformToFill"
                             HorizontalAlignment="Center"
@@ -165,15 +250,10 @@
                         
                         <!-- Product Title -->
                         <TextBlock Text="{x:Bind Title, Mode=OneWay}"
-                                FontWeight="SemiBold"
-                                FontSize="16"
-                                TextWrapping="Wrap"
-                                MaxLines="2"
-                                TextTrimming="CharacterEllipsis"/>
+                                Style="{StaticResource ProductTitleStyle}"/>
                         
                         <!-- Category and Condition -->
-                        <TextBlock FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                        <TextBlock Style="{StaticResource ProductMetadataStyle}">
                             <Run Text="{x:Bind Category.Name, Mode=OneWay}"/>
                             <Run Text=" • "/>
                             <Run Text="{x:Bind Condition.Name, Mode=OneWay}"/>
@@ -181,8 +261,7 @@
                         
                         <!-- Seller Info -->
                         <TextBlock Text="{x:Bind Seller.Username, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Seller: {0}'}"
-                                FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                Style="{StaticResource ProductMetadataStyle}"/>
                         
                         <!-- Current Price and Starting Price -->
                         <Grid>
@@ -194,16 +273,12 @@
                             <!-- Current Price -->
                             <TextBlock Grid.Column="0"
                                       Text="{x:Bind CurrentPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0}'}"
-                                      FontSize="18"
-                                      FontWeight="Bold"
-                                      Foreground="{ThemeResource SystemAccentColor}"
-                                      VerticalAlignment="Center"/>
+                                      Style="{StaticResource ProductPriceStyle}"/>
                             
                             <!-- Starting Price -->
                             <TextBlock Grid.Column="1"
                                       Text="{x:Bind StartPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Starting: ${0}'}"
-                                      FontSize="12"
-                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                      Style="{StaticResource ProductMetadataStyle}"
                                       VerticalAlignment="Center"/>
                         </Grid>
                         
@@ -215,10 +290,7 @@
                     <StackPanel Grid.Row="2" 
                                Padding="16,0,16,16">
                         <!-- Place Bid Button (Buyer only) -->
-                        <Button HorizontalAlignment="Stretch"
-                               Background="{ThemeResource SystemAccentColor}"
-                               Foreground="{ThemeResource AccentButtonForeground}"
-                               CornerRadius="4"
+                        <Button Style="{StaticResource ProductActionButtonStyle}"
                                Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xEC08;"/>
@@ -233,11 +305,7 @@
         
 
         <DataTemplate x:Key="BorrowProductCard" x:DataType="models:BorrowProduct">
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="0"
-                    CornerRadius="8"
-                    Width="280"
+            <Border Style="{StaticResource ProductCardBorderStyle}"
                     MinHeight="380">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -247,9 +315,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Product Image -->
-                    <Border Grid.Row="0" 
-                            CornerRadius="8,8,0,0"
-                            Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}">
+                    <Border Grid.Row="0" Style="{StaticResource ProductImageBorderStyle}">
                         <Image Source="{x:Bind Images, Mode=OneWay, Converter={StaticResource UrlToImageSourceConverter}, ConverterParameter='ms-appx:///Assets/Products/default-product.png'}"
                             Stretch="UniformToFill"
                             HorizontalAlignment="Center"
@@ -263,15 +329,10 @@
                         
                         <!-- Product Title -->
                         <TextBlock Text="{x:Bind Title, Mode=OneWay}"
-                                FontWeight="SemiBold"
-                                FontSize="16"
-                                TextWrapping="Wrap"
-                                MaxLines="2"
-                                TextTrimming="CharacterEllipsis"/>
+                                Style="{StaticResource ProductTitleStyle}"/>
                         
                         <!-- Category and Condition -->
-                        <TextBlock FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                        <TextBlock Style="{StaticResource ProductMetadataStyle}">
                             <Run Text="{x:Bind Category.Name, Mode=OneWay}"/>
                             <Run Text=" • "/>
                             <Run Text="{x:Bind Condition.Name, Mode=OneWay}"/>
@@ -279,8 +340,7 @@
                         
                         <!-- Seller Info -->
                         <TextBlock Text="{x:Bind Seller.Username, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Seller: {0}'}"
-                                FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                Style="{StaticResource ProductMetadataStyle}"/>
                         
                         <!-- Daily Rate -->
                         <Grid>
@@ -292,16 +352,12 @@
                             <!-- Daily Rate -->
                             <TextBlock Grid.Column="0"
                                       Text="{x:Bind DailyRate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0}'}"
-                                      FontSize="18"
-                                      FontWeight="Bold"
-                                      Foreground="{ThemeResource SystemAccentColor}"
-                                      VerticalAlignment="Center"/>
+                                      Style="{StaticResource ProductPriceStyle}"/>
                             
                             <!-- Per Day Label -->
                             <TextBlock Grid.Column="1"
                                       Text="Per Day"
-                                      FontSize="12"
-                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                      Style="{StaticResource ProductMetadataStyle}"
                                       VerticalAlignment="Center"/>
                         </Grid>
                         
@@ -314,8 +370,7 @@
                         </TextBlock>
                         
                         <!-- Available Dates -->
-                        <TextBlock FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                        <TextBlock Style="{StaticResource ProductMetadataStyle}">
                             <Run Text="Available: "/>
                             <Run Text="{x:Bind StartDate, Mode=OneWay, Converter={StaticResource DateTimeToShortDateConverter}}"/>
                             <Run Text=" - "/>
@@ -327,10 +382,8 @@
                     <StackPanel Grid.Row="2" 
                                Padding="16,0,16,16">
                         <!-- Rent Now Button (Buyer only) -->
-                        <Button HorizontalAlignment="Stretch"
-                               Background="{ThemeResource SystemAccentColor}"
+                        <Button Style="{StaticResource ProductActionButtonStyle}"
                                Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                               CornerRadius="4"
                                Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xE787;" />
@@ -448,12 +501,10 @@
                                  VerticalScrollBarVisibility="Auto"
                                  Visibility="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}">
                         <GridView x:Name="BuyProductsGridView"
+                                 Style="{StaticResource ProductGridViewStyle}"
                                  ItemTemplate="{StaticResource BuyProductCard}"
                                  ItemsSource="{x:Bind BuyProductsCollection, Mode=OneWay}"
-                                 SelectionMode="Single"
-                                 IsItemClickEnabled="True"
-                                 ItemClick="BuyProductCard_Click"
-                                 Padding="16">
+                                 ItemClick="BuyProductCard_Click">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid Orientation="Horizontal" 
@@ -491,12 +542,10 @@
                                  VerticalScrollBarVisibility="Auto"
                                  Visibility="{x:Bind IsAuctionLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}">
                         <GridView x:Name="AuctionProductsGridView"
+                                 Style="{StaticResource ProductGridViewStyle}"
                                  ItemTemplate="{StaticResource AuctionProductCard}"
                                  ItemsSource="{x:Bind AuctionProductsCollection, Mode=OneWay}"
-                                 SelectionMode="Single"
-                                 IsItemClickEnabled="True"
-                                 ItemClick="AuctionProductCard_Click"
-                                 Padding="16">
+                                 ItemClick="AuctionProductCard_Click">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid Orientation="Horizontal" 
@@ -534,12 +583,10 @@
                                  VerticalScrollBarVisibility="Auto"
                                  Visibility="{x:Bind IsBorrowLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}">
                         <GridView x:Name="BorrowProductsGridView"
+                                 Style="{StaticResource ProductGridViewStyle}"
                                  ItemTemplate="{StaticResource BorrowProductCard}"
                                  ItemsSource="{x:Bind BorrowProductsCollection, Mode=OneWay}"
-                                 SelectionMode="Single"
-                                 IsItemClickEnabled="True"
-                                 ItemClick="BorrowProductCard_Click"
-                                 Padding="16">
+                                 ItemClick="BorrowProductCard_Click">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid Orientation="Horizontal" 
