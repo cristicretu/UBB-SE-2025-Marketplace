@@ -54,6 +54,20 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         Task<List<BorrowProduct>> GetAllBorrowProductsAsync();
         
         /// <summary>
+        /// Gets borrow products with pagination support asynchronously.
+        /// </summary>
+        /// <param name="offset">The number of products to skip (0 for first page).</param>
+        /// <param name="count">The number of products to return (0 for all products).</param>
+        /// <returns>A list of borrow products for the specified page.</returns>
+        Task<List<BorrowProduct>> GetAllBorrowProductsAsync(int offset, int count);
+        
+        /// <summary>
+        /// Gets the total count of borrow products asynchronously.
+        /// </summary>
+        /// <returns>The total number of borrow products.</returns>
+        Task<int> GetBorrowProductCountAsync();
+        
+        /// <summary>
         /// Gets a borrow product by ID asynchronously.
         /// </summary>
         /// <param name="id">The ID of the product to retrieve.</param>

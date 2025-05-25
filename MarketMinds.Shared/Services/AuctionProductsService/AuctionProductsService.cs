@@ -328,11 +328,38 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
         {
             try
             {
-                return await Task.Run(() => auctionProductsRepository.GetProducts());
+                return await auctionProductsRepository.GetAllAuctionProductsAsync();
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                throw new Exception($"Failed to retrieve auction products: {exception.Message}", exception);
+                Console.WriteLine($"Error getting all auction products: {ex.Message}");
+                return new List<AuctionProduct>();
+            }
+        }
+
+        public async Task<List<AuctionProduct>> GetAllAuctionProductsAsync(int offset, int count)
+        {
+            try
+            {
+                return await auctionProductsRepository.GetAllAuctionProductsAsync(offset, count);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting auction products with pagination (offset: {offset}, count: {count}): {ex.Message}");
+                return new List<AuctionProduct>();
+            }
+        }
+
+        public async Task<int> GetAuctionProductCountAsync()
+        {
+            try
+            {
+                return await auctionProductsRepository.GetAuctionProductCountAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting auction product count: {ex.Message}");
+                return 0;
             }
         }
 

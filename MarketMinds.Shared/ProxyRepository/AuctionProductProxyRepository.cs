@@ -303,5 +303,150 @@ namespace MarketMinds.Shared.ProxyRepository
                 throw new Exception($"Error retrieving auction product with ID {id}: {ex.Message}", ex);
             }
         }
+
+        public async Task<List<AuctionProduct>> GetAllAuctionProductsAsync()
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new AuctionProductJsonConverter());
+                serializerOptions.Converters.Add(new UserJsonConverter());
+                serializerOptions.Converters.Add(new CategoryJsonConverter());
+                serializerOptions.Converters.Add(new ConditionJsonConverter());
+                serializerOptions.Converters.Add(new SellerJsonConverter());
+                serializerOptions.Converters.Add(new BidJsonConverter());
+
+                var response = await httpClient.GetAsync("auctionproducts");
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
+                }
+                
+                var json = await response.Content.ReadAsStringAsync();
+                
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<AuctionProduct>();
+                }
+                
+                try
+                {
+                    var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
+                    return products ?? new List<AuctionProduct>();
+                }
+                catch (System.Text.Json.JsonException jsonEx)
+                {
+                    throw new InvalidOperationException($"Failed to deserialize API response: {jsonEx.Message}", jsonEx);
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new InvalidOperationException($"Failed to communicate with API: {httpEx.Message}", httpEx);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<List<AuctionProduct>> GetAllAuctionProductsAsync(int offset, int count)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new AuctionProductJsonConverter());
+                serializerOptions.Converters.Add(new UserJsonConverter());
+                serializerOptions.Converters.Add(new CategoryJsonConverter());
+                serializerOptions.Converters.Add(new ConditionJsonConverter());
+                serializerOptions.Converters.Add(new SellerJsonConverter());
+                serializerOptions.Converters.Add(new BidJsonConverter());
+
+                string url = $"auctionproducts?offset={offset}&count={count}";
+                var response = await httpClient.GetAsync(url);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
+                }
+                
+                var json = await response.Content.ReadAsStringAsync();
+                
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<AuctionProduct>();
+                }
+                
+                try
+                {
+                    var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
+                    return products ?? new List<AuctionProduct>();
+                }
+                catch (System.Text.Json.JsonException jsonEx)
+                {
+                    throw new InvalidOperationException($"Failed to deserialize API response: {jsonEx.Message}", jsonEx);
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new InvalidOperationException($"Failed to communicate with API: {httpEx.Message}", httpEx);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<int> GetAuctionProductCountAsync()
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var response = await httpClient.GetAsync("auctionproducts/count");
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
+                }
+                
+                var countString = await response.Content.ReadAsStringAsync();
+                return int.Parse(countString);
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new InvalidOperationException($"Failed to communicate with API: {httpEx.Message}", httpEx);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
+            }
+        }
     }
 }

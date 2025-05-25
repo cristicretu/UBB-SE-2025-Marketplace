@@ -23,14 +23,25 @@ namespace MarketMinds.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<AuctionProductDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetAuctionProducts()
+        public IActionResult GetAuctionProducts([FromQuery] int offset = 0, [FromQuery] int count = 0)
         {
             try
             {
-                var products = auctionProductsRepository.GetProducts();
+                List<AuctionProduct> products;
+                
+                if (count > 0)
+                {
+                    // Use pagination
+                    products = auctionProductsRepository.GetProducts(offset, count);
+                }
+                else
+                {
+                    // Get all products (backward compatibility)
+                    products = auctionProductsRepository.GetProducts();
+                }
                 
                 Console.WriteLine("========== DEBUG: AuctionProductsController.GetAuctionProducts ==========");
-                Console.WriteLine($"Retrieved {products.Count} products from repository");
+                Console.WriteLine($"Retrieved {products.Count} products from repository (offset: {offset}, count: {count})");
                 
                 var dtos = AuctionProductMapper.ToDTOList(products);
                 
@@ -51,6 +62,22 @@ namespace MarketMinds.Controllers
             catch (Exception exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to retrieve auction products: {exception.Message}");
+            }
+        }
+
+        [HttpGet("count")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetAuctionProductsCount()
+        {
+            try
+            {
+                var count = auctionProductsRepository.GetProductCount();
+                return Ok(count);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to get auction products count: {exception.Message}");
             }
         }
 

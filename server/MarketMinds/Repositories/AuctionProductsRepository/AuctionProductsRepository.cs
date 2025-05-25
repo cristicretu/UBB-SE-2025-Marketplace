@@ -216,5 +216,84 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 throw new Exception($"Failed to retrieve auction product by ID: {exception.Message}", exception);
             }
         }
+
+        public List<AuctionProduct> GetProducts(int offset, int count)
+        {
+            try
+            {
+                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Starting to fetch products with pagination (offset: {offset}, count: {count})");
+                
+                var query = context.AuctionProducts
+                    .Include(product => product.Condition)
+                    .Include(product => product.Category)
+                    .Include(product => product.Bids)
+                    .Include(product => product.Images)
+                    .OrderBy(p => p.Id); // Ensure consistent ordering for pagination
+
+                List<AuctionProduct> products;
+                
+                if (count > 0)
+                {
+                    // Apply pagination
+                    products = query.Skip(offset).Take(count).ToList();
+                }
+                else
+                {
+                    // Return all products if count is 0
+                    products = query.ToList();
+                }
+                
+                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Fetched {products.Count} products with pagination");
+                
+                // Load the bidder information for each product's bids
+                foreach (var product in products)
+                {
+                    // Load seller information
+                    var seller = context.Users.FirstOrDefault(u => u.Id == product.SellerId);
+                    if (seller != null)
+                    {
+                        product.Seller = seller;
+                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Loaded seller for product {product.Id}: Id={seller.Id}, Username={seller.Username}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Could not find seller with ID {product.SellerId} for product {product.Id}");
+                    }
+                    
+                    foreach (var bid in product.Bids)
+                    {
+                        var bidderUser = context.Users.FirstOrDefault(u => u.Id == bid.BidderId);
+                        if (bidderUser != null)
+                        {
+                            bid.Bidder = bidderUser;
+                        }
+                    }
+                }
+
+                return products;
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"ERROR: GetProducts with pagination exception: {exception.Message}");
+                if (exception.InnerException != null)
+                {
+                    Console.WriteLine($"ERROR: Inner exception: {exception.InnerException.Message}");
+                }
+                throw new Exception($"Failed to retrieve auction products with pagination: {exception.Message}", exception);
+            }
+        }
+
+        public int GetProductCount()
+        {
+            try
+            {
+                return context.AuctionProducts.Count();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"ERROR: GetProductCount exception: {exception.Message}");
+                throw new Exception($"Failed to get auction products count: {exception.Message}", exception);
+            }
+        }
     }
 }
