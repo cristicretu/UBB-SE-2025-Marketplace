@@ -568,52 +568,10 @@
              * Sets up event listeners for notification content
              */
             function setupNotificationEvents() {
-                const markAllBtn = document.getElementById('markAllAsReadBtn');
-                if (markAllBtn) {
-                    markAllBtn.addEventListener('click', handleMarkAllAsRead);
-                }
-                
                 const clearAllBtn = document.getElementById('clearAllNotificationsBtn');
                 if (clearAllBtn) {
                     clearAllBtn.addEventListener('click', clearAllNotifications);
                 }
-            }
-
-            /**
-             * Handles marking all notifications as read
-             */
-            function handleMarkAllAsRead() {
-                const button = document.getElementById('markAllAsReadBtn');
-                if (!button) return;
-                
-                const originalText = button.textContent;
-                
-                button.disabled = true;
-                button.textContent = 'Marking as read...';
-                
-                fetch('/Notifications/MarkAllAsRead', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateUIAfterMarkingRead(data.unreadCount);
-                    } else {
-                        throw new Error(data.error || 'Unknown error occurred');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error marking notifications as read:', error);
-                    alert('Failed to mark notifications as read. Please try again.');
-                })
-                .finally(() => {
-                    button.disabled = false;
-                    button.textContent = originalText;
-                });
             }
             
             /**
