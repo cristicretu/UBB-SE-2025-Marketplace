@@ -260,29 +260,93 @@
                         {
                             <!-- Link/Unlink Section -->
                             <div class="text-center">
-                                @if (linkageInfo.IsLinked)
+                                @if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.None)
                                 {
-                                    <form asp-action="Unlink" method="post">
+                                    <!-- Send Link Request -->
+                                    <form asp-action="SendRequest" method="post">
                                         <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
                                         <button type="submit" 
-                                                class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center mx-auto">
-                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path>
-                                            </svg>
-                                            Unlink from this buyer
-                                        </button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <form asp-action="Link" method="post">
-                                        <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
-                                        <button type="submit" 
-                                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center mx-auto">
+                                                class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center mx-auto">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                                             </svg>
-                                            Link with this buyer
+                                            @linkageInfo.ButtonText
+                                        </button>
+                                    </form>
+                                }
+                                else if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingSent)
+                                {
+                                    <!-- Request Pending - Show Cancel Option -->
+                                    <div class="space-y-3">
+                                        <div class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg shadow-sm flex items-center mx-auto cursor-default">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            @linkageInfo.ButtonText
+                                        </div>
+                                        <form asp-action="CancelRequest" method="post">
+                                            <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                            <button type="submit" 
+                                                    class="@linkageInfo.SecondaryButtonCssClass text-white font-medium py-1.5 px-4 rounded text-sm transition-colors shadow-sm flex items-center mx-auto">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                @linkageInfo.SecondaryButtonText
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived)
+                                {
+                                    <!-- Pending Request Received - Show Accept/Reject Options -->
+                                    <div class="space-y-3">
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                            <div class="flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <p class="text-blue-800 font-medium">This buyer has sent you a link request</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-3 justify-center">
+                                            <form asp-action="AcceptRequest" method="post" class="inline">
+                                                <input type="hidden" name="requestingBuyerId" value="@Model.BuyerId" />
+                                                <button type="submit" 
+                                                        class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    @linkageInfo.ButtonText
+                                                </button>
+                                            </form>
+                                            <form asp-action="RejectRequest" method="post" class="inline">
+                                                <input type="hidden" name="requestingBuyerId" value="@Model.BuyerId" />
+                                                <button type="submit" 
+                                                        class="@linkageInfo.SecondaryButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                    @linkageInfo.SecondaryButtonText
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
+                                else if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.Linked)
+                                {
+                                    <!-- Already Linked - Show Remove Link Option with Hover Effect -->
+                                    <form asp-action="RemoveLink" method="post">
+                                        <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                        <button type="submit" 
+                                                class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 shadow-sm flex items-center justify-center mx-auto group hover:bg-red-600 w-32"
+                                                data-default-text="@linkageInfo.ButtonText"
+                                                data-hover-text="Remove"
+                                                onmouseover="this.querySelector('.button-text').textContent = 'Remove'; this.querySelector('.button-icon').innerHTML = '<path stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6&quot;></path>'"
+                                                onmouseout="this.querySelector('.button-text').textContent = '@linkageInfo.ButtonText'; this.querySelector('.button-icon').innerHTML = '<path stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z&quot;></path>'">
+                                            <svg class="w-4 h-4 mr-2 button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span class="button-text">@linkageInfo.ButtonText</span>
                                         </button>
                                     </form>
                                 }
