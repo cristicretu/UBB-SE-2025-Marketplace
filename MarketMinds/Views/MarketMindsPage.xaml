@@ -14,12 +14,18 @@
 
     <!-- Page resources to be used for each type of product -->
     <Page.Resources>
+        <!-- Pivot underline color override -->
+        <SolidColorBrush x:Key="PivotHeaderItemSelectedPipeFill" Color="{ThemeResource SystemAccentColor}"/>
+        
         <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
         <converters:InvertedBoolVisibilityConverter x:Key="InvertedBoolVisibilityConverter"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
         <converters:UserTypeVisibilityConverter x:Key="UserTypeVisibilityConverter"/>
         <converters:FirstImageUrlConverter x:Key="FirstImageUrlConverter"/>
         <converters:UrlToImageSourceConverter x:Key="UrlToImageSourceConverter"/>
+        <converters:BoolToAvailabilityConverter x:Key="BoolToAvailabilityConverter"/>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
+        <converters:DateTimeToShortDateConverter x:Key="DateTimeToShortDateConverter"/>
         
         <DataTemplate x:Key="BuyProductCard" x:DataType="models:BuyProduct">
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -80,10 +86,10 @@
                             
                             <!-- Price -->
                             <TextBlock Grid.Column="0"
-                                      Text="{x:Bind Price, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0:F2}'}"
+                                      Text="{x:Bind Price, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0}'}"
                                       FontSize="18"
                                       FontWeight="Bold"
-                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                      Foreground="{ThemeResource SystemAccentColor}"
                                       VerticalAlignment="Center"/>
                             
                             <!-- Wishlist Button (Buyer only) -->
@@ -93,7 +99,7 @@
                                    Padding="8"
                                    VerticalAlignment="Center"
                                    Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
-                                <FontIcon Glyph="&#xEB51;" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <FontIcon Glyph="&#xEB51;" FontSize="20" Foreground="{ThemeResource SystemAccentColor}"/>
                             </Button>
                         </Grid>
                     </StackPanel>
@@ -104,7 +110,7 @@
                                Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
                         <!-- Add to Cart Button -->
                         <Button HorizontalAlignment="Stretch"
-                               Background="{ThemeResource AccentButtonBackground}"
+                               Background="{ThemeResource SystemAccentColor}"
                                Foreground="{ThemeResource AccentButtonForeground}"
                                CornerRadius="4"
                                Click="BuyProductCard_AddToCart_Click">
@@ -177,15 +183,15 @@
                             
                             <!-- Current Price -->
                             <TextBlock Grid.Column="0"
-                                      Text="{x:Bind CurrentPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0:F2}'}"
+                                      Text="{x:Bind CurrentPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0}'}"
                                       FontSize="18"
                                       FontWeight="Bold"
-                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                      Foreground="{ThemeResource SystemAccentColor}"
                                       VerticalAlignment="Center"/>
                             
                             <!-- Starting Price -->
                             <TextBlock Grid.Column="1"
-                                      Text="{x:Bind StartPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Starting: ${0:F2}'}"
+                                      Text="{x:Bind StartPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Starting: ${0}'}"
                                       FontSize="12"
                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                       VerticalAlignment="Center"/>
@@ -200,13 +206,123 @@
                                Padding="16,0,16,16">
                         <!-- Place Bid Button (Buyer only) -->
                         <Button HorizontalAlignment="Stretch"
-                               Background="{ThemeResource AccentButtonBackground}"
+                               Background="{ThemeResource SystemAccentColor}"
                                Foreground="{ThemeResource AccentButtonForeground}"
                                CornerRadius="4"
                                Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xE8A7;" FontSize="16"/>
                                 <TextBlock Text="Place Bid" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BorrowProductCard" x:DataType="models:BorrowProduct">
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="0"
+                    CornerRadius="8"
+                    Width="280"
+                    MinHeight="380">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="180"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Product Image -->
+                    <Border Grid.Row="0" 
+                            CornerRadius="8,8,0,0"
+                            Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}">
+                        <Image Source="{x:Bind Images, Mode=OneWay, Converter={StaticResource UrlToImageSourceConverter}, ConverterParameter='ms-appx:///Assets/Products/default-product.png'}"
+                            Stretch="UniformToFill"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Product Details -->
+                    <StackPanel Grid.Row="1" 
+                            Padding="16"
+                            Spacing="8">
+                        
+                        <!-- Product Title -->
+                        <TextBlock Text="{x:Bind Title, Mode=OneWay}"
+                                FontWeight="SemiBold"
+                                FontSize="16"
+                                TextWrapping="Wrap"
+                                MaxLines="2"
+                                TextTrimming="CharacterEllipsis"/>
+                        
+                        <!-- Category and Condition -->
+                        <TextBlock FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                            <Run Text="{x:Bind Category.Name, Mode=OneWay}"/>
+                            <Run Text=" • "/>
+                            <Run Text="{x:Bind Condition.Name, Mode=OneWay}"/>
+                        </TextBlock>
+                        
+                        <!-- Seller Info -->
+                        <TextBlock Text="{x:Bind Seller.Username, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Seller: {0}'}"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        
+                        <!-- Daily Rate -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Daily Rate -->
+                            <TextBlock Grid.Column="0"
+                                      Text="{x:Bind DailyRate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0}'}"
+                                      FontSize="18"
+                                      FontWeight="Bold"
+                                      Foreground="{ThemeResource SystemAccentColor}"
+                                      VerticalAlignment="Center"/>
+                            
+                            <!-- Per Day Label -->
+                            <TextBlock Grid.Column="1"
+                                      Text="Per Day"
+                                      FontSize="12"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                      VerticalAlignment="Center"/>
+                        </Grid>
+                        
+                        <!-- Status -->
+                        <TextBlock FontSize="14"
+                                FontWeight="SemiBold">
+                            <Run Text="Status: " Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <Run Text="{x:Bind IsBorrowed, Mode=OneWay, Converter={StaticResource BoolToAvailabilityConverter}}" 
+                                 Foreground="{x:Bind IsBorrowed, Mode=OneWay, Converter={StaticResource BoolToColorConverter}}"/>
+                        </TextBlock>
+                        
+                        <!-- Available Dates -->
+                        <TextBlock FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                            <Run Text="Available: "/>
+                            <Run Text="{x:Bind StartDate, Mode=OneWay, Converter={StaticResource DateTimeToShortDateConverter}}"/>
+                            <Run Text=" - "/>
+                            <Run Text="{x:Bind EndDate, Mode=OneWay, Converter={StaticResource DateTimeToShortDateConverter}}"/>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Action Button -->
+                    <StackPanel Grid.Row="2" 
+                               Padding="16,0,16,16">
+                        <!-- Rent Now Button (Buyer only) -->
+                        <Button HorizontalAlignment="Stretch"
+                               Background="{ThemeResource SystemAccentColor}"
+                               Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                               CornerRadius="4"
+                               Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE8F4;" FontSize="16"/>
+                                <TextBlock Text="Rent Now" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -249,7 +365,7 @@
                 <TextBlock Text="Price Range" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
                 <Slider x:Name="PriceRangeSlider" Minimum="1" Maximum="100101" Value="100101"
                        ThumbToolTipValueConverter="{x:Null}"
-                       Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"/>
+                       Foreground="{ThemeResource SystemAccentColor}"/>
                 <Grid Margin="0,4,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -306,7 +422,8 @@
                                  IsActive="{x:Bind IsLoading, Mode=OneWay}"
                                  HorizontalAlignment="Center" 
                                  VerticalAlignment="Center"
-                                 Width="50" Height="50"/>
+                                 Width="50" Height="50"
+                                 Foreground="{ThemeResource SystemAccentColor}"/>
                     
                     <!-- Products GridView -->
                     <ScrollViewer ZoomMode="Disabled" 
@@ -348,7 +465,8 @@
                                  IsActive="{x:Bind IsAuctionLoading, Mode=OneWay}"
                                  HorizontalAlignment="Center" 
                                  VerticalAlignment="Center"
-                                 Width="50" Height="50"/>
+                                 Width="50" Height="50"
+                                 Foreground="{ThemeResource SystemAccentColor}"/>
                     
                     <!-- Products GridView -->
                     <ScrollViewer ZoomMode="Disabled" 
@@ -385,8 +503,45 @@
             </PivotItem>
             <PivotItem Header="Borrow Products">
                 <Grid>
-                    <!-- Content will be filled programmatically -->
-                    <TextBlock Text="Borrow Products Content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <!-- Loading indicator -->
+                    <ProgressRing x:Name="BorrowLoadingRing" 
+                                 IsActive="{x:Bind IsBorrowLoading, Mode=OneWay}"
+                                 HorizontalAlignment="Center" 
+                                 VerticalAlignment="Center"
+                                 Width="50" Height="50"
+                                 Foreground="{ThemeResource SystemAccentColor}"/>
+                    
+                    <!-- Products GridView -->
+                    <ScrollViewer ZoomMode="Disabled" 
+                                 HorizontalScrollMode="Disabled" 
+                                 VerticalScrollBarVisibility="Auto"
+                                 Visibility="{x:Bind IsBorrowLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}">
+                        <GridView x:Name="BorrowProductsGridView"
+                                 ItemTemplate="{StaticResource BorrowProductCard}"
+                                 ItemsSource="{x:Bind BorrowProductsCollection, Mode=OneWay}"
+                                 SelectionMode="Single"
+                                 IsItemClickEnabled="True"
+                                 ItemClick="BorrowProductCard_Click"
+                                 Padding="16">
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsWrapGrid Orientation="Horizontal" 
+                                                  HorizontalAlignment="Left"/>
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
+                        </GridView>
+                    </ScrollViewer>
+                    
+                    <!-- Empty state -->
+                    <StackPanel HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"
+                               Spacing="16"
+                               Visibility="{x:Bind ShowBorrowEmptyState, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                        <FontIcon Glyph="&#xE8F4;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="No borrow products found" 
+                                  Style="{StaticResource SubtitleTextBlockStyle}"
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
                 </Grid>
             </PivotItem>
         </Pivot>

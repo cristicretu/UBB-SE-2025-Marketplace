@@ -30,10 +30,12 @@ namespace MarketMinds.Views
         // view models
         public BuyProductsViewModel BuyProductsViewModel { get; set; }
         public AuctionProductsViewModel AuctionProductsViewModel { get; set; }
+        public BorrowProductsViewModel BorrowProductsViewModel { get; set; }
 
         // observable collections
         public ObservableCollection<BuyProduct> BuyProductsCollection { get; private set; }
         public ObservableCollection<AuctionProduct> AuctionProductsCollection { get; private set; }
+        public ObservableCollection<BorrowProduct> BorrowProductsCollection { get; private set; }
 
         // User role properties
         public bool IsCurrentUserBuyer => App.CurrentUser?.UserType == 2;
@@ -68,13 +70,29 @@ namespace MarketMinds.Views
             private set => SetProperty(ref showAuctionEmptyState, value);
         }
 
+        private bool isBorrowLoading;
+        public bool IsBorrowLoading
+        {
+            get => isBorrowLoading;
+            private set => SetProperty(ref isBorrowLoading, value);
+        }
+
+        private bool showBorrowEmptyState;
+        public bool ShowBorrowEmptyState
+        {
+            get => showBorrowEmptyState;
+            private set => SetProperty(ref showBorrowEmptyState, value);
+        }
+
         public MarketMindsPage()
         {
             this.InitializeComponent();
             this.BuyProductsViewModel = App.BuyProductsViewModel;
             this.AuctionProductsViewModel = App.AuctionProductsViewModel;
+            this.BorrowProductsViewModel = App.BorrowProductsViewModel;
             this.BuyProductsCollection = new ObservableCollection<BuyProduct>();
             this.AuctionProductsCollection = new ObservableCollection<AuctionProduct>();
+            this.BorrowProductsCollection = new ObservableCollection<BorrowProduct>();
 
             // Set Buy Products as the default selection
             ProductsPivot.SelectedIndex = 0;
@@ -154,6 +172,41 @@ namespace MarketMinds.Views
         }
 
         /// <summary>
+        /// Loads borrow data asynchronously
+        /// </summary>
+        private async void LoadBorrowDataAsync()
+        {
+            try
+            {
+                IsBorrowLoading = true;
+
+                // Get borrow products
+                var borrowProducts = await Task.Run(() => this.BorrowProductsViewModel.GetAllProducts());
+
+                // Update UI on the UI thread
+                BorrowProductsCollection.Clear();
+                foreach (var product in borrowProducts)
+                {
+                    BorrowProductsCollection.Add(product);
+                }
+
+                // Update empty state based on collection
+                ShowBorrowEmptyState = BorrowProductsCollection.Count == 0;
+                Debug.WriteLine($"BorrowProductsCollection: {BorrowProductsCollection.Count}");
+            }
+            catch (Exception ex)
+            {
+                // TODO: Add proper error handling
+                // Could show an error message to the user
+                System.Diagnostics.Debug.WriteLine($"Error loading borrow products: {ex.Message}");
+            }
+            finally
+            {
+                IsBorrowLoading = false;
+            }
+        }
+
+        /// <summary>
         /// Helper method to set property and notify changes
         /// </summary>
         private void SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
@@ -191,6 +244,10 @@ namespace MarketMinds.Views
                     break;
                 case 2:
                     // Load borrow products if needed
+                    if (BorrowProductsCollection.Count == 0)
+                    {
+                        LoadBorrowDataAsync();
+                    }
                     break;
             }
         }
@@ -206,6 +263,7 @@ namespace MarketMinds.Views
             // Reload data with cleared filters
             LoadBuyDataAsync();
             LoadAuctionDataAsync();
+            LoadBorrowDataAsync();
         }
 
         private void BuyProductCard_Click(object sender, ItemClickEventArgs e)
@@ -228,6 +286,15 @@ namespace MarketMinds.Views
             {
                 // Navigate to auction product details page
                 // Frame.Navigate(typeof(AuctionProductDetailsPage), product);
+            }
+        }
+
+        private void BorrowProductCard_Click(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is BorrowProduct product)
+            {
+                // Navigate to borrow product details page
+                // Frame.Navigate(typeof(BorrowProductDetailsPage), product);
             }
         }
     }
