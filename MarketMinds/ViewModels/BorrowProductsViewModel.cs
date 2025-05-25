@@ -14,14 +14,35 @@ public class BorrowProductsViewModel
         this.borrowProductsService = borrowProductsService;
     }
 
+    public async Task<List<BorrowProduct>> GetAllProductsAsync()
+    {
+        return await borrowProductsService.GetAllBorrowProductsAsync();
+    }
+
+    public async Task<List<BorrowProduct>> GetProductsAsync(int offset, int count)
+    {
+        return await borrowProductsService.GetAllBorrowProductsAsync(offset, count);
+    }
+
+    public async Task<int> GetProductCountAsync()
+    {
+        return await borrowProductsService.GetBorrowProductCountAsync();
+    }
+
+    // Keep the synchronous methods for backward compatibility, but they now use GetAwaiter().GetResult()
     public List<BorrowProduct> GetAllProducts()
     {
-        var borrowProducts = new List<BorrowProduct>();
-        foreach (var product in borrowProductsService.GetProducts())
-        {
-            borrowProducts.Add((BorrowProduct)product);
-        }
-        return borrowProducts;
+        return GetAllProductsAsync().GetAwaiter().GetResult();
+    }
+
+    public List<BorrowProduct> GetProducts(int offset, int count)
+    {
+        return GetProductsAsync(offset, count).GetAwaiter().GetResult();
+    }
+
+    public int GetProductCount()
+    {
+        return GetProductCountAsync().GetAwaiter().GetResult();
     }
 
     /// <summary>

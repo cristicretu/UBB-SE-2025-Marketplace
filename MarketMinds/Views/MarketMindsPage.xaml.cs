@@ -281,8 +281,8 @@ namespace MarketMinds.Views
             {
                 IsAuctionLoading = true;
 
-                // Get auction products
-                var auctionProducts = await Task.Run(() => this.AuctionProductsViewModel.GetAllProducts());
+                // Get auction products using proper async method
+                var auctionProducts = await this.AuctionProductsViewModel.GetAllProductsAsync();
 
                 // Update UI on the UI thread
                 AuctionProductsCollection.Clear();
@@ -316,8 +316,8 @@ namespace MarketMinds.Views
             {
                 IsBorrowLoading = true;
 
-                // Get borrow products
-                var borrowProducts = await Task.Run(() => this.BorrowProductsViewModel.GetAllProducts());
+                // Get borrow products using proper async method
+                var borrowProducts = await this.BorrowProductsViewModel.GetAllProductsAsync();
 
                 // Update UI on the UI thread
                 BorrowProductsCollection.Clear();
