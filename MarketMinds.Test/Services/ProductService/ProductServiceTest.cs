@@ -805,3 +805,83 @@
 //    }
 //}
 
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Xunit;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services;
+using MarketMinds.Tests.Mocks;
+
+namespace MarketMinds.Tests.Services
+{
+    public class ProductServiceTest
+    {
+        private readonly MockProductRepository _mockRepo;
+        private readonly ProductService _service;
+
+        public ProductServiceTests()
+        {
+            _mockRepo = new MockProductRepository();
+            _service = new ProductService(_mockRepo);
+        }
+
+        [Fact]
+        public async Task GetProductByIdAsync_ExistingId_ReturnsProduct()
+        {
+            var product = new Product { Id = 1, Name = "Test Product", SellerId = 10, Price = 99.99 };
+            _mockRepo.AddProduct(product);
+
+            var result = await _service.GetProductByIdAsync(1);
+
+            Assert.NotNull(result);
+            Assert.Equal(product.Id, result.Id);
+            Assert.Equal(product.Name, result.Name);
+        }
+
+        [Fact]
+        public async Task GetProductByIdAsync_NonExistingId_ReturnsNull()
+        {
+            var result = await _service.GetProductByIdAsync(999);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetSellerNameAsync_ValidId_ReturnsName()
+        {
+            _mockRepo.AddSellerName(5, "Alice");
+
+            var result = await _service.GetSellerNameAsync(5);
+
+            Assert.Equal("Alice", result);
+        }
+
+        [Fact]
+        public async Task GetSellerNameAsync_InvalidId_ReturnsNull()
+        {
+            var result = await _service.GetSellerNameAsync(42);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetBorrowableProductsAsync_ReturnsList()
+        {
+            _mockRepo.AddBorrowableProduct(new BorrowProduct { Id = 1, Name = "Borrowable A", SellerId = 7 });
+            _mockRepo.AddBorrowableProduct(new BorrowProduct { Id = 2, Name = "Borrowable B", SellerId = 8 });
+
+            var results = await _service.GetBorrowableProductsAsync();
+
+            Assert.Equal(2, results.Count);
+            Assert.Contains(results, p => p.Name == "Borrowable A");
+            Assert.Contains(results, p => p.Name == "Borrowable B");
+        }
+
+        [Fact]
+        public void GetSortedFilteredProducts_AlwaysEmptyList()
+        {
+            var results = _service.GetSortedFilteredProducts(new(), new(), new(), ProductSortType.PriceAsc, "test");
+
+            Assert.NotNull(results);
+            Assert.Empty(results); 
+        }
+    }
+}
