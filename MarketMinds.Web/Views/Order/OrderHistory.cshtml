@@ -228,6 +228,7 @@
                 success: function(response) {
                     if (response.success) {
                         const summary = response.summary;
+                        console.log('OrderSummaryID for modal details (summary.id):', summary.id);
                         let content = `
                             <div class="space-y-6">
                                 <div class="grid grid-cols-2 gap-4">
@@ -296,6 +297,7 @@
                                         </button>
                                         <button onclick="downloadContract(${summary.id})" 
                                                 id="downloadBtn_${summary.id}"
+                                                data-contract-id=""
                                                 class="hidden inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                             Download PDF
                                         </button>
@@ -345,38 +347,75 @@
                 type: 'POST',
                 data: { orderId: orderId },
                 success: function(response) {
-                    if (response.success) {
-                        // Hide generate button and show download button
-                        $(`#generateBtn_${orderId}`).addClass('hidden');
-                        $(`#downloadBtn_${orderId}`).removeClass('hidden');
+                    console.log("Server response from GenerateContract for OrderSummaryID " + orderId + ":", response);
+
+                    if (response.success && response.generatedContractId) {
+                        const actualGeneratedContractId = response.generatedContractId;
+                        const generateButton = $(`#generateBtn_${orderId}`);
+                        const downloadButton = $(`#downloadBtn_${orderId}`);
+
+                        console.log(`Storing actualGeneratedContractId: ${actualGeneratedContractId} on downloadBtn_${orderId}`);
+
+                        generateButton.addClass('hidden');
+                        downloadButton.attr('data-contract-id', actualGeneratedContractId);
+                        downloadButton.removeClass('hidden');
                         showSuccessModal('Contract generated successfully! You can now download the PDF.');
                     } else {
-                        showSuccessModal('Error: ' + response.message);
+                        let errorMessage = 'Error generating contract.';
+                        if (response.message) {
+                            errorMessage = 'Error: ' + response.message;
+                        } else if (response.success && !response.generatedContractId) {
+                            errorMessage = 'Error: Contract generated, but its new ID was not returned by the server. (response.generatedContractId is missing)';
+                        }
+                        console.error("GenerateContract error or missing generatedContractId. Response:", response);
+                        showSuccessModal(errorMessage);
                     }
                 },
                 error: function(xhr, status, error) {
                     showSuccessModal('Error generating contract: ' + error);
                 },
                 complete: function() {
-                    button.textContent = originalText;
+                    button.textContent = originalText;   
                     button.disabled = false;
                 }
             });
         }
 
-        function downloadContract(contractId) {
-            const apiBaseUrl = '@ViewData["ApiBaseUrl"]'; // Get the base URL
+        function downloadContract(orderIdFromClick) {
+            console.log(`downloadContract called with orderIdFromClick (OrderSummaryID): ${orderIdFromClick}`);
+
+            const apiBaseUrl = '@ViewData["ApiBaseUrl"]';
             let fullApiUrl = apiBaseUrl;
             if (!fullApiUrl.endsWith('/')) {
                 fullApiUrl += '/';
             }
-            // Temporarily hardcode contractId to 8 for testing
-            const testContractId = 8;
-            fullApiUrl += `api/contracts/${testContractId}/download-pdf`;
+
+            const downloadButton = $(`#downloadBtn_${orderIdFromClick}`);
+            const storedGeneratedContractId = downloadButton.attr('data-contract-id');
+            console.log(`Value of data-contract-id from #downloadBtn_${orderIdFromClick}: '${storedGeneratedContractId}'`);
+
+            let contractIdToUse;
+            if (storedGeneratedContractId && storedGeneratedContractId.trim() !== "") {
+                contractIdToUse = storedGeneratedContractId;
+                console.log(`Using NEWLY GENERATED contractId from data-contract-id for download: ${contractIdToUse}`);
+            } else {
+                contractIdToUse = orderIdFromClick;
+                console.warn(`data-contract-id was not set or empty on #downloadBtn_${orderIdFromClick}. Falling back to orderIdFromClick (OrderSummaryID): ${contractIdToUse}. This may not be the correct ContractID if generation happened.`);
+            }
+            
+            if (!contractIdToUse) {
+                const errorMsg = "Error: Contract ID is not available for download. Cannot determine ID to use.";
+                showSuccessModal(errorMsg);
+                console.error("downloadContract: contractIdToUse is undefined or empty.", { orderIdFromClick, attrVal: storedGeneratedContractId });
+                return;
+            }
+
+            console.log(`Final contractIdToUse for API call: ${contractIdToUse}`);
+            fullApiUrl += `api/contracts/${contractIdToUse}/download-pdf`;
 
             const link = document.createElement('a');
             link.href = fullApiUrl;
-            link.download = `contract_${testContractId}.pdf`;
+            link.download = `contract_${contractIdToUse}.pdf`;
             
             document.body.appendChild(link);
             link.click();

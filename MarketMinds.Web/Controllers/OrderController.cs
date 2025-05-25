@@ -311,7 +311,17 @@ namespace WebMarketplace.Controllers
                 // Add the contract to the database
                 var newContract = await _contractService.AddContractAsync(contract, pdfContent);
 
-                return Json(new { success = true, message = "Contract generated successfully" });
+                // IMPORTANT: Include the generatedContractId in the response
+                if (newContract != null)
+                {
+                    _logger.LogInformation($"Contract generated successfully with ID: {newContract.ContractID} for OrderID: {orderId}");
+                    return Json(new { success = true, message = "Contract generated successfully!", generatedContractId = newContract.ContractID });
+                }
+                else
+                {
+                    _logger.LogError($"Contract service returned null after adding contract for OrderID: {orderId}");
+                    return Json(new { success = false, message = "Error generating contract: Failed to retrieve new contract details after creation." });
+                }
             }
             catch (Exception ex)
             {
