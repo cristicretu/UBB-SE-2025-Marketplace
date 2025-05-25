@@ -2,10 +2,11 @@
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Shared.ProxyRepository
 {
-    public class BorrowProductsProxyRepository
+    public class BorrowProductsProxyRepository : IBorrowProductsRepository
     {
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
@@ -32,11 +33,11 @@ namespace MarketMinds.Shared.ProxyRepository
         public void CreateListing(Product product)
         {
             BorrowProduct borrowProduct = product as BorrowProduct;
-            
+
             var sellerId = borrowProduct.Seller?.Id ?? borrowProduct.SellerId;
             var conditionId = borrowProduct.Condition?.Id ?? borrowProduct.ConditionId;
             var categoryId = borrowProduct.Category?.Id ?? borrowProduct.CategoryId;
-            
+
             var productToSend = new
             {
                 borrowProduct.Title,
@@ -61,7 +62,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 WriteIndented = true,
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
-            
+
             var content = System.Net.Http.Json.JsonContent.Create(productToSend, null, serializerOptions);
             var response = httpClient.PostAsync("borrowproducts", content).Result;
             response.EnsureSuccessStatusCode();
@@ -80,7 +81,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 WriteIndented = true,
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
-            
+
             var content = System.Net.Http.Json.JsonContent.Create(imageToSend, null, serializerOptions);
             var response = httpClient.PostAsync($"borrowproducts/{productId}/images", content).Result;
             response.EnsureSuccessStatusCode();
@@ -105,12 +106,12 @@ namespace MarketMinds.Shared.ProxyRepository
             var response = httpClient.GetAsync("borrowproducts").Result;
             response.EnsureSuccessStatusCode();
             var json = response.Content.ReadAsStringAsync().Result;
-        
+
             var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
             return products?.Cast<Product>().ToList() ?? new List<Product>();
         }
 
-        public Product GetProductById(int id)
+        public Product GetProductByID(int id)
         {
             var serializerOptions = new System.Text.Json.JsonSerializerOptions
             {
@@ -123,9 +124,141 @@ namespace MarketMinds.Shared.ProxyRepository
             var response = httpClient.GetAsync($"borrowproducts/{id}").Result;
             response.EnsureSuccessStatusCode();
             var json = response.Content.ReadAsStringAsync().Result;
-         
+
             var product = System.Text.Json.JsonSerializer.Deserialize<BorrowProduct>(json, serializerOptions);
             return product;
         }
+
+        List<BorrowProduct> IBorrowProductsRepository.GetProducts()
+        {
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            serializerOptions.Converters.Add(new UserJsonConverter());
+            var response = httpClient.GetAsync("borrowproducts").Result;
+            response.EnsureSuccessStatusCode();
+            var json = response.Content.ReadAsStringAsync().Result;
+
+            var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
+            return products ?? new List<BorrowProduct>();
+        }
+
+        void IBorrowProductsRepository.DeleteProduct(BorrowProduct product)
+        {
+            var response = httpClient.DeleteAsync($"borrowproducts/{product.Id}").Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        void IBorrowProductsRepository.AddProduct(BorrowProduct product)
+        {
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+
+            var content = System.Net.Http.Json.JsonContent.Create(product, null, serializerOptions);
+            var response = httpClient.PostAsync("borrowproducts", content).Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        void IBorrowProductsRepository.UpdateProduct(BorrowProduct product)
+        {
+            var sellerId = product.Seller?.Id ?? product.SellerId;
+            var conditionId = product.Condition?.Id ?? product.ConditionId;
+            var categoryId = product.Category?.Id ?? product.CategoryId;
+
+            var productToSend = new
+            {
+                Id = product.Id,
+                Title = product.Title,
+                Description = product.Description,
+                SellerId = sellerId,
+                ConditionId = conditionId,
+                CategoryId = categoryId,
+                DailyRate = product.DailyRate,
+                StartDate = product.StartDate,
+                EndDate = product.EndDate,
+                TimeLimit = product.TimeLimit,
+                IsBorrowed = product.IsBorrowed,
+                BorrowerId = product.BorrowerId
+            };
+
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+
+            var content = System.Net.Http.Json.JsonContent.Create(productToSend, null, serializerOptions);
+            var response = httpClient.PutAsync($"borrowproducts/{product.Id}", content).Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        BorrowProduct IBorrowProductsRepository.GetProductByID(int id)
+        {
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            serializerOptions.Converters.Add(new UserJsonConverter());
+            var response = httpClient.GetAsync($"borrowproducts/{id}").Result;
+            response.EnsureSuccessStatusCode();
+            var json = response.Content.ReadAsStringAsync().Result;
+            var product = System.Text.Json.JsonSerializer.Deserialize<BorrowProduct>(json, serializerOptions);
+            return product;
+        }
+
+        void IBorrowProductsRepository.AddImageToProduct(int productId, BorrowProductImage image)
+        {
+            var imageToSend = new
+            {
+                Url = image.Url,
+                ProductId = productId
+            };
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+
+            var content = System.Net.Http.Json.JsonContent.Create(imageToSend, null, serializerOptions);
+            var response = httpClient.PostAsync($"borrowproducts/{productId}/images", content).Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        /// <summary>
+        /// Attempts to borrow a product for a user by hitting the 
+        /// POST api/waitlist/{productId}/borrow/user/{userId}?startDate=&endDate=
+        /// </summary>
+        public async Task BorrowProductAsync(int userId, int productId, DateTime start, DateTime end)
+        {
+            // Format both dates as ISO-8601 and URL-encode
+            var startIso = Uri.EscapeDataString(start.ToString("o"));
+            var endIso = Uri.EscapeDataString(end.ToString("o"));
+
+            // Relative to BaseAddress which you configured as ".../api/"
+            var url = $"borrowproducts/{productId}/borrow/user/{userId}"
+                    + $"?startDate={startIso}&endDate={endIso}";
+
+            var response = await this.httpClient.PostAsync(url, null);
+            await ThrowOnError(nameof(BorrowProductAsync), response);
+        }
+
+
+        private async Task ThrowOnError(string methodName, HttpResponseMessage response)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Error in {methodName}: {response.StatusCode} - {errorContent}");
+            }
+        }
+
     }
 }

@@ -52,7 +52,8 @@ namespace MarketMinds.Views
             if (selectedProduct != null)
             {
                 // Create and show the detail view
-                var detailView = new BorrowProductView(selectedProduct);
+                // var detailView = new BorrowProductView(selectedProduct);
+                var detailView = new BorrowProductWindow(selectedProduct.Id);
                 detailView.Activate();
             }
         }

@@ -183,16 +183,16 @@ namespace Server.DataAccessLayer
             {
                 entity.ToTable("AuctionProducts");
                 entity.HasKey(auctionProducts => auctionProducts.Id);
-                
+
                 // Add explicit debug logging for price fields
                 entity.Property(p => p.StartPrice)
                     .HasColumnName("starting_price")
                     .HasColumnType("float");
-                
+
                 entity.Property(p => p.CurrentPrice)
                     .HasColumnName("current_price")
                     .HasColumnType("float");
-                
+
 
                 // Configure relationship with Seller instead of User
                 entity.HasOne<Seller>()
@@ -223,7 +223,7 @@ namespace Server.DataAccessLayer
             {
                 entity.ToTable("Bids");
                 entity.HasKey(bid => bid.Id);
-                
+
                 entity.Property(b => b.Price)
                     .HasColumnName("price")
                     .HasColumnType("float");
@@ -295,6 +295,7 @@ namespace Server.DataAccessLayer
                 entity.Property(borrowProduct => borrowProduct.StartDate).HasColumnName("start_date");
                 entity.Property(borrowProduct => borrowProduct.EndDate).HasColumnName("end_date");
                 entity.Property(borrowProduct => borrowProduct.IsBorrowed).HasColumnName("is_borrowed");
+                entity.Property(borrowProduct => borrowProduct.BorrowerId).HasColumnName("borrower_id");
 
                 // Configure relationship with Seller instead of User
                 entity.HasOne<Seller>()
@@ -544,7 +545,7 @@ namespace Server.DataAccessLayer
 
                 // Remove the string-based constraint since we're now using integer values
                 // entity.ToTable(orderCheckpoint => orderCheckpoint.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN ('PROCESSING', 'SHIPPED', 'IN_WAREHOUSE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED')"));
-                
+
                 // Add a new constraint with integer values if needed
                 entity.ToTable(orderCheckpoint => orderCheckpoint.HasCheckConstraint("OrderChekpointConstraint", "[Status] IN (0, 1, 2, 3, 4, 5)"));
             });

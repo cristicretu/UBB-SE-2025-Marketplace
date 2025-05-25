@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BorrowProductsService;
 
@@ -21,5 +22,14 @@ public class BorrowProductsViewModel
             borrowProducts.Add((BorrowProduct)product);
         }
         return borrowProducts;
+    }
+
+    /// <summary>
+    /// Fetch a single BorrowProduct by its ID.
+    /// </summary>
+    public async Task<BorrowProduct> GetBorrowProductByIdAsync(int id)
+    {
+        // The service already exposes an async method for this
+        return await borrowProductsService.GetBorrowProductByIdAsync(id);
     }
 }

@@ -26,10 +26,10 @@
                 <Button Width="50" Height="50" 
                         ToolTipService.ToolTip="Request sync"
                         Visibility="{x:Bind ViewModel.RequestSyncVsbl, Mode=OneWay}"
-                        Click="{x:Bind ViewModel.RequestSync}">
+                        Click="{x:Bind ViewModel.Accept}">
                     <Image Width="25" Height="25">
                         <Image.Source>
-                            <BitmapImage UriSource="ms-appx:///Assets/BuyerIcons/sync.png" />
+                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/link.svg" />
                         </Image.Source>
                     </Image>
                 </Button>

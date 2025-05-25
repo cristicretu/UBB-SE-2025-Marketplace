@@ -1,30 +1,186 @@
 ﻿@model WebMarketplace.Models.BuyerWishlistViewModel
 
 @{
-    ViewData["Title"] = "My Wishlist";
+    ViewData["Title"] = Model.IsMyWishlistView ? "My Wishlist" : "Friends Wishlist";
 }
 
-<div class="container mx-auto my-8 px-4">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">@ViewData["Title"]</h1>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div class="mb-4 sm:mb-0">
+                    <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                        @ViewData["Title"]
+                    </h1>
+                    <p class="text-gray-600 mt-2">
+                        @if (Model.IsMyWishlistView)
+                        {
+                            <text>Your personal collection of favorite items</text>
+                        }
+                        else
+                        {
+                            <text>Discover what your linked friends have saved</text>
+                        }
+                    </p>
+                </div>
 
-    @if (Model.WishlistItems == null || !Model.WishlistItems.Any())
-    {
-        <div class="text-center py-12">
-            <p class="text-xl text-gray-600 mb-2">Your wishlist is empty.</p>
-            <p class="text-gray-500">Start adding products you love!</p>
-            <a asp-controller="Home" asp-action="Index"
-                class="mt-6 inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors">
-                Browse Products
-            </a>
+                <!-- Navigation Buttons -->
+                <div class="flex bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+                    <a href="@Url.Action("Index", "BuyerWishlist", new { mode = "my" })" 
+                       class="px-4 py-2 rounded-md text-sm font-medium transition-colors @(Model.IsMyWishlistView ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50")">
+                        <i class="far fa-user"></i>
+                        My Wishlist
+                    </a>
+                    <a href="@Url.Action("Index", "BuyerWishlist", new { mode = "friends" })" 
+                       class="px-4 py-2 rounded-md text-sm font-medium transition-colors @(Model.IsFriendsWishlistView ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50")">
+                       <i class="fas fa-users"></i>
+                        Friends Wishlist
+                    </a>
+                </div>
+            </div>
         </div>
-    }
-    else
-    {
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            @foreach (var item in Model.WishlistItems)
+
+        <!-- Content Section -->
+        @if (Model.IsEmpty)
+        {
+            <!-- Empty State -->
+            <div class="text-center py-16">
+                <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="far fa-heart fa-2x"></i>
+                </div>
+                @if (Model.IsMyWishlistView)
+                {
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Your wishlist is empty</h3>
+                    <p class="text-gray-600 mb-6">Start adding products you love to keep track of your favorites!</p>
+                    <a href="@Url.Action("Index", "Home")" 
+                       class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Browse Products
+                    </a>
+                }
+                else
+                {
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">No friends' wishlists to show</h3>
+                    <p class="text-gray-600 mb-6">Connect with other buyers to see their wishlist items here!</p>
+                    <a href="@Url.Action("Index", "BuyerProfile")" 
+                       class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                        <i class="far fa-search"></i>
+                        Manage Profile & Links
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            @if (Model.IsMyWishlistView)
             {
-                <partial name="_WishlistItem" model="item" />
+                <!-- My Wishlist View -->
+                <div class="">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-6 rounded-xl">
+                        <h2 class="text-xl font-bold flex items-center">
+                            <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+                                @Model.ItemCount items
+                            </span>
+                        </h2>
+                    </div>
+                    <div class="py-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            @foreach (var item in Model.WishlistItems)
+                            {
+                                <partial name="_WishlistItem" model="item" />
+                            }
+                        </div>
+                    </div>
+                </div>
             }
-        </div>
-    }
+            else
+            {
+                <!-- Friends Wishlist View - Grouped by buyer -->
+                <div class="space-y-8">
+                    @foreach (var group in Model.GroupedWishlistItems)
+                    {
+                        <div class="">
+                            <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-6 rounded-xl">
+                                <div class="flex items-center justify-between">
+                                    <h2 class="text-xl font-bold flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center font-bold text-lg mr-3">
+                                            @{
+                                                var firstInitial = !string.IsNullOrEmpty(group.FirstName) ? group.FirstName.First().ToString().ToUpper() : "?";
+                                                var lastInitial = !string.IsNullOrEmpty(group.LastName) ? group.LastName.First().ToString().ToUpper() : "";
+                                            }
+                                            @firstInitial@lastInitial
+                                        </div>
+                                        @group.DisplayName's Wishlist
+                                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium ml-3">
+                                            @group.ItemCount items
+                                        </span>
+                                    </h2>
+                                    <a href="@Url.Action("PublicProfile", "BuyerProfile", new { id = group.BuyerId })" 
+                                       class="text-white hover:text-gray-200 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="py-8">
+                                @if (group.WishlistItems.Any())
+                                {
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                        @foreach (var item in group.WishlistItems)
+                                        {
+                                            <partial name="_WishlistItem" model="item" />
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-center py-8">
+                                        <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <p class="text-gray-500">@group.DisplayName hasn't added any items to their wishlist yet.</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+
+        <!-- Quick Stats Section (for friends view) -->
+        @if (Model.IsFriendsWishlistView && !Model.IsEmpty)
+        {
+            <div class="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fas fa-chart-simple text-blue-500"></i>
+                    Quick Stats
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">@Model.GroupedWishlistItems.Count</div>
+                        <div class="text-sm text-gray-600">Connected Friends</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">@Model.TotalFriendsItemCount</div>
+                        <div class="text-sm text-gray-600">Total Items</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">@Model.GroupedWishlistItems.Where(g => g.ItemCount > 0).Count()</div>
+                        <div class="text-sm text-gray-600">Active Wishlists</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-orange-600">@(Model.GroupedWishlistItems.Any() ? Model.GroupedWishlistItems.Average(g => g.ItemCount).ToString("F1") : "0")</div>
+                        <div class="text-sm text-gray-600">Avg Items/Friend</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 </div>
