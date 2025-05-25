@@ -572,6 +572,49 @@
                 if (clearAllBtn) {
                     clearAllBtn.addEventListener('click', clearAllNotifications);
                 }
+                const markAllAsReadBtn = document.getElementById('markAllAsReadBtn');
+                if (markAllAsReadBtn) {
+                    markAllAsReadBtn.addEventListener('click', markAllAsRead);
+                }
+                
+
+            }
+            
+            /**
+             * Marks all notifications as read
+             */
+            function markAllAsRead() {
+                fetch('/Notifications/MarkAllAsRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Update all notification items to appear as read
+                        document.querySelectorAll('[data-notification-id]').forEach(el => {
+                            el.classList.remove('bg-blue-50', 'border-l-2', 'border-l-blue-500');
+                            
+
+                        });
+                        
+                        // Update UI counters and state
+                        updateUIAfterMarkingRead(0);
+                    } else {
+                        console.error('Failed to mark all notifications as read:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marking all notifications as read:', error);
+                });
             }
             
             /**
@@ -668,10 +711,15 @@
                 }
             }
 
-            // Make loadNotifications available globally for other components
+            // Make functions available globally for other components
             window.loadNotifications = loadNotifications;
             window.updateUIAfterMarkingRead = updateUIAfterMarkingRead;
+            
 
+            
+            /**
+             * Sets up event listeners for notification content
+             */
             if (userDropdown && dropdownContent) {
                 userDropdown.addEventListener('click', function (e) {
                     e.preventDefault();

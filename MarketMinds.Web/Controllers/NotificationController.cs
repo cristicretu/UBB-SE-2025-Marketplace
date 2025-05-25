@@ -42,12 +42,32 @@ namespace WebMarketplace.Controllers
             }
             
             // Return JSON only when client specifically wants JSON
-            var jsonResult = notifications.Select(n => new
-            {
-                id = n.NotificationID,
-                content = n.Content,
-                timestamp = n.Timestamp,
-                isRead = n.IsRead
+            var jsonResult = notifications.Select(n => {
+                // Initialize all possible properties
+                int? orderID = null;
+                string shippingState = null;
+                DateTime? deliveryDate = null;
+                
+                // Add specific properties based on notification type
+                if (n is MarketMinds.Shared.Models.OrderShippingProgressNotification orderShipping)
+                {
+                    orderID = orderShipping.OrderID;
+                    shippingState = orderShipping.ShippingState;
+                    deliveryDate = orderShipping.DeliveryDate;
+                }
+                
+                // Return a consistent object structure with all possible properties
+                return new
+                {
+                    id = n.NotificationID,
+                    content = n.Content,
+                    title = n.Title,
+                    category = n.Category.ToString(),
+                    timestamp = n.Timestamp,
+                    orderID,
+                    shippingState,
+                    deliveryDate
+                };
             });
             
             return Json(jsonResult);
@@ -102,31 +122,7 @@ namespace WebMarketplace.Controllers
             }
         }
 
-        /// <summary>
-        /// Marks a specific notification as read.
-        /// </summary>
-        /// <param name="id">The notification ID to mark as read.</param>
-        /// <returns>JSON result indicating success.</returns>
-        [HttpPost("MarkAsRead/{id}")]
-        public async Task<IActionResult> MarkAsRead(int id)
-        {
-            try
-            {
-                int userId = UserSession.CurrentUserId ?? throw new InvalidOperationException("User ID is not available.");
-                await _notificationService.MarkNotificationAsRead(id);
-                
-                // Get updated unread count
-                var unreadNotifications = await _notificationService.GetUnreadNotificationsForUser(userId);
-                var unreadCount = unreadNotifications.Count;
-                
-                return Json(new { success = true, unreadCount });
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error marking notification as read: {ex.Message}");
-                return Json(new { success = false, error = ex.Message });
-            }
-        }
+
 
         /// <summary>
         /// Clears all notifications for the current user.
