@@ -43,6 +43,14 @@
                         {
                             priceString = buyProduct.Price.ToString("F2");
                         }
+                        else if (product is MarketMinds.Shared.Models.AuctionProduct auctionProduct)
+                        {
+                            priceString = auctionProduct.CurrentPrice.ToString("F2");
+                        }
+                        else if (product is MarketMinds.Shared.Models.BorrowProduct borrowProduct)
+                        {
+                            priceString = borrowProduct.DailyRate.ToString("F2");
+                        }
                         else
                         {
                             priceString = product.Price.ToString("F2");
