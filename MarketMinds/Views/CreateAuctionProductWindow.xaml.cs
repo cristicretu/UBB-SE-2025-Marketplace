@@ -7,8 +7,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
-using Windows.Storage.Pickers;
+using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
+using Windows.Storage.Pickers;
 
 namespace MarketMinds.Views
 {
@@ -19,6 +20,7 @@ namespace MarketMinds.Views
         private readonly ProductConditionViewModel conditionViewModel;
         private ObservableCollection<ProductImage> selectedImages;
         private bool isLoading = false;
+        private readonly ProductTagViewModel tagViewModel;
 
         public CreateAuctionProductWindow()
         {
@@ -26,8 +28,9 @@ namespace MarketMinds.Views
             this.viewModel = new CreateAuctionListingViewModel(MarketMinds.App.AuctionProductsService);
             this.categoryViewModel = new ProductCategoryViewModel(MarketMinds.App.CategoryService);
             this.conditionViewModel = new ProductConditionViewModel(MarketMinds.App.ConditionService);
-
+            tagViewModel = new ProductTagViewModel(MarketMinds.App.TagService);
             this.selectedImages = new ObservableCollection<ProductImage>();
+            TagsListBox.ItemsSource = tagViewModel.Tags;
             InitializeForm();
         }
 
@@ -266,6 +269,16 @@ namespace MarketMinds.Views
             LoadingOverlay.Visibility = loading ? Visibility.Visible : Visibility.Collapsed;
             SubmitButton.IsEnabled = !loading;
             CancelButton.IsEnabled = !loading;
+        }
+
+        private void AddTagButton_Click(object sender, RoutedEventArgs e)
+        {
+            var tagText = TagInputTextBox.Text?.Trim();
+            if (!string.IsNullOrEmpty(tagText))
+            {
+                tagViewModel.CreateProductTag(tagText);
+                TagInputTextBox.Text = string.Empty;
+            }
         }
     }
 }

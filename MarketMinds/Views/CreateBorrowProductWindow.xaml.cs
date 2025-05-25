@@ -19,6 +19,7 @@ using Windows.Storage.Pickers;
 using MarketMinds.Shared.Models.DTOs;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ImagineUploadService;
+using MarketMinds.ViewModels;
 
 namespace MarketMinds.Views
 {
@@ -27,6 +28,7 @@ namespace MarketMinds.Views
         private readonly BorrowProductsViewModel borrowProductsViewModel;
         private readonly ProductCategoryViewModel categoryViewModel;
         private readonly ProductConditionViewModel conditionViewModel;
+        private readonly ProductTagViewModel tagViewModel;
         private ObservableCollection<CreateBorrowProductDTO.ImageInfo> selectedImages;
         private bool isLoading = false;
 
@@ -38,6 +40,10 @@ namespace MarketMinds.Views
             this.conditionViewModel = new ProductConditionViewModel(MarketMinds.App.ConditionService);
 
             this.selectedImages = new ObservableCollection<CreateBorrowProductDTO.ImageInfo>();
+
+            // Initialize ProductTagViewModel
+            this.tagViewModel = new ProductTagViewModel(MarketMinds.App.TagService);
+            TagsListBox.ItemsSource = tagViewModel.Tags;
 
             InitializeForm();
         }
@@ -331,6 +337,16 @@ namespace MarketMinds.Views
         {
             int count = string.IsNullOrEmpty(text) ? 0 : text.Length;
             return $"{count}/500";
+        }
+
+        private void AddTagButton_Click(object sender, RoutedEventArgs e)
+        {
+            var tagText = TagInputTextBox.Text?.Trim();
+            if (!string.IsNullOrEmpty(tagText))
+            {
+                tagViewModel.CreateProductTag(tagText);
+                TagInputTextBox.Text = string.Empty;
+            }
         }
     }
 }

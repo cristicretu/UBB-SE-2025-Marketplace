@@ -148,6 +148,29 @@
                     </GridView>
                 </StackPanel>
 
+                <StackPanel>
+                    <TextBlock Text="Product Tags"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="TagInputTextBox"
+                                 Width="200"
+                                 PlaceholderText="Enter tag"/>
+                        <Button Content="Add Tag"
+                                Click="AddTagButton_Click"
+                                Padding="12,4"/>
+                    </StackPanel>
+                    <ListBox x:Name="TagsListBox"
+                             Margin="0,8,0,0"
+                             ItemsSource="{Binding Tags}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayTitle}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+
             </StackPanel>
         </ScrollViewer>
 
