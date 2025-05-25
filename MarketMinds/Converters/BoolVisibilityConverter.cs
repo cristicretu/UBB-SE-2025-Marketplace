@@ -52,6 +52,34 @@ namespace MarketMinds.Converters
         }
     }
 
+    public class WishlistGlyphConverter : IValueConverter
+    {
+        private const string FullHeartGlyph = "&#xEB52;";
+        private const string EmptyHeartGlyph = "&#xEB51;";
+
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool boolValue)
+            {
+                if (boolValue)
+                {
+                    return FullHeartGlyph;
+                }
+                else
+                {
+                    return EmptyHeartGlyph;
+                }
+            }
+
+            return EmptyHeartGlyph;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     /// <summary>
     /// Converts a boolean value to an inverted Visibility value.
     /// </summary>
@@ -114,7 +142,10 @@ namespace MarketMinds.Converters
             if (parameter is string expectedRole)
             {
                 var currentUser = MarketMinds.App.CurrentUser;
-                if (currentUser == null) return Visibility.Collapsed;
+                if (currentUser == null)
+                {
+                    return Visibility.Collapsed;
+                }
 
                 bool isMatch = expectedRole.ToLower() switch
                 {
