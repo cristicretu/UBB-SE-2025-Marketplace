@@ -68,10 +68,11 @@ namespace MarketMinds.Converters
 
             // value is the product Id
             // parameter is the BuyerWishlistItemViewModel
-            if (value is Product product && parameter is BuyerWishlistItemViewModel wishlistVM)
+            if (value is int productId && parameter is BuyerWishlistItemViewModel wishlistVM)
             {
-                Debug.WriteLine("Product ID: " + product.Id);
-                bool isInWishlist = wishlistVM.IsInWishlist(product.Id);
+                Debug.WriteLine("Product ID: " + productId);
+                bool isInWishlist = wishlistVM.IsInWishlist(productId);
+                Debug.WriteLine("isInWishlist: " + isInWishlist);
                 Debug.WriteLine("Glyph :" + (isInWishlist ? FullHeartGlyph : EmptyHeartGlyph));
                 return isInWishlist ? FullHeartGlyph : EmptyHeartGlyph;
             }
