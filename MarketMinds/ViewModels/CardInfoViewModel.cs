@@ -245,7 +245,7 @@ namespace MarketMinds.ViewModels
             await ProcessCardPaymentAsync();
 
             var billingInfoWindow = new BillingInfoWindow();
-            var finalisePurchasePage = new Views.FinalisePurchase(orderHistoryID);
+            var finalisePurchasePage = new Views.FinalisePurchase();
             billingInfoWindow.Content = finalisePurchasePage;
 
             billingInfoWindow.Activate();

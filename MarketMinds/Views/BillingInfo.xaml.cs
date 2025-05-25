@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Windows.Data;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -11,27 +13,51 @@ namespace MarketMinds.Views
 {
     public sealed partial class BillingInfo : Page
     {
-        public BillingInfoViewModel ViewModel { get; private set; }
+        // Changed from concrete implementation to interface
+        public IBillingInfoViewModel ViewModel { get; private set; }
         private bool initialLoadComplete = false;
+        private bool dataWasLoaded = false;
 
-        public BillingInfo(int orderHistoryId = 1)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BillingInfo"/> class.
+        /// </summary>
+        public BillingInfo()
         {
+            Debug.WriteLine("Initializing BillingInfo page");
             this.InitializeComponent();
-            this.ViewModel = new BillingInfoViewModel(orderHistoryId);
+
+            // Create the view model without a hardcoded order history ID
+            // Still using App.BillingInfoViewModel but now casting to the interface
+            this.ViewModel = App.BillingInfoViewModel;
             this.DataContext = this.ViewModel;
 
             this.Loaded += BillingInfo_Loaded;
+            Debug.WriteLine("BillingInfo page initialized");
         }
 
+        /// <summary>
+        /// Handler for the Loaded event.
+        /// </summary>
         private async void BillingInfo_Loaded(object sender, RoutedEventArgs e)
         {
             if (!initialLoadComplete)
             {
                 try
                 {
-                    // Only initialize from order history if we don't have cart data
-                    if (ViewModel.ProductList == null || ViewModel.ProductList.Count == 0)
+                    Debug.WriteLine("BillingInfo page loaded event handler running");
+
+                    // Autofill user information
+                    await ((BillingInfoViewModel)ViewModel).AutofillUserInformationAsync();
+                    Debug.WriteLine("Attempted to autofill user information");
+
+                    // If we have cart data, skip loading from order history
+                    if (dataWasLoaded)
                     {
+                        Debug.WriteLine("Data was previously loaded, skipping initialization");
+                    }
+                    else if (ViewModel.ProductList == null || ViewModel.ProductList.Count == 0)
+                    {
+                        Debug.WriteLine("Loading data from order history");
                         await ViewModel.InitializeViewModelAsync();
                     }
 
@@ -39,80 +65,111 @@ namespace MarketMinds.Views
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error initializing BillingInfo: {ex.Message}");
+                    Debug.WriteLine($"Error in BillingInfo_Loaded: {ex.Message}");
                 }
             }
         }
 
+        /// <summary>
+        /// Sets the cart items to be displayed and used for order creation.
+        /// </summary>
+        /// <param name="cartItems">The list of products from the cart.</param>
         public void SetCartItems(List<Product> cartItems)
         {
-            // Only set cart items if they aren't already set to prevent data loss
-            if (!initialLoadComplete && (ViewModel.ProductList == null || ViewModel.ProductList.Count == 0))
+            if (cartItems != null && cartItems.Count > 0)
             {
+                Debug.WriteLine($"Setting {cartItems.Count} cart items on BillingInfo page");
                 ViewModel.SetCartItems(cartItems);
+                dataWasLoaded = true;
+            }
+            else
+            {
+                Debug.WriteLine("No cart items provided to BillingInfo page");
             }
         }
 
+        /// <summary>
+        /// Sets the cart total to be used for the order.
+        /// </summary>
+        /// <param name="cartTotal">The total price of the cart.</param>
         public void SetCartTotal(double cartTotal)
         {
-            // Only set cart total if it isn't already set to prevent data loss
-            if (!initialLoadComplete && ViewModel.Total <= 0)
+            if (cartTotal > 0)
             {
+                Debug.WriteLine($"Setting cart total: ${cartTotal}");
                 ViewModel.SetCartTotal(cartTotal);
-                Debug.WriteLine($"Setting cart total to: {cartTotal}");
+                dataWasLoaded = true;
+            }
+            else
+            {
+                Debug.WriteLine("Invalid cart total provided");
             }
         }
 
+        /// <summary>
+        /// Sets the buyer ID for the order.
+        /// </summary>
+        /// <param name="buyerId">The buyer ID.</param>
         public void SetBuyerId(int buyerId)
         {
-            if (!initialLoadComplete)
+            if (buyerId > 0)
             {
+                Debug.WriteLine($"Setting buyer ID: {buyerId}");
                 ViewModel.SetBuyerId(buyerId);
+            }
+            else
+            {
+                Debug.WriteLine($"Invalid buyer ID provided: {buyerId}");
             }
         }
 
+        /// <summary>
+        /// Handler for the Finalize Purchase button click.
+        /// </summary>
         private async void OnFinalizeButtonClickedAsync(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine("Finalize purchase button clicked");
+
             try
             {
+                // Make sure the button is disabled during processing
+                Button button = sender as Button;
+                if (button != null)
+                {
+                    button.IsEnabled = false;
+                }
+
                 // Make a local copy of the total for debugging
                 double totalBeforeFinalize = ViewModel.Total;
-                Debug.WriteLine($"Total before finalizing purchase: {totalBeforeFinalize}");
+                Debug.WriteLine($"Total before finalizing purchase: ${totalBeforeFinalize}");
 
+                // Call the view model to process the order
                 await ViewModel.OnFinalizeButtonClickedAsync();
-
-                Debug.WriteLine($"Purchase finalized, total was: {totalBeforeFinalize}");
+                Debug.WriteLine($"Purchase finalized successfully. Total: ${totalBeforeFinalize}");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error during purchase finalization: {ex.Message}");
 
+                // Show error dialog
                 ContentDialog errorDialog = new ContentDialog
                 {
                     Title = "Error",
-                    Content = "There was a problem processing your order. Please try again.",
+                    Content = $"There was a problem processing your order: {ex.Message}",
                     CloseButtonText = "OK",
                     XamlRoot = this.XamlRoot
                 };
 
                 await errorDialog.ShowAsync();
             }
-        }
-
-        // Updated event handlers for the hidden date pickers
-        private void OnStartDateChanged(DatePicker sender, DatePickerSelectedValueChangedEventArgs e)
-        {
-            if (sender != null && e.NewDate.HasValue)
+            finally
             {
-                ViewModel.UpdateStartDate(e.NewDate.Value);
-            }
-        }
-
-        private void OnEndDateChanged(DatePicker sender, DatePickerSelectedValueChangedEventArgs e)
-        {
-            if (sender != null && e.NewDate.HasValue)
-            {
-                ViewModel.UpdateEndDate(e.NewDate.Value);
+                // Re-enable the button
+                Button button = sender as Button;
+                if (button != null)
+                {
+                    button.IsEnabled = true;
+                }
             }
         }
     }

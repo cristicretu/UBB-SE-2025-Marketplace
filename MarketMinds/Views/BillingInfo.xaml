@@ -84,6 +84,12 @@
         <StackPanel Grid.Column="0" Margin="0,0,20,0">
             <!-- Billing Information Section -->
             <TextBlock Text="Billing Information" Style="{StaticResource SectionHeaderStyle}"/>
+            <!-- <TextBlock 
+                Text="{Binding ErrorMessage}" 
+                Foreground="Red"
+                TextWrapping="Wrap"
+                Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"
+                Margin="0,10,0,10" /> -->
 
             <!-- Input fields with borders -->
             <TextBox Text="{Binding FullName, Mode=TwoWay}" PlaceholderText="Full Name*" 
@@ -122,12 +128,15 @@
                      PlaceholderText="Observations for your order (optional)..." 
                      Style="{StaticResource TextAreaStyle}"/>
 
-            <!-- Finalize Purchase Button - Moved to left side -->
+            <!-- Finalize Purchase Button -->
             <Button Content="Finalize Purchase" 
-                    Click="OnFinalizeButtonClickedAsync"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    HorizontalAlignment="Left"
-                    Margin="0,15,0,0"/>
+                Click="OnFinalizeButtonClickedAsync"
+                Background="{ThemeResource SystemControlBackgroundAccentBrush}"
+                Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
+                HorizontalAlignment="Left"
+                Padding="20,10"
+                CornerRadius="4"
+                Margin="0,15,0,0"/>
         </StackPanel>
 
         <!-- Right Column: Order Summary -->
@@ -135,7 +144,7 @@
             <TextBlock Text="Order Summary" Style="{StaticResource SectionHeaderStyle}"/>
 
             <!-- Products List with improved styling -->
-            <ListView ItemsSource="{Binding ProductList}" Background="Transparent" 
+            <ListView ItemsSource="{Binding CartItems}" Background="Transparent" 
                       SelectionMode="None" Padding="0">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -161,18 +170,15 @@
                                         <Run Text=" €"/>
                                     </TextBlock>
                                 </StackPanel>
+                                
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Quantity: " FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Quantity}"/>
+                                </StackPanel>
 
                                 <StackPanel Orientation="Horizontal" Visibility="{Binding SellerId, Converter={StaticResource SellerToVisibilityConverter}}" Margin="0,0,0,6">
                                     <TextBlock Text="Seller ID: " FontWeight="SemiBold"/>
                                     <TextBlock Text="{Binding SellerId}"/>
-                                </StackPanel>
-
-                                <!-- Date pickers are hidden but kept in code for data binding -->
-                                <StackPanel Orientation="Vertical" Visibility="Collapsed">
-                                    <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}" 
-                                              SelectedDateChanged="OnStartDateChanged" />
-                                    <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay}" 
-                                              SelectedDateChanged="OnEndDateChanged" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -216,7 +222,7 @@
                 <Rectangle Grid.Row="3" Grid.ColumnSpan="2" Height="1" Margin="0,8" 
                            Fill="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"/>
 
-                <!-- Total row with more spacing and not overlapped -->
+                <!-- Total row -->
                 <TextBlock Grid.Row="4" Grid.Column="0" Text="Total:" FontWeight="Bold" FontSize="16" Margin="0,4"/>
                 <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4">
                     <TextBlock Text="{Binding Total, Mode=TwoWay}" FontWeight="Bold" FontSize="16"/>

@@ -158,7 +158,7 @@
         {
             BillingInfoWindow billingInfoWindow = new BillingInfoWindow();
             // merge-nicusor FIX :)
-            var bp = new BillingInfo(1);
+            var bp = new BillingInfo();
             billingInfoWindow.Content = bp;
             billingInfoWindow.Activate();
         }
@@ -167,7 +167,7 @@
         {
             BillingInfoWindow billingInfoWindow = new BillingInfoWindow();
             // merge-nicusor FIX :)
-            var bp = new BillingInfo(1);
+            var bp = new BillingInfo();
             billingInfoWindow.Content = bp;
             billingInfoWindow.Activate();
         }

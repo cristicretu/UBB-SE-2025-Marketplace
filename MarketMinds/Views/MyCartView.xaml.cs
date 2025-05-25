@@ -30,7 +30,7 @@ namespace MarketMinds.Views
             int userId = UserSession.CurrentUserId ?? 10; // Fallback to user ID 10 for testing
             Debug.WriteLine($"Creating ShoppingCartViewModel with buyer ID: {userId}");
 
-            this.ViewModel = new ShoppingCartViewModel();
+            this.ViewModel = App.ShoppingCartViewModel;
             this.DataContext = this.ViewModel;
 
             // Load cart items when the page is initialized
@@ -70,14 +70,11 @@ namespace MarketMinds.Views
                 double cartTotal = this.ViewModel.GetCartTotal();
                 int buyerId = this.ViewModel.BuyerId;
 
-                // Create an order history record
-                int orderHistoryId = 1; // You'd generate or retrieve this from your backend
-
                 // Create a new instance of the BillingInfoWindow
                 var billingInfoWindow = new BillingInfoWindow();
 
                 // Create a new BillingInfo page with the appropriate order history ID
-                var billingInfoPage = new BillingInfo(orderHistoryId);
+                var billingInfoPage = new BillingInfo();
 
                 // Pass the cart information to the BillingInfo page
                 billingInfoPage.SetCartItems(productsForCheckout);

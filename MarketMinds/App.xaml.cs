@@ -54,6 +54,9 @@ namespace MarketMinds
         public static BasketProxyRepository BasketRepository;
         public static BuyProductsProxyRepository BuyProductsRepository;
         public static ShoppingCartProxyRepository ShoppingCartRepository;
+        public static OrderHistoryProxyRepository OrderHistoryRepository;
+        public static OrderProxyRepository OrderRepository;
+        public static BuyProductsProxyRepository BuyProductsProxyRepository;
 
         // Service declarations
         public static IBuyerService BuyerService;
@@ -80,6 +83,12 @@ namespace MarketMinds
         public static IContractRenewalService ContractRenewalService;
         public static MarketMinds.ViewModels.ContractRenewViewModel.IFileSystem FileSystem;
         public static IShoppingCartService ShoppingCartService;
+        public static IOrderHistoryService OrderHistoryService;
+        public static IOrderService OrderService;
+        public static IOrderSummaryService OrderSummaryService;
+        public static IDummyWalletService DummyWalletService;
+        public static IProductService ProductService;
+        public static int LastProcessedOrderId { get; set; }
 
         // ViewModel declarations
         public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
@@ -107,6 +116,9 @@ namespace MarketMinds
         public static ContractRenewViewModel ContractRenewViewModel { get; private set; }
         public static ShoppingCartViewModel ShoppingCartViewModel { get; private set; }
         public static CartItemViewModel CartItemViewModel { get; private set; }
+        public static BillingInfoViewModel BillingInfoViewModel { get; private set; }
+        public static FinalizePurchaseViewModel FinalizePurchaseViewModel { get; private set; }
+        public static NotificationViewModel NotificationViewModel { get; private set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -324,6 +336,7 @@ namespace MarketMinds
             BasketRepository = new BasketProxyRepository(Configuration);
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
             ShoppingCartRepository = new ShoppingCartProxyRepository(Configuration);
+            BuyProductsProxyRepository = new BuyProductsProxyRepository(Configuration);
 
             // Initialize services
             AdminService = new AdminService(UserRepository);
@@ -350,6 +363,11 @@ namespace MarketMinds
             ContractRenewalService = new ContractRenewalService();
             FileSystem = new MarketMinds.ViewModels.ContractRenewViewModel.FileSystemWrapper();
             ShoppingCartService = new ShoppingCartService(ShoppingCartRepository);
+            OrderHistoryService = new OrderHistoryService();
+            OrderService = new OrderService();
+            OrderSummaryService = new OrderSummaryService();
+            DummyWalletService = new DummyWalletService();
+            ProductService = new ProductService(BuyProductsRepository);
 
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
@@ -366,6 +384,11 @@ namespace MarketMinds
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
             ContractRenewViewModel = new ContractRenewViewModel(ContractService, PDFService, ContractRenewalService, UserService, FileSystem);
+            ShoppingCartViewModel = new ShoppingCartViewModel();
+            BillingInfoViewModel = new BillingInfoViewModel();
+            FinalizePurchaseViewModel = new FinalizePurchaseViewModel();
+            NotificationViewModel = new NotificationViewModel(UserSession.CurrentUserId ?? 1);
+
             BuyerProfileViewModel = new BuyerProfileViewModel()
             {
                 BuyerService = BuyerService,
