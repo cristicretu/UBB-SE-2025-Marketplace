@@ -36,6 +36,11 @@ namespace MarketMinds.Test.Services.ChatServiceTest
 
         public Task<Message> SendMessageAsync(int conversationId, int userId, string content)
         {
+            // Only allow sending a message if the conversation exists
+            var conversation = _conversations.FirstOrDefault(c => c.Id == conversationId);
+            if (conversation == null)
+                return Task.FromResult<Message>(null);
+
             var message = new Message
             {
                 Id = _messages.Count + 1,
@@ -46,6 +51,7 @@ namespace MarketMinds.Test.Services.ChatServiceTest
             _messages.Add(message);
             return Task.FromResult(message);
         }
+
 
         public Task<List<Message>> GetMessagesAsync(int conversationId)
         {

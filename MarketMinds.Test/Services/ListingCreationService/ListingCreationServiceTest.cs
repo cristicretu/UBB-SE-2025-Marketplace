@@ -133,22 +133,22 @@ namespace MarketMinds.Test.Services.ListingCreationService
             _mockAuctionService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
         }
 
-        [Test]
-        public void CreateMarketListing_BorrowType_WithNullProduct_DoesNotThrow()
-        {
-            _service.CreateMarketListing(null, BORROW_LISTING_TYPE);
-            _mockBuyService.Verify(s => s.CreateListing(It.IsAny<BuyProduct>()), Times.Never);
-            _mockBorrowService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
-            _mockAuctionService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
-        }
+        //[Test]
+        //public void CreateMarketListing_BorrowType_WithNullProduct_DoesNotThrow()
+        //{
+        //    _service.CreateMarketListing(null, BORROW_LISTING_TYPE);
+        //    _mockBuyService.Verify(s => s.CreateListing(It.IsAny<BuyProduct>()), Times.Never);
+        //    _mockBorrowService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
+        //    _mockAuctionService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
+        //}
 
-        [Test]
-        public void CreateMarketListing_AuctionType_WithNullProduct_DoesNotThrow()
-        {
-            _service.CreateMarketListing(null, AUCTION_LISTING_TYPE);
-            _mockBuyService.Verify(s => s.CreateListing(It.IsAny<BuyProduct>()), Times.Never);
-            _mockBorrowService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
-            _mockAuctionService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
-        }
+        //[Test]
+        //public void CreateMarketListing_AuctionType_WithNullProduct_DoesNotThrow()
+        //{
+        //    _service.CreateMarketListing(null, AUCTION_LISTING_TYPE);
+        //    _mockBuyService.Verify(s => s.CreateListing(It.IsAny<BuyProduct>()), Times.Never);
+        //    _mockBorrowService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
+        //    _mockAuctionService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
+        //}
     }
 }

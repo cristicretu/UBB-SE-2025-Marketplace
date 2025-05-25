@@ -47,5 +47,12 @@ namespace MarketMinds.Test.Services.ConversationService
         {
             _conversations.Clear();
         }
+        public class ConversationRepositoryMockReturnsNull : IConversationRepository
+        {
+            public Task<Conversation> CreateConversationAsync(Conversation conversation) => Task.FromResult<Conversation>(null);
+            public Task<Conversation> GetConversationByIdAsync(int conversationId) => Task.FromResult<Conversation>(null);
+            public Task<List<Conversation>> GetConversationsByUserIdAsync(int userId) => Task.FromResult<List<Conversation>>(null);
+        }
+
     }
 }

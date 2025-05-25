@@ -7,6 +7,7 @@ using MarketMinds.Shared.IRepository; // <-- Add this
 using MarketMinds.Shared.Services.ConversationService; // <-- And this
 using MarketMinds.Test.Services.ConversationService;
 using MarketMinds.Shared.Services.Interfaces;
+using static MarketMinds.Test.Services.ConversationService.ConversationRepositoryMock;
 namespace MarketMinds.Test.Services.ConversationService
 {
     [TestFixture]
@@ -40,13 +41,13 @@ namespace MarketMinds.Test.Services.ConversationService
             Assert.That(ex.InnerException, Is.TypeOf<ArgumentException>());
         }
 
-        [Test]
-        public void CreateConversationAsync_RepositoryReturnsNull_ThrowsInvalidOperationException()
-        {
-            // Simulate repository returning null (UserId < 0)
-            var ex = Assert.ThrowsAsync<Exception>(async () => await _service.CreateConversationAsync(-5));
-            Assert.That(ex.InnerException, Is.TypeOf<InvalidOperationException>());
-        }
+        //[Test]
+        //public void CreateConversationAsync_RepositoryReturnsNull_ThrowsInvalidOperationException()
+        //{
+        //    // Simulate repository returning null (UserId < 0)
+        //    var ex = Assert.ThrowsAsync<Exception>(async () => await _service.CreateConversationAsync(-5));
+        //    Assert.That(ex.InnerException, Is.TypeOf<InvalidOperationException>());
+        //}
 
         [Test]
         public void CreateConversationAsync_RepositoryReturnsInvalidId_ThrowsInvalidOperationException()
@@ -136,9 +137,38 @@ namespace MarketMinds.Test.Services.ConversationService
             return Task.FromResult<Conversation>(null);
         }
 
+
+        [Test]
+        public async Task GetUserConversationsAsync_RepositoryReturnsNull_ReturnsEmptyList()
+        {
+            var repo = new ConversationRepositoryMockReturnsNull();
+            var service = new MarketMinds.Shared.Services.ConversationService.ConversationService(repo);
+
+
+            var result = await service.GetUserConversationsAsync(1);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(0));
+        }
+
+
+        [Test]
+        public void CreateConversationAsync_RepositoryReturnsNull_ThrowsInvalidOperationException()
+        {
+            var repo = new ConversationRepositoryMockReturnsNull();
+            var service = new MarketMinds.Shared.Services.ConversationService.ConversationService(repo);
+
+
+            var ex = Assert.ThrowsAsync<Exception>(async () => await service.CreateConversationAsync(1));
+            Assert.That(ex.InnerException, Is.TypeOf<InvalidOperationException>());
+        }
+
+
         public Task<List<Conversation>> GetConversationsByUserIdAsync(int userId)
         {
             return Task.FromResult(new List<Conversation>());
         }
+
+
     }
 }

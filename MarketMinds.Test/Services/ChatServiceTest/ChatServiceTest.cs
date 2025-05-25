@@ -4,6 +4,8 @@ using NUnit.Framework;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.DreamTeam.ChatService;
 using MarketMinds.Test.Services.ChatServiceTest;
+// Remove this using to avoid ambiguity
+// using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 
 namespace MarketMinds.Tests.Services.ChatServiceTest
 {
@@ -68,10 +70,10 @@ namespace MarketMinds.Tests.Services.ChatServiceTest
         [Test]
         public async Task GetMessagesAsync_ShouldReturnMessages()
         {
-            _chatRepositoryMock.AddTestMessages(new List<Message>
+            _chatRepositoryMock.AddTestMessages(new List<MarketMinds.Shared.Models.Message>
             {
-                new Message { Id = 1, ConversationId = CONVERSATION_ID, UserId = USER_ID, Content = "Test 1" },
-                new Message { Id = 2, ConversationId = CONVERSATION_ID, UserId = USER_ID, Content = "Test 2" }
+                new MarketMinds.Shared.Models.Message { Id = 1, ConversationId = CONVERSATION_ID, UserId = USER_ID, Content = "Test 1" },
+                new MarketMinds.Shared.Models.Message { Id = 2, ConversationId = CONVERSATION_ID, UserId = USER_ID, Content = "Test 2" }
             });
 
             var result = await _chatService.GetMessagesAsync(CONVERSATION_ID);
@@ -104,10 +106,37 @@ namespace MarketMinds.Tests.Services.ChatServiceTest
         }
 
         [Test]
-        public async Task SendMessageAsync_ShouldReturnNull_WhenConversationDoesNotExist()
+        public async Task SendMessageAsync_ShouldReturnNull_WhenRepositoryReturnsNull()
         {
-            var result = await _chatService.SendMessageAsync(9999, USER_ID, "should not work");
+            // Arrange: do not add any conversation, so repository returns null
+            // (or you can mock the repository to return null explicitly if using a mock framework)
+            var result = await _chatService.SendMessageAsync(9999, 1, "test");
+
+            // Assert
             Assert.That(result, Is.Null);
         }
+
+
+        // Remove this method, as it is not needed and causes errors
+        /*
+        public Task<Message> SendMessageAsync(int conversationId, int userId, string content)
+        {
+            var conversation = _conversations.FirstOrDefault(c => c.Id == conversationId);
+            if (conversation == null)
+                return Task.FromResult<Message>(null);
+
+            var message = new Message
+            {
+                Id = _messages.Count + 1,
+                ConversationId = conversationId,
+                UserId = userId,
+                Content = content
+            };
+            _messages.Add(message);
+            return Task.FromResult(message);
+        }
+        */
     }
+
+
 }
