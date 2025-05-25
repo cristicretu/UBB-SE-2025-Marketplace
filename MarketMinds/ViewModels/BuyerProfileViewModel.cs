@@ -11,6 +11,7 @@ namespace MarketMinds.ViewModels
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Services;
+    using MarketMinds.Shared.Services.BuyProductsService;
     using Microsoft.UI.Xaml.Controls;
 
     /// <summary>
@@ -28,8 +29,16 @@ namespace MarketMinds.ViewModels
         /// <inheritdoc/>
         public IBuyerService BuyerService { get; set; } = null!;
 
+        // Add this property to the BuyerProfileViewModel class
+        public IBuyerLinkageService BuyerLinkageService { get; set; } = null!;
+
         /// <inheritdoc/>
         public IBuyerWishlistItemDetailsProvider WishlistItemDetailsProvider { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets the product service instance.
+        /// </summary>
+        public IBuyProductsService ProductService { get; set; } = null!;
 
         /// <inheritdoc/>
         public User User { get; set; } = null!;
@@ -152,13 +161,14 @@ namespace MarketMinds.ViewModels
 
             this.BillingAddress = new BuyerAddressViewModel(this.Buyer.BillingAddress);
             this.ShippingAddress = new BuyerAddressViewModel(this.Buyer.ShippingAddress);
-            this.FamilySync = new BuyerFamilySyncViewModel(this.BuyerService, this.Buyer, this);
+            this.FamilySync = new BuyerFamilySyncViewModel(this.BuyerService, this.Buyer, this, this.BuyerLinkageService);
             await this.FamilySync.LoadLinkages();
             this.Wishlist = new BuyerWishlistViewModel
             {
                 BuyerService = this.BuyerService,
                 Buyer = this.Buyer,
                 ItemDetailsProvider = this.WishlistItemDetailsProvider,
+                ProductService = this.ProductService
             };
             this.BuyerBadge = new BuyerBadgeViewModel(this.BuyerService) { Buyer = this.Buyer };
             this.OnPropertyChanged(nameof(this.Buyer));

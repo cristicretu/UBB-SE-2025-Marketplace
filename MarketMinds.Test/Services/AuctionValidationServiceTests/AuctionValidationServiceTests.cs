@@ -1,137 +1,158 @@
 ﻿using System;
 using Moq;
-using Xunit;
+using NUnit.Framework;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionValidationService;
 using MarketMinds.Shared.Services.AuctionProductsService;
 
-namespace MarketMinds.Tests.Services
+namespace MarketMinds.Test.Services.AuctionValidationServiceTests
 {
+    [TestFixture]
     public class AuctionValidationServiceTests
     {
-        private readonly Mock<IAuctionProductsService> mockAuctionProductsService;
-        private readonly AuctionValidationService auctionValidationService;
+        private Mock<IAuctionProductsService> _mockAuctionProductsService;
+        private AuctionValidationService _auctionValidationService;
 
-        public AuctionValidationServiceTests()
+        [SetUp]
+        public void Setup()
         {
-            mockAuctionProductsService = new Mock<IAuctionProductsService>();
-            auctionValidationService = new AuctionValidationService(mockAuctionProductsService.Object);
+            _mockAuctionProductsService = new Mock<IAuctionProductsService>();
+            _auctionValidationService = new AuctionValidationService(_mockAuctionProductsService.Object);
         }
 
-        [Fact]
+        [Test]
         public void ValidateAndPlaceBid_ThrowsArgumentNullException_WhenProductIsNull()
         {
+            // Arrange
             User validUser = new User();
             string validBid = "100";
 
+            // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                auctionValidationService.ValidateAndPlaceBid(null, validUser, validBid));
+                _auctionValidationService.ValidateAndPlaceBid(null, validUser, validBid));
 
-            Assert.Equal("Auction product cannot be null (Parameter 'product')", exception.Message);
+            Assert.That(exception.Message, Is.EqualTo("Auction product cannot be null (Parameter 'product')"));
         }
 
-        [Fact]
+        [Test]
         public void ValidateAndPlaceBid_ThrowsArgumentNullException_WhenBidderIsNull()
         {
+            // Arrange
             AuctionProduct validProduct = new AuctionProduct();
             string validBid = "100";
 
+            // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                auctionValidationService.ValidateAndPlaceBid(validProduct, null, validBid));
+                _auctionValidationService.ValidateAndPlaceBid(validProduct, null, validBid));
 
-            Assert.Equal("Bidder cannot be null (Parameter 'bidder')", exception.Message);
+            Assert.That(exception.Message, Is.EqualTo("Bidder cannot be null (Parameter 'bidder')"));
         }
 
-        [Fact]
+        [Test]
         public void ValidateAndPlaceBid_ThrowsArgumentException_WhenBidIsEmpty()
         {
+            // Arrange
             AuctionProduct validProduct = new AuctionProduct();
             User validUser = new User();
             string emptyBid = "  ";
 
+            // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() =>
-                auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, emptyBid));
+                _auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, emptyBid));
 
-            Assert.Equal("Bid amount is required", exception.Message);
+            Assert.That(exception.Message, Is.EqualTo("Bid amount is required"));
         }
 
-        [Fact]
+        [Test]
         public void ValidateAndPlaceBid_ThrowsArgumentException_WhenBidIsNotANumber()
         {
+            // Arrange
             AuctionProduct validProduct = new AuctionProduct();
             User validUser = new User();
             string invalidBidText = "ten dollars";
 
+            // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() =>
-                auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, invalidBidText));
+                _auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, invalidBidText));
 
-            Assert.Equal($"Invalid bid format: '{invalidBidText}' is not a valid number", exception.Message);
+            Assert.That(exception.Message, Is.EqualTo($"Invalid bid format: '{invalidBidText}' is not a valid number"));
         }
 
-        [Fact]
+        [Test]
         public void ValidateAndPlaceBid_ThrowsArgumentException_WhenBidIsNegative()
         {
+            // Arrange
             AuctionProduct validProduct = new AuctionProduct();
             User validUser = new User();
             string negativeBid = "-5";
 
+            // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() =>
-                auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, negativeBid));
+                _auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, negativeBid));
 
-            Assert.Equal("Bid amount must be positive", exception.Message);
+            Assert.That(exception.Message, Is.EqualTo("Bid amount must be positive"));
         }
 
-        [Fact]
+        [Test]
         public void ValidateAndPlaceBid_CallsPlaceBid_WhenAllInputsAreValid()
         {
+            // Arrange
             AuctionProduct validProduct = new AuctionProduct();
             User validUser = new User();
             string validBidText = "150";
             double expectedBidAmount = 150;
 
-            auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, validBidText);
+            // Act
+            _auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, validBidText);
 
-            mockAuctionProductsService.Verify(
+            // Assert
+            _mockAuctionProductsService.Verify(
                 x => x.PlaceBid(validProduct, validUser, expectedBidAmount),
                 Times.Once);
         }
 
-        [Fact]
+        [Test]
         public void ValidateAndPlaceBid_ThrowsWrappedException_WhenPlaceBidFails()
         {
+            // Arrange
             AuctionProduct validProduct = new AuctionProduct();
             User validUser = new User();
             string validBidText = "200";
             string expectedInnerMessage = "Simulated failure";
 
-            mockAuctionProductsService
+            _mockAuctionProductsService
                 .Setup(x => x.PlaceBid(It.IsAny<AuctionProduct>(), It.IsAny<User>(), It.IsAny<double>()))
                 .Throws(new Exception(expectedInnerMessage));
 
+            // Act & Assert
             var exception = Assert.Throws<Exception>(() =>
-                auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, validBidText));
+                _auctionValidationService.ValidateAndPlaceBid(validProduct, validUser, validBidText));
 
-            Assert.StartsWith("Bid failed:", exception.Message);
-            Assert.Contains(expectedInnerMessage, exception.InnerException?.Message);
+            Assert.That(exception.Message, Does.StartWith("Bid failed:"));
+            Assert.That(exception.InnerException?.Message, Does.Contain(expectedInnerMessage));
         }
 
-        [Fact]
+        [Test]
         public void ValidateAndConcludeAuction_ThrowsArgumentException_WhenProductIsNull()
         {
+            // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() =>
-                auctionValidationService.ValidateAndConcludeAuction(null));
+                _auctionValidationService.ValidateAndConcludeAuction(null));
 
-            Assert.Equal("Product cannot be null", exception.Message);
+            Assert.That(exception.Message, Is.EqualTo("Product cannot be null"));
         }
 
-        [Fact]
+        [Test]
         public void ValidateAndConcludeAuction_CallsConcludeAuction_WhenProductIsValid()
         {
+            // Arrange
             AuctionProduct validProduct = new AuctionProduct();
 
-            auctionValidationService.ValidateAndConcludeAuction(validProduct);
+            // Act
+            _auctionValidationService.ValidateAndConcludeAuction(validProduct);
 
-            mockAuctionProductsService.Verify(x => x.ConcludeAuction(validProduct), Times.Once);
+            // Assert
+            _mockAuctionProductsService.Verify(x => x.ConcludeAuction(validProduct), Times.Once);
         }
     }
 }

@@ -1,174 +1,754 @@
 ﻿@model WebMarketplace.Models.BuyerProfileViewModel
 @{
-    ViewData["Title"] = "Buyer Profile";
-    var UserId = UserSession.CurrentUserId;
+    ViewData["Title"] = ViewBag.CanEdit == true ? "Manage Buyer Profile" : $"{Model.FirstName} {Model.LastName} - Buyer Profile";
+    // Get user ID from claims instead of UserSession to avoid null reference
+    var UserId = User?.Identity?.IsAuthenticated == true ? 
+        int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0") : 0;
+    
+    var canEdit = ViewBag.CanEdit == true;
+    var isOwnProfile = ViewBag.IsOwnProfile == true;
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="text-primary">Buyer Profile</h1>
-            <p class="text-secondary">View and edit your profile details below</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <div class="badge bg-@(Model.Badge.ToLower()) p-2">
-                <h5 class="mb-0">@Model.Badge</h5>
-                <small>@(Model.Discount * 100)% Discount</small>
-            </div>
-        </div>
-    </div>
-
-    <form asp-action="Update" method="post">
-        <input type="hidden" asp-for="BuyerId" />
-
-        <div class="row">
-            <!-- Personal Information -->
-            <div class="col-md-4">
-                <h4 class="mb-3">Personal Information</h4>
-                <div class="mb-3">
-                    <label asp-for="FirstName" class="form-label">First Name</label>
-                    <input asp-for="FirstName" class="form-control" />
-                    <span asp-validation-for="FirstName" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="LastName" class="form-label">Last Name</label>
-                    <input asp-for="LastName" class="form-control" />
-                    <span asp-validation-for="LastName" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label">Email</label>
-                    <input asp-for="Email" class="form-control" readonly />
-                </div>
-                <div class="mb-3">
-                    <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
-                    <input asp-for="PhoneNumber" class="form-control" />
-                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                </div>
-            </div>
-
-            <!-- Billing Address -->
-            <div class="col-md-4">
-                <h4 class="mb-3">Billing Address</h4>
-                <div class="mb-3">
-                    <label asp-for="BillingStreet" class="form-label">Street</label>
-                    <input asp-for="BillingStreet" class="form-control" />
-                    <span asp-validation-for="BillingStreet" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="BillingCity" class="form-label">City</label>
-                    <input asp-for="BillingCity" class="form-control" />
-                    <span asp-validation-for="BillingCity" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="BillingCountry" class="form-label">Country</label>
-                    <input asp-for="BillingCountry" class="form-control" />
-                    <span asp-validation-for="BillingCountry" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="BillingPostalCode" class="form-label">Postal Code</label>
-                    <input asp-for="BillingPostalCode" class="form-control" />
-                    <span asp-validation-for="BillingPostalCode" class="text-danger"></span>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Profile Header -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8 rounded-t-xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold">
+                                @if (canEdit)
+                                {
+                                    <span>Manage Profile</span>
+                                }
+                                else
+                                {
+                                    <span>@Model.FirstName @Model.LastName</span>
+                                }
+                            </h1>
+                            <p class="text-blue-100 mt-1">
+                                @if (canEdit)
+                                {
+                                    <span>Update your profile information and preferences</span>
+                                }
+                                else
+                                {
+                                    <span class="flex items-center gap-3">
+                                        <span class="font-medium">@Model.Username</span>
+                                        <span class="bg-white bg-opacity-20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-blue-100 border border-white border-opacity-30">
+                                            Buyer
+                                        </span>
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Badge))
+                    {
+                        <div class="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-3 rounded-lg text-center">
+                            <div class="text-lg font-bold">@Model.Badge</div>
+                            @if (canEdit && Model.Discount > 0)
+                            {
+                                <div class="text-sm text-blue-100">@(Model.Discount * 100)% Discount</div>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
 
-            <!-- Shipping Address -->
-            <div class="col-md-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>Shipping Address</h4>
-                    <div class="form-check">
-                        <input asp-for="UseSameAddress" class="form-check-input" id="useSameAddress" />
-                        <label class="form-check-label" for="useSameAddress">Same as Billing</label>
+            <div class="p-8">
+                @if (canEdit)
+                {
+                    <!-- Error Messages -->
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-red-800 font-medium">@TempData["ErrorMessage"]</p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-red-800 font-medium mb-2">Please correct the following errors:</p>
+                                    <ul class="text-red-700 text-sm list-disc list-inside space-y-1">
+                                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                        {
+                                            <li>@error.ErrorMessage</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Success Messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-green-800 font-medium">@TempData["SuccessMessage"]</p>
+                            </div>
+                        </div>
+                    }
+
+                    <form asp-action="Update" method="post" class="space-y-8">
+                        <input type="hidden" asp-for="BuyerId" />
+
+                        <!-- Personal Information -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Personal Information
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label asp-for="FirstName" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                    <input asp-for="FirstName" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                    <span asp-validation-for="FirstName" class="text-red-500 text-sm mt-1 block"></span>
+                                </div>
+                                <div>
+                                    <label asp-for="LastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                    <input asp-for="LastName" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                    <span asp-validation-for="LastName" class="text-red-500 text-sm mt-1 block"></span>
+                                </div>
+                                <div>
+                                    <label asp-for="Email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                    <input asp-for="Email" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" 
+                                           readonly />
+                                </div>
+                                <div>
+                                    <label asp-for="PhoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                    <input asp-for="PhoneNumber" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                    <span asp-validation-for="PhoneNumber" class="text-red-500 text-sm mt-1 block"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Information -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                Address Information
+                            </h3>
+                            
+                            <!-- Billing Address -->
+                            <div class="mb-8">
+                                <h4 class="font-semibold text-gray-800 mb-4">Billing Address</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label asp-for="BillingStreet" class="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                                        <input asp-for="BillingStreet" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="BillingStreet" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="BillingPostalCode" class="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
+                                        <input asp-for="BillingPostalCode" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="BillingPostalCode" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="BillingCity" class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                                        <input asp-for="BillingCity" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="BillingCity" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="BillingCountry" class="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                                        <input asp-for="BillingCountry" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="BillingCountry" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Same Address Toggle -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-300 mb-6">
+                                <div class="flex items-center space-x-3">
+                                    <input asp-for="UseSameAddress" 
+                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" 
+                                           id="useSameAddress" />
+                                    <label class="text-sm font-medium text-gray-700 cursor-pointer" for="useSameAddress">
+                                        Use same address for shipping
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Shipping Address -->
+                            <div id="shippingAddressFields">
+                                <h4 class="font-semibold text-gray-800 mb-4">Shipping Address</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label asp-for="ShippingStreet" class="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                                        <input asp-for="ShippingStreet" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="ShippingStreet" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="ShippingPostalCode" class="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
+                                        <input asp-for="ShippingPostalCode" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="ShippingPostalCode" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="ShippingCity" class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                                        <input asp-for="ShippingCity" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="ShippingCity" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="ShippingCountry" class="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                                        <input asp-for="ShippingCountry" 
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                                        <span asp-validation-for="ShippingCountry" class="text-red-500 text-sm mt-1 block"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="flex justify-end">
+                            <button type="submit" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 shadow-sm hover:shadow-lg">
+                                <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <!-- Public Profile View -->
+                    <div class="space-y-8">
+                        @{
+                            var linkageInfo = ViewBag.LinkageInfo as MarketMinds.Shared.Services.BuyerLinkageInfo;
+                        }
+                        
+                        @if (linkageInfo != null && linkageInfo.CanManageLink)
+                        {
+                            <!-- Link/Unlink Section -->
+                            <div class="text-center">
+                                @if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.None)
+                                {
+                                    <!-- Send Link Request -->
+                                    <form asp-action="SendRequest" method="post">
+                                        <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                        <button type="submit" 
+                                                class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center mx-auto">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                            </svg>
+                                            @linkageInfo.ButtonText
+                                        </button>
+                                    </form>
+                                }
+                                else if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingSent)
+                                {
+                                    <!-- Request Pending - Show Cancel Option -->
+                                    <div class="space-y-3">
+                                        <div class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg shadow-sm flex items-center mx-auto cursor-default">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            @linkageInfo.ButtonText
+                                        </div>
+                                        <form asp-action="CancelRequest" method="post">
+                                            <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                            <button type="submit" 
+                                                    class="@linkageInfo.SecondaryButtonCssClass text-white font-medium py-1.5 px-4 rounded text-sm transition-colors shadow-sm flex items-center mx-auto">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                @linkageInfo.SecondaryButtonText
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived)
+                                {
+                                    <!-- Pending Request Received - Show Accept/Reject Options -->
+                                    <div class="space-y-3">
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                            <div class="flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <p class="text-blue-800 font-medium">This buyer has sent you a link request</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-3 justify-center">
+                                            <form asp-action="AcceptRequest" method="post" class="inline">
+                                                <input type="hidden" name="requestingBuyerId" value="@Model.BuyerId" />
+                                                <button type="submit" 
+                                                        class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    @linkageInfo.ButtonText
+                                                </button>
+                                            </form>
+                                            <form asp-action="RejectRequest" method="post" class="inline">
+                                                <input type="hidden" name="requestingBuyerId" value="@Model.BuyerId" />
+                                                <button type="submit" 
+                                                        class="@linkageInfo.SecondaryButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                    @linkageInfo.SecondaryButtonText
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
+                                else if (linkageInfo.Status == MarketMinds.Shared.Services.BuyerLinkageStatus.Linked)
+                                {
+                                    <!-- Already Linked - Show Remove Link Option with Hover Effect -->
+                                    <form asp-action="RemoveLink" method="post">
+                                        <input type="hidden" name="targetBuyerId" value="@Model.BuyerId" />
+                                        <button type="submit" 
+                                                class="@linkageInfo.ButtonCssClass text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 shadow-sm flex items-center justify-center mx-auto group hover:bg-red-600 w-32"
+                                                data-default-text="@linkageInfo.ButtonText"
+                                                data-hover-text="Remove"
+                                                onmouseover="this.querySelector('.button-text').textContent = 'Remove'; this.querySelector('.button-icon').innerHTML = '<path stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6&quot;></path>'"
+                                                onmouseout="this.querySelector('.button-text').textContent = '@linkageInfo.ButtonText'; this.querySelector('.button-icon').innerHTML = '<path stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z&quot;></path>'">
+                                            <svg class="w-4 h-4 mr-2 button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span class="button-text">@linkageInfo.ButtonText</span>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        }
+                        
+                        <!-- Profile Information -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Profile Information
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">First Name</label>
+                                    <p class="text-base font-semibold text-gray-900">@Model.FirstName</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Last Name</label>
+                                    <p class="text-base font-semibold text-gray-900">@Model.LastName</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Email Address</label>
+                                    <p class="text-base font-semibold text-gray-900">@Model.Email</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Member Since</label>
+                                    <p class="text-base font-semibold text-gray-900">@DateTime.Now.ToString("MMMM yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div id="shippingAddressFields">
-                    <div class="mb-3">
-                        <label asp-for="ShippingStreet" class="form-label">Street</label>
-                        <input asp-for="ShippingStreet" class="form-control" />
-                        <span asp-validation-for="ShippingStreet" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="ShippingCity" class="form-label">City</label>
-                        <input asp-for="ShippingCity" class="form-control" />
-                        <span asp-validation-for="ShippingCity" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="ShippingCountry" class="form-label">Country</label>
-                        <input asp-for="ShippingCountry" class="form-control" />
-                        <span asp-validation-for="ShippingCountry" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="ShippingPostalCode" class="form-label">Postal Code</label>
-                        <input asp-for="ShippingPostalCode" class="form-control" />
-                        <span asp-validation-for="ShippingPostalCode" class="text-danger"></span>
-                    </div>
-                </div>
+                }
             </div>
         </div>
 
-        <!-- Submit Button -->
-        <div class="row mt-3">
-            <div class="col-12 text-center">
-                <button type="submit" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-save"></i> Save
-                </button>
-            </div>
-        </div>
-    </form>
-
-    <!-- Quick Actions -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <h3 class="text-center mb-3">Quick Actions</h3>
-            <div class="d-flex justify-content-center flex-wrap">
-                <a href="@Url.Action("Index", "BidProduct")" class="btn btn-outline-primary m-2">Bid Product</a>
-                <a href="@Url.Action("Index", "WalletRefill")" class="btn btn-outline-primary m-2">Refill Wallet</a>
-            </div>
-            <div class="d-flex justify-content-center flex-wrap mt-2">
-                <a asp-area="" asp-controller="Order" asp-action="OrderHistory" asp-route-userId="@UserId" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Order History</a>
-                <a href="@Url.Action("Index", "RenewContract")" class="btn btn-outline-primary m-2">Renew Contract</a>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Generate Contract Modal -->
-<div class="modal fade" id="generateContractModal" tabindex="-1" aria-labelledby="generateContractModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form asp-controller="Contract" asp-action="GenerateContract" method="post">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="contractId" class="form-label">Contract ID</label>
-                        <input type="number" class="form-control" id="contractId" name="contractId" required>
+        <!-- Links Section -->
+        @if (Model.LinkedBuyers != null && Model.LinkedBuyers.Any())
+        {
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+                <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-6 rounded-t-xl">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Linked Buyers
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium ml-3">
+                            @Model.LinkedBuyers.Count
+                        </span>
+                    </h3>
+                </div>
+                <div class="p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach (var linkedBuyer in Model.LinkedBuyers)
+                        {
+                            <a href="@Url.Action("PublicProfile", "BuyerProfile", new { id = linkedBuyer.BuyerId })" 
+                               class="block bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors border border-gray-200 hover:border-blue-300 hover:shadow-md">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-lg">
+                                        @{
+                                            string initials = "?";
+                                            if (!string.IsNullOrEmpty(linkedBuyer.Username))
+                                            {
+                                                initials = linkedBuyer.Username.Length >= 2 ? linkedBuyer.Username.Substring(0, 2).ToUpper() : linkedBuyer.Username.ToUpper();
+                                            }
+                                            else if (!string.IsNullOrEmpty(linkedBuyer.FirstName))
+                                            {
+                                                initials = linkedBuyer.FirstName.Substring(0, 1).ToUpper();
+                                                if (!string.IsNullOrEmpty(linkedBuyer.LastName))
+                                                {
+                                                    initials += linkedBuyer.LastName.Substring(0, 1).ToUpper();
+                                                }
+                                            }
+                                        }
+                                        @initials
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-semibold text-gray-900 truncate">
+                                            @if (!string.IsNullOrEmpty(linkedBuyer.Username))
+                                            {
+                                                @linkedBuyer.Username
+                                            }
+                                            else
+                                            {
+                                                <span class="text-gray-500 italic">Unknown User</span>
+                                            }
+                                        </h4>
+                                        <div class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium inline-block mt-1">
+                                            @linkedBuyer.Badge
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(linkedBuyer.Email))
+                                        {
+                                            <p class="text-sm text-gray-500 truncate mt-1">@linkedBuyer.Email</p>
+                                        }
+                                    </div>
+                                </div>
+                            </a>
+                        }
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Generate</button>
+            </div>
+        }
+
+        <!-- Following Section -->
+        @if (Model.FollowingSellers != null && Model.FollowingSellers.Any())
+        {
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+                <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-8 py-6 rounded-t-xl">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        Following Sellers
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium ml-3">
+                            @Model.FollowingSellers.Count
+                        </span>
+                    </h3>
                 </div>
-            </form>
-        </div>
+                <div class="p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach (var followedSeller in Model.FollowingSellers)
+                        {
+                            <a href="@Url.Action("PublicProfile", "SellerProfile", new { id = followedSeller.SellerId })" 
+                               class="block bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors border border-gray-200 hover:border-purple-300 hover:shadow-md">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg">
+                                        @{
+                                            var firstInitial = !string.IsNullOrEmpty(followedSeller.FirstName) ? followedSeller.FirstName.First().ToString().ToUpper() : "?";
+                                            var lastInitial = !string.IsNullOrEmpty(followedSeller.LastName) ? followedSeller.LastName.First().ToString().ToUpper() : "";
+                                        }
+                                        @firstInitial@lastInitial
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-semibold text-gray-900 truncate">@followedSeller.FirstName @followedSeller.LastName</h4>
+                                        @if (!string.IsNullOrEmpty(followedSeller.StoreName))
+                                        {
+                                            <div class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium inline-block mt-1">
+                                                @followedSeller.StoreName
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(followedSeller.Email))
+                                        {
+                                            <p class="text-sm text-gray-500 truncate mt-1">@followedSeller.Email</p>
+                                        }
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (canEdit)
+        {
+            <!-- Contract Management -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Contract Management
+                </h3>
+                
+                <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+                    <!-- Renew Contract -->
+                    <a href="@Url.Action("Index", "RenewContract")" 
+                       class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Renew Contract
+                    </a>
+                    
+                    <!-- Generate Contract Form -->
+                    <form asp-controller="Contract" asp-action="GenerateContract" method="post" class="flex items-end gap-4">
+                        <div>
+                            <label for="contractId" class="block text-sm font-medium text-gray-700 mb-2">Contract ID</label>
+                            <input type="number" 
+                                   class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   id="contractId" name="contractId" 
+                                   placeholder="Enter ID" required />
+                        </div>
+                        <button type="submit" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-sm flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Generate Contract
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
+            console.log("Document ready - initializing address logic");
+            
+            // Function to copy billing address to shipping address
+            function copyBillingToShipping() {
+                console.log("copyBillingToShipping called");
+                
+                var billingStreet = $("#BillingStreet").val();
+                var billingCity = $("#BillingCity").val();
+                var billingCountry = $("#BillingCountry").val();
+                var billingPostalCode = $("#BillingPostalCode").val();
+                
+                console.log("Billing address values:", {
+                    street: billingStreet,
+                    city: billingCity,
+                    country: billingCountry,
+                    postalCode: billingPostalCode
+                });
+                
+                $("#ShippingStreet").val(billingStreet);
+                $("#ShippingCity").val(billingCity);
+                $("#ShippingCountry").val(billingCountry);
+                $("#ShippingPostalCode").val(billingPostalCode);
+                
+                console.log("Shipping address updated to:", {
+                    street: $("#ShippingStreet").val(),
+                    city: $("#ShippingCity").val(),
+                    country: $("#ShippingCountry").val(),
+                    postalCode: $("#ShippingPostalCode").val()
+                });
+            }
+
             // Function to toggle shipping address fields based on checkbox
             function toggleShippingFields() {
-                if ($("#useSameAddress").is(":checked")) {
-                    $("#shippingAddressFields").hide();
+                var isChecked = $("#useSameAddress").is(":checked");
+                console.log("toggleShippingFields called, checkbox checked:", isChecked);
+                
+                if (isChecked) {
+                    console.log("Checkbox is checked - copying billing to shipping and hiding fields");
+                    // Copy billing address to shipping address FIRST
+                    copyBillingToShipping();
+                    // Then hide the shipping address fields
+                    $("#shippingAddressFields").slideUp(300);
                 } else {
-                    $("#shippingAddressFields").show();
+                    console.log("Checkbox is unchecked - showing shipping fields");
+                    // Show the shipping address fields
+                    $("#shippingAddressFields").slideDown(300);
                 }
             }
 
-            // Initial state
-            toggleShippingFields();
+            // Initial state setup
+            console.log("Setting up initial state");
+            var initialCheckState = $("#useSameAddress").is(":checked");
+            console.log("Initial checkbox state:", initialCheckState);
+            
+            // Set initial state without animation
+            if (initialCheckState) {
+                copyBillingToShipping();
+                $("#shippingAddressFields").hide();
+            } else {
+                $("#shippingAddressFields").show();
+            }
 
-            // Event handler
-            $("#useSameAddress").change(toggleShippingFields);
+            // Event handler for checkbox change
+            $("#useSameAddress").change(function() {
+                console.log("Checkbox changed!");
+                toggleShippingFields();
+            });
+
+            // Event handler for billing address changes - copy to shipping if checkbox is checked
+            $("#BillingStreet, #BillingCity, #BillingCountry, #BillingPostalCode").on('input change keyup', function() {
+                var isChecked = $("#useSameAddress").is(":checked");
+                var fieldId = $(this).attr('id');
+                var fieldValue = $(this).val();
+                
+                console.log("Billing field changed:", fieldId, "=", fieldValue, "checkbox checked:", isChecked);
+                
+                if (isChecked) {
+                    console.log("Checkbox is checked, copying billing changes to shipping");
+                    copyBillingToShipping();
+                }
+            });
+
+            // Before form submission - ensure data is properly set
+            $('form[action*="Update"]').on('submit', function(e) {
+                console.log("Profile form submission started");
+                
+                // Remove any existing client-side error messages
+                $('#clientValidationError').remove();
+                
+                // Client-side validation - check all required fields
+                var validationErrors = [];
+                var hasErrors = false;
+
+                // Check personal information fields
+                if (!$("#FirstName").val().trim()) {
+                    validationErrors.push("First name is required");
+                    hasErrors = true;
+                }
+                if (!$("#LastName").val().trim()) {
+                    validationErrors.push("Last name is required");
+                    hasErrors = true;
+                }
+                if (!$("#PhoneNumber").val().trim()) {
+                    validationErrors.push("Phone number is required");
+                    hasErrors = true;
+                }
+
+                // Check billing address fields
+                if (!$("#BillingStreet").val().trim()) {
+                    validationErrors.push("Billing street address is required");
+                    hasErrors = true;
+                }
+                if (!$("#BillingCity").val().trim()) {
+                    validationErrors.push("Billing city is required");
+                    hasErrors = true;
+                }
+                if (!$("#BillingCountry").val().trim()) {
+                    validationErrors.push("Billing country is required");
+                    hasErrors = true;
+                }
+                if (!$("#BillingPostalCode").val().trim()) {
+                    validationErrors.push("Billing postal code is required");
+                    hasErrors = true;
+                }
+
+                var isChecked = $("#useSameAddress").is(":checked");
+                console.log("UseSameAddress checkbox:", isChecked);
+                
+                // Check shipping address fields if not using same address
+                if (!isChecked) {
+                    if (!$("#ShippingStreet").val().trim()) {
+                        validationErrors.push("Shipping street address is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                    if (!$("#ShippingCity").val().trim()) {
+                        validationErrors.push("Shipping city is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                    if (!$("#ShippingCountry").val().trim()) {
+                        validationErrors.push("Shipping country is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                    if (!$("#ShippingPostalCode").val().trim()) {
+                        validationErrors.push("Shipping postal code is required when not using the same as billing address");
+                        hasErrors = true;
+                    }
+                }
+
+                // If there are validation errors, prevent submission and show in-page error
+                if (hasErrors) {
+                    e.preventDefault();
+                    
+                    // Create error message HTML
+                    var errorHtml = '<div id="clientValidationError" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">' +
+                        '<div class="flex items-start">' +
+                        '<svg class="w-5 h-5 text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>' +
+                        '</svg>' +
+                        '<div>' +
+                        '<p class="text-red-800 font-medium">All fields must be completed before updating your profile.</p>' +
+                        '</div></div></div>';
+                    
+                    // Insert error message at the top of the form
+                    $('form[action*="Update"]').prepend(errorHtml);
+                    
+                    // Scroll to top to show the error
+                    $('html, body').animate({
+                        scrollTop: $('#clientValidationError').offset().top - 20
+                    }, 500);
+                    
+                    console.log("Form submission prevented due to validation errors:", validationErrors);
+                    return false;
+                }
+                
+                if (isChecked) {
+                    console.log("Checkbox checked - ensuring shipping address matches billing");
+                    copyBillingToShipping();
+                }
+                
+                // Log all form values before submission
+                console.log("Final form values before submission:");
+                console.log("Billing Address:", {
+                    street: $("#BillingStreet").val(),
+                    city: $("#BillingCity").val(),
+                    country: $("#BillingCountry").val(),
+                    postalCode: $("#BillingPostalCode").val()
+                });
+                console.log("Shipping Address:", {
+                    street: $("#ShippingStreet").val(),
+                    city: $("#ShippingCity").val(),
+                    country: $("#ShippingCountry").val(),
+                    postalCode: $("#ShippingPostalCode").val()
+                });
+                console.log("UseSameAddress:", $("#useSameAddress").is(":checked"));
+                
+                console.log("Allowing form to submit normally...");
+            });
+            
+            console.log("JavaScript initialization complete");
         });
     </script>
 }

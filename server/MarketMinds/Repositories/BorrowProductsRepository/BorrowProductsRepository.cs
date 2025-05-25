@@ -17,7 +17,6 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
         public List<BorrowProduct> GetProducts()
         {
             var products = context.BorrowProducts
-                .Include(product => product.Seller)
                 .Include(product => product.Condition)
                 .Include(product => product.Category)
                 .ToList();
@@ -70,7 +69,6 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
         public BorrowProduct GetProductByID(int id)
         {
             var product = context.BorrowProducts
-                .Include(product => product.Seller)
                 .Include(product => product.Condition)
                 .Include(product => product.Category)
                 .FirstOrDefault(product => product.Id == id);
@@ -78,6 +76,15 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
             if (product == null)
             {
                 throw new KeyNotFoundException($"BorrowProduct with ID {id} not found.");
+            }
+
+            if (product.SellerId != null)
+            {
+                var seller = context.Users.FirstOrDefault(u => u.Id == product.SellerId);
+                if (seller != null)
+                {
+                    product.Seller = seller;
+                }
             }
 
             LoadProductRelationships(product);

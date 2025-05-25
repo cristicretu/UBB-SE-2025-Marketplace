@@ -8,6 +8,7 @@ namespace Server.Controllers
     using global::MarketMinds.Shared.Models;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using System.Diagnostics;
 
     /// <summary>
     /// API controller for managing seller data.
@@ -200,19 +201,33 @@ namespace Server.Controllers
         /// <returns>An ActionResult containing the seller information.</returns>
         [HttpGet("{userId}/info")]
         [ProducesResponseType(typeof(Seller), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Seller>> GetSellerInfo(int userId)
         {
             try
             {
-                var user = new User();
-                user.Id = userId;
+                Debug.WriteLine($"GetSellerInfo API called for User ID: {userId}");
+
+                // Create a User object with the provided userId
+                var user = new User { Id = userId };
+
+                // Use the repository to get seller info
                 var seller = await this.sellerRepository.GetSellerInfo(user);
-                return this.Ok(seller);
+
+                if (seller == null)
+                {
+                    Debug.WriteLine($"Seller not found for User ID: {userId}");
+                    return NotFound($"Seller not found for User ID: {userId}");
+                }
+
+                Debug.WriteLine($"Returning seller with ID: {seller.Id}, StoreName: {seller.StoreName}");
+                return Ok(seller);
             }
             catch (Exception ex)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while getting seller info for User ID: {userId}. Error: {ex.Message}");
+                Debug.WriteLine($"Error in GetSellerInfo: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while getting seller info for User ID: {userId}. Error: {ex.Message}");
             }
         }
 

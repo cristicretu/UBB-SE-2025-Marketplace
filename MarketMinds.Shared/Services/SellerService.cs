@@ -6,156 +6,212 @@
 
 namespace MarketMinds.Shared.Services
 {
+    using System.Diagnostics;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
+    using System;
 
     /// <summary>
-    /// Provides services related to seller operations.
+    /// Service for managing seller-related operations.
     /// </summary>
     public class SellerService : ISellerService
     {
-        private ISellerRepository sellerRepository;
+        private readonly ISellerRepository sellerRepository;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SellerService"/> class with the specified seller repository.
+        /// Initializes a new instance of the <see cref="SellerService"/> class.
         /// </summary>
-        /// <param name="sellerRepository">The repository used to access seller data.</param>
+        /// <param name="sellerRepository">The seller repository.</param>
         public SellerService(ISellerRepository sellerRepository)
         {
-            this.sellerRepository = sellerRepository;
+            Debug.WriteLine("SellerService constructor called");
+            this.sellerRepository = sellerRepository ?? throw new ArgumentNullException(nameof(sellerRepository));
         }
 
-        /// <summary>
-        /// Retrieves seller information based on the provided user.
-        /// </summary>
-        /// <param name="user">The user associated with the seller.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the seller information.</returns>
-        public async Task<Seller> GetSellerByUser(User user)
-        {
-            Seller seller = await this.sellerRepository.GetSellerInfo(user);
-            return seller;
-        }
-
-        /// <summary>
-        /// Retrieves a list of all products associated with the specified seller ID.
-        /// </summary>
-        /// <param name="sellerID">The ID of the seller.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of products.</returns>
-        public async Task<List<BuyProduct>> GetAllProducts(int sellerID)
-        {
-            return await this.sellerRepository.GetProducts(sellerID);
-        }
-
-        /// <summary>
-        /// Updates the seller information with the provided seller details.
-        /// </summary>
-        /// <param name="seller">The seller object containing the updated information.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public async Task UpdateSeller(Seller seller)
-        {
-            await this.sellerRepository.UpdateSeller(seller);
-        }
-
-        /// <summary>
-        /// Creates a new seller with the provided seller details.
-        /// </summary>
-        /// <param name="seller">The seller object containing the information for the new seller.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public async Task CreateSeller(Seller seller)
-        {
-            await this.sellerRepository.AddSeller(seller);
-        }
-
-        /// <summary>
-        /// Calculates the average review score for the specified seller and updates the seller's trust score.
-        /// </summary>
-        /// <param name="sellerId">The ID of the seller.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the average review score.</returns>
+        /// <inheritdoc/>
         public async Task<double> CalculateAverageReviewScore(int sellerId)
         {
-            var reviews = await this.sellerRepository.GetReviews(sellerId);
-            double reviewScore = 0;
-            if (reviews.Count != 0)
+            Debug.WriteLine($"CalculateAverageReviewScore called for seller ID: {sellerId}");
+            try
             {
-                reviewScore = reviews.Average(r => r.Score);
-            }
+                var reviews = await this.sellerRepository.GetReviews(sellerId);
 
-            await this.sellerRepository.UpdateTrustScore(sellerId, reviewScore);
-            return reviewScore;
-        }
-
-        /// <summary>
-        /// Retrieves the latest notifications for the specified seller.
-        /// </summary>
-        /// <param name="sellerId">The ID of the seller.</param>
-        /// <param name="maxNotifications">The maximum number of notifications to return.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of notification messages.</returns>
-        public async Task<List<string>> GetNotifications(int sellerId, int maxNotifications)
-        {
-            return await this.sellerRepository.GetNotifications(sellerId, maxNotifications);
-        }
-
-        /// <summary>
-        /// Generate a new follower notification if the follower count changed.
-        /// </summary>
-        /// <param name="sellerId">The ID of the seller.</param>
-        /// <param name="currentFollowerCount">The current follower count of the seller.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public async Task GenerateFollowersChangedNotification(int sellerId, int currentFollowerCount)
-        {
-            int lastFollowerCount = await this.sellerRepository.GetLastFollowerCount(sellerId);
-            if (currentFollowerCount != lastFollowerCount)
-            {
-                string notificationMessage = this.GenerateNotificationMessageFromFollowerCount(currentFollowerCount, lastFollowerCount);
-                await this.sellerRepository.AddNewFollowerNotification(sellerId, currentFollowerCount, notificationMessage);
-            }
-        }
-
-        private string GenerateNotificationMessageFromFollowerCount(int currentFollowerCount, int lastFollowerCount)
-        {
-            List<int> milestones = new List<int>() { 100, 50, 10 };
-            Dictionary<int, string> milestoneMessages = new Dictionary<int, string>()
-            {
-                { 100, "Congratulations!" },
-                { 50, "Amazing!" },
-                { 10, "Incredible!" },
-            };
-            string message = string.Empty;
-            int followersGained = currentFollowerCount - lastFollowerCount;
-            int followersLost = -followersGained;
-            if (followersGained > 0)
-            {
-                foreach (int milestone in milestones)
+                if (reviews == null || reviews.Count == 0)
                 {
-                    if (currentFollowerCount >= milestone && currentFollowerCount % milestone == 0)
-                    {
-                        message = $"{milestoneMessages[milestone]} You've reached {currentFollowerCount} followers!";
-                        return message;
-                    }
+                    Debug.WriteLine("No reviews found, returning 0");
+                    return 0;
+                }
+
+                double totalRating = reviews.Sum(r => r.Rating);
+                double averageScore = totalRating / reviews.Count;
+
+                Debug.WriteLine($"Calculated average score: {averageScore} from {reviews.Count} reviews");
+                return averageScore;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error calculating average review score: {ex.Message}");
+                return 0;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<BuyProduct>> GetAllProducts(int sellerId)
+        {
+            Debug.WriteLine($"GetAllProducts called for seller ID: {sellerId}");
+            try
+            {
+                var products = await this.sellerRepository.GetProducts(sellerId);
+                Debug.WriteLine($"Retrieved {products.Count} products");
+                return products;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting products: {ex.Message}");
+                return new List<BuyProduct>();
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task GenerateFollowersChangedNotification(int sellerId, int followerCount)
+        {
+            Debug.WriteLine($"GenerateFollowersChangedNotification called for seller ID: {sellerId}, follower count: {followerCount}");
+            try
+            {
+                int lastFollowerCount = await this.sellerRepository.GetLastFollowerCount(sellerId);
+
+                if (lastFollowerCount != followerCount)
+                {
+                    string message = lastFollowerCount < followerCount
+                        ? $"You gained a new follower! You now have {followerCount} followers."
+                        : $"You lost a follower. You now have {followerCount} followers.";
+
+                    await this.sellerRepository.AddNewFollowerNotification(sellerId, followerCount, message);
+                    Debug.WriteLine("Notification generated");
+                }
+                else
+                {
+                    Debug.WriteLine("Follower count unchanged, no notification generated");
                 }
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error generating follower notification: {ex.Message}");
+            }
+        }
 
-            if (followersGained > 1)
+        /// <inheritdoc/>
+        public async Task<List<string>> GetNotifications(int sellerId, int maxNotifications)
+        {
+            Debug.WriteLine($"GetNotifications called for seller ID: {sellerId}, max: {maxNotifications}");
+            try
             {
-                message = $"You have gained {followersGained} new followers!";
+                var notifications = await this.sellerRepository.GetNotifications(sellerId, maxNotifications);
+                Debug.WriteLine($"Retrieved {notifications.Count} notifications");
+                return notifications;
             }
-            else if (followersGained == 1)
+            catch (Exception ex)
             {
-                message = $"You have gained {followersGained} new follower!";
+                Debug.WriteLine($"Error getting notifications: {ex.Message}");
+                return new List<string>();
             }
-            else if (followersLost == 1)
+        }
+
+        /// <inheritdoc/>
+        public async Task<Seller> GetSellerByUser(User user)
+        {
+            Debug.WriteLine($"GetSellerByUser called for User ID: {user?.Id ?? -1}");
+
+            if (user == null)
             {
-                message = $"You have lost {followersLost} follower!";
-            }
-            else if (followersLost > 1)
-            {
-                message = $"You have lost {followersLost} followers!";
+                Debug.WriteLine("User is null, returning null");
+                return null;
             }
 
-            return message;
+            try
+            {
+                var seller = await this.sellerRepository.GetSellerInfo(user);
+
+                if (seller == null)
+                {
+                    Debug.WriteLine("Repository returned null Seller, creating new one with User");
+                    return new Seller(user);
+                }
+
+                if (seller.User == null)
+                {
+                    seller.User = user;
+                }
+
+                Debug.WriteLine($"Retrieved seller: ID={seller.Id}, StoreName='{seller.StoreName}', Username='{seller.User?.Username}'");
+                return seller;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting seller: {ex.Message}");
+                return new Seller(user);
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task UpdateSeller(Seller seller)
+        {
+            Debug.WriteLine($"UpdateSeller called for seller ID: {seller?.Id ?? -1}");
+
+            if (seller == null)
+            {
+                throw new ArgumentNullException(nameof(seller), "Seller is null, cannot update");
+            }
+
+            if (seller.Id <= 0)
+            {
+                throw new ArgumentException("Invalid seller ID", nameof(seller));
+            }
+
+            try
+            {
+                await this.sellerRepository.UpdateSeller(seller);
+                Debug.WriteLine("Seller updated successfully");
+
+                var reviewScore = await CalculateAverageReviewScore(seller.Id);
+                await this.sellerRepository.UpdateTrustScore(seller.Id, reviewScore);
+                Debug.WriteLine("Trust score updated");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error updating seller: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<Seller?> GetSellerByIdAsync(int sellerId)
+        {
+            try
+            {
+                Debug.WriteLine($"GetSellerByIdAsync called for seller ID: {sellerId}");
+
+                if (sellerId <= 0)
+                {
+                    Debug.WriteLine("Invalid seller ID, returning null");
+                    return null;
+                }
+
+                // Create a User object with the seller ID and get seller info
+                var user = new User { Id = sellerId };
+                var seller = await this.sellerRepository.GetSellerInfo(user);
+                
+                Debug.WriteLine($"Retrieved seller: ID={seller?.Id ?? -1}, StoreName='{seller?.StoreName}'");
+                return seller;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting seller by ID {sellerId}: {ex.Message}");
+                return null;
+            }
         }
     }
 }

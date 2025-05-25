@@ -1,5 +1,6 @@
 using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 using Microsoft.Extensions.Configuration;
 
@@ -81,5 +82,33 @@ namespace MarketMinds.Shared.Services
 
             return new List<NotificationModel>();
         }
+
+        /// <summary>
+        /// Sends a notification to a user by creating a ProductAvailableNotification
+        /// </summary>
+        /// <param name="userId">The user ID to send the notification to</param>
+        /// <param name="message">The notification message</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task SendNotificationAsync(int userId, string message)
+        {
+            try
+            {
+                // Create a ProductAvailableNotification for waitlist assignment
+                var notification = new ProductAvailableNotification(
+                    recipientId: userId,
+                    timestamp: DateTime.Now,
+                    productId: 0, // We don't have product ID in this context, could be enhanced later
+                    isRead: false
+                );
+
+                // Use the notification repository to add the notification
+                await notificationRepository.AddNotification(notification);
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't throw to avoid breaking the main flow
+                System.Diagnostics.Debug.WriteLine($"Error sending notification to user {userId}: {ex.Message}");
+            }
+        }
     }
-} 
+}

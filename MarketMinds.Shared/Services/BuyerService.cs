@@ -137,7 +137,15 @@ namespace MarketMinds.Shared.Services
 
                 foreach (var linkage in buyer.Linkages)
                 {
-                    linkedBuyerList.Add(linkage.Buyer);
+                    // Get the other buyer ID from the linkage
+                    var otherBuyerId = linkage.GetOtherBuyerId(buyer.Id);
+                    if (otherBuyerId.HasValue)
+                    {
+                        // Create a buyer with just the ID and load their info
+                        var linkedBuyer = new Buyer { Id = otherBuyerId.Value };
+                        await this.buyerRepo.LoadBuyerInfo(linkedBuyer);
+                        linkedBuyerList.Add(linkedBuyer);
+                    }
                 }
 
                 // For the main buyer, ensure we have basic info and user data
@@ -337,14 +345,74 @@ namespace MarketMinds.Shared.Services
         }
 
         /// <inheritdoc/>
+        public async Task<Buyer?> GetBuyerByIdAsync(int buyerId)
+        {
+            try
+            {
+                if (buyerId <= 0)
+                {
+                    return null;
+                }
+
+                // Check if buyer exists first
+                var exists = await this.buyerRepo.CheckIfBuyerExists(buyerId);
+                if (!exists)
+                {
+                    return null;
+                }
+
+                // Create a new buyer with the ID and load the info including User data
+                var buyer = new Buyer { Id = buyerId };
+                
+                // First get the user associated with this buyer
+                buyer.User = await this.userRepo.GetUserById(buyerId);
+                
+                // Load buyer info and user data
+                await this.LoadBuyer(buyer, BuyerDataSegments.BasicInfo | BuyerDataSegments.User);
+                
+                return buyer;
+            }
+            catch (Exception)
+            {
+                // If any error occurs, return null
+                return null;
+            }
+        }
+
+        /// <inheritdoc/>
         public int GetBadgeProgress(Buyer buyer)
         {
-            decimal totalSpendingWeightedScore = (buyer.TotalSpending / SpendingBase) * SpendingWeight;
-            decimal nrPurchasesWeightedScore = (buyer.NumberOfPurchases / PurchasesBase) * PurchasesWeight;
+            if (buyer == null)
+            {
+                return (int)MinimumBadgeProgress;
+            }
 
-            // Ensure progress is at least MinimumBadgeProgress and capped at MaxBadgeProgress
-            decimal calculatedProgress = (totalSpendingWeightedScore + nrPurchasesWeightedScore) * MaxBadgeProgress;
-            return (int)Math.Max(MinimumBadgeProgress, Math.Min(MaxBadgeProgress, calculatedProgress));
+            // Calculate spending progress (weighted)
+            decimal spendingProgress = Math.Min(buyer.TotalSpending / SpendingBase, 1.0m) * SpendingWeight;
+
+            // Calculate purchase count progress (weighted)
+            decimal purchaseProgress = Math.Min(buyer.NumberOfPurchases / PurchasesBase, 1.0m) * PurchasesWeight;
+
+            // Combine both factors
+            decimal totalProgress = (spendingProgress + purchaseProgress) * 100;
+
+            // Clamp between minimum and maximum
+            return (int)Math.Max(MinimumBadgeProgress, Math.Min(MaxBadgeProgress, totalProgress));
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<BuyerWishlistItem>> GetWishlistItems(int buyerId)
+        {
+            try
+            {
+                var wishlist = await this.buyerRepo.GetWishlist(buyerId);
+                return wishlist?.Items ?? new List<BuyerWishlistItem>();
+            }
+            catch (Exception)
+            {
+                // Return empty list if any error occurs
+                return new List<BuyerWishlistItem>();
+            }
         }
 
         /// <summary>

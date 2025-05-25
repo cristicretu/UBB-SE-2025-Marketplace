@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
@@ -6,6 +6,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
+using MarketMinds.Shared.Services.BorrowProductsService;
+using ViewModelLayer.ViewModel;
 
 namespace MarketMinds.Views
 {
@@ -18,11 +20,13 @@ namespace MarketMinds.Views
         private readonly int currentProductId;
         private readonly IWaitListViewModel waitListViewModel;
         private readonly NotificationViewModel notificationVM;
+        private readonly BorrowProductsViewModel productsVm;
 
         public BorrowProductWindow(int productId)
         {
             this.InitializeComponent();
             this.currentProductId = productId;
+            this.productsVm = new BorrowProductsViewModel(new BorrowProductsService());
             this.waitListViewModel = new WaitListViewModel();
             this.notificationVM = new NotificationViewModel(this.GetCurrentUserId());
             this.Activated += this.Window_Activated;
@@ -46,15 +50,15 @@ namespace MarketMinds.Views
         {
             try
             {
-                var product = await this.waitListViewModel.GetProductByIdAsync(this.currentProductId);
+                // ← use the borrow-products VM instead of the waitlist VM
+                var product = await this.productsVm.GetBorrowProductByIdAsync(this.currentProductId);
                 if (product != null)
                 {
-                    string sellerName = await this.waitListViewModel.GetSellerNameAsync(product.SellerId);
+                    var sellerName = product.Seller?.Username ?? "Unknown Seller";
                     this.DisplayProduct(product, sellerName);
 
-                    int currentUserId = this.GetCurrentUserId();
-                    bool isOnWaitlist = await this.waitListViewModel.IsUserInWaitlist(currentUserId, this.currentProductId);
-
+                    bool isOnWaitlist = await this.waitListViewModel
+                                               .IsUserInWaitlist(this.GetCurrentUserId(), this.currentProductId);
                     this.UpdateWaitlistUI(isOnWaitlist);
                 }
                 else
@@ -87,24 +91,25 @@ namespace MarketMinds.Views
         private void DisplayProduct(BorrowProduct product, string sellerName)
         {
             this.txtProductName.Text = product.Title;
-            this.txtPrice.Text = $"Price: ${product.Price}";
+            this.txtPrice.Text = $"Rate: ${product.DailyRate:F2}/day";
             this.txtSeller.Text = $"Seller: {sellerName}";
-            this.txtType.Text = $"Type: {product.Category?.Name}"; // merge-niscusor -> ensure the Category object is populated here, it might be null!!!!
+            this.txtType.Text = $"Category: {product.Category?.Name ?? "–"}";
 
-            bool isAvailable = product.EndDate == DateTime.MinValue;
-
-            if (isAvailable)
+            if (!product.IsBorrowed)
             {
-                this.txtDates.Text = product.StartDate == DateTime.MinValue
-                    ? "Availability: Now"
-                    : $"Available after: {product.StartDate:yyyy-MM-dd}";
+                this.txtDates.Text = product.StartDate.HasValue
+                    ? $"Available from: {product.StartDate:yyyy-MM-dd}"
+                    : "Available: Now";
 
                 this.ButtonBorrow.Visibility = Visibility.Visible;
                 this.ButtonJoinWaitList.Visibility = Visibility.Collapsed;
             }
             else
             {
-                this.txtDates.Text = $"Unavailable until: {product.EndDate:yyyy-MM-dd}";
+                this.txtDates.Text = product.EndDate.HasValue
+                    ? $"Due back: {product.EndDate:yyyy-MM-dd}"
+                    : "Currently unavailable";
+
                 this.ButtonBorrow.Visibility = Visibility.Collapsed;
                 this.ButtonJoinWaitList.Visibility = Visibility.Visible;
             }
@@ -153,7 +158,7 @@ namespace MarketMinds.Views
             {
                 int currentUserId = this.GetCurrentUserId();
 
-                this.waitListViewModel.AddUserToWaitlist(currentUserId, this.currentProductId);
+                await this.waitListViewModel.AddUserToWaitlist(currentUserId, this.currentProductId);
 
                 this.UpdateWaitlistUI(true);
 
@@ -171,7 +176,7 @@ namespace MarketMinds.Views
         /// <returns></returns>
         private int GetCurrentUserId()
         {
-            return 1;
+            return UserSession.CurrentUserId ?? 2;
         }
 
         /// <summary>
@@ -257,6 +262,38 @@ namespace MarketMinds.Views
             catch (Exception ex)
             {
                 await this.ShowMessageAsync("Error", $"Couldn't load notifications: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles clicking the “Borrow” button: calls the API to borrow the product.
+        /// </summary>
+        private async void ButtonBorrow_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                int userId = this.GetCurrentUserId();       // your logged-in user
+                int productId = this.currentProductId;
+
+                // Call your service / API to borrow:
+                // assuming you have a WaitlistService or BorrowProductsService with a method:
+                var borrowService = new BorrowProductsService();
+                // If your API expects start/end dates as query params, send them too:
+                DateTime start = DateTime.UtcNow;
+                DateTime end = start.AddDays(7);
+
+                // Fire the HTTP request to your new endpoint
+                await borrowService.BorrowProductAsync(userId, productId, start, end);
+
+                // Let the user know:
+                await this.ShowMessageAsync("Success", "You have borrowed the product!");
+
+                // Refresh the UI (hide button, show waitlist options, update dates)
+                await this.LoadProductDetails();
+            }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Error", $"Failed to borrow: {ex.Message}");
             }
         }
     }

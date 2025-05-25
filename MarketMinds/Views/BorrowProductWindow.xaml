@@ -9,6 +9,21 @@
     Title="Product Details">
 
     <Grid Margin="20">
+        <!-- 1) Define TWO columns -->
+        <Grid.ColumnDefinitions>
+            <!-- Left side for details -->
+            <ColumnDefinition Width="2*" />
+            <!-- Right side for actions -->
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- You already have these three rows -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <Grid.Resources>
             <Style TargetType="TextBlock">
                 <Setter Property="Foreground" Value="#cccaca"/>
@@ -24,14 +39,8 @@
             </Style>
         </Grid.Resources>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <!-- Product Details Section -->
-        <StackPanel Grid.Row="0" Grid.ColumnSpan="2">
+        <!-- Product Details Section (spans both cols if you like) -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
             <TextBlock x:Name="txtProductName" FontSize="20" FontWeight="Bold"/>
             <TextBlock x:Name="txtPrice" FontSize="16"/>
             <TextBlock x:Name="txtSeller" FontSize="16"/>
@@ -40,55 +49,48 @@
         </StackPanel>
 
         <!-- Spacer -->
-        <Grid Grid.Row="1"/>
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"/>
 
-        <!-- Action Buttons -->
+        <!-- Borrow Button (left column) -->
         <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,20,0,0">
-            <Button x:Name="ButtonBorrow" 
-                    Content="Borrow" 
-                    Visibility="Collapsed"/>
+            <Button x:Name="ButtonBorrow"
+                    Content="Borrow"
+                    Visibility="Collapsed"
+                    Click="ButtonBorrow_Click"/>
         </StackPanel>
 
-        <!-- Waitlist Actions - Now properly aligned -->
+        <!-- Waitlist Actions (right column) -->
         <StackPanel Grid.Row="2" Grid.Column="1" Margin="20,20,0,0">
-            <!-- Join Waitlist Button (shown when not on waitlist) -->
-            <Button x:Name="ButtonJoinWaitList" 
-            Content="Join Waitlist" 
-            Click="ButtonJoinWaitList_Click"
-            Margin="0,0,0,10"
-            HorizontalAlignment="Right"
-            Width="150"
-            Visibility="Visible"/>
+            <Button x:Name="ButtonJoinWaitList"
+                    Content="Join Waitlist"
+                    Click="ButtonJoinWaitList_Click"
+                    Margin="0,0,0,10"
+                    HorizontalAlignment="Right"
+                    Width="150"
+                    Visibility="Visible"/>
 
-            <!-- Waitlist Actions (shown when on waitlist) -->
-            <StackPanel x:Name="waitlistActionsPanel" 
-                Orientation="Horizontal"
-                HorizontalAlignment="Right"
-                Visibility="Collapsed">
-                <Button x:Name="ButtonLeaveWaitList" 
-                Content="Leave Waitlist" 
-                Click="ButtonLeaveWaitList_Click"
-                Margin="0,0,10,0"
-                Width="120"/>
-                <Button x:Name="ButtonViewPosition" 
-                Content="Position" 
-                Click="ButtonViewPosition_Click"
-                Width="120"/>
+            <StackPanel x:Name="waitlistActionsPanel"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Visibility="Collapsed">
+                <Button x:Name="ButtonLeaveWaitList"
+                        Content="Leave Waitlist"
+                        Click="ButtonLeaveWaitList_Click"
+                        Margin="0,0,10,0"
+                        Width="120"/>
+                <Button x:Name="ButtonViewPosition"
+                        Content="Position"
+                        Click="ButtonViewPosition_Click"
+                        Width="120"/>
             </StackPanel>
 
-            <!-- Position text -->
-            <TextBlock x:Name="txtPositionInQueue" 
-               Visibility="Collapsed"
-               Margin="0,5,0,0"
-               FontSize="16"
-               FontWeight="SemiBold"
-               HorizontalAlignment="Right"/>
+            <TextBlock x:Name="txtPositionInQueue"
+                       Visibility="Collapsed"
+                       Margin="0,5,0,0"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Right"/>
         </StackPanel>
-        <Button x:Name="ButtonNotifications" 
-                Content="🔔 Notifications" 
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Margin="0,10,10,0"
-                Click="ButtonNotifications_Click"/>
+
     </Grid>
 </Window>
