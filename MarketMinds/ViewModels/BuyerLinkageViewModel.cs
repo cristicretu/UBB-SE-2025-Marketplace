@@ -73,70 +73,70 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Gets the visibility state of the request sync button.
         /// </summary>
-        public System.Windows.Visibility RequestSyncVsbl => Status == BuyerLinkageStatus.Possible
+        public System.Windows.Visibility RequestSyncVsbl => Status == BuyerLinkageStatus.None
             ? System.Windows.Visibility.Visible
             : System.Windows.Visibility.Collapsed;
 
         /// <summary>
         /// Gets the visibility state of the cancel request button.
         /// </summary>
-        public System.Windows.Visibility CancelRequestVsbl => Status == BuyerLinkageStatus.PendingOther
+        public System.Windows.Visibility CancelRequestVsbl => Status == BuyerLinkageStatus.PendingReceived
             ? System.Windows.Visibility.Visible
             : System.Windows.Visibility.Collapsed;
 
         /// <summary>
         /// Gets the visibility state of the accept button.
         /// </summary>
-        public System.Windows.Visibility AcceptVsbl => Status == BuyerLinkageStatus.PendingSelf
+        public System.Windows.Visibility AcceptVsbl => Status == BuyerLinkageStatus.PendingSent
             ? System.Windows.Visibility.Visible
             : System.Windows.Visibility.Collapsed;
 
         /// <summary>
         /// Gets the visibility state of the decline button.
         /// </summary>
-        public System.Windows.Visibility DeclineVsbl => Status == BuyerLinkageStatus.PendingSelf
+        public System.Windows.Visibility DeclineVsbl => Status == BuyerLinkageStatus.PendingSent
             ? System.Windows.Visibility.Visible
             : System.Windows.Visibility.Collapsed;
 
         /// <summary>
         /// Gets the visibility state of the unsync button.
         /// </summary>
-        public System.Windows.Visibility UnsyncVsbl => Status == BuyerLinkageStatus.Confirmed
+        public System.Windows.Visibility UnsyncVsbl => Status == BuyerLinkageStatus.Linked
             ? System.Windows.Visibility.Visible
             : System.Windows.Visibility.Collapsed;
 
         /// <summary>
         /// Gets the WinUI visibility state of the request sync button.
         /// </summary>
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.RequestSyncVsbl => Status == BuyerLinkageStatus.Possible
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.RequestSyncVsbl => Status == BuyerLinkageStatus.None
             ? Microsoft.UI.Xaml.Visibility.Visible
             : Microsoft.UI.Xaml.Visibility.Collapsed;
 
         /// <summary>
         /// Gets the WinUI visibility state of the cancel request button.
         /// </summary>
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.CancelRequestVsbl => Status == BuyerLinkageStatus.PendingOther
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.CancelRequestVsbl => Status == BuyerLinkageStatus.PendingReceived
             ? Microsoft.UI.Xaml.Visibility.Visible
             : Microsoft.UI.Xaml.Visibility.Collapsed;
 
         /// <summary>
         /// Gets the WinUI visibility state of the accept button.
         /// </summary>
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.AcceptVsbl => Status == BuyerLinkageStatus.PendingSelf
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.AcceptVsbl => Status == BuyerLinkageStatus.PendingSent
             ? Microsoft.UI.Xaml.Visibility.Visible
             : Microsoft.UI.Xaml.Visibility.Collapsed;
 
         /// <summary>
         /// Gets the WinUI visibility state of the decline button.
         /// </summary>
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.DeclineVsbl => Status == BuyerLinkageStatus.PendingSelf
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.DeclineVsbl => Status == BuyerLinkageStatus.PendingSent
             ? Microsoft.UI.Xaml.Visibility.Visible
             : Microsoft.UI.Xaml.Visibility.Collapsed;
 
         /// <summary>
         /// Gets the WinUI visibility state of the unsync button.
         /// </summary>
-        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.UnsyncVsbl => Status == BuyerLinkageStatus.Confirmed
+        Microsoft.UI.Xaml.Visibility IBuyerLinkageViewModel.UnsyncVsbl => Status == BuyerLinkageStatus.Linked
             ? Microsoft.UI.Xaml.Visibility.Visible
             : Microsoft.UI.Xaml.Visibility.Collapsed;
 
@@ -150,7 +150,7 @@ namespace MarketMinds.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine($"[RequestSync] Creating linkage request from {UserBuyer.Id} to {LinkedBuyer.Id}");
                 await Service.CreateLinkageRequest(UserBuyer, LinkedBuyer);
-                Status = BuyerLinkageStatus.PendingOther;
+                Status = BuyerLinkageStatus.PendingReceived;
                 await NotifyLinkageUpdated();
             }
             catch (Exception ex)
@@ -171,7 +171,7 @@ namespace MarketMinds.ViewModels
                 System.Diagnostics.Debug.WriteLine($"[Accept] Accepting linkage request from {LinkedBuyer.Id} for {UserBuyer.Id}");
                 await Service.CreateLinkageRequest(UserBuyer, LinkedBuyer);
                 await Service.AcceptLinkageRequest(LinkedBuyer, UserBuyer);
-                Status = BuyerLinkageStatus.Confirmed;
+                Status = BuyerLinkageStatus.Linked;
                 await NotifyLinkageUpdated();
             }
             catch (Exception ex)
@@ -191,7 +191,7 @@ namespace MarketMinds.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine($"[Decline] Refusing linkage request from {LinkedBuyer.Id} for {UserBuyer.Id}");
                 await Service.RefuseLinkageRequest(UserBuyer, LinkedBuyer);
-                Status = BuyerLinkageStatus.Possible;
+                Status = BuyerLinkageStatus.None;
                 await NotifyLinkageUpdated();
             }
             catch (Exception ex)
@@ -211,7 +211,7 @@ namespace MarketMinds.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine($"[Cancel] Canceling linkage request from {UserBuyer.Id} to {LinkedBuyer.Id}");
                 await Service.CancelLinkageRequest(UserBuyer, LinkedBuyer);
-                Status = BuyerLinkageStatus.Possible;
+                Status = BuyerLinkageStatus.None;
                 await NotifyLinkageUpdated();
             }
             catch (Exception ex)
@@ -231,7 +231,7 @@ namespace MarketMinds.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine($"[Unsync] Breaking linkage between {UserBuyer.Id} and {LinkedBuyer.Id}");
                 await Service.BreakLinkage(UserBuyer, LinkedBuyer);
-                Status = BuyerLinkageStatus.Possible;
+                Status = BuyerLinkageStatus.None;
                 await NotifyLinkageUpdated();
             }
             catch (Exception ex)

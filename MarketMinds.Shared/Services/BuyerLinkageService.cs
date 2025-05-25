@@ -67,11 +67,11 @@ namespace MarketMinds.Server.Services
 
                 // Check current status
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
-                if (currentStatus != MarketMinds.Shared.Services.BuyerLinkageStatus.None)
+                if (currentStatus != BuyerLinkageStatus.None)
                 {
                     _logger.LogInformation("Linkage already exists between buyers {CurrentBuyerId} and {TargetBuyerId} with status {Status}", 
                         currentBuyerId, targetBuyerId, currentStatus);
-                    return currentStatus == MarketMinds.Shared.Services.BuyerLinkageStatus.Linked; // Return true if already linked
+                    return currentStatus == BuyerLinkageStatus.Linked; // Return true if already linked
                 }
 
                 // Create the pending linkage request
@@ -111,7 +111,7 @@ namespace MarketMinds.Server.Services
 
                 // Verify the request exists and is pending
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, requestingBuyerId);
-                if (currentStatus != MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived)
+                if (currentStatus != BuyerLinkageStatus.PendingReceived)
                 {
                     _logger.LogWarning("No pending request found from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}. Current status: {Status}", 
                         requestingBuyerId, currentBuyerId, currentStatus);
@@ -158,7 +158,7 @@ namespace MarketMinds.Server.Services
 
                 // Verify the request exists and is pending
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, requestingBuyerId);
-                if (currentStatus != MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived)
+                if (currentStatus != BuyerLinkageStatus.PendingReceived)
                 {
                     _logger.LogWarning("No pending request found from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}. Current status: {Status}", 
                         requestingBuyerId, currentBuyerId, currentStatus);
@@ -205,7 +205,7 @@ namespace MarketMinds.Server.Services
 
                 // Verify the request exists and was sent by current user
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
-                if (currentStatus != MarketMinds.Shared.Services.BuyerLinkageStatus.PendingSent)
+                if (currentStatus != BuyerLinkageStatus.PendingSent)
                 {
                     _logger.LogWarning("No pending request found from buyer {CurrentBuyerId} to buyer {TargetBuyerId}. Current status: {Status}", 
                         currentBuyerId, targetBuyerId, currentStatus);
@@ -252,7 +252,7 @@ namespace MarketMinds.Server.Services
 
                 // Verify they are actually linked
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
-                if (currentStatus != MarketMinds.Shared.Services.BuyerLinkageStatus.Linked)
+                if (currentStatus != BuyerLinkageStatus.Linked)
                 {
                     _logger.LogWarning("Buyers {CurrentBuyerId} and {TargetBuyerId} are not linked. Current status: {Status}", 
                         currentBuyerId, targetBuyerId, currentStatus);
@@ -320,7 +320,7 @@ namespace MarketMinds.Server.Services
                 if (currentBuyerId == targetBuyerId)
                 {
                     // Viewing own profile - no linking allowed
-                    linkageInfo.Status = MarketMinds.Shared.Services.BuyerLinkageStatus.None;
+                    linkageInfo.Status = BuyerLinkageStatus.None;
                     return linkageInfo;
                 }
 
@@ -329,7 +329,7 @@ namespace MarketMinds.Server.Services
                 linkageInfo.Status = status;
 
                 // If linked, get the linkage date
-                if (status == MarketMinds.Shared.Services.BuyerLinkageStatus.Linked)
+                if (status == BuyerLinkageStatus.Linked)
                 {
                     var linkage = await _buyerLinkageRepository.GetLinkageAsync(currentBuyerId, targetBuyerId);
                     linkageInfo.LinkedDate = linkage?.LinkedDate;
@@ -344,7 +344,7 @@ namespace MarketMinds.Server.Services
 
                 return new BuyerLinkageInfo
                 {
-                    Status = MarketMinds.Shared.Services.BuyerLinkageStatus.None,
+                    Status = BuyerLinkageStatus.None,
                     CanManageLink = false
                 };
             }

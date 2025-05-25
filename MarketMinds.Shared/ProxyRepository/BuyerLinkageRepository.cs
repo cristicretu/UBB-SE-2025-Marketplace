@@ -98,7 +98,7 @@ namespace MarketMinds.Shared.ProxyRepository
         /// <param name="currentBuyerId">Current buyer ID</param>
         /// <param name="targetBuyerId">Target buyer ID</param>
         /// <returns>The linkage status</returns>
-        public async Task<MarketMinds.Shared.Services.BuyerLinkageStatus> GetLinkageStatusAsync(int currentBuyerId, int targetBuyerId)
+        public async Task<BuyerLinkageStatus> GetLinkageStatusAsync(int currentBuyerId, int targetBuyerId)
         {
             var response = await _httpClient.GetAsync(
                 $"buyerlinkage/status?currentBuyerId={currentBuyerId}&targetBuyerId={targetBuyerId}");
@@ -107,10 +107,10 @@ namespace MarketMinds.Shared.ProxyRepository
             {
                 var content = await response.Content.ReadAsStringAsync();
                 // The API now returns the enum directly as JSON, not as a string
-                return JsonSerializer.Deserialize<MarketMinds.Shared.Services.BuyerLinkageStatus>(content, _jsonOptions);
+                return JsonSerializer.Deserialize<BuyerLinkageStatus>(content, _jsonOptions);
             }
 
-            return MarketMinds.Shared.Services.BuyerLinkageStatus.None;
+            return BuyerLinkageStatus.None;
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public async Task<bool> AreBuyersLinkedAsync(int buyerId1, int buyerId2)
         {
             var status = await GetLinkageStatusAsync(buyerId1, buyerId2);
-            return status == MarketMinds.Shared.Services.BuyerLinkageStatus.Linked;
+            return status == BuyerLinkageStatus.Linked;
         }
 
         /// <summary>

@@ -46,7 +46,7 @@ namespace MarketMinds.Shared.Repositories
         /// <param name="currentBuyerId">Current buyer ID</param>
         /// <param name="targetBuyerId">Target buyer ID</param>
         /// <returns>The linkage status</returns>
-        Task<MarketMinds.Shared.Services.BuyerLinkageStatus> GetLinkageStatusAsync(int currentBuyerId, int targetBuyerId);
+        Task<BuyerLinkageStatus> GetLinkageStatusAsync(int currentBuyerId, int targetBuyerId);
 
         /// <summary>
         /// Gets a specific linkage between two buyers (approved only)
