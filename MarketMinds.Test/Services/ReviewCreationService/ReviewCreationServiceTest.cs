@@ -2,12 +2,14 @@
 using MarketMinds.Shared.Services.ReviewCreationService;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.Services.ImagineUploadService;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using Moq;
 
 
-namespace MarketMinds.Test.Services.ReviewCreationService
+namespace MarketMinds.Test.Services
 {
     [TestFixture]
     public class ReviewCreationServiceTest
@@ -19,9 +21,10 @@ namespace MarketMinds.Test.Services.ReviewCreationService
         [SetUp]
         public void Setup()
         {
+            var configMock = new Mock<IConfiguration>();
             _reviewsService = new ReviewsService(null, null, null); // Directly initialize ReviewsService
-            _imageService = new ImageUploadService(); // Directly initialize ImageUploadService
-            _reviewCreationService = new MarketMinds.Shared.Services.ReviewCreationService.ReviewCreationService(_reviewsService);
+            _imageService = new ImageUploadService(configMock.Object); // Directly initialize ImageUploadService
+            _reviewCreationService = new ReviewCreationService(_reviewsService, configMock.Object);
         }
 
         [Test]

@@ -13,11 +13,11 @@ namespace MarketMinds.Test.Services.ReviewService
     internal class ReviewServiceTest
     {
         // Constants for User IDs
-        private const string SELLER_1_ID = "1";
-        private const string SELLER_2_ID = "2";
-        private const string BUYER_ID = "3";
-        private const string BUYER_1_ID = "2";
-        private const string BUYER_2_ID = "3";
+        private const int SELLER_1_ID = 1;
+        private const int SELLER_2_ID = 2;
+        private const int BUYER_ID = 3;
+        private const int BUYER_1_ID = 2;
+        private const int BUYER_2_ID = 3;
 
         // Constants for User names
         private const string SELLER_1_NAME = "Marcel";
@@ -67,7 +67,7 @@ namespace MarketMinds.Test.Services.ReviewService
 
             var mockConfiguration = new Mock<IConfiguration>();
             var mockUserService = new Mock<IUserService>();
-            var currentUser = new User("1", "TestUser", "test@mail.com");
+            var currentUser = new User(1, "TestUser", "test@mail.com");
 
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
@@ -94,7 +94,7 @@ namespace MarketMinds.Test.Services.ReviewService
         {
             var mockConfiguration = new Mock<IConfiguration>();
             var mockUserService = new Mock<IUserService>();
-            var currentUser = new User("1", "TestUser", "test@mail.com");
+            var currentUser = new User(1, "TestUser", "test@mail.com");
 
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
@@ -121,7 +121,7 @@ namespace MarketMinds.Test.Services.ReviewService
         {
             var mockConfiguration = new Mock<IConfiguration>();
             var mockUserService = new Mock<IUserService>();
-            var currentUser = new User("1", "TestUser", "test@mail.com");
+            var currentUser = new User(1, "TestUser", "test@mail.com");
 
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
@@ -149,7 +149,7 @@ namespace MarketMinds.Test.Services.ReviewService
         {
             var mockConfiguration = new Mock<IConfiguration>();
             var mockUserService = new Mock<IUserService>();
-            var currentUser = new User("1", "TestUser", "test@mail.com");
+            var currentUser = new User(1, "TestUser", "test@mail.com");
 
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
@@ -182,7 +182,7 @@ namespace MarketMinds.Test.Services.ReviewService
         {
             var mockConfiguration = new Mock<IConfiguration>();
             var mockUserService = new Mock<IUserService>();
-            var currentUser = new User("1", "TestUser", "test@mail.com");
+            var currentUser = new User(1, "TestUser", "test@mail.com");
 
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
