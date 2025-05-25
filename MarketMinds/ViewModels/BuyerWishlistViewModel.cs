@@ -8,6 +8,7 @@ namespace MarketMinds.ViewModels
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
@@ -198,14 +199,17 @@ namespace MarketMinds.ViewModels
                 if (this.familySyncActive)
                 {
                     // FIXED: Problem 2 - Update the code to check for confirmed linkages by looking at buyer linkages directly
-                    var linkedBuyers = this.Buyer.Linkages
-                        .Where(link => link.Buyer2 != null) // Make sure there's a valid buyer
-                        .Select(link => link.Buyer2);
+                    Debug.WriteLine(this.Buyer.Linkages.Count + " linkages found for buyer " + this.Buyer.Id);
+                    var linkedBuyerIds = this.Buyer.Linkages
+                        .Select(link => link.GetOtherBuyerId(this.Buyer.Id))
+                        .Where(id => id.HasValue)
+                        .Select(id => id.Value);
 
-                    foreach (var linkedBuyer in linkedBuyers)
+                    foreach (var linkedBuyerId in linkedBuyerIds)
                     {
-                        var linkedBuyerItems = await Task.WhenAll(linkedBuyer.Wishlist.Items.Select(wishlistItem => GetWishlistItemDetailsAsync(wishlistItem)));
-                        linkedItems.AddRange(linkedBuyerItems);
+                        var linkedBuyerItems = await this.BuyerService.GetWishlistItems(linkedBuyerId);
+                        linkedItems.AddRange(await Task.WhenAll(linkedBuyerItems.Select(item => GetWishlistItemDetailsAsync(item))));
+
                     }
                 }
 
