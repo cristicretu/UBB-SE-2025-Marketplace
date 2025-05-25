@@ -21,29 +21,51 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <Button Click="MarketMinds_Title_Click" 
+            <Button Grid.Column="0"
+                    Click="MarketMinds_Title_Click" 
                     Background="Transparent" 
                     BorderThickness="0">
-            <TextBlock Text="MarketMinds" 
+                <TextBlock Text="MarketMinds" 
                           Style="{StaticResource TitleTextBlockStyle}" 
                           VerticalAlignment="Center"/>
             </Button>
-            
-            <CommandBar Grid.Column="1" 
-                       DefaultLabelPosition="Right" 
-                       Background="Transparent" 
-                       IsOpen="False">
-                <!-- Buyer-only buttons -->
-                <AppBarButton x:Name="ChatBotButton" Label="ChatBot" Click="AppNavBarButton_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xE8F2;" />
+
+            <!-- Create Listing Button (seller only)-->
+            <AppBarButton x:Name="CreateListingButton" Grid.ColumnSpan="3" Label="Create Listing" Tag="CreateListing" Click="AppNavBarButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE710;" />
                     </AppBarButton.Icon>
-                </AppBarButton>
-                <AppBarButton x:Name="NotificationsButton" Label="Notifications" Click="AppNavBarButton_Click">
+            </AppBarButton>
+            
+            <!-- Chat Support Button (buyer only)-->
+            <AppBarButton x:Name="ChatSupportButton"  Grid.ColumnSpan="3" Label="Chat Support" Tag="ChatSupport" Click="AppNavBarButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE8BD;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+
+            <CommandBar Grid.Column="2" DefaultLabelPosition="Right" Background="Transparent" IsOpen="False" HorizontalAlignment="Right">
+                <!-- Notifications Button (buyer only)-->
+                <AppBarButton x:Name="NotificationsButton" Tag="Notifications" Click="AppNavBarButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xEA8F;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <!-- Wishlist Button (buyer only)-->
+                <AppBarButton x:Name="WishlistButton" Tag="Wishlist" Click="AppNavBarButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xEB51;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <!-- Cart Button (buyer only)-->
+                <AppBarButton x:Name="CartButton" Tag="Cart" Click="AppNavBarButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE7BF;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
                 
@@ -54,48 +76,36 @@
                     </AppBarButton.Icon>
                     <AppBarButton.Flyout>
                         <MenuFlyout Placement="Bottom">
+                            <!-- My Account Button -->
                             <MenuFlyoutItem Text="My Account" Tag="MyAccount" Click="ProfileMenuItem_Click">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE77B;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
-                            <MenuFlyoutItem x:Name="MyOrdersMenuItem" Text="My Orders" Tag="MyOrders" Click="ProfileMenuItem_Click">
+
+                            <!-- Order History Button -->
+                            <MenuFlyoutItem x:Name="MyOrdersMenuItem" Text="Order History" Tag="OrderHistory" Click="ProfileMenuItem_Click">
                                 <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xE7BF;" />
+                                    <FontIcon Glyph="&#xE81C;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
+
+                            <!-- My Reviews Button -->
                             <MenuFlyoutItem Text="My Reviews" Tag="MyReviews" Click="ProfileMenuItem_Click">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xF0E7;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
+
+                            <!-- Sign Out Button -->
                             <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Text="Logout" Tag="Logout" Click="ProfileMenuItem_Click">
+                            <MenuFlyoutItem Text="Sign Out" Tag="SignOut" Click="ProfileMenuItem_Click">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xF3B1;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
                         </MenuFlyout>
                     </AppBarButton.Flyout>
-                </AppBarButton>
-
-                <!-- Seller-only button -->
-                <AppBarButton x:Name="CreateButton" Label="Create" Click="AppNavBarButton_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xE710;" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
-                
-                <!-- Buyer-only buttons -->
-                <AppBarButton x:Name="WishlistButton" Label="Wishlist" Click="AppNavBarButton_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xEB51;" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
-                <AppBarButton x:Name="CartButton" Label="Cart" Click="AppNavBarButton_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xE7BF;" />
-                    </AppBarButton.Icon>
                 </AppBarButton>
             </CommandBar>
         </Grid>

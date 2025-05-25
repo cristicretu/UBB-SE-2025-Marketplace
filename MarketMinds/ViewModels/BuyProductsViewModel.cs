@@ -2,7 +2,7 @@
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BuyProductsService;
 
-namespace ViewModelLayer.ViewModel;
+namespace MarketMinds.ViewModels;
 
 public class BuyProductsViewModel
 {
@@ -15,11 +15,12 @@ public class BuyProductsViewModel
 
     public List<BuyProduct> GetAllProducts()
     {
-        var buyProducts = new List<BuyProduct>();
-        foreach (var product in buyProductsService.GetProducts())
-        {
-            buyProducts.Add((BuyProduct)product);
-        }
-        return buyProducts;
+        // var buyProducts = new List<BuyProduct>();
+        // foreach (var product in buyProductsService.GetProducts())
+        // {
+        //     buyProducts.Add((BuyProduct)product);
+        // }
+        // return buyProducts;
+        return buyProductsService.GetProducts(); // not to complicate stuff
     }
 }

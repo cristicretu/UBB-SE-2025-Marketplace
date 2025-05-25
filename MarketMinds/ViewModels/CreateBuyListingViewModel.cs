@@ -1,7 +1,7 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BuyProductsService;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class CreateBuyListingViewModel : CreateListingViewModelBase
     {

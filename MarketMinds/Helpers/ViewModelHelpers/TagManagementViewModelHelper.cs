@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using MarketMinds.Shared.Models;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 
 namespace MarketMinds.Helpers
 {

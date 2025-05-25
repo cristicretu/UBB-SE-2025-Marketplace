@@ -3,7 +3,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Helper;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
     public abstract class CreateListingViewModelBase
     {

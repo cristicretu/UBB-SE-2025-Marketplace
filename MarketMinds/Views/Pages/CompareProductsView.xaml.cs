@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
 using MarketMinds.Services;

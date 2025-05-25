@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Dispatching;
 using BusinessLogicLayer.ViewModel;
 using DataAccessLayer;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Shared.Services.BorrowProductsService;

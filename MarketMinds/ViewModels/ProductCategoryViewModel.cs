@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ProductCategoryService;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class ProductCategoryViewModel : INotifyPropertyChanged
     {

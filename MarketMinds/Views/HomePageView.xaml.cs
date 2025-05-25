@@ -32,10 +32,6 @@ namespace MarketMinds.Views
             // Navigate to the MarketMindsPage by default
             ContentFrame.Navigate(typeof(MarketMindsPage));
 
-            // Set up window size and position
-            this.AppWindow.Resize(new Windows.Graphics.SizeInt32(1700, 1000));
-
-            // Configure backend
             // Configure UI based on user type
             ConfigureUIForUserType();
         }
@@ -53,13 +49,13 @@ namespace MarketMinds.Views
             isSeller = userType == SELLER_TYPE;
 
             // Configure buyer-specific UI elements
-            ChatBotButton.Visibility = isBuyer ? Visibility.Visible : Visibility.Collapsed;
+            ChatSupportButton.Visibility = isBuyer ? Visibility.Visible : Visibility.Collapsed;
             NotificationsButton.Visibility = isBuyer ? Visibility.Visible : Visibility.Collapsed;
             WishlistButton.Visibility = isBuyer ? Visibility.Visible : Visibility.Collapsed;
             CartButton.Visibility = isBuyer ? Visibility.Visible : Visibility.Collapsed;
 
             // Configure seller-specific UI elements
-            CreateButton.Visibility = isSeller ? Visibility.Visible : Visibility.Collapsed;
+            CreateListingButton.Visibility = isSeller ? Visibility.Visible : Visibility.Collapsed;
 
             // Configure Profile button text
             string userRole = isBuyer ? "(buyer)" : (isSeller ? "(seller)" : string.Empty);
@@ -92,10 +88,10 @@ namespace MarketMinds.Views
         {
             if (sender is AppBarButton button)
             {
-                switch (button.Label)
+                switch (button.Tag)
                 {
                     // Only buyers' cases
-                    case "ChatBot":
+                    case "ChatSupport":
                         ContentFrame.Navigate(typeof(HelpPage));
                         break;
                     case "Notifications":
@@ -111,7 +107,7 @@ namespace MarketMinds.Views
                         // This is handled in the ProfileMenuItem_Click method because it has a submenu of buttons
                         break;
                     // Only sellers' cases
-                    case "Create":
+                    case "CreateListing":
                         ContentFrame.Navigate(typeof(CreateListingView));
                         break;
                 }
@@ -125,9 +121,7 @@ namespace MarketMinds.Views
         {
             if (sender is MenuFlyoutItem menuItem)
             {
-                string tag = menuItem.Tag?.ToString();
-
-                switch (tag)
+                switch (menuItem.Tag)
                 {
                     case "MyAccount":
                         if (isBuyer)
@@ -141,7 +135,7 @@ namespace MarketMinds.Views
                             ContentFrame.Navigate(typeof(SellerProfileView));
                         }
                         break;
-                    case "MyOrders":
+                    case "OrderHistory":
                         // Navigate to orders history page
                         // Example: ContentFrame.Navigate(typeof(OrderHistoryView));
                         break;
@@ -149,7 +143,7 @@ namespace MarketMinds.Views
                         // Navigate to user reviews page
                         // Could create a dedicated page for this
                         break;
-                    case "Logout":
+                    case "SignOut":
                         App.CloseHomePageWindow();
                         break;
                 }

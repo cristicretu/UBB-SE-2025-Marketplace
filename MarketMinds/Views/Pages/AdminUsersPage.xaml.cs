@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 

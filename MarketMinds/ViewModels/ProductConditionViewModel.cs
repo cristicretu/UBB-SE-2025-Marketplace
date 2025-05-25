@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ProductConditionService;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class ProductConditionViewModel : INotifyPropertyChanged
     {

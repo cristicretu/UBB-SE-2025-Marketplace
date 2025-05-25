@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds;
 using MarketMinds.Helpers.ViewModelHelpers;

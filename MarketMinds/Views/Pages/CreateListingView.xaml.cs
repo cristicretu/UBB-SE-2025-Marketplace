@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using MarketMinds.Shared.Models;
 using MarketMinds;
 using MarketMinds.Helpers;

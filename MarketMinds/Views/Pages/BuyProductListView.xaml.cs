@@ -13,7 +13,7 @@ using MarketMinds.Shared.Services.ProductPaginationService;
 using MarketMinds.Views.Pages;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 
 namespace MarketMinds.Views
 {

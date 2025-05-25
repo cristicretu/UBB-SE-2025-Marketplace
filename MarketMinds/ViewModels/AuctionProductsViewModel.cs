@@ -3,7 +3,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Shared.Services.AuctionValidationService;
 
-namespace ViewModelLayer.ViewModel;
+namespace MarketMinds.ViewModels;
 
 public class AuctionProductsViewModel
 {

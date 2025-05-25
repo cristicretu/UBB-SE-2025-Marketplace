@@ -1,7 +1,7 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BorrowProductsService;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class CreateBorrowListingViewModel : CreateListingViewModelBase
     {

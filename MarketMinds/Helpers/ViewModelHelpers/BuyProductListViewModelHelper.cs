@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MarketMinds.Shared.Models;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds.Shared.Services.ProductPaginationService;
 using MarketMinds.Shared.Services.BuyProductsService;
