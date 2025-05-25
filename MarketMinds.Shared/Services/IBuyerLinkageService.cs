@@ -79,32 +79,6 @@ namespace MarketMinds.Shared.Services
     }
 
     /// <summary>
-    /// Enumeration for buyer linkage status
-    /// </summary>
-    public enum BuyerLinkageStatus
-    {
-        /// <summary>
-        /// No linkage exists between the buyers
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// Current user has sent a linkage request that is pending approval
-        /// </summary>
-        PendingSent,
-
-        /// <summary>
-        /// Current user has received a linkage request that is pending their approval
-        /// </summary>
-        PendingReceived,
-
-        /// <summary>
-        /// Buyers are linked (approved linkage)
-        /// </summary>
-        Linked
-    }
-
-    /// <summary>
     /// Contains information about buyer linkage status
     /// </summary>
     public class BuyerLinkageInfo
@@ -112,7 +86,7 @@ namespace MarketMinds.Shared.Services
         /// <summary>
         /// The status of the linkage between buyers
         /// </summary>
-        public MarketMinds.Shared.Services.BuyerLinkageStatus Status { get; set; } = MarketMinds.Shared.Services.BuyerLinkageStatus.None;
+        public BuyerLinkageStatus Status { get; set; } = BuyerLinkageStatus.None;
 
         /// <summary>
         /// Whether the current user can manage the link (not viewing own profile)
@@ -127,27 +101,27 @@ namespace MarketMinds.Shared.Services
         /// <summary>
         /// Whether the buyers are linked (approved linkage)
         /// </summary>
-        public bool IsLinked => Status == MarketMinds.Shared.Services.BuyerLinkageStatus.Linked;
+        public bool IsLinked => Status == BuyerLinkageStatus.Linked;
 
         /// <summary>
         /// Whether there is a pending request sent by the current user
         /// </summary>
-        public bool IsPendingSent => Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingSent;
+        public bool IsPendingSent => Status == BuyerLinkageStatus.PendingSent;
 
         /// <summary>
         /// Whether there is a pending request received by the current user
         /// </summary>
-        public bool IsPendingReceived => Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived;
+        public bool IsPendingReceived => Status == BuyerLinkageStatus.PendingReceived;
 
         /// <summary>
         /// Display text for the primary action button
         /// </summary>
         public string ButtonText => Status switch
         {
-            MarketMinds.Shared.Services.BuyerLinkageStatus.None => "Send Link Request",
-            MarketMinds.Shared.Services.BuyerLinkageStatus.PendingSent => "Request Pending",
-            MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived => "Accept Request",
-            MarketMinds.Shared.Services.BuyerLinkageStatus.Linked => "Linked",
+            BuyerLinkageStatus.None => "Send Link Request",
+            BuyerLinkageStatus.PendingSent => "Request Pending",
+            BuyerLinkageStatus.PendingReceived => "Accept Request",
+            BuyerLinkageStatus.Linked => "Linked",
             _ => "Link"
         };
 
@@ -156,25 +130,25 @@ namespace MarketMinds.Shared.Services
         /// </summary>
         public string ButtonCssClass => Status switch
         {
-            MarketMinds.Shared.Services.BuyerLinkageStatus.None => "bg-blue-600 hover:bg-blue-700",
-            MarketMinds.Shared.Services.BuyerLinkageStatus.PendingSent => "bg-yellow-500 hover:bg-yellow-600",
-            MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived => "bg-green-600 hover:bg-green-700",
-            MarketMinds.Shared.Services.BuyerLinkageStatus.Linked => "bg-green-600 hover:bg-red-600",
+            BuyerLinkageStatus.None => "bg-blue-600 hover:bg-blue-700",
+            BuyerLinkageStatus.PendingSent => "bg-yellow-500 hover:bg-yellow-600",
+            BuyerLinkageStatus.PendingReceived => "bg-green-600 hover:bg-green-700",
+            BuyerLinkageStatus.Linked => "bg-green-600 hover:bg-red-600",
             _ => "bg-blue-600 hover:bg-blue-700"
         };
 
         /// <summary>
         /// Whether to show a secondary action button (reject/cancel)
         /// </summary>
-        public bool ShowSecondaryButton => Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived || Status == MarketMinds.Shared.Services.BuyerLinkageStatus.PendingSent;
+        public bool ShowSecondaryButton => Status == BuyerLinkageStatus.PendingReceived || Status == BuyerLinkageStatus.PendingSent;
 
         /// <summary>
         /// Text for the secondary action button
         /// </summary>
         public string SecondaryButtonText => Status switch
         {
-            MarketMinds.Shared.Services.BuyerLinkageStatus.PendingReceived => "Reject",
-            MarketMinds.Shared.Services.BuyerLinkageStatus.PendingSent => "Cancel Request",
+            BuyerLinkageStatus.PendingReceived => "Reject",
+            BuyerLinkageStatus.PendingSent => "Cancel Request",
             _ => ""
         };
 

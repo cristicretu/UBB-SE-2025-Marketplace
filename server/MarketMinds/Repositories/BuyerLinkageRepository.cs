@@ -4,7 +4,6 @@ using MarketMinds.Shared.Services;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using Server.DataModels;
-using BuyerLinkageStatus = MarketMinds.Shared.Services.BuyerLinkageStatus;
 
 namespace Server.MarketMinds.Repositories
 {

@@ -15,21 +15,21 @@ namespace MarketMinds.Shared.Models
         /// <summary>
         /// Indicates that a linkage is possible between the buyers.
         /// </summary>
-        Possible = 0,
+        None = 0,
 
         /// <summary>
         /// Indicates that the current buyer has sent a linkage request.
         /// </summary>
-        PendingSelf = 1,
+        PendingSent = 1,
 
         /// <summary>
         /// Indicates that another buyer has sent a linkage request.
         /// </summary>
-        PendingOther = 2,
+        PendingReceived = 2,
 
         /// <summary>
         /// Indicates that the linkage has been confirmed by both buyers.
         /// </summary>
-        Confirmed = 3,
+        Linked = 3,
     }
 }
