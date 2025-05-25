@@ -52,7 +52,8 @@ namespace MarketMinds.ViewModels
         public BuyerWishlistItemViewModel()
         {
             buyerService = App.BuyerService;
-            wishlistProductIds = buyerService.GetWishlistItems(UserSession.CurrentUserId ?? 1).Result;
+            wishlistProductIds = new List<BuyerWishlistItem>();
+            // wishlistProductIds = buyerService.GetWishlistItems(UserSession.CurrentUserId ?? 1).Result;
 
             this.AddToCartCommand = new RelayCommand(async (product) =>
             {
