@@ -13,7 +13,6 @@ namespace MarketMinds.Shared.ProxyRepository
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
     using Microsoft.Extensions.Configuration;
-    using System.Diagnostics;
 
     /// <summary>
     /// Repository class for managing buyer-related database operations.
@@ -172,11 +171,6 @@ namespace MarketMinds.Shared.ProxyRepository
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{buyerId}/wishlist");
             await this.ThrowOnError(nameof(GetWishlist), response);
             var wishlist = await response.Content.ReadFromJsonAsync<BuyerWishlist>();
-            Debug.WriteLine("GGGGGG");
-            foreach (var w in wishlist.Items)
-            {
-                Debug.WriteLine("repoproxy: " + w.ProductId);
-            }
             return wishlist ?? new BuyerWishlist(); // Return empty wishlist if null
         }
 
