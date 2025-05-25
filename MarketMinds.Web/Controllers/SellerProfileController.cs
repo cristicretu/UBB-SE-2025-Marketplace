@@ -258,9 +258,10 @@ namespace WebMarketplace.Controllers
         /// </summary>
         /// <param name="sellerId">Optional seller ID for public profiles.</param>
         /// <param name="isManageMode">Whether we're in manage/edit mode.</param>
+        /// <param name="sortAscending">Current sort direction - if null, will toggle from ascending.</param>
         /// <returns>A partial view of sorted products.</returns>
         [HttpPost]
-        public async Task<IActionResult> SortProducts(int? sellerId = null, bool isManageMode = false)
+        public async Task<IActionResult> SortProducts(int? sellerId = null, bool isManageMode = false, bool? sortAscending = null)
         {
             try
             {
@@ -288,10 +289,17 @@ namespace WebMarketplace.Controllers
                     _auctionProductService, _borrowProductsService, _buyProductsService);
                 await viewModel.InitializeAsync();
 
-                viewModel.SortProducts();
+                // Determine sort direction: if sortAscending is null, start with ascending (true)
+                // If sortAscending has a value, toggle it
+                bool newSortAscending = sortAscending.HasValue ? !sortAscending.Value : true;
+                
+                // Set the sort state and sort the products
+                viewModel.IsSortedByPrice = newSortAscending;
+                viewModel.SortProductsWithDirection(newSortAscending);
 
                 // Set the ViewBag for the partial view
                 ViewBag.IsOwnProfile = isOwnProfile;
+                ViewBag.SortAscending = newSortAscending; // Pass the new sort direction to the view
 
                 return PartialView("_ProductsListPartial", viewModel);
             }
