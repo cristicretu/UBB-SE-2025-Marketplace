@@ -81,9 +81,8 @@ namespace MarketMinds.Views
         {
             get
             {
-                // Show pagination for Buy Products (0) and Auction Products (1)
-                // Hide for Borrow Products (2) until we implement pagination for it
-                return ActiveTabIndex == 0 || ActiveTabIndex == 1;
+                // Show pagination for Buy Products (0), Auction Products (1), and Borrow Products (2)
+                return ActiveTabIndex == 0 || ActiveTabIndex == 1 || ActiveTabIndex == 2;
             }
         }
 
@@ -116,9 +115,9 @@ namespace MarketMinds.Views
                         case 1: // Auction Products
                             LoadAuctionDataAsync();
                             break;
-                        // case 2: // Borrow Products - will be added later
-                        //     LoadBorrowDataAsync();
-                        //     break;
+                        case 2: // Borrow Products
+                            LoadBorrowDataAsync();
+                            break;
                     }
                 }
             }
@@ -150,9 +149,9 @@ namespace MarketMinds.Views
                         case 1: // Auction Products
                             LoadAuctionDataAsync();
                             break;
-                        // case 2: // Borrow Products - will be added later
-                        //     LoadBorrowDataAsync();
-                        //     break;
+                        case 2: // Borrow Products
+                            LoadBorrowDataAsync();
+                            break;
                     }
                 }
             }
@@ -434,8 +433,24 @@ namespace MarketMinds.Views
             {
                 IsBorrowLoading = true;
 
-                // Get borrow products using proper async method
-                var borrowProducts = await this.BorrowProductsViewModel.GetAllProductsAsync();
+                // Calculate offset for current page
+                int offset = CurrentPageIndex * ItemsPerPage;
+
+                // Get total count first
+                var totalCount = await this.BorrowProductsViewModel.GetProductCountAsync();
+                
+                // Calculate total pages
+                TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
+                
+                // Ensure current page is valid
+                if (CurrentPageIndex >= TotalPages)
+                {
+                    CurrentPageIndex = Math.Max(0, TotalPages - 1);
+                    offset = CurrentPageIndex * ItemsPerPage;
+                }
+
+                // Get borrow products for current page using proper async method
+                var borrowProducts = await this.BorrowProductsViewModel.GetProductsAsync(offset, ItemsPerPage);
 
                 // Update UI on the UI thread
                 BorrowProductsCollection.Clear();
@@ -444,15 +459,19 @@ namespace MarketMinds.Views
                     BorrowProductsCollection.Add(product);
                 }
 
+                // Update pagination info
+                UpdatePaginationInfo(totalCount);
+
                 // Update empty state based on collection
-                ShowBorrowEmptyState = BorrowProductsCollection.Count == 0;
-                Debug.WriteLine($"BorrowProductsCollection: {BorrowProductsCollection.Count}");
+                ShowBorrowEmptyState = BorrowProductsCollection.Count == 0 && totalCount == 0;
+                Debug.WriteLine($"BorrowProductsCollection: {BorrowProductsCollection.Count}, Total: {totalCount}, Page: {CurrentPageIndex + 1}/{TotalPages}");
             }
             catch (Exception ex)
             {
                 // TODO: Add proper error handling
                 // Could show an error message to the user
                 System.Diagnostics.Debug.WriteLine($"Error loading borrow products: {ex.Message}");
+                ShowBorrowEmptyState = true;
             }
             finally
             {
@@ -505,9 +524,6 @@ namespace MarketMinds.Views
                     break;
                 case 2: // Borrow Products
                     LoadBorrowDataAsync();
-                    // For borrow products, clear pagination info since no pagination yet
-                    PageInfoText = "";
-                    TotalPages = 1;
                     break;
             }
         }
