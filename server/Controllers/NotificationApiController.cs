@@ -74,124 +74,22 @@ namespace Server.Controllers
         [HttpGet("user/{recipientId}")]
         [ProducesResponseType(typeof(List<Notification>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<object>>> GetNotificationsForUser(int recipientId)
+        public async Task<ActionResult<List<Notification>>> GetNotificationsForUser(int recipientId)
         {
             try
             {
                 var notifications = await this.notificationRepository.GetNotificationsForUser(recipientId);
-                var notificationsWithCategory = new List<object>();
-
-                foreach (var notification in notifications)
-                {
-                    object serializedNotification = notification switch
-                    {
-                        OrderShippingProgressNotification shippingNotification => new
-                        {
-                            shippingNotification.NotificationID,
-                            shippingNotification.RecipientID,
-                            shippingNotification.IsRead,
-                            shippingNotification.Timestamp,
-                            shippingNotification.Category,
-                            shippingNotification.OrderID,
-                            shippingNotification.ShippingState,
-                            shippingNotification.DeliveryDate
-                        },
-                        ContractRenewalRequestNotification contractNotification => new
-                        {
-                            contractNotification.NotificationID,
-                            contractNotification.RecipientID,
-                            contractNotification.IsRead,
-                            contractNotification.Timestamp,
-                            contractNotification.Category,
-                            ContractID = contractNotification.ContractID
-                        },
-                        ContractRenewalAnswerNotification answerNotification => new
-                        {
-                            answerNotification.NotificationID,
-                            answerNotification.RecipientID,
-                            answerNotification.IsRead,
-                            answerNotification.Timestamp,
-                            answerNotification.Category,
-                            answerNotification.ContractID,
-                            answerNotification.IsAccepted
-                        },
-                        ContractRenewalWaitlistNotification waitlistNotification => new
-                        {
-                            waitlistNotification.NotificationID,
-                            waitlistNotification.RecipientID,
-                            waitlistNotification.IsRead,
-                            waitlistNotification.Timestamp,
-                            waitlistNotification.Category,
-                            waitlistNotification.ProductID
-                        },
-                        OutbiddedNotification outbiddedNotification => new
-                        {
-                            outbiddedNotification.NotificationID,
-                            outbiddedNotification.RecipientID,
-                            outbiddedNotification.IsRead,
-                            outbiddedNotification.Timestamp,
-                            outbiddedNotification.Category,
-                            outbiddedNotification.ProductID
-                        },
-                        PaymentConfirmationNotification paymentNotification => new
-                        {
-                            paymentNotification.NotificationID,
-                            paymentNotification.RecipientID,
-                            paymentNotification.IsRead,
-                            paymentNotification.Timestamp,
-                            paymentNotification.Category,
-                            paymentNotification.ProductID,
-                            paymentNotification.OrderID
-                        },
-                        ProductRemovedNotification removedNotification => new
-                        {
-                            removedNotification.NotificationID,
-                            removedNotification.RecipientID,
-                            removedNotification.IsRead,
-                            removedNotification.Timestamp,
-                            removedNotification.Category,
-                            removedNotification.ProductID
-                        },
-                        ProductAvailableNotification availableNotification => new
-                        {
-                            availableNotification.NotificationID,
-                            availableNotification.RecipientID,
-                            availableNotification.IsRead,
-                            availableNotification.Timestamp,
-                            availableNotification.Category,
-                            availableNotification.ProductID
-                        },
-                        ContractExpirationNotification expirationNotification => new
-                        {
-                            expirationNotification.NotificationID,
-                            expirationNotification.RecipientID,
-                            expirationNotification.IsRead,
-                            expirationNotification.Timestamp,
-                            expirationNotification.Category,
-                            expirationNotification.ContractID,
-                            expirationNotification.ExpirationDate
-                        },
-                        Notification baseNotification => new // Handle the base Notification type if needed
-                        {
-                            baseNotification.NotificationID,
-                            baseNotification.RecipientID,
-                            baseNotification.IsRead,
-                            baseNotification.Timestamp,
-                            baseNotification.Category
-                        },
-                        _ => throw new NotSupportedException($"Unsupported notification type: {notification.GetType().Name}")
-                    };
-                    notificationsWithCategory.Add(serializedNotification);
-                }
-
-                // Return the notifications with the Category field included
-                return this.Ok(notificationsWithCategory);
+                
+                // Return the notifications directly instead of creating anonymous objects
+                // This ensures proper JSON serialization/deserialization with the NotificationConverter
+                return this.Ok(notifications);
             }
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while retrieving notifications for user {recipientId}: {ex.Message}");
             }
         }
+
         /// <summary>
         /// Marks a notification as read.
         /// </summary>

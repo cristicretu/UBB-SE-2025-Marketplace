@@ -30,7 +30,10 @@ namespace MarketMinds.Shared.Models
 
     public class ContractRenewalAnswerNotification : Notification
     {
+        [JsonPropertyName("contractID")]
         public int ContractID { get; set; }
+        
+        [JsonPropertyName("isAccepted")]
         public bool IsAccepted { get; set; }
 
         public ContractRenewalAnswerNotification() { }
@@ -56,6 +59,7 @@ namespace MarketMinds.Shared.Models
 
     public class ContractRenewalWaitlistNotification : Notification
     {
+        [JsonPropertyName("productID")]
         public int ProductID { get; set; }
 
         public ContractRenewalWaitlistNotification() { }
@@ -80,6 +84,7 @@ namespace MarketMinds.Shared.Models
 
     public class OutbiddedNotification : Notification
     {
+        [JsonPropertyName("productID")]
         public int ProductID { get; set; }
 
         public OutbiddedNotification() { }
@@ -104,8 +109,13 @@ namespace MarketMinds.Shared.Models
 
     public class OrderShippingProgressNotification : Notification
     {
+        [JsonPropertyName("orderID")]
         public int OrderID { get; set; }
+        
+        [JsonPropertyName("shippingState")]
         public string ShippingState { get; set; }
+        
+        [JsonPropertyName("deliveryDate")]
         public DateTime DeliveryDate { get; set; }
 
         public OrderShippingProgressNotification() { }
@@ -132,7 +142,10 @@ namespace MarketMinds.Shared.Models
 
     public class PaymentConfirmationNotification : Notification
     {
+        [JsonPropertyName("productID")]
         public int ProductID { get; set; }
+        
+        [JsonPropertyName("orderID")]
         public int OrderID { get; set; }
 
         public PaymentConfirmationNotification() { }
@@ -158,6 +171,7 @@ namespace MarketMinds.Shared.Models
 
     public class ProductRemovedNotification : Notification
     {
+        [JsonPropertyName("productID")]
         public int ProductID { get; set; }
 
         public ProductRemovedNotification() { }
@@ -182,6 +196,7 @@ namespace MarketMinds.Shared.Models
 
     public class ProductAvailableNotification : Notification
     {
+        [JsonPropertyName("productID")]
         public int ProductID { get; set; }
 
         public ProductAvailableNotification() { }
@@ -206,6 +221,7 @@ namespace MarketMinds.Shared.Models
 
     public class ContractRenewalRequestNotification : Notification
     {
+        [JsonPropertyName("contractID")]
         public int ContractID { get; set; }
 
         public ContractRenewalRequestNotification() { }
@@ -229,7 +245,10 @@ namespace MarketMinds.Shared.Models
 
     public class ContractExpirationNotification : Notification
     {
+        [JsonPropertyName("contractID")]
         public int ContractID { get; set; }
+        
+        [JsonPropertyName("expirationDate")]
         public DateTime ExpirationDate { get; set; }
 
         public ContractExpirationNotification() { }
