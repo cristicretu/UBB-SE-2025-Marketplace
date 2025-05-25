@@ -3,7 +3,6 @@ using MarketMinds.Shared.Repositories;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
-using BuyerLinkageStatus = MarketMinds.Shared.Services.BuyerLinkageStatus;
 
 namespace Server.Controllers
 {
