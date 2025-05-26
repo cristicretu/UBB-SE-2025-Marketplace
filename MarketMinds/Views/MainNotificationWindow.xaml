@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Window  
+<Page  
    x:Class="MarketMinds.Views.MainNotificationWindow"  
    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  
    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"  
@@ -9,96 +9,164 @@
    xmlns:Domain="using:MarketMinds.Shared.Models"  
    xmlns:viewmodel="using:MarketMinds.ViewModels"  
    xmlns:localConverters="using:MarketMinds.Converters"  
-   mc:Ignorable="d">
-    <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+   mc:Ignorable="d"
+   Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <localConverters:DateTimeToStringConverter x:Key="DateTimeToStringConverter" />
+        <localConverters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
+        <localConverters:InvertedBoolVisibilityConverter x:Key="InvertedBoolVisibilityConverter"/>
+        
+        <!-- Notification Card Style -->
+        <Style x:Key="NotificationCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Padding" Value="16"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid x:Name="RootGrid" Padding="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid.Resources>
-            <localConverters:DateTimeToStringConverter x:Key="DateTimeToStringConverter" />
-        </Grid.Resources>
+        <!-- Header Section -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Title -->
+            <TextBlock Grid.Column="0"
+                      Text="{Binding UnReadNotificationsCountText}"  
+                      Style="{StaticResource SubtitleTextBlockStyle}"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"/>
+            
+            <!-- Clear All Button -->
+            <Button Grid.Column="1"
+                   Background="Transparent"
+                   BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                   BorderThickness="1"
+                   CornerRadius="4"
+                   Padding="12,6"
+                   Command="{Binding ClearAllCommand}">
+                <TextBlock Text="Clear All" 
+                          Style="{StaticResource CaptionTextBlockStyle}"
+                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </Button>
+        </Grid>
 
-        <!-- Header section -->
-        <Border Grid.Row="0" Background="{ThemeResource SystemAccentColorLight3}" Padding="10" Width="Auto">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <Button x:Name="BackButton"  
-                   Content=""  
-                   FontFamily="Segoe MDL2 Assets"  
-                   FontSize="16"  
-                   Margin="0,0,15,0"  
-                   Padding="10,5"  
-                   Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"  
-                   Click="BackButton_Click"  
-                   ToolTipService.ToolTip="Back to notifications"/>
-                <TextBlock Text="{Binding UnReadNotificationsCountText}"  
-                       Foreground="{ThemeResource SystemControlForegroundAltHighBrush}"  
-                       FontSize="24"  
-                       FontWeight="Bold"  
-                       HorizontalAlignment="Center"/>
-                <Button Content="Clear All"
-                        Margin="50,0,0,0"
-                        Background="{ThemeResource SystemControlForegroundAltHighBrush}"
-                        Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
-                        FontSize="16"
-                        Command="{Binding ClearAllCommand}"
-                    />
-            </StackPanel>
-        </Border>
-
-        <!-- Scrollable notifications content -->
-        <ScrollViewer Grid.Row="1" 
-                     VerticalScrollBarVisibility="Auto" 
-                     HorizontalScrollBarVisibility="Auto"
-                     HorizontalAlignment="Stretch"
-                     VerticalAlignment="Stretch">
-            <ListView x:Name="notificationList"  
-                    SelectionChanged="NotificationList_SelectionChanged"  
-                    ItemsSource="{Binding Notifications}"  
-                    SelectionMode="Single"
-                    HorizontalAlignment="Center"
-                    Margin="15">
+        <!-- Notifications List -->
+        <Grid Grid.Row="1">
+            <!-- Loading indicator -->
+            <ProgressRing x:Name="LoadingRing" 
+                         IsActive="{Binding IsLoading, Mode=OneWay}"
+                         HorizontalAlignment="Center" 
+                         VerticalAlignment="Center"
+                         Width="40" Height="40"
+                         Foreground="{ThemeResource SystemAccentColor}"/>
+            
+            <!-- Notifications content -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                         HorizontalScrollBarVisibility="Disabled"
+                         Visibility="{Binding IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}">
+                <ListView x:Name="notificationList"  
+                        SelectionChanged="NotificationList_SelectionChanged"  
+                        ItemsSource="{Binding Notifications}"  
+                        SelectionMode="Single"
+                        Background="Transparent"
+                        ShowsScrollingPlaceholders="False">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalAlignment" Value="Center"/>
-                        <Setter Property="BorderBrush" Value="{ThemeResource SystemAccentColorLight3}"/>
-                        <Setter Property="BorderThickness" Value="1"/>
-                        <Setter Property="Padding" Value="20"/>
-                        <Setter Property="Margin" Value="0,0,0,10"/>
-                        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
-                        <Setter Property="MaxWidth" Value="850"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Border x:Name="Root"
+                                           Background="{TemplateBinding Background}"
+                                           BorderBrush="{TemplateBinding BorderBrush}"
+                                           BorderThickness="{TemplateBinding BorderThickness}">
+                                        <ContentPresenter x:Name="ContentPresenter"
+                                                        Padding="{TemplateBinding Padding}"
+                                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal"/>
+                                                <VisualState x:Name="PointerOver">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="Root.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Pressed">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="Root.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Width="760">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="{Binding Title}"  
-                                        Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"  
-                                        FontWeight="SemiBold"
-                                        TextWrapping="Wrap"
-                                        FontSize="20"/>
-                                <TextBlock Text="{Binding Subtitle}"  
-                                        Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
-                                        TextWrapping="Wrap"
-                                        FontSize="18"  
-                                        Margin="0,5,0,0"  
-                                        Opacity="0.8"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                                <TextBlock Text="{Binding Timestamp}"
-                                        Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                                        FontSize="16"/>
-                            </StackPanel>
-                        </Grid>
+                        <Border Style="{StaticResource NotificationCardStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Notification Content -->
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Text="{Binding Title}"  
+                                              Style="{StaticResource BaseTextBlockStyle}"
+                                              FontWeight="SemiBold"
+                                              TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Subtitle}"  
+                                              Style="{StaticResource CaptionTextBlockStyle}"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                              TextWrapping="Wrap"
+                                              Margin="0,2,0,0"/>
+                                </StackPanel>
+                                
+                                <!-- Timestamp -->
+                                <TextBlock Grid.Column="1"
+                                          Text="{Binding Timestamp}"
+                                          Style="{StaticResource CaptionTextBlockStyle}"
+                                          Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                          VerticalAlignment="Top"
+                                          Margin="16,0,0,0"/>
+                            </Grid>
+                        </Border>
                     </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </ScrollViewer>
+                                 </ListView.ItemTemplate>
+                </ListView>
+            </ScrollViewer>
+            
+            <!-- Empty state -->
+            <StackPanel HorizontalAlignment="Center" 
+                       VerticalAlignment="Center"
+                       Spacing="16"
+                       Visibility="{Binding ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                <FontIcon Glyph="&#xEA8F;" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Text="No notifications" 
+                          Style="{StaticResource BaseTextBlockStyle}"
+                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+        </Grid>
     </Grid>
-</Window>
+</Page>

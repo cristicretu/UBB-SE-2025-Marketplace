@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Windowing;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Views
 {
@@ -45,6 +46,17 @@ namespace MarketMinds.Views
 
             // Configure UI based on user type
             ConfigureUIForUserType();
+            
+            // Close notification popup when window is deactivated
+            this.Activated += HomePageView_Activated;
+        }
+        
+        private void HomePageView_Activated(object sender, WindowActivatedEventArgs e)
+        {
+            if (e.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                NotificationsPopup.IsOpen = false;
+            }
         }
 
         private void SetInitialWindowSize()
@@ -163,7 +175,7 @@ namespace MarketMinds.Views
                         ContentFrame.Navigate(typeof(HelpPage));
                         break;
                     case "Notifications":
-                        // Show notifications page in frame
+                        ShowNotificationsPopup();
                         break;
                     case "Wishlist":
                         // Show wishlist page in frame
@@ -235,6 +247,37 @@ namespace MarketMinds.Views
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Shows a popup containing the notifications UI
+        /// </summary>
+        private void ShowNotificationsPopup()
+        {
+            // Toggle the popup visibility if it's already open
+            if (NotificationsPopup.IsOpen)
+            {
+                NotificationsPopup.IsOpen = false;
+                return;
+            }
+            
+            // Position the popup near the notification button
+            if (NotificationsButton != null)
+            {
+                // Get the position of the notifications button
+                GeneralTransform transform = NotificationsButton.TransformToVisual(null);
+                Point point = transform.TransformPoint(new Point(0, 0));
+                
+                // Position the popup below the button
+                NotificationsPopup.HorizontalOffset = point.X - 400; // Offset to center it
+                NotificationsPopup.VerticalOffset = point.Y + NotificationsButton.ActualHeight;
+            }
+            
+            // Navigate to the MainNotificationWindow in the notifications frame
+            NotificationsFrame.Navigate(typeof(MainNotificationWindow));
+            
+            // Show the popup
+            NotificationsPopup.IsOpen = true;
         }
     }
 }

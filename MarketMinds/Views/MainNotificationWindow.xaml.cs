@@ -3,12 +3,15 @@ using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
 
-    public sealed partial class MainNotificationWindow : Window
+    public sealed partial class MainNotificationWindow : Page
     {
         /// <summary>
         /// The page for the main notification window
@@ -19,33 +22,36 @@ namespace MarketMinds.Views
         public MainNotificationWindow()
         {
             this.InitializeComponent();
-            this.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(400, 200, 1000, 800));
 
             CurrentUserId = UserSession.CurrentUserId ?? 0;
             ViewModel = new NotificationViewModel(CurrentUserId);
             RootGrid.DataContext = ViewModel;
 
-            Activated += MainNotificationWindow_Activated;
+            Loaded += MainNotificationWindow_Loaded;
         }
 
         /// <summary>
-        /// Handles the window activation event. If the window is activated, it loads the notifications for the current user
+        /// Handles the page loaded event. Loads the notifications for the current user
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private async void MainNotificationWindow_Activated(object sender, WindowActivatedEventArgs args)
+        /// <param name="e"></param>
+        private async void MainNotificationWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"Window activation state: {args.WindowActivationState}");
+            await ViewModel.LoadUnreadNotificationsAsync(CurrentUserId);
+        }
 
-            if (args.WindowActivationState != WindowActivationState.Deactivated)
-            {
-                await ViewModel.LoadUnreadNotificationsAsync(CurrentUserId);
-            }
+        /// <summary>
+        /// Called when page is navigated to
+        /// </summary>
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            await ViewModel.LoadUnreadNotificationsAsync(CurrentUserId);
         }
 
         /// <summary>
         /// Handles the selection changed event for the notification list. If a notification is selected,
-        /// it opens a secondary window with the notification details and marks the notification as read
+        /// it navigates to the secondary notification page with the notification details and marks the notification as read
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -53,26 +59,35 @@ namespace MarketMinds.Views
         {
             if (notificationList.SelectedItem is Notification selectedNotification)
             {
-                var secondaryWindow = new SecondaryNotificationWindow(selectedNotification);
-                secondaryWindow.Activate();
-
                 await ViewModel.MarkAsReadAsync(selectedNotification.NotificationID);
+
+                // Get the frame we're in (could be the notifications frame in the popup)
+                Frame currentFrame = null;
+
+                // Find the parent frame
+                DependencyObject parent = this;
+                while (parent != null && !(parent is Frame))
+                {
+                    parent = VisualTreeHelper.GetParent(parent);
+                }
+
+                if (parent is Frame frame)
+                {
+                    currentFrame = frame;
+                }
+                else if (this.Frame != null)
+                {
+                    currentFrame = this.Frame;
+                }
+
+                // Navigate to secondary notification page
+                if (currentFrame != null)
+                {
+                    currentFrame.Navigate(typeof(SecondaryNotificationWindow), selectedNotification);
+                }
 
                 notificationList.SelectedItem = null;
             }
-
-            this.Close();
-        }
-
-        /// <summary>
-        /// Handles the click event for the back button. It closes the current window
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Need to create main Window and activate it;
-            this.Close();
         }
     }
 }

@@ -112,5 +112,20 @@
 
         <!-- Content Frame -->
         <Frame x:Name="ContentFrame" Grid.Row="2"/>
+        
+        <!-- Notifications Popup -->
+        <Popup x:Name="NotificationsPopup" 
+               XamlRoot="{x:Bind Content.XamlRoot}" 
+               LightDismissOverlayMode="On">
+            <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                    BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Width="500"
+                    Height="600"
+                    Translation="0,0,16">
+                <Frame x:Name="NotificationsFrame" />
+            </Border>
+        </Popup>
     </Grid>
 </Window>
