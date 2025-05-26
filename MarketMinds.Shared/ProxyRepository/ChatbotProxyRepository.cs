@@ -265,6 +265,121 @@ namespace MarketMinds.Shared.ProxyRepository
                 return new List<Order>();
             }
         }
+
+        public async Task<List<Product>> GetShoppingCartItemsAsync(int userId)
+        {
+            try
+            {
+                var fullUrl = $"{apiBaseUrl}/api/shoppingcart/{userId}/items";
+                var response = await httpClient.GetAsync(fullUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<List<Product>>(json);
+                }
+                else
+                {
+                    return new List<Product>();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<Product>();
+            }
+        }
+
+        public async Task<List<TrackedOrder>> GetTrackedOrdersAsync(int userId)
+        {
+            try
+            {
+                var fullUrl = $"{apiBaseUrl}/api/Chatbot/TrackedOrders/{userId}";
+                var response = await httpClient.GetAsync(fullUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<List<TrackedOrder>>(json);
+                }
+                else
+                {
+                    return new List<TrackedOrder>();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<TrackedOrder>();
+            }
+        }
+
+        public async Task<List<UserWaitList>> GetUserWaitlistsAsync(int userId)
+        {
+            try
+            {
+                var fullUrl = $"{apiBaseUrl}/api/Chatbot/UserWaitlists/{userId}";
+                var response = await httpClient.GetAsync(fullUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<List<UserWaitList>>(json);
+                }
+                else
+                {
+                    return new List<UserWaitList>();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<UserWaitList>();
+            }
+        }
+
+        public async Task<List<AuctionProduct>> GetUserAuctionProductsAsync(int userId)
+        {
+            try
+            {
+                var fullUrl = $"{apiBaseUrl}/api/Chatbot/UserAuctionProducts/{userId}";
+                var response = await httpClient.GetAsync(fullUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<List<AuctionProduct>>(json);
+                }
+                else
+                {
+                    return new List<AuctionProduct>();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<AuctionProduct>();
+            }
+        }
+
+        public async Task<List<Bid>> GetUserBidsAsync(int userId)
+        {
+            try
+            {
+                var fullUrl = $"{apiBaseUrl}/api/Chatbot/UserBids/{userId}";
+                var response = await httpClient.GetAsync(fullUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<List<Bid>>(json);
+                }
+                else
+                {
+                    return new List<Bid>();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<Bid>();
+            }
+        }
     }
 
     public class ChatbotResponse

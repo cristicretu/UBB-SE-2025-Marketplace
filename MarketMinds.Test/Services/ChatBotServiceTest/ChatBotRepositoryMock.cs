@@ -46,11 +46,16 @@ namespace MarketMinds.Tests.Services.ChatBotServiceTest
         public Task<User> GetUserAsync(int userId) => Task.FromResult(new User { Id = userId, Username = "MockUser", Email = "mock@user.com" });
         public Task<Basket> GetUserBasketAsync(int userId) => Task.FromResult(new Basket { Id = 1 });
         public Task<List<BasketItem>> GetBasketItemsAsync(int basketId) => Task.FromResult(new List<BasketItem>());
+        public Task<List<Product>> GetShoppingCartItemsAsync(int userId) => Task.FromResult(new List<Product>());
         public Task<BuyProduct> GetBuyProductAsync(int productId) => Task.FromResult(new BuyProduct());
         public Task<List<Review>> GetReviewsGivenByUserAsync(int userId) => Task.FromResult(new List<Review>());
         public Task<List<Review>> GetReviewsReceivedByUserAsync(int userId) => Task.FromResult(new List<Review>());
         public Task<User> GetUserByIdAsync(int userId) => Task.FromResult(new User { Id = userId, Username = $"User{userId}" });
         public Task<List<Order>> GetBuyerOrdersAsync(int userId) => Task.FromResult(new List<Order>());
         public Task<List<Order>> GetSellerOrdersAsync(int userId) => Task.FromResult(new List<Order>());
+        public Task<List<TrackedOrder>> GetTrackedOrdersAsync(int userId) => Task.FromResult(new List<TrackedOrder>());
+        public Task<List<UserWaitList>> GetUserWaitlistsAsync(int userId) => Task.FromResult(new List<UserWaitList>());
+        public Task<List<AuctionProduct>> GetUserAuctionProductsAsync(int userId) => Task.FromResult(new List<AuctionProduct>());
+        public Task<List<Bid>> GetUserBidsAsync(int userId) => Task.FromResult(new List<Bid>());
     }
 }
