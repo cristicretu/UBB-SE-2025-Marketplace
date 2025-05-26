@@ -121,7 +121,7 @@ namespace MarketMinds.Shared.Services
             throw new NotImplementedException();
         }
     }
-    
+
     public class ConditionJsonConverter : JsonConverter<Condition>
     {
         public override Condition Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -311,11 +311,11 @@ namespace MarketMinds.Shared.Services
             }
 
             var product = new AuctionProduct();
-            
+
             // Track if mandatory fields were found
             bool foundId = false;
             bool foundTitle = false;
-            
+
             while (reader.Read())
             {
                 if (reader.TokenType == JsonTokenType.EndObject)
@@ -376,7 +376,7 @@ namespace MarketMinds.Shared.Services
                             // Process bids array
                             var bids = new List<Bid>();
                             var bidConverter = new BidJsonConverter();
-                            
+
                             // Read array opening
                             while (reader.Read())
                             {
@@ -384,7 +384,7 @@ namespace MarketMinds.Shared.Services
                                 {
                                     break;
                                 }
-                                
+
                                 if (reader.TokenType == JsonTokenType.StartObject)
                                 {
                                     var bid = bidConverter.Read(ref reader, typeof(Bid), options);
@@ -440,7 +440,7 @@ namespace MarketMinds.Shared.Services
                         else if (reader.TokenType == JsonTokenType.StartArray)
                         {
                             var images = new List<ProductImage>();
-                            
+
                             // Read array opening
                             while (reader.Read())
                             {
@@ -448,11 +448,11 @@ namespace MarketMinds.Shared.Services
                                 {
                                     break;
                                 }
-                                
+
                                 if (reader.TokenType == JsonTokenType.StartObject)
                                 {
                                     var image = new ProductImage();
-                                    
+
                                     // Read image object properties
                                     while (reader.Read())
                                     {
@@ -460,12 +460,12 @@ namespace MarketMinds.Shared.Services
                                         {
                                             break;
                                         }
-                                        
+
                                         if (reader.TokenType == JsonTokenType.PropertyName)
                                         {
                                             string imagePropName = reader.GetString();
                                             reader.Read();
-                                            
+
                                             if (imagePropName.ToLower() == "url")
                                             {
                                                 image.Url = reader.GetString();
@@ -484,12 +484,71 @@ namespace MarketMinds.Shared.Services
                                             }
                                         }
                                     }
-                                    
+
                                     images.Add(image);
                                 }
                             }
                             product.Images = images;
                             Console.WriteLine($"DEBUG: AuctionProductConverter - Read {images.Count} images");
+                        }
+                        else
+                        {
+                            reader.Skip();
+                        }
+                        break;
+                    case "tags":
+                        if (reader.TokenType == JsonTokenType.Null)
+                        {
+                            product.Tags = new List<ProductTag>();
+                        }
+                        else if (reader.TokenType == JsonTokenType.StartArray)
+                        {
+                            var tags = new List<ProductTag>();
+
+                            // Read array opening
+                            while (reader.Read())
+                            {
+                                if (reader.TokenType == JsonTokenType.EndArray)
+                                {
+                                    break;
+                                }
+
+                                if (reader.TokenType == JsonTokenType.StartObject)
+                                {
+                                    var tag = new ProductTag();
+
+                                    // Read tag object properties
+                                    while (reader.Read())
+                                    {
+                                        if (reader.TokenType == JsonTokenType.EndObject)
+                                        {
+                                            break;
+                                        }
+
+                                        if (reader.TokenType == JsonTokenType.PropertyName)
+                                        {
+                                            string tagPropName = reader.GetString();
+                                            reader.Read();
+
+                                            if (tagPropName.ToLower() == "id")
+                                            {
+                                                tag.Id = reader.GetInt32();
+                                            }
+                                            else if (tagPropName.ToLower() == "title" || tagPropName.ToLower() == "displaytitle")
+                                            {
+                                                tag.Title = reader.GetString();
+                                            }
+                                            else
+                                            {
+                                                reader.Skip();
+                                            }
+                                        }
+                                    }
+
+                                    tags.Add(tag);
+                                }
+                            }
+                            product.Tags = tags;
                         }
                         else
                         {

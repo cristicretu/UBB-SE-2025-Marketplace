@@ -21,7 +21,7 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
             {
                 Console.WriteLine($"Condition Id: {entity.Condition.Id}, Name: {entity.Condition.Name}, Description: {entity.Condition.Description}");
             }
-            
+
             Console.WriteLine($"Category ID: {entity.CategoryId}, Category object: {(entity.Category != null ? "Loaded" : "NULL")}");
             if (entity.Category != null)
             {
@@ -68,7 +68,11 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                     Description = entity.Category.Description
                 }
                 : null,
-                Tags = new List<ProductTagDTO>(),
+                Tags = entity.Tags?.Select(t => new ProductTagDTO
+                {
+                    Id = t.Id,
+                    DisplayTitle = t.Title
+                }).ToList() ?? new List<ProductTagDTO>(),
                 Images = entity.Images?.Select(i => new ImageDTO
                 {
                     Url = i.Url

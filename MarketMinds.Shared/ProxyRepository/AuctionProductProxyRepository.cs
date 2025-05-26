@@ -28,9 +28,9 @@ namespace MarketMinds.Shared.ProxyRepository
             {
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
-            
+
             Console.WriteLine($"TRACE: Repository.CreateListing received EndTime: {auctionProduct.EndTime}");
-            
+
             if (string.IsNullOrWhiteSpace(auctionProduct.Title))
             {
                 throw new ArgumentException("Title cannot be empty", nameof(auctionProduct.Title));
@@ -56,7 +56,7 @@ namespace MarketMinds.Shared.ProxyRepository
             {
                 throw new ArgumentException("SellerId must be specified and greater than zero", nameof(auctionProduct.SellerId));
             }
-            
+
             // Filter out any null URLs in images
             var imagesList = new List<object>();
             if (auctionProduct.NonMappedImages != null && auctionProduct.NonMappedImages.Any())
@@ -75,7 +75,17 @@ namespace MarketMinds.Shared.ProxyRepository
                     .Cast<object>()
                     .ToList();
             }
-            
+
+            // Convert tags to a serializable format
+            var tagsList = new List<object>();
+            if (auctionProduct.Tags != null && auctionProduct.Tags.Any())
+            {
+                tagsList = auctionProduct.Tags
+                    .Select(tag => new { Id = tag.Id, Title = tag.Title })
+                    .Cast<object>()
+                    .ToList();
+            }
+
             var productToSend = new
             {
                 auctionProduct.Title,
@@ -87,9 +97,10 @@ namespace MarketMinds.Shared.ProxyRepository
                 endAuctionDate = auctionProduct.EndTime,
                 startingPrice = auctionProduct.StartPrice,
                 currentPrice = auctionProduct.CurrentPrice,
-                Images = imagesList
+                Images = imagesList,
+                Tags = tagsList
             };
-            
+
             Console.WriteLine($"TRACE: About to send API request with endAuctionDate: {productToSend.endAuctionDate}");
 
             try
@@ -100,7 +111,7 @@ namespace MarketMinds.Shared.ProxyRepository
                     var errorContent = response.Content.ReadAsStringAsync().Result;
                     throw new HttpRequestException($"Failed to create auction product. Status: {(int)response.StatusCode} {response.ReasonPhrase}. Error: {errorContent}");
                 }
-                
+
                 var responseContent = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine($"TRACE: API response received: {responseContent}");
             }
@@ -120,9 +131,9 @@ namespace MarketMinds.Shared.ProxyRepository
             {
                 throw new InvalidOperationException("HTTP client is not properly initialized");
             }
-            
+
             Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Creating bid: ProductId={auction.Id}, BidderId={bidder.Id}, Amount={bidAmount}");
-            
+
             var bidToSend = new
             {
                 ProductId = auction.Id,
@@ -130,31 +141,31 @@ namespace MarketMinds.Shared.ProxyRepository
                 Amount = bidAmount,
                 Timestamp = DateTime.Now
             };
-            
+
             try
             {
                 Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Sending POST to auctionproducts/{auction.Id}/bids");
                 var response = httpClient.PostAsJsonAsync($"auctionproducts/{auction.Id}/bids", bidToSend).Result;
-                
+
                 Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Response status: {(int)response.StatusCode} {response.StatusCode}");
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = response.Content.ReadAsStringAsync().Result;
                     Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Error response content: {errorContent}");
-                    
+
                     // Check for specific user role error message
-                    if (response.StatusCode == System.Net.HttpStatusCode.BadRequest && 
+                    if (response.StatusCode == System.Net.HttpStatusCode.BadRequest &&
                         errorContent.Contains("Your account doesn't have permission to place bids. Only buyer accounts can place bids."))
                     {
                         Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Detected buyer role error");
                         throw new InvalidOperationException("ERROR_NOT_BUYER: Your account doesn't have permission to place bids. Only buyer accounts can place bids.");
                     }
-                    
+
                     var errorMessage = !string.IsNullOrWhiteSpace(errorContent) ? errorContent : "Unknown server error";
                     throw new Exception($"Server rejected bid: {errorMessage} (Status code: {(int)response.StatusCode})");
                 }
-                
+
                 Console.WriteLine($"TRACE: ProxyRepository.PlaceBid - Bid placed successfully");
             }
             catch (InvalidOperationException)
@@ -201,20 +212,20 @@ namespace MarketMinds.Shared.ProxyRepository
                 serializerOptions.Converters.Add(new BidJsonConverter());
 
                 var response = httpClient.GetAsync("auctionproducts").Result;
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = response.Content.ReadAsStringAsync().Result;
                     throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
                 }
-                
+
                 var json = response.Content.ReadAsStringAsync().Result;
-                
+
                 if (string.IsNullOrWhiteSpace(json))
                 {
                     return new List<AuctionProduct>();
                 }
-                
+
                 try
                 {
                     var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
@@ -258,20 +269,20 @@ namespace MarketMinds.Shared.ProxyRepository
                 serializerOptions.Converters.Add(new BidJsonConverter());
 
                 var response = httpClient.GetAsync($"auctionproducts/{id}").Result;
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = response.Content.ReadAsStringAsync().Result;
                     throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
                 }
-                
+
                 var json = response.Content.ReadAsStringAsync().Result;
-                
+
                 if (string.IsNullOrWhiteSpace(json))
                 {
                     throw new KeyNotFoundException($"No data returned for auction product with ID {id}");
                 }
-                
+
                 try
                 {
                     var product = System.Text.Json.JsonSerializer.Deserialize<AuctionProduct>(json, serializerOptions);
@@ -327,20 +338,20 @@ namespace MarketMinds.Shared.ProxyRepository
                 serializerOptions.Converters.Add(new BidJsonConverter());
 
                 var response = await httpClient.GetAsync("auctionproducts");
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
                 }
-                
+
                 var json = await response.Content.ReadAsStringAsync();
-                
+
                 if (string.IsNullOrWhiteSpace(json))
                 {
                     return new List<AuctionProduct>();
                 }
-                
+
                 try
                 {
                     var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
@@ -385,20 +396,20 @@ namespace MarketMinds.Shared.ProxyRepository
 
                 string url = $"auctionproducts?offset={offset}&count={count}";
                 var response = await httpClient.GetAsync(url);
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
                 }
-                
+
                 var json = await response.Content.ReadAsStringAsync();
-                
+
                 if (string.IsNullOrWhiteSpace(json))
                 {
                     return new List<AuctionProduct>();
                 }
-                
+
                 try
                 {
                     var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
@@ -429,13 +440,13 @@ namespace MarketMinds.Shared.ProxyRepository
             try
             {
                 var response = await httpClient.GetAsync("auctionproducts/count");
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
                 }
-                
+
                 var countString = await response.Content.ReadAsStringAsync();
                 return int.Parse(countString);
             }

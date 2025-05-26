@@ -28,7 +28,7 @@ namespace Server.Controllers
             try
             {
                 List<BorrowProduct> products;
-                
+
                 if (count > 0)
                 {
                     // Use pagination
@@ -39,7 +39,7 @@ namespace Server.Controllers
                     // Get all products (backward compatibility)
                     products = borrowProductsRepository.GetProducts();
                 }
-                
+
                 return Ok(products);
             }
             catch (Exception ex)
@@ -110,6 +110,16 @@ namespace Server.Controllers
                     DailyRate = productDTO.DailyRate,
                     IsBorrowed = productDTO.IsBorrowed
                 };
+
+                // Process tags - convert DTO tags to ProductTag objects
+                if (productDTO.Tags != null && productDTO.Tags.Any())
+                {
+                    product.Tags = productDTO.Tags.Select(tagDto => new ProductTag
+                    {
+                        Id = tagDto.Id,
+                        Title = tagDto.Title
+                    }).ToList();
+                }
 
                 borrowProductsRepository.AddProduct(product);
 
