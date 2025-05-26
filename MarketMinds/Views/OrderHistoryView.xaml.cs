@@ -266,66 +266,66 @@ namespace MarketMinds.Views
                             AddDetailRowToPanel(orderDetailsPanel, "Additional Info:", orderSummary.AdditionalInfo);
                         }
 
-                        if (orderProductCategoryTypes.TryGetValue(orderSummary.ID, out string productType) && productType == "borrowed")
+                        
+                        AddDetailRowToPanel(orderDetailsPanel, "Warranty Tax:", orderSummary.WarrantyTax.ToString("C"));
+
+                        if (!string.IsNullOrEmpty(orderSummary.ContractDetails))
                         {
-                            AddDetailRowToPanel(orderDetailsPanel, "Warranty Tax:", orderSummary.WarrantyTax.ToString("C"));
-
-                            if (!string.IsNullOrEmpty(orderSummary.ContractDetails))
+                            AddDetailRowToPanel(orderDetailsPanel, "Contract Details:", orderSummary.ContractDetails);
+                        }                        // Add Generate Contract button that displays the contract directly
+                        var generateContractButton = new Button
+                        {
+                            Content = "Generate Contract",
+                            Margin = new Thickness(0, 10, 0, 0),
+                            HorizontalAlignment = HorizontalAlignment.Left
+                        };                        generateContractButton.Click += (s, args) =>
+                        {
+                            DispatcherQueue.TryEnqueue(async () =>
                             {
-                                AddDetailRowToPanel(orderDetailsPanel, "Contract Details:", orderSummary.ContractDetails);
-                            }
-
-                            var viewContractButton = new Button
-                            {
-                                Content = "View Contract PDF",
-                                Margin = new Thickness(0, 10, 0, 0),
-                                HorizontalAlignment = HorizontalAlignment.Left
-                            };
-
-                            viewContractButton.Click += (s, args) =>
-                            {
-                                // Never use Task.Run for UI, use DispatcherQueue instead
-                                DispatcherQueue.TryEnqueue(async () =>
+                                try
                                 {
-                                    try
+                                    // Disable the button and show loading state
+                                    generateContractButton.IsEnabled = false;
+                                    generateContractButton.Content = "Generating...";
+                                    
+                                    await HandleGenerateAndDisplayContractClick(orderSummary);
+                                    
+                                    // Update button to show success
+                                    generateContractButton.Content = "✓ Contract Generated";
+                                    generateContractButton.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
+                                    
+                                    // Add a success message to the dialog instead of showing a separate dialog
+                                    var successMessage = new TextBlock
                                     {
-                                        await HandleContractViewClick(orderSummary);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        System.Diagnostics.Debug.WriteLine($"Contract view error: {ex.Message}");
-                                    }
-                                });
-                            };
-
-                            orderDetailsPanel.Children.Add(viewContractButton);
-
-                            // Add Generate Contract button
-                            var generateContractButton = new Button
-                            {
-                                Content = "Generate Contract",
-                                Margin = new Thickness(0, 10, 0, 0),
-                                HorizontalAlignment = HorizontalAlignment.Left
-                            };
-
-                            generateContractButton.Click += (s, args) =>
-                            {
-                                DispatcherQueue.TryEnqueue(async () =>
+                                        Text = "✓ Contract generated and opened successfully!",
+                                        Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green),
+                                        FontWeight = FontWeights.SemiBold,
+                                        Margin = new Thickness(0, 10, 0, 0)
+                                    };
+                                    orderDetailsPanel.Children.Add(successMessage);
+                                }
+                                catch (Exception ex)
                                 {
-                                    try
+                                    System.Diagnostics.Debug.WriteLine($"Contract generation error: {ex.Message}");
+                                    
+                                    // Reset button and show error in the dialog
+                                    generateContractButton.IsEnabled = true;
+                                    generateContractButton.Content = "Generate Contract";
+                                    
+                                    var errorMessage = new TextBlock
                                     {
-                                        await HandleGenerateContractClick(orderSummary);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        System.Diagnostics.Debug.WriteLine($"Contract generation error: {ex.Message}");
-                                        await ShowCustomMessageAsync("Error", $"Failed to generate contract: {ex.Message}");
-                                    }
-                                });
-                            };
+                                        Text = $"✗ Failed to generate contract: {ex.Message}",
+                                        Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red),
+                                        FontWeight = FontWeights.SemiBold,
+                                        Margin = new Thickness(0, 10, 0, 0),
+                                        TextWrapping = TextWrapping.Wrap
+                                    };
+                                    orderDetailsPanel.Children.Add(errorMessage);
+                                }
+                            });
+                        };
 
-                            orderDetailsPanel.Children.Add(generateContractButton);
-                        }
+                        orderDetailsPanel.Children.Add(generateContractButton);
 
                         var scrollViewer = new ScrollViewer
                         {
@@ -361,79 +361,35 @@ namespace MarketMinds.Views
             {
                 System.Diagnostics.Debug.WriteLine($"Error showing order details: {exception.Message}");
             }
-        }
-
-        /// <summary>
-        /// Handles the click event for viewing the contract associated with an order summary.
-        /// </summary>
-        /// <param name="orderSummary">The order summary object containing contract details. Must not be null.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        /// <exception cref="Exception">Thrown when there is an error retrieving or displaying the contract.</exception>
-        private async Task HandleContractViewClick(OrderSummary orderSummary)
-        {
-            try
-            {
-                var contract = await contractViewModel.GetContractByIdAsync(orderSummary.ID);
-
-                var contractTypeValues = Enum.GetValues(typeof(PredefinedContractType));
-                PredefinedContractType firstContractType = default;
-                if (contractTypeValues.Length > 0)
-                {
-                    firstContractType = (PredefinedContractType)contractTypeValues.GetValue(0);
-                }
-
-                var predefinedContract = await contractViewModel
-                    .GetPredefinedContractByPredefineContractTypeAsync(firstContractType);
-
-                var fieldReplacements = new Dictionary<string, string>
-                {
-                    { "CustomerName", orderSummary.FullName },
-                    { "ProductName", "Borrowed Product" },
-                    { "StartDate", DateTime.Now.ToString("yyyy-MM-dd") },
-                    { "EndDate", DateTime.Now.AddMonths(3).ToString("yyyy-MM-dd") },
-                    { "Price", orderSummary.FinalTotal.ToString("C") }
-                };
-            }
-            catch (Exception exception)
-            {
-                await ShowCustomMessageAsync("Error", $"Failed to generate contract: {exception.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Handles the click event for generating a new contract.
+        }        /// <summary>
+        /// Handles the click event for generating and displaying a contract.
+        /// Similar to BuyerProfile implementation - generates PDF and opens it directly.
         /// </summary>
         /// <param name="orderSummary">The order summary object containing contract details.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task HandleGenerateContractClick(OrderSummary orderSummary)
+        private async Task HandleGenerateAndDisplayContractClick(OrderSummary orderSummary)
         {
-            try
+            // Create a new contract
+            var contract = new Contract
             {
-                // Create a new contract
-                var contract = new Contract
-                {
-                    OrderID = orderSummary.ID,
-                    ContractStatus = "ACTIVE",
-                    ContractContent = orderSummary.ContractDetails ?? "Standard contract terms",
-                    RenewalCount = 0,
-                    AdditionalTerms = string.Empty
-                };
+                OrderID = orderSummary.ID,
+                ContractStatus = "ACTIVE",
+                ContractContent = orderSummary.ContractDetails ?? "Standard contract terms",
+                RenewalCount = 0,
+                AdditionalTerms = string.Empty
+            };
 
-                // Get the predefined contract type (assuming BorrowingContract for now)
-                var predefinedContract = await contractViewModel.GetPredefinedContractByPredefineContractTypeAsync(PredefinedContractType.BorrowingContract);
+            // Get the predefined contract type (assuming BorrowingContract for now)
+            var predefinedContract = await contractViewModel.GetPredefinedContractByPredefineContractTypeAsync(PredefinedContractType.BorrowingContract);
 
-                // Generate PDF content (empty for now, will be filled by the server)
-                byte[] pdfContent = new byte[0];
+            // Add the contract to the database first
+            byte[] pdfContent = new byte[0];
+            var newContract = await contractViewModel.AddContractAsync(contract, pdfContent);
 
-                // Add the contract to the database
-                var newContract = await contractViewModel.AddContractAsync(contract, pdfContent);
-
-                await ShowCustomMessageAsync("Success", "Contract generated successfully!");
-            }
-            catch (Exception ex)
-            {
-                await ShowCustomMessageAsync("Error", $"Failed to generate contract: {ex.Message}");
-            }
+            // Generate and display the contract using the same approach as BuyerProfile
+            await contractViewModel.GenerateAndSaveContractAsync(newContract.ContractID);
+            
+            // Success feedback is now handled in the UI directly, no separate dialog needed
         }
 
         /// <summary>

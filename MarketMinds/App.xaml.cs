@@ -315,7 +315,8 @@ namespace MarketMinds
             AuctionProductsRepository = new AuctionProductsProxyRepository(Configuration);
             BorrowProductsRepository = new BorrowProductsProxyRepository(Configuration);
             BasketRepository = new BasketProxyRepository(Configuration);
-            BuyProductsRepository = new BuyProductsProxyRepository(Configuration);            BuyerLinkageRepository = new BuyerLinkageProxyRepository(Configuration);
+            BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
+            BuyerLinkageRepository = new BuyerLinkageProxyRepository(Configuration);
             ShoppingCartRepository = new ShoppingCartProxyRepository(Configuration);
             ContractProxyRepository = new ContractProxyRepository(Configuration);
             TrackedOrderRepository = new TrackedOrderProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/");
@@ -348,7 +349,8 @@ namespace MarketMinds
             ShoppingCartService = new ShoppingCartService(ShoppingCartRepository);
             OrderHistoryService = new OrderHistoryService();
             OrderService = new OrderService();
-            OrderSummaryService = new OrderSummaryService();            ContractService = new ContractService(ContractProxyRepository, OrderSummaryService, OrderService, SellerService, PDFService);
+            OrderSummaryService = new OrderSummaryService();
+            ContractService = new ContractService(ContractProxyRepository, OrderSummaryService, OrderService, SellerService, PDFService);
             DummyWalletService = new DummyWalletService();
             ProductService = new ProductService(BuyProductsRepository);
             TrackedOrderService = new TrackedOrderService(TrackedOrderRepository);
@@ -389,7 +391,7 @@ namespace MarketMinds
             var trackedOrderService = new TrackedOrderService(new TrackedOrderProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/"));
             var notificationService = new MarketMinds.Shared.Services.NotificationService();
             TrackedOrderViewModel = new TrackedOrderViewModel(trackedOrderService, new OrderViewModel(), notificationService);
-
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
             // Show login window first instead of main window
             LoginWindow = new LoginWindow();
             LoginWindow.Activate();
