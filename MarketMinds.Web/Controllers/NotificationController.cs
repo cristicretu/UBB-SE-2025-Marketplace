@@ -8,8 +8,6 @@ using System.Collections.Generic;
 
 namespace WebMarketplace.Controllers
 {
-    [ApiController]
-    [Route("Notifications")]
     public class NotificationController : Controller
     {
         private readonly INotificationContentService _notificationService;
@@ -20,62 +18,22 @@ namespace WebMarketplace.Controllers
         }
 
         /// <summary>
-        /// Fetches notifications for the user.
+        /// Returns the notifications dropdown partial view for the header
         /// </summary>
-        /// <returns>
-        /// JSON data if the request is an AJAX request; otherwise, a partial view.
-        /// </returns>
         [HttpGet]
-        public async Task<IActionResult> Notifications()
+        public async Task<IActionResult> Index()
         {
-            int userId = UserSession.CurrentUserId ?? throw new InvalidOperationException("User ID is not available.");
-            var notifications = await _notificationService.GetNotificationsForUser(userId);
-        Debug.WriteLine($"Notifications count: {notifications.Count}");
-
-        // For AJAX requests, check if client wants HTML
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-        {
-            if (Request.Headers["Accept"].ToString().Contains("text/html"))
+            if (!UserSession.CurrentUserId.HasValue)
             {
-                // Return the partial view for AJAX requests that want HTML
-                return PartialView("_Notifications", notifications);
+                return PartialView("_Notifications", new List<MarketMinds.Shared.Models.Notification>());
             }
-            
-            // Return JSON only when client specifically wants JSON
-            var jsonResult = notifications.Select(n => {
-                // Initialize all possible properties
-                int? orderID = null;
-                string shippingState = null;
-                DateTime? deliveryDate = null;
-                
-                // Add specific properties based on notification type
-                if (n is MarketMinds.Shared.Models.OrderShippingProgressNotification orderShipping)
-                {
-                    orderID = orderShipping.OrderID;
-                    shippingState = orderShipping.ShippingState;
-                    deliveryDate = orderShipping.DeliveryDate;
-                }
-                
-                // Return a consistent object structure with all possible properties
-                return new
-                {
-                    id = n.NotificationID,
-                    content = n.Content,
-                    title = n.Title,
-                    category = n.Category.ToString(),
-                    timestamp = n.Timestamp,
-                    orderID,
-                    shippingState,
-                    deliveryDate
-                };
-            });
-            
-            return Json(jsonResult);
-    }
 
-    // Return the partial view for normal requests
-    return PartialView("_Notifications", notifications);
-}
+            int userId = UserSession.CurrentUserId.Value;
+            var notifications = await _notificationService.GetNotificationsForUser(userId);
+            
+            return PartialView("_Notifications", notifications);
+        }
+
         /// <summary>
         /// Fetches the count of unread notifications for the user.
         /// </summary>
@@ -85,7 +43,12 @@ namespace WebMarketplace.Controllers
         [HttpGet("Count")]
         public async Task<IActionResult> GetUnreadCount()
         {
-            int userId = UserSession.CurrentUserId ?? throw new InvalidOperationException("User ID is not available.");
+            if (!UserSession.CurrentUserId.HasValue)
+            {
+                return Json(new { count = 0 });
+            }
+
+            int userId = UserSession.CurrentUserId.Value;
             var unreadNotifications = await _notificationService.GetUnreadNotificationsForUser(userId);
             var unreadCount = unreadNotifications.Count;
             return Json(new { count = unreadCount });
@@ -95,53 +58,91 @@ namespace WebMarketplace.Controllers
         /// Marks all notifications as read for the user.
         /// </summary>
         /// <returns>
-        /// JSON result indicating success and the updated unread count.
+        /// Redirect back to the referring page.
         /// </returns>
-        [HttpPost("MarkAllAsRead")]
+        [HttpPost]
         public async Task<IActionResult> MarkAllAsRead()
         {
             try
             {
-                int userId = UserSession.CurrentUserId ?? throw new InvalidOperationException("User ID is not available.");
+                if (!UserSession.CurrentUserId.HasValue)
+                {
+                    TempData["ErrorMessage"] = "User not authenticated";
+                    return RedirectToReferrer();
+                }
+
+                int userId = UserSession.CurrentUserId.Value;
                 
                 // Call the service with the correct parameter (userId)
                 await _notificationService.MarkAllAsRead(userId);
 
-                // Get updated notifications to calculate the new unread count
-                var unreadNotifications = await _notificationService.GetUnreadNotificationsForUser(userId);
-                var unreadCount = unreadNotifications.Count;
-
-                // Return JSON response with success status and updated count
-                return Json(new { success = true, unreadCount });
+                return RedirectToReferrer();
             }
             catch (Exception ex)
             {
                 // Log the exception
                 Debug.WriteLine($"Error marking notifications as read: {ex.Message}");
-                return Json(new { success = false, error = ex.Message });
+                TempData["ErrorMessage"] = "Error marking notifications as read";
+                return RedirectToReferrer();
             }
         }
-
-
 
         /// <summary>
         /// Clears all notifications for the current user.
         /// </summary>
-        /// <returns>JSON result indicating success.</returns>
-        [HttpPost("ClearAll")]
+        /// <returns>Redirect back to the referring page.</returns>
+        [HttpPost]
         public async Task<IActionResult> ClearAll()
         {
             try
             {
-                int userId = UserSession.CurrentUserId ?? throw new InvalidOperationException("User ID is not available.");
+                if (!UserSession.CurrentUserId.HasValue)
+                {
+                    TempData["ErrorMessage"] = "User not authenticated";
+                    return RedirectToReferrer();
+                }
+
+                int userId = UserSession.CurrentUserId.Value;
                 await _notificationService.ClearAllNotifications(userId);
-                return Json(new { success = true });
+                
+                return RedirectToReferrer();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error clearing notifications: {ex.Message}");
-                return Json(new { success = false, error = ex.Message });
+                TempData["ErrorMessage"] = "Error clearing notifications";
+                return RedirectToReferrer();
             }
+        }
+
+        /// <summary>
+        /// Shows all notifications page
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> All()
+        {
+            if (!UserSession.CurrentUserId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            int userId = UserSession.CurrentUserId.Value;
+            var notifications = await _notificationService.GetNotificationsForUser(userId);
+            
+            return View(notifications);
+        }
+
+        /// <summary>
+        /// Helper method to redirect back to the referring page or Home if no referrer
+        /// </summary>
+        private IActionResult RedirectToReferrer()
+        {
+            string referrer = Request.Headers["Referer"].ToString();
+            if (!string.IsNullOrEmpty(referrer) && Uri.IsWellFormedUriString(referrer, UriKind.Absolute))
+            {
+                return Redirect(referrer);
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }
