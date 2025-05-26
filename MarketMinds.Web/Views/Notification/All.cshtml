@@ -67,7 +67,7 @@
     {
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="divide-y divide-gray-200">
-                @foreach (var notification in Model)
+                @foreach (var notification in Model.OrderByDescending(n => n.Timestamp))
                 {
                     <div class="p-6 @(notification.IsRead ? "" : "bg-blue-50 border-l-4 border-l-blue-500")" data-notification-id="@notification.NotificationID">
                         <div class="flex items-start space-x-4">
