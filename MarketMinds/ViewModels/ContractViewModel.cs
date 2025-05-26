@@ -437,7 +437,8 @@ namespace MarketMinds.ViewModels
                 StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
                 await Launcher.LaunchFileAsync(file);
             }
-            catch (Exception ex) // Catches exceptions from ContractProxyRepository (e.g., HttpRequestException) and other operations
+            // Catches exceptions from ContractProxyRepository (e.g., HttpRequestException) and other operations
+            catch (Exception ex)
             {
                 GenerateContractErrorMessage = $"Something went horribly wrong when trying to generate your contract with id {contractID}";
             }
