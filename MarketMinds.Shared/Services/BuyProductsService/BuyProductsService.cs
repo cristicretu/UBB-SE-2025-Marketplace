@@ -55,6 +55,46 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             }
         }
 
+        public List<BuyProduct> GetProducts(int offset, int count)
+        {
+            try
+            {
+                var json = buyProductsRepository.GetProducts(offset, count);
+                Console.WriteLine($"Received JSON from server (offset: {offset}, count: {count}):");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+
+                // First deserialize to DTOs
+                var productDTOs = JsonSerializer.Deserialize<List<BuyProductDTO>>(json, jsonOptions);
+
+                // Then map DTOs to domain models
+                var products = BuyProductMapper.FromDTOList(productDTOs);
+
+                return products ?? new List<BuyProduct>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting products with pagination: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                return new List<BuyProduct>();
+            }
+        }
+
+        public int GetProductCount()
+        {
+            try
+            {
+                return buyProductsRepository.GetProductCount();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting product count: {ex.Message}");
+                return 0;
+            }
+        }
+
         public void CreateListing(BuyProduct product)
         {
             if (product == null)
@@ -82,24 +122,53 @@ namespace MarketMinds.Shared.Services.BuyProductsService
 
             try
             {
-                var productToSend = new
+                var productTags = new List<BuyProductProductTag>();
+                if (product.Tags != null && product.Tags.Any())
                 {
-                    product.Title,
-                    product.Description,
+                    foreach (var tag in product.Tags)
+                    {
+                        var productTag = new BuyProductProductTag
+                        {
+                            TagId = tag.Id,
+                            Tag = tag
+                        };
+                        productTags.Add(productTag);
+                    }
+                }
+
+                var productToSend = new BuyProduct
+                {
+                    Title = product.Title,
+                    Description = product.Description,
                     SellerId = product.SellerId,
-                    ConditionId = product.Condition?.Id,
-                    CategoryId = product.Category?.Id,
-                    product.Price,
-                    Images = product.Images == null || !product.Images.Any()
-                           ? (product.NonMappedImages != null && product.NonMappedImages.Any()
-                              ? product.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
-                              : new List<object>())
-                           : product.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+                    ConditionId = product.Condition?.Id ?? 0,
+                    CategoryId = product.Category?.Id ?? 0,
+                    Price = product.Price,
+                    Stock = product.Stock,
+                    ProductTags = productTags,
+                    Images = new List<BuyProductImage>()
                 };
 
-                Console.WriteLine($"Sending to API: SellerId={productToSend.SellerId}");
+                // Add images
+                if (product.NonMappedImages != null && product.NonMappedImages.Any())
+                {
+                    foreach (var img in product.NonMappedImages)
+                    {
+                        productToSend.Images.Add(new BuyProductImage { Url = img.Url ?? string.Empty });
+                    }
+                }
+                else if (product.Images != null && product.Images.Any())
+                {
+                    foreach (var img in product.Images)
+                    {
+                        productToSend.Images.Add(new BuyProductImage { Url = img.Url });
+                    }
+                }
+
+                // Serialize the object to see what's actually being sent
+                var jsonToSend = System.Text.Json.JsonSerializer.Serialize(productToSend, new JsonSerializerOptions { WriteIndented = true });
+
                 var responseJson = buyProductsRepository.CreateListing(productToSend);
-                // Could deserialize response if needed
             }
             catch (HttpRequestException ex)
             {

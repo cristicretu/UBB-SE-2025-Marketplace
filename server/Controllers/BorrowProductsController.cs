@@ -23,16 +23,44 @@ namespace Server.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<BorrowProduct>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetBorrowProducts()
+        public IActionResult GetBorrowProducts([FromQuery] int offset = 0, [FromQuery] int count = 0)
         {
             try
             {
-                var products = borrowProductsRepository.GetProducts();
+                List<BorrowProduct> products;
+
+                if (count > 0)
+                {
+                    // Use pagination
+                    products = borrowProductsRepository.GetProducts(offset, count);
+                }
+                else
+                {
+                    // Get all products (backward compatibility)
+                    products = borrowProductsRepository.GetProducts();
+                }
+
                 return Ok(products);
             }
             catch (Exception ex)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpGet("count")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetBorrowProductsCount()
+        {
+            try
+            {
+                var count = borrowProductsRepository.GetProductCount();
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to get borrow products count: {ex.Message}");
             }
         }
 
@@ -82,6 +110,16 @@ namespace Server.Controllers
                     DailyRate = productDTO.DailyRate,
                     IsBorrowed = productDTO.IsBorrowed
                 };
+
+                // Process tags - convert DTO tags to ProductTag objects
+                if (productDTO.Tags != null && productDTO.Tags.Any())
+                {
+                    product.Tags = productDTO.Tags.Select(tagDto => new ProductTag
+                    {
+                        Id = tagDto.Id,
+                        Title = tagDto.Title
+                    }).ToList();
+                }
 
                 borrowProductsRepository.AddProduct(product);
 
@@ -198,11 +236,11 @@ namespace Server.Controllers
         }
 
         //
-        // ─── NEW “BORROW” ENDPOINT ────────────────────────────────────────────────────
+        // ─── NEW "BORROW" ENDPOINT ────────────────────────────────────────────────────
         //
 
         /// <summary>
-        /// Buyer clicks “Borrow”: enqueue them and, if the product is free,
+        /// Buyer clicks "Borrow": enqueue them and, if the product is free,
         /// immediately assign it to the earliest waiter.
         /// </summary>
         [HttpPost("{productId}/borrow/user/{userId}")]

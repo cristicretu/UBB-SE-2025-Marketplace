@@ -128,15 +128,36 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
+       $(document).ready(function() {
+            // Helper function to get local datetime in ISO format
+            function getLocalISOString() {
+                const now = new Date();
+                const offset = now.getTimezoneOffset() * 60000; // offset in milliseconds
+                const localTime = new Date(now.getTime() - offset);
+                return localTime.toISOString();
+            }
+
+            // Helper function to format datetime-local input value
+            function getLocalDateTimeString() {
+                const now = new Date();
+                const offset = now.getTimezoneOffset() * 60000;
+                const localTime = new Date(now.getTime() - offset);
+                return localTime.toISOString().slice(0, 16); // Remove seconds and timezone info
+            }
+
             // Toggle manual timestamp fields
             $('input[name="timestampOption"]').change(function() {
                 if ($('#manualTimestamp').is(':checked')) {
                     $('#manualTimestampFields').show();
+                    // Set current local time as default when switching to manual
+                    $('#timestamp').val(getLocalDateTimeString());
                 } else {
                     $('#manualTimestampFields').hide();
                 }
             });
+
+            // Initialize timestamp field with current local time
+            $('#timestamp').val(getLocalDateTimeString());
 
             // Add New Checkpoint
             $('#addCheckpointForm').on('submit', function(e) {
@@ -147,7 +168,7 @@
                         Location: $('#location').val(),
                         Description: $('#description').val(),
                         Status: $('#status').val(),
-                        Timestamp: new Date().toISOString()
+                        Timestamp: getLocalISOString() // Use local time instead of UTC
                     }
                 }).done(function(response) {
                     if (response.success) {
@@ -163,7 +184,23 @@
             // Update Current Checkpoint
             $('#updateCheckpointForm').on('submit', function(e) {
                 e.preventDefault();
-                var timestamp = $('#autoTimestamp').is(':checked') ? new Date().toISOString() : $('#timestamp').val();
+                var timestamp;
+                
+                if ($('#autoTimestamp').is(':checked')) {
+                    // Use current local time
+                    timestamp = getLocalISOString();
+                } else {
+                    // Use manually selected time (already in local time from datetime-local input)
+                    const manualTime = $('#timestamp').val();
+                    if (manualTime) {
+                        // Convert datetime-local value to proper ISO string
+                        timestamp = new Date(manualTime).toISOString();
+                    } else {
+                        alert('Please select a timestamp.');
+                        return;
+                    }
+                }
+
                 $.post('/Order/UpdateCheckpoint', {
                     trackedOrderId: @Model.TrackedOrderID,
                     checkpoint: {

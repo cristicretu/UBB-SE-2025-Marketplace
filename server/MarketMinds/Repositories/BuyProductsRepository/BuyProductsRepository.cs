@@ -21,10 +21,28 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 throw new ArgumentNullException(nameof(product));
             }
 
+
+            if (product.ProductTags != null && product.ProductTags.Any())
+            {
+                foreach (var productTag in product.ProductTags)
+                {
+                    // Ensure the Tag exists in the database
+                    if (productTag.TagId > 0)
+                    {
+                        var existingTag = context.ProductTags.Find(productTag.TagId);
+                        if (existingTag != null)
+                        {
+                            productTag.Tag = existingTag; // Attach the tracked entity
+                        }
+                    }
+                }
+            }
+
             try
             {
                 context.BuyProducts.Add(product);
                 context.SaveChanges();
+
             }
             catch (DbUpdateException ex)
             {
@@ -93,6 +111,67 @@ namespace MarketMinds.Repositories.BuyProductsRepository
             catch (Exception ex)
             {
                 Console.WriteLine($"Error getting BuyProducts: {ex.Message}");
+                throw;
+            }
+        }
+
+        public List<BuyProduct> GetProducts(int offset, int count)
+        {
+            try
+            {
+                var query = context.BuyProducts
+                    .Include(p => p.Condition)
+                    .Include(p => p.Category)
+                    .Include(p => p.Images)
+                    .Include(p => p.ProductTags)
+                        .ThenInclude(pt => pt.Tag)
+                    .OrderBy(p => p.Id); // Ensure consistent ordering for pagination
+
+                List<BuyProduct> products;
+
+                if (count > 0)
+                {
+                    // Apply pagination
+                    products = query.Skip(offset).Take(count).ToList();
+                }
+                else
+                {
+                    // Return all products if count is 0
+                    products = query.ToList();
+                }
+
+                // Manually load seller data for each product
+                foreach (var product in products)
+                {
+                    var seller = context.Sellers
+                        .Include(s => s.User)
+                        .FirstOrDefault(s => s.Id == product.SellerId);
+
+                    if (seller != null)
+                    {
+                        // Set the seller as the User (this workaround preserves compatibility with existing code)
+                        product.Seller = seller.User;
+                    }
+                }
+
+                return products;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting BuyProducts with pagination (offset: {offset}, count: {count}): {ex.Message}");
+                throw;
+            }
+        }
+
+        public int GetProductCount()
+        {
+            try
+            {
+                return context.BuyProducts.Count();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting BuyProducts count: {ex.Message}");
                 throw;
             }
         }

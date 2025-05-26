@@ -60,8 +60,26 @@ namespace MarketMinds.Repositories.ReviewRepository
 
             try
             {
+                // Add the review first to get the ID
                 context.Reviews.Add(review);
                 context.SaveChanges();
+
+                // Now handle the images if any exist
+                if (review.Images != null && review.Images.Any())
+                {
+                    foreach (var image in review.Images)
+                    {
+                        var reviewImage = new ReviewImage
+                        {
+                            Url = image.Url,
+                            ReviewId = review.Id
+                        };
+
+                        context.ReviewImages.Add(reviewImage);
+                    }
+
+                    context.SaveChanges();
+                }
             }
             catch (DbUpdateException ex)
             {
@@ -97,14 +115,41 @@ namespace MarketMinds.Repositories.ReviewRepository
                 reviewToEdit.Rating = rating;
                 reviewToEdit.Description = description;
 
-                // Update images
-                if (review.ReviewImages != null)
+                // Update images - smart approach to avoid duplicates
+                // Get current image URLs from database
+                var existingImageUrls = reviewToEdit.ReviewImages.Select(ri => ri.Url).ToList();
+
+                // Get new image URLs from the request
+                var newImageUrls = review.Images?.Select(img => img.Url).ToList() ?? new List<string>();
+
+                // Find images to remove (exist in DB but not in new list)
+                var urlsToRemove = existingImageUrls.Except(newImageUrls).ToList();
+
+                // Find images to add (exist in new list but not in DB)
+                var urlsToAdd = newImageUrls.Except(existingImageUrls).ToList();
+
+                // Remove images that are no longer needed
+                if (urlsToRemove.Any())
                 {
-                    // Remove existing images
-                    context.ReviewImages.RemoveRange(reviewToEdit.ReviewImages);
-                    
-                    // Add new images
-                    reviewToEdit.ReviewImages = review.ReviewImages;
+                    var imagesToRemove = context.ReviewImages
+                        .Where(ri => ri.ReviewId == review.Id && urlsToRemove.Contains(ri.Url))
+                        .ToList();
+                    context.ReviewImages.RemoveRange(imagesToRemove);
+                }
+
+                // Add new images that don't exist yet
+                if (urlsToAdd.Any())
+                {
+                    foreach (var urlToAdd in urlsToAdd)
+                    {
+                        var reviewImage = new ReviewImage
+                        {
+                            Url = urlToAdd,
+                            ReviewId = review.Id
+                        };
+
+                        context.ReviewImages.Add(reviewImage);
+                    }
                 }
 
                 context.SaveChanges();

@@ -58,6 +58,9 @@ namespace WebMarketplace.Controllers
                 
                 var orders = await _orderService.GetOrdersWithProductInfoAsync(userId);
                 _logger.LogInformation($"Retrieved {orders?.Count ?? 0} orders for userId: {userId}");
+                
+                // Pass seller status to view
+                ViewBag.IsSeller = IsUserSeller();
                 return View(orders);
             }
             catch (Exception ex)

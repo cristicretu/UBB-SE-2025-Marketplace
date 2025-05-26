@@ -11,6 +11,20 @@ namespace MarketMinds.Shared.IRepository
         List<AuctionProduct> GetProducts();
 
         /// <summary>
+        /// Retrieves auction products with pagination support.
+        /// </summary>
+        /// <param name="offset">The number of products to skip (0 for first page).</param>
+        /// <param name="count">The number of products to return (0 for all products).</param>
+        /// <returns>A list of auction products for the specified page.</returns>
+        List<AuctionProduct> GetProducts(int offset, int count);
+
+        /// <summary>
+        /// Gets the total count of auction products.
+        /// </summary>
+        /// <returns>The total number of auction products.</returns>
+        int GetProductCount();
+
+        /// <summary>
         /// Gets an auction product by its ID.
         /// </summary>
         /// <param name="id">The ID of the auction product to retrieve.</param>

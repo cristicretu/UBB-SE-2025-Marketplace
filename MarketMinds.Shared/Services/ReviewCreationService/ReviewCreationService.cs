@@ -35,6 +35,7 @@ namespace MarketMinds.Shared.Services.ReviewCreationService
             }
 
             reviewsService.EditReview(
+                currentReview.Id,
                 currentReview.Description,
                 currentReview.Images,
                 currentReview.Rating,
@@ -52,6 +53,7 @@ namespace MarketMinds.Shared.Services.ReviewCreationService
             }
 
             reviewsService.EditReview(
+                review.Id,
                 review.Description,
                 review.Images,
                 review.Rating,
@@ -69,6 +71,7 @@ namespace MarketMinds.Shared.Services.ReviewCreationService
             }
 
             reviewsService.DeleteReview(
+                review.Id,
                 review.Description,
                 review.Images,
                 review.Rating,

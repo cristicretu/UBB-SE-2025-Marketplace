@@ -1,4 +1,4 @@
-﻿// <copyright file="TrackedOrderRepository.cs" company="PlaceholderCompany">
+// <copyright file="TrackedOrderRepository.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -19,16 +19,24 @@ namespace Server.Repository
     public class TrackedOrderRepository : ITrackedOrderRepository
     {
         private readonly ApplicationDbContext dbContext;
+        private readonly INotificationRepository notificationRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TrackedOrderRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public TrackedOrderRepository(ApplicationDbContext dbContext)
+        /// <param name="notificationRepository">The notification repository.</param>
+        public TrackedOrderRepository(ApplicationDbContext dbContext, INotificationRepository notificationRepository)
         {
             this.dbContext = dbContext;
+            this.notificationRepository = notificationRepository;
         }
 
+        /// <summary>
+        /// Adds a new order checkpoint to the database.
+        /// </summary>
+        /// <param name="checkpoint">The checkpoint data to add.</param>
+        /// <returns>The ID of the newly created checkpoint.</returns>
         /// <summary>
         /// Adds a new order checkpoint to the database.
         /// </summary>
@@ -38,6 +46,14 @@ namespace Server.Repository
         {
             await dbContext.OrderCheckpoints.AddAsync(checkpoint);
             await dbContext.SaveChangesAsync();
+            
+            // Get the associated tracked order
+            var trackedOrder = await dbContext.TrackedOrders.FindAsync(checkpoint.TrackedOrderID);
+            if (trackedOrder != null)
+            {
+                await CreateAndSendShippingNotificationAsync(trackedOrder, checkpoint.Status, checkpoint.Timestamp);
+            }
+            
             return checkpoint.CheckpointID;
         }
 
@@ -65,6 +81,15 @@ namespace Server.Repository
             OrderCheckpoint checkpoint = await dbContext.OrderCheckpoints.FindAsync(checkpointID)
                                             ?? throw new Exception($"DeleteOrderCheckpointAsync: No OrderCheckpoint with id: {checkpointID}");
             dbContext.OrderCheckpoints.Remove(checkpoint);
+
+            // Get the current status of the tracked order
+            var trackedOrder = await dbContext.TrackedOrders.FindAsync(checkpoint.TrackedOrderID);
+            if (trackedOrder != null && trackedOrder.CurrentStatus != checkpoint.Status)
+            {
+                var currentStatus = trackedOrder.CurrentStatus;
+                var currentTimestamp = DateTime.Now;
+                await CreateAndSendShippingNotificationAsync(trackedOrder, currentStatus, currentTimestamp);
+            }
             await dbContext.SaveChangesAsync();
             return true;
         }
@@ -160,11 +185,27 @@ namespace Server.Repository
         {
             OrderCheckpoint checkpoint = await dbContext.OrderCheckpoints.FindAsync(checkpointID)
                                                 ?? throw new Exception($"UpdateOrderCheckpointAsync: No OrderCheckpoint with id: {checkpointID}");
+            
+            // Store original status to check if it changed
+            OrderStatus originalStatus = checkpoint.Status;
+            
+            // Update checkpoint properties
             checkpoint.Timestamp = timestamp;
             checkpoint.Location = location;
             checkpoint.Description = description;
             checkpoint.Status = status;
             await dbContext.SaveChangesAsync();
+            
+            // If status changed, send a notification
+            if (originalStatus != status)
+            {
+                // Get the associated tracked order
+                var trackedOrder = await dbContext.TrackedOrders.FindAsync(checkpoint.TrackedOrderID);
+                if (trackedOrder != null)
+                {
+                    await CreateAndSendShippingNotificationAsync(trackedOrder, status, timestamp);
+                }
+            }
         }
 
         /// <summary>
@@ -179,9 +220,109 @@ namespace Server.Repository
         {
             TrackedOrder trackedOrder = await dbContext.TrackedOrders.FindAsync(trackedOrderID)
                                             ?? throw new Exception($"UpdateTrackedOrderAsync: No TrackedOrder with id: {trackedOrderID}");
+            
+            // Store original status to check if it changed
+            OrderStatus originalStatus = trackedOrder.CurrentStatus;
+            
+            // Update tracked order properties
             trackedOrder.CurrentStatus = currentStatus;
             trackedOrder.EstimatedDeliveryDate = estimatedDeliveryDate;
             await dbContext.SaveChangesAsync();
+            
+            // If status changed, send a notification
+            if (originalStatus != currentStatus)
+            {
+                await CreateAndSendShippingNotificationAsync(trackedOrder, currentStatus, DateTime.Now);
+            }
+        }
+        /// <summary>
+        /// Creates a new checkpoint and updates the tracked order status, triggering a notification.
+        /// </summary>
+        /// <param name="trackedOrderID">The tracked order ID to update.</param>
+        /// <param name="newStatus">The new status to set.</param>
+        /// <param name="description">Description of the status change.</param>
+        /// <param name="location">Optional location information.</param>
+        /// <returns>The ID of the newly created checkpoint.</returns>
+        public async Task<int> UpdateOrderStatusWithCheckpointAsync(int trackedOrderID, OrderStatus newStatus, string description = "Status updated", string? location = null)
+        {
+            // Find the tracked order
+            var trackedOrder = await dbContext.TrackedOrders.FindAsync(trackedOrderID)
+                ?? throw new Exception($"UpdateOrderStatusWithCheckpointAsync: No TrackedOrder with id: {trackedOrderID}");
+            
+            // Store original status to check if it changed
+            OrderStatus originalStatus = trackedOrder.CurrentStatus;
+            
+            // Create a new checkpoint
+            var checkpoint = new OrderCheckpoint
+            {
+                TrackedOrderID = trackedOrderID,
+                Timestamp = DateTime.Now,
+                Location = location,
+                Description = description,
+                Status = newStatus
+            };
+            
+            // Add the checkpoint
+            await dbContext.OrderCheckpoints.AddAsync(checkpoint);
+            
+            // Update the tracked order status
+            trackedOrder.CurrentStatus = newStatus;
+            
+            // Save all changes
+            await dbContext.SaveChangesAsync();
+            
+            // If status changed, send a notification
+            if (originalStatus != newStatus)
+            {
+                await CreateAndSendShippingNotificationAsync(trackedOrder, newStatus, checkpoint.Timestamp);
+            }
+            
+            return checkpoint.CheckpointID;
+        }
+        
+        /// <summary>
+        /// Creates and sends a shipping progress notification for the buyer.
+        /// </summary>
+        /// <param name="trackedOrder">The tracked order that was updated.</param>
+        /// <param name="newStatus">The new status of the order.</param>
+        /// <param name="timestamp">The timestamp of the status change.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task CreateAndSendShippingNotificationAsync(TrackedOrder trackedOrder, OrderStatus newStatus, DateTime timestamp)
+        {
+            try
+            {
+                // Get the order information
+                var order = await dbContext.Orders.FindAsync(trackedOrder.OrderID);
+                if (order == null)
+                {
+                    // Cannot find the associated order, so we can't determine the buyer
+                    Console.WriteLine($"Error sending notification: Order with ID {trackedOrder.OrderID} not found");
+                    return;
+                }
+                
+                // Create a new notification for the buyer
+                var deliveryDate = trackedOrder.EstimatedDeliveryDate.ToDateTime(new TimeOnly(12, 0)); // Use noon as default time
+                
+                var notification = new OrderShippingProgressNotification(
+                    recipientID: order.BuyerId,
+                    timestamp: timestamp,
+                    orderID: order.Id, // Use the actual order ID from the Order entity
+                    shippingState: newStatus.ToString(),
+                    deliveryDate: deliveryDate,
+                    isRead: false
+                );
+                
+                // Send the notification
+                await notificationRepository.AddNotification(notification);
+                Console.WriteLine($"Notification created for order {order.Id}, recipient {order.BuyerId}, status {newStatus}");
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the main operation
+                Console.WriteLine($"Error sending notification: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                // In a production environment, this should be properly logged
+            }
         }
     }
 }

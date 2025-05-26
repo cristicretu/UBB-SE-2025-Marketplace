@@ -5,6 +5,8 @@ namespace MarketMinds.Shared.Services.Interfaces
     public interface IAuctionProductService
     {
         Task<List<AuctionProduct>> GetAllAuctionProductsAsync();
+        Task<List<AuctionProduct>> GetAllAuctionProductsAsync(int offset, int count);
+        Task<int> GetAuctionProductCountAsync();
         Task<AuctionProduct> GetAuctionProductByIdAsync(int id);
         Task<bool> CreateAuctionProductAsync(AuctionProduct auctionProduct);
         Task<bool> PlaceBidAsync(int auctionId, int bidderId, double bidAmount);

@@ -36,6 +36,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
     // Ignore null values in the output
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    
+    // Add the NotificationConverter for proper notification serialization/deserialization
+    options.JsonSerializerOptions.Converters.Add(new NotificationConverter());
 });
 
 // compatibility with old API without EF, need to remove this when EF is fully implemented

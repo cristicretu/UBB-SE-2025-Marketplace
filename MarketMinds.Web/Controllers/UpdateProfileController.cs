@@ -133,34 +133,55 @@ namespace WebMarketplace.Controllers
         {
             List<string> errorMessages = new List<string>();
 
+            // Check if all required fields are filled
+            bool hasAnyEmptyField = false;
+
+            if (string.IsNullOrWhiteSpace(model.Username))
+            {
+                errorMessages.Add("Username is required.");
+                model.StoreNameError = "Username is required.";
+                hasAnyEmptyField = true;
+            }
+
             if (string.IsNullOrWhiteSpace(model.StoreName))
             {
                 errorMessages.Add("Store name is required.");
                 model.StoreNameError = "Store name is required.";
+                hasAnyEmptyField = true;
             }
 
             if (string.IsNullOrWhiteSpace(model.Email) || !model.Email.Contains('@'))
             {
                 errorMessages.Add("Valid email is required.");
                 model.EmailError = "Valid email is required.";
+                hasAnyEmptyField = true;
             }
 
             if (string.IsNullOrWhiteSpace(model.PhoneNumber))
             {
                 errorMessages.Add("Phone number is required.");
                 model.PhoneNumberError = "Phone number is required.";
+                hasAnyEmptyField = true;
             }
 
             if (string.IsNullOrWhiteSpace(model.Address))
             {
                 errorMessages.Add("Address is required.");
                 model.AddressError = "Address is required.";
+                hasAnyEmptyField = true;
             }
 
             if (string.IsNullOrWhiteSpace(model.Description))
             {
                 errorMessages.Add("Description is required.");
                 model.DescriptionError = "Description is required.";
+                hasAnyEmptyField = true;
+            }
+
+            // If any field is empty, add a general message about completing all fields
+            if (hasAnyEmptyField)
+            {
+                errorMessages.Insert(0, "All fields are required. Please fill in all the information before updating your profile.");
             }
 
             return errorMessages;

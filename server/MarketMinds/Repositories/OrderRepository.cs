@@ -21,14 +21,17 @@ namespace Server.Repository
         // private readonly string connectionString;
         // private readonly IDatabaseProvider databaseProvider;
         private readonly ApplicationDbContext dbContext;
+    private readonly INotificationRepository notificationRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public OrderRepository(ApplicationDbContext dbContext)
+        /// <param name="notificationRepository">The notification repository.</param>
+        public OrderRepository(ApplicationDbContext dbContext, INotificationRepository notificationRepository)
         {
             this.dbContext = dbContext;
+            this.notificationRepository = notificationRepository;
         }
 
         /// <summary>
@@ -117,6 +120,15 @@ namespace Server.Repository
                 await this.dbContext.Orders.AddAsync(order);
                 await this.dbContext.SaveChangesAsync();
 
+                // Create and send payment confirmation notification to the buyer
+                PaymentConfirmationNotification notification = new PaymentConfirmationNotification(
+                    recipientId: buyerId,
+                    timestamp: DateTime.UtcNow,
+                    productId: productId,
+                    orderId: order.Id,
+                    isRead: false);
+                
+                await this.notificationRepository.AddNotification(notification);
             }
             catch (Exception ex)
             {
@@ -299,10 +311,10 @@ namespace Server.Repository
         }
 
         /// <summary>
-        /// Retrieves orders with product information for a buyer.
+        /// Retrieves orders with product information for a user (buyer or seller).
         /// Filters orders by search text and time period only if present.
         /// </summary>
-        /// <param name="userId">The ID of the buyer.</param>
+        /// <param name="userId">The ID of the user (buyer or seller).</param>
         /// <param name="searchText">The text to search for.</param>
         /// <param name="timePeriod">The time period to filter by.</param>
         /// <returns>A list of orders with product information.</returns>
@@ -310,9 +322,29 @@ namespace Server.Repository
         /// <exception cref="ArgumentException">Thrown when the time period is invalid.</exception>
         public async Task<List<OrderDisplayInfo>> GetOrdersWithProductInfoAsync(int userId, string? searchText = null, string? timePeriod = null)
         {
-            List<Order> ordersDb = await this.dbContext.Orders
-                .Where(order => order.BuyerId == userId)
-                .ToListAsync();
+            // Check if the user is a seller by looking in the Sellers table
+            bool isUserSeller = await this.dbContext.Sellers.AnyAsync(s => s.Id == userId);
+            
+            // Debug logging
+            Console.WriteLine($"[DEBUG] GetOrdersWithProductInfoAsync - UserId: {userId}, IsUserSeller: {isUserSeller}");
+            
+            List<Order> ordersDb;
+            if (isUserSeller)
+            {
+                // For sellers, get orders where they are the seller
+                ordersDb = await this.dbContext.Orders
+                    .Where(order => order.SellerId == userId)
+                    .ToListAsync();
+                Console.WriteLine($"[DEBUG] Seller query found {ordersDb.Count} orders");
+            }
+            else
+            {
+                // For buyers, get orders where they are the buyer
+                ordersDb = await this.dbContext.Orders
+                    .Where(order => order.BuyerId == userId)
+                    .ToListAsync();
+                Console.WriteLine($"[DEBUG] Buyer query found {ordersDb.Count} orders");
+            }
 
             List<OrderDisplayInfo> orderDisplayInfos = new List<OrderDisplayInfo>();
 
@@ -350,17 +382,32 @@ namespace Server.Repository
         }
 
         /// <summary>
-        /// Retrieves the product category types for a buyer.
+        /// Retrieves the product category types for a user (buyer or seller).
         /// </summary>
-        /// <param name="userId">The ID of the buyer.</param>
+        /// <param name="userId">The ID of the user (buyer or seller).</param>
         /// <returns>A dictionary of order summary IDs and product category types.</returns>
         public async Task<Dictionary<int, string>> GetProductCategoryTypesAsync(int userId)
         {
             Dictionary<int, string> productCategoryTypes = new Dictionary<int, string>();
 
-            List<Order> ordersDb = await this.dbContext.Orders
-                .Where(order => order.BuyerId == userId)
-                .ToListAsync();
+            // Check if the user is a seller by looking in the Sellers table
+            bool isUserSeller = await this.dbContext.Sellers.AnyAsync(s => s.Id == userId);
+            
+            List<Order> ordersDb;
+            if (isUserSeller)
+            {
+                // For sellers, get orders where they are the seller
+                ordersDb = await this.dbContext.Orders
+                    .Where(order => order.SellerId == userId)
+                    .ToListAsync();
+            }
+            else
+            {
+                // For buyers, get orders where they are the buyer
+                ordersDb = await this.dbContext.Orders
+                    .Where(order => order.BuyerId == userId)
+                    .ToListAsync();
+            }
 
             foreach (Order order in ordersDb)
             {
