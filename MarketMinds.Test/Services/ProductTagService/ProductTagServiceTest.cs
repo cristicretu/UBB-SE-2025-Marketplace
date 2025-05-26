@@ -43,7 +43,7 @@ namespace MarketMinds.Test.Services.ProductTagService
                               .Returns(mockConigurationSection.Object);
 
             _mockRepository = new Mock<ProductTagProxyRepository>(_mockConfiguration.Object);
-            _service = new MarketMinds.Shared.Services.ProductTagService.ProductTagService(_mockRepository.Object);
+            _service = new MarketMinds.Shared.Services.ProductTagService.ProductTagService((IConfiguration)_mockRepository.Object);
 
             _testJsonOptions = new JsonSerializerOptions
             {

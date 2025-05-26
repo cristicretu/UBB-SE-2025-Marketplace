@@ -6,6 +6,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using Castle.Core.Configuration;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.Tests.Services.ImagineUploadService
 {
@@ -18,7 +20,7 @@ namespace MarketMinds.Tests.Services.ImagineUploadService
         public void Setup()
         {
             // Use the real service for tests that don't hit Imgur
-            _service = new ImageUploadService();
+            _service = new ImageUploadService(AppConfig.Configuration);
         }
 
         [Test]
