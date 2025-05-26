@@ -12,16 +12,16 @@
         <StackPanel Spacing="25">
             <view:LabeledTextFieldControl
                 Label="Street Name"
-                TextValue="{x:Bind ViewModel.Address.StreetLine, Mode=TwoWay}" />
+                TextValue="{x:Bind ViewModel.StreetLine, Mode=TwoWay}" />
             <view:LabeledTextFieldControl
                 Label="Postal Code"
-                TextValue="{x:Bind ViewModel.Address.PostalCode, Mode=TwoWay}" />
+                TextValue="{x:Bind ViewModel.PostalCode, Mode=TwoWay}" />
             <view:LabeledTextFieldControl
                 Label="City"
-                TextValue="{x:Bind ViewModel.Address.City, Mode=TwoWay}" />
+                TextValue="{x:Bind ViewModel.City, Mode=TwoWay}" />
             <view:LabeledTextFieldControl
                 Label="Country"
-                TextValue="{x:Bind ViewModel.Address.Country, Mode=TwoWay}" />
+                TextValue="{x:Bind ViewModel.Country, Mode=TwoWay}" />
         </StackPanel>
     </Grid>
 </UserControl>

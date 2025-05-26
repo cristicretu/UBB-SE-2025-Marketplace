@@ -11,6 +11,7 @@ namespace MarketMinds.ViewModels
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using System.Windows.Input;
     using MarketMinds.Shared.Models;
@@ -423,8 +424,6 @@ namespace MarketMinds.ViewModels
             {
                 this.IsLoading = true;
 
-                // Get the current user's buyer ID
-                this.BuyerId = await this.GetCurrentBuyerId();
                 Debug.WriteLine($"Current buyer ID in ViewModel: {this.BuyerId}");
 
                 // Get contracts for the current buyer
@@ -610,11 +609,10 @@ namespace MarketMinds.ViewModels
                     AdditionalTerms = this.SelectedContract.AdditionalTerms ?? "Standard renewal terms apply"
                 };
 
-                IContract savedNewContract = null;
                 try
                 {
-                    // Capture the newly created contract, assuming the service returns it with its ID
-                    savedNewContract = await this.renewalService.AddRenewedContractAsync(updatedContract);
+                    // Add the renewed contract to the database
+                    await renewalService.AddRenewedContractAsync(updatedContract);
                 }
                 catch (Exception ex)
                 {
@@ -624,21 +622,12 @@ namespace MarketMinds.ViewModels
                     return;
                 }
 
-                // Ensure savedNewContract is not null and has a valid ID before proceeding
-                if (savedNewContract == null || savedNewContract.ContractID <= 0)
-                {
-                    Debug.WriteLine($"Error: AddRenewedContractAsync returned null or invalid contract ID ({savedNewContract?.ContractID}). Cannot proceed with PDF saving with new ID.");
-                    this.ShowErrorMessage("Error creating renewal: Failed to get renewed contract details.");
-                    this.IsLoading = false; // Ensure IsLoading is reset on error
-                    return;
-                }
-
                 // Save PDF locally - handle errors gracefully
                 try
                 {
                     string downloadsPath = this.fileSystem.GetDownloadsPath();
-                    long idForFileName = savedNewContract.ContractID; // Use new contract ID
-                    
+                    long idForFileName = this.SelectedContract.ContractID; // Use original contract ID for filename
+
                     string fileName = $"RenewedContract_{idForFileName}_to_{this.NewEndDate:yyyyMMdd}.pdf";
                     string filePath = Path.Combine(downloadsPath, fileName);
                     await File.WriteAllBytesAsync(filePath, pdfBytes);
@@ -659,30 +648,18 @@ namespace MarketMinds.ViewModels
                 // Clear current selection
                 this.SelectedContract = null;
 
-                // Try to select the newly renewed contract in the dropdown
-                var contractInList = this.Contracts.FirstOrDefault(c => c.ContractID == savedNewContract.ContractID);
-                if (contractInList != null)
+                // Try to select the newly renewed contract in the dropdown by finding the contract that was renewed from the original
+                var renewedContract = this.Contracts.FirstOrDefault(c => c.RenewedFromContractID == originalSelectedContractIdBeforeRenewal);
+                if (renewedContract != null)
                 {
                     // Small delay to allow UI to update
                     await Task.Delay(100);
-                    this.SelectedContract = contractInList;
-                    Debug.WriteLine($"Selected renewed contract ID: {contractInList.ContractID}");
+                    this.SelectedContract = renewedContract;
+                    Debug.WriteLine($"Selected renewed contract ID: {renewedContract.ContractID}");
                 }
                 else
                 {
-                    Debug.WriteLine($"Renewed contract (ID: {savedNewContract.ContractID}) not found by ID in refreshed list. Trying fallback using RenewedFromContractID.");
-                    // Fallback: try to find it based on the RenewedFromContractID relationship
-                    var fallbackRenewedContract = this.Contracts.FirstOrDefault(c => c.RenewedFromContractID == originalSelectedContractIdBeforeRenewal);
-                    if (fallbackRenewedContract != null)
-                    {
-                        await Task.Delay(100);
-                        this.SelectedContract = fallbackRenewedContract;
-                        Debug.WriteLine($"Selected renewed contract (fallback by RenewedFromContractID) ID: {fallbackRenewedContract.ContractID}");
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"Could not select the renewed contract (Original ID: {originalSelectedContractIdBeforeRenewal}, New ID: {savedNewContract.ContractID}) in the list after refresh.");
-                    }
+                    Debug.WriteLine($"Could not find renewed contract in the list with RenewedFromContractID: {originalSelectedContractIdBeforeRenewal}");
                 }
             }
             catch (Exception ex)
@@ -739,56 +716,56 @@ namespace MarketMinds.ViewModels
             }).GeneratePdf();
         }
 
-        private async Task<int> GetCurrentBuyerId()
-        {
-            try
-            {
-                Debug.WriteLine("Getting current buyer ID...");
+        // private async Task<int> GetCurrentBuyerId()
+        // {
+        //     try
+        //     {
+        //         Debug.WriteLine("Getting current buyer ID...");
 
-                // Check if App.CurrentUser is available
-                if (App.CurrentUser != null)
-                {
-                    Debug.WriteLine($"Using App.CurrentUser.Id: {App.CurrentUser.Id}");
+        //         // Check if App.CurrentUser is available
+        //         if (App.CurrentUser != null)
+        //         {
+        //             Debug.WriteLine($"Using App.CurrentUser.Id: {App.CurrentUser.Id}");
 
-                    // Check if token exists
-                    if (!string.IsNullOrEmpty(App.CurrentUser.Token))
-                    {
-                        Debug.WriteLine("Authentication token is present");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("WARNING: Authentication token is missing");
-                    }
+        //             // Check if token exists
+        //             if (!string.IsNullOrEmpty(App.CurrentUser.Token))
+        //             {
+        //                 Debug.WriteLine("Authentication token is present");
+        //             }
+        //             else
+        //             {
+        //                 Debug.WriteLine("WARNING: Authentication token is missing");
+        //             }
 
-                    return App.CurrentUser.Id;
-                }
+        //             return App.CurrentUser.Id;
+        //         }
 
-                // If not available directly, try to get it from the user service
-                try
-                {
-                    var currentUser = await this.userService.GetUserByIdAsync(App.CurrentUser?.Id ?? 0);
-                    if (currentUser != null)
-                    {
-                        Debug.WriteLine($"Retrieved user ID from service: {currentUser.Id}");
-                        return currentUser.Id;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error retrieving user from service: {ex.Message}");
-                }
+        //         // If not available directly, try to get it from the user service
+        //         try
+        //         {
+        //             var currentUser = await this.userService.GetUserByIdAsync(App.CurrentUser?.Id ?? 0);
+        //             if (currentUser != null)
+        //             {
+        //                 Debug.WriteLine($"Retrieved user ID from service: {currentUser.Id}");
+        //                 return currentUser.Id;
+        //             }
+        //         }
+        //         catch (Exception ex)
+        //         {
+        //             Debug.WriteLine($"Error retrieving user from service: {ex.Message}");
+        //         }
 
-                // Fallback to ID 5 for now as that seems to be the ID of the buyer in your database
-                Debug.WriteLine("Falling back to buyer ID 5");
-                return 5;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception in GetCurrentBuyerId: {ex.Message}");
-                // Return 5 as a fallback since that appears to be the buyer ID from your database screenshot
-                return 5;
-            }
-        }
+        //         // Fallback to ID 5 for now as that seems to be the ID of the buyer in your database
+        //         Debug.WriteLine("Falling back to buyer ID 5");
+        //         return 5;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Debug.WriteLine($"Exception in GetCurrentBuyerId: {ex.Message}");
+        //         // Return 5 as a fallback since that appears to be the buyer ID from your database screenshot
+        //         return 5;
+        //     }
+        // }
 
         private async Task LoadContractDetailsAsync()
         {

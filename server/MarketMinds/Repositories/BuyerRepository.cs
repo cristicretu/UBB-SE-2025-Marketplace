@@ -356,12 +356,12 @@ namespace Server.Repository
                 return new List<Buyer>();
             }
 
+            // edit to make it more nicer
             return await this.dbContext.Buyers
                 .Where(buyer => 
-                    buyer.ShippingAddress.Country == shippingAddress.Country &&
-                    buyer.ShippingAddress.City == shippingAddress.City &&
-                    buyer.ShippingAddress.StreetLine == shippingAddress.StreetLine &&
-                    buyer.ShippingAddress.PostalCode == shippingAddress.PostalCode)
+                    (buyer.ShippingAddress.Country == shippingAddress.Country &&
+                    buyer.ShippingAddress.City == shippingAddress.City) 
+                    || buyer.ShippingAddress.PostalCode == shippingAddress.PostalCode)
                 .ToListAsync();
         }
 

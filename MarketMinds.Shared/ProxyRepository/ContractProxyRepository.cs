@@ -9,6 +9,7 @@
     using MarketMinds.Shared.Models.DTOs;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
+    using Microsoft.Extensions.Configuration;
 
     /// <summary>
     /// Proxy repository class for managing contract operations via REST API.
@@ -22,11 +23,10 @@
         /// Initializes a new instance of the <see cref="ContractProxyRepository"/> class.
         /// </summary>
         /// <param name="baseApiUrl">The base url of the API.</param>
-        public ContractProxyRepository(string baseApiUrl)
+        public ContractProxyRepository(IConfiguration configuration)
         {
             this.httpClient = new HttpClient();
-            this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            
+            this.httpClient.BaseAddress = new System.Uri(configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/");
         }
 
         /// <inheritdoc />

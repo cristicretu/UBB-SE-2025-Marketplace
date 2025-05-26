@@ -32,7 +32,7 @@ namespace MarketMinds.Views
             InitializeComponent();
             this.userId = App.CurrentUser.Id;
             orderViewModel = new OrderViewModel();
-            contractViewModel = new ContractViewModel();
+            contractViewModel = App.ContractViewModel;
 
             this.Loaded += Page_Loaded;
         }

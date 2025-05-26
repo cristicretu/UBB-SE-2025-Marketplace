@@ -111,11 +111,6 @@
             <StackPanel Grid.Row="3" Margin="0,10,0,10">
                 <TextBlock Text="Quick Actions" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" HorizontalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
-                    <Button x:Name="bidProductButton" Content="Bid Product" Click="BidProductButton_Clicked" Margin="5"/>
-                    <Button x:Name="walletrefillButton" Content="Refill Wallet" Click="WalletRefillButton_Clicked" Margin="5"/>
-                    <Button x:Name="borrowButton" Content="Borrow Product" Click="BorrowButton_Clicked" Margin="5"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
                     <Button x:Name="renewContractButton" Content="Renew Contract" Click="RenewContractButton_Clicked" Margin="5"/>
                     <Button x:Name="trackOrderButton" Content="Track Order" Click="TrackOrderButton_Clicked" Margin="5"/>
                 </StackPanel>

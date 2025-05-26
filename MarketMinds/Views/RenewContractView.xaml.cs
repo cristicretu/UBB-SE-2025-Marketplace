@@ -32,6 +32,7 @@ namespace MarketMinds.Views
 
             // Get the view model from App like ChatBotPage does
             this.viewModel = App.ContractRenewViewModel;
+            this.viewModel.BuyerId = App.CurrentUser.Id;
 
             // Set the data context for binding
             if (this.RootGrid != null)

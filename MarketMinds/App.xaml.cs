@@ -67,6 +67,7 @@ namespace MarketMinds
         public static OrderHistoryProxyRepository OrderHistoryRepository;
         public static OrderProxyRepository OrderRepository;
         public static BuyProductsProxyRepository BuyProductsProxyRepository;
+        public static ContractProxyRepository ContractProxyRepository;
 
         // Service declarations
         public static IBuyerService BuyerService;
@@ -132,6 +133,7 @@ namespace MarketMinds
         public static FinalizePurchaseViewModel FinalizePurchaseViewModel { get; private set; }
         public static NotificationViewModel NotificationViewModel { get; private set; }
         public static TrackedOrderViewModel TrackedOrderViewModel { get; private set; }
+        public static ContractViewModel ContractViewModel { get; private set; }
 
         private const int ADMIN = 1;
         private const int BUYER = 2;
@@ -316,6 +318,7 @@ namespace MarketMinds
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
             BuyerLinkageRepository = new BuyerLinkageProxyRepository(Configuration);
             ShoppingCartRepository = new ShoppingCartProxyRepository(Configuration);
+            ContractProxyRepository = new ContractProxyRepository(Configuration);
 
             // Initialize services
             AdminService = new AdminService(UserRepository);
@@ -337,7 +340,6 @@ namespace MarketMinds
             MessageService = new MessageService(MessageRepository);
             ChatService = new ChatService(ChatRepository);
             NewChatbotService = new ChatbotService(ChatbotRepository, Configuration);
-            ContractService = new ContractService();
             PDFService = new PDFService();
             ContractRenewalService = new ContractRenewalService();
             FileSystem = new FileSystemWrapper();
@@ -347,6 +349,7 @@ namespace MarketMinds
             OrderHistoryService = new OrderHistoryService();
             OrderService = new OrderService();
             OrderSummaryService = new OrderSummaryService();
+            ContractService = new ContractService(ContractProxyRepository, OrderSummaryService, OrderService, SellerService, PDFService);
             DummyWalletService = new DummyWalletService();
             ProductService = new ProductService(BuyProductsRepository);
 
@@ -371,6 +374,7 @@ namespace MarketMinds
             FinalizePurchaseViewModel = new FinalizePurchaseViewModel();
             NotificationViewModel = new NotificationViewModel(UserSession.CurrentUserId ?? 1);
             BuyerProfileViewModel = new BuyerProfileViewModel(BuyerService, BuyProductsService, BuyerLinkageService);
+            ContractViewModel = new ContractViewModel(ContractService);
 
             // Initialize login and register view models with proper callbacks
             AdminViewModel = new AdminViewModel(AdminService, AnalyticsService, UserService);

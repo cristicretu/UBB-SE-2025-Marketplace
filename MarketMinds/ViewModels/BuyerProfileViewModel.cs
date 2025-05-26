@@ -102,12 +102,27 @@ namespace MarketMinds.ViewModels
         {
             try
             {
+                // Debug: Log address values before saving
+                Debug.WriteLine("=== SAVING BUYER PROFILE ===");
+                Debug.WriteLine($"Billing Address - Street: '{this.Buyer?.BillingAddress?.StreetLine}', City: '{this.Buyer?.BillingAddress?.City}', Country: '{this.Buyer?.BillingAddress?.Country}', PostalCode: '{this.Buyer?.BillingAddress?.PostalCode}'");
+                if (!this.Buyer?.UseSameAddress == true)
+                {
+                    Debug.WriteLine($"Shipping Address - Street: '{this.Buyer?.ShippingAddress?.StreetLine}', City: '{this.Buyer?.ShippingAddress?.City}', Country: '{this.Buyer?.ShippingAddress?.Country}', PostalCode: '{this.Buyer?.ShippingAddress?.PostalCode}'");
+                }
+
                 await this.BuyerService.SaveInfo(this.Buyer!);
                 await this.LoadBuyerProfile();
                 await this.ShowDialog("Success", "Profile saved successfully");
             }
+            catch (ArgumentException ex)
+            {
+                // More specific error handling for validation errors
+                Debug.WriteLine($"Validation error: {ex.Message}");
+                await this.ShowDialog("Validation Error", $"Please check your information: {ex.Message}");
+            }
             catch (Exception ex)
             {
+                Debug.WriteLine($"General error: {ex.Message}");
                 await this.ShowDialog("Error", ex.Message);
             }
         }
@@ -166,6 +181,16 @@ namespace MarketMinds.ViewModels
         public async Task LoadBuyerProfile()
         {
             this.Buyer = await this.BuyerService.GetBuyerByUser(this.User);
+
+            // Ensure addresses are not null
+            if (this.Buyer.BillingAddress == null)
+            {
+                this.Buyer.BillingAddress = new Address();
+            }
+            if (this.Buyer.ShippingAddress == null)
+            {
+                this.Buyer.ShippingAddress = new Address();
+            }
 
             this.BillingAddress = new BuyerAddressViewModel(this.Buyer.BillingAddress);
             this.ShippingAddress = new BuyerAddressViewModel(this.Buyer.ShippingAddress);

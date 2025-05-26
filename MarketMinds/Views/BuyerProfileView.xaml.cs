@@ -18,7 +18,7 @@ namespace MarketMinds.Views
         public BuyerProfileView()
         {
             // Initialize contract and contractViewModel
-            contractViewModel = new ContractViewModel();
+            contractViewModel = App.ContractViewModel;
 
             // Use the static ViewModel from App.xaml.cs
             trackedOrderViewModel = App.TrackedOrderViewModel;
@@ -142,24 +142,6 @@ namespace MarketMinds.Views
             }
         }
 
-        private void BidProductButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            BillingInfoWindow billingInfoWindow = new BillingInfoWindow();
-            // merge-nicusor FIX :)
-            var bp = new BillingInfo();
-            billingInfoWindow.Content = bp;
-            billingInfoWindow.Activate();
-        }
-
-        private void WalletRefillButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            BillingInfoWindow billingInfoWindow = new BillingInfoWindow();
-            // merge-nicusor FIX :)
-            var bp = new BillingInfo();
-            billingInfoWindow.Content = bp;
-            billingInfoWindow.Activate();
-        }
-
         private async Task ShowNoContractDialogAsync()
         {
             var contentDialog = new ContentDialog
@@ -186,36 +168,36 @@ namespace MarketMinds.Views
             await dialog.ShowAsync();
         }
 
+        private async Task ShowSuccessDialogAsync(string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Success",
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+
         private async void GenerateContractButton_Clicked(object sender, RoutedEventArgs e)
         {
             if (long.TryParse(this.contractID.Text, out long contractId))
             {
-                await contractViewModel.GenerateAndSaveContractAsync(contractId);
-                var successDialog = new ContentDialog
+                try
                 {
-                    Title = "Success",
-                    Content = "Contract generated and saved successfully.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.Content.XamlRoot
-                };
-                await successDialog.ShowAsync();
+                    await contractViewModel.GenerateAndSaveContractAsync(contractId);
+                    await ShowSuccessDialogAsync("Contract generated and saved successfully.");
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorDialogAsync("Failed to generate contract", ex.Message);
+                }
             }
             else
             {
                 await ShowErrorDialogAsync("Invalid Input", "The contract ID must be a valid number.");
-            }
-        }
-
-        private async void BorrowButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var borrowProductListView = MarketMinds.Helpers.ViewFactory.CreateBorrowProductListView();
-                borrowProductListView.Activate();
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorDialogAsync("Failed to open Borrow Product", ex.Message);
             }
         }
 
