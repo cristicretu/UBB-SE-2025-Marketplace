@@ -81,6 +81,15 @@ namespace Server.Repository
             OrderCheckpoint checkpoint = await dbContext.OrderCheckpoints.FindAsync(checkpointID)
                                             ?? throw new Exception($"DeleteOrderCheckpointAsync: No OrderCheckpoint with id: {checkpointID}");
             dbContext.OrderCheckpoints.Remove(checkpoint);
+
+            // Get the current status of the tracked order
+            var trackedOrder = await dbContext.TrackedOrders.FindAsync(checkpoint.TrackedOrderID);
+            if (trackedOrder != null && trackedOrder.CurrentStatus != checkpoint.Status)
+            {
+                var currentStatus = trackedOrder.CurrentStatus;
+                var currentTimestamp = DateTime.Now;
+                await CreateAndSendShippingNotificationAsync(trackedOrder, currentStatus, currentTimestamp);
+            }
             await dbContext.SaveChangesAsync();
             return true;
         }
