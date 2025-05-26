@@ -414,5 +414,15 @@ namespace Server.Repository
             await this.dbContext.SaveChangesAsync();
             return pdf;
         }
+
+        public async Task UpdateContractPdfIdAsync(long contractId, int pdfId)
+        {
+            var contract = await this.dbContext.Contracts
+                .FirstOrDefaultAsync(c => c.ContractID == contractId) 
+                ?? throw new Exception($"UpdateContractPdfIdAsync: Contract not found for contract ID: {contractId}");
+
+            contract.PDFID = pdfId;
+            await this.dbContext.SaveChangesAsync();
+        }
     }
 }

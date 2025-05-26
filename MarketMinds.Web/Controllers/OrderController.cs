@@ -286,7 +286,14 @@ namespace WebMarketplace.Controllers
         {
             try
             {
-                var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(orderId);
+                // First get the order to ensure it exists
+                var order = await _orderService.GetOrderByIdAsync(orderId);
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Order not found" });
+                }
+
+                var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(order.OrderSummaryID);
                 if (orderSummary == null)
                 {
                     return Json(new { success = false, message = "Order summary not found" });
@@ -295,7 +302,7 @@ namespace WebMarketplace.Controllers
                 // Create a new contract
                 var contract = new Contract
                 {
-                    OrderID = orderSummary.ID,
+                    OrderID = orderId, // Use the actual Order ID
                     ContractStatus = "ACTIVE",
                     ContractContent = orderSummary.ContractDetails ?? "Standard contract terms",
                     RenewalCount = 0,

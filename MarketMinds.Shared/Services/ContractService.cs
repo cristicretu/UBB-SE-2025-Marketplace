@@ -12,13 +12,22 @@ namespace MarketMinds.Shared.Services
         private readonly IContractRepository contractRpository;
         private readonly IOrderSummaryService _orderSummaryService;
         private readonly IOrderService _orderService;
+        private readonly ISellerService _sellerService; // Added for fetching seller name
+        private readonly IPDFService _pdfService; // Added for direct PDF insertion
 
         // Add constructor injection for the repository
-        public ContractService(IOrderSummaryService orderSummaryService, IOrderService orderService)
+        public ContractService(
+            IContractRepository contractRepository, 
+            IOrderSummaryService orderSummaryService, 
+            IOrderService orderService, 
+            ISellerService sellerService,
+            IPDFService pdfService) // Modified constructor
         {
-            contractRpository = new ContractProxyRepository(AppConfig.GetBaseApiUrl());
+            this.contractRpository = contractRepository;
             _orderSummaryService = orderSummaryService;
             _orderService = orderService;
+            _sellerService = sellerService; // Store injected ISellerService
+            _pdfService = pdfService; // Store injected IPDFService
         }
 
         // Implement the interface methods by calling the repository
@@ -135,57 +144,64 @@ Expected Delivery Date: {{DeliveryDate}}
         {
             try
             {
-                // If no PDF file is provided, create a real PDF using QuestPDF
-                if (pdfFile == null || pdfFile.Length == 0)
+                Contract contractEntity = contract.ToContract(); // Work with a concrete instance
+
+                if (pdfFile == null || pdfFile.Length == 0) // Logic for generating new rich PDF
                 {
-                    string contractTitle = "Contract Agreement";
-
-                    // Fetch necessary data
+                    // Step A: Generate PDF content first
+                    string contractTitle = "Contract Document";
+                    string currentOrderID = contractEntity.OrderID.ToString();
+                    string agreementDate = DateTime.Now.ToString("MM/dd/yyyy");
+                    
+                    // Get order and summary details
                     OrderSummary orderSummary = null;
-                    MarketMinds.Shared.Models.Order order = null; // Explicitly namespace Order if it clashes
+                    MarketMinds.Shared.Models.Order order = null;
+                    string actualSellerName = "MarketMinds Marketplace Vendor";
 
-                    if (contract.OrderID > 0) 
+                    if (contractEntity.OrderID > 0)
                     {
-                        try 
+                        try
                         {
-                            orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(contract.OrderID);
-                            order = await _orderService.GetOrderByIdAsync(contract.OrderID);
+                            orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(contractEntity.OrderID);
+                            order = await _orderService.GetOrderByIdAsync(contractEntity.OrderID);
+                            
+                            if (order != null && order.SellerId > 0)
+                            {
+                                var seller = await _sellerService.GetSellerByIdAsync(order.SellerId);
+                                if (seller != null)
+                                {
+                                    actualSellerName = seller.StoreName ?? seller.Username ?? actualSellerName;
+                                }
+                            }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
-                            // Log this error, but proceed with defaults for PDF generation if fetching fails
-                            System.Diagnostics.Debug.WriteLine($"Error fetching order/summary details for PDF: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"Error fetching order/summary/seller details for PDF: {ex.Message}");
                         }
                     }
 
-                    // Prepare dynamic values, with defaults if data fetching failed or not applicable
-                    string currentContractID = contract.ContractID.ToString(); // Will be 0 if new and ID not yet generated
-                    string currentOrderID = contract.OrderID.ToString();
-                    string agreementDate = order?.OrderDate.ToString("MM/dd/yyyy") ?? DateTime.Now.ToString("MM/dd/yyyy");
-                    string sellerName = "Alexe Razvan"; // Per your example, using a specific name now.
                     string buyerName = orderSummary?.FullName ?? "N/A";
                     string buyerEmailVal = orderSummary?.Email ?? "N/A";
                     string buyerPhoneVal = orderSummary?.PhoneNumber ?? "N/A";
                     string buyerAddressVal = orderSummary?.Address ?? "N/A";
                     string buyerPostalCodeVal = orderSummary?.PostalCode ?? "N/A";
-                    string productDescription = orderSummary?.AdditionalInfo ?? contract.ContractContent ?? "Product/Service as per order";
-                    string price = orderSummary?.FinalTotal.ToString("F2") ?? "0.00"; // Using FinalTotal as stand-in for Price
+                    string productDescription = orderSummary?.AdditionalInfo ?? contractEntity.ContractContent ?? "Product/Service as per order";
+                    string price = orderSummary?.FinalTotal.ToString("F2") ?? "0.00";
                     string subtotalVal = orderSummary?.Subtotal.ToString("F2") ?? "0.00";
                     string warrantyTaxVal = orderSummary?.WarrantyTax.ToString("F2") ?? "0.00";
                     string deliveryFeeVal = orderSummary?.DeliveryFee.ToString("F2") ?? "0.00";
                     string finalTotalVal = orderSummary?.FinalTotal.ToString("F2") ?? "0.00";
                     string paymentMethodVal = order?.PaymentMethod ?? "N/A";
                     string expectedDeliveryDate = order?.OrderDate.AddDays(7).ToString("MM/dd/yyyy") ?? "To be confirmed";
-                    string generatedOnDate = DateTime.Now.ToString("MM/dd/yyyy"); // For footer-like text
+                    string generatedOnDate = DateTime.Now.ToString("MM/dd/yyyy");
 
                     string contractContent = $@"PURCHASE AGREEMENT
-Contract ID: {currentContractID}
 Order Reference: {currentOrderID}
 
 THIS PURCHASE AGREEMENT (the ""Agreement"") is made and entered into on {agreementDate} (the ""Effective Date""),
 
 BETWEEN:
-{sellerName} (""Seller""), a registered vendor on the MarketMinds Marketplace,
+{actualSellerName} (""Seller""), a registered vendor on the MarketMinds Marketplace,
 
 AND:
 {buyerName} (""Buyer""), a registered user on the MarketMinds Marketplace.
@@ -211,9 +227,6 @@ Expected Delivery Date: {expectedDeliveryDate}
 1.1 The Seller agrees to sell and the Buyer agrees to purchase the Product described above according to the terms and conditions outlined in this Agreement.
 1.2 The Buyer acknowledges having had the opportunity to inspect the Product's description and specifications prior to purchase.
 
-
-Contract Document
-
 2. PAYMENT
 2.1 The Buyer agrees to pay the Final Total amount stated above.
 2.2 Payment has been processed through the MarketMinds payment system via the Payment Method indicated above.
@@ -234,9 +247,6 @@ Contract Document
 5.2 Returns must be in original condition with all packaging and accessories.
 5.3 Refunds will be processed within 10 business days of the Seller receiving the returned Product.
 
-
-Contract Document
-
 6. LIMITATION OF LIABILITY
 6.1 The Seller's liability is limited to the Purchase Price of the Product.
 6.2 Neither party shall be liable for indirect, special, or consequential damages.
@@ -249,36 +259,46 @@ The parties hereby indicate their acceptance of this Agreement by their signatur
 
 Agreement Status: APPROVED
 
-SELLER: {sellerName}
+SELLER: {actualSellerName}
 BUYER: {buyerName}
 DATE: {agreementDate}
 
-Generated on: {generatedOnDate} Page 3 of 3
-";
-                    pdfFile = PdfGenerator.GenerateContractPdf(contractTitle, contractContent);
+Generated on: {generatedOnDate}";
+
+                    // Step B: Generate PDF and get its ID
+                    byte[] generatedPdfBytes = PdfGenerator.GenerateContractPdf(contractTitle, contractContent);
+                    int newPdfId = await _pdfService.InsertPdfAsync(generatedPdfBytes);
+                    if (newPdfId == 0)
+                    {
+                        throw new Exception("Failed to generate and save PDF record or retrieve its ID.");
+                    }
+
+                    // Step C: Create contract with the valid PDF ID
+                    contractEntity.PDFID = newPdfId;
+                    contractEntity.ContractContent = contractContent;
+                    
+                    // Add the contract with the valid PDF ID
+                    return await contractRpository.AddContractAsync(contractEntity, generatedPdfBytes);
                 }
-
-                // Create a PDF record first
-                var pdf = new PDF
+                else // pdfFile IS provided
                 {
-                    File = pdfFile
-                };
-
-                // Add the PDF to get its ID
-                var pdfResponse = await contractRpository.AddPdfAsync(pdf);
-                if (pdfResponse == null)
-                {
-                    throw new Exception("Failed to create PDF record");
+                    // Create a PDF record first
+                    int linkedPdfId = await _pdfService.InsertPdfAsync(pdfFile);
+                    if (linkedPdfId == 0)
+                    {
+                        throw new Exception("Failed to save provided PDF file using PDFService.");
+                    }
+                    
+                    // Set the PDF ID on the contract
+                    contractEntity.PDFID = linkedPdfId;
+                    
+                    // Add the contract with the valid PDF ID
+                    return await contractRpository.AddContractAsync(contractEntity, pdfFile);
                 }
-
-                // Set the PDFID on the contract
-                contract.PDFID = pdfResponse.PdfID;
-
-                // Now add the contract
-                return await contractRpository.AddContractAsync(contract, pdfFile);
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error in AddContractAsync: {ex.ToString()}");
                 throw new Exception($"AddContractAsync: {ex.Message}", ex);
             }
         }
