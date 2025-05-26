@@ -60,7 +60,7 @@ namespace MarketMinds.Views
                 int buyerId = this.ViewModel.BuyerId;
 
                 // Create a new instance of the BillingInfoWindow
-                var billingInfoWindow = new BillingInfoWindow();
+                // var billingInfoWindow = new BillingInfoWindow();
 
                 // Create a new BillingInfo page with the appropriate order history ID
                 var billingInfoPage = new BillingInfo();
@@ -71,10 +71,8 @@ namespace MarketMinds.Views
                 billingInfoPage.SetBuyerId(buyerId);
 
                 // Set the BillingInfo page as the content of the window
-                billingInfoWindow.Content = billingInfoPage;
-
-                // Activate (show) the window
-                billingInfoWindow.Activate();
+                // billingInfoWindow.Content = billingInfoPage;
+                this.Frame.Navigate(typeof(BillingInfo));
             }
             catch (Exception ex)
             {

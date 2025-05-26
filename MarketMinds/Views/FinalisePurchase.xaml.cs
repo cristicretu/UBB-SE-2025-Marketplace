@@ -73,17 +73,7 @@ namespace MarketMinds.Views
         {
             try
             {
-                // Process notifications
-                viewModel.HandleFinish();
-
-                // Navigate back to marketplace or main window
-                // This could open a new window or navigate in the current window, depending on your app's architecture
-                // var mainWindow = new Window(); // Create your main window here
-                // mainWindow.Activate();
-
-                //// Close current window if needed
-                // var currentWindow = WindowHelper.GetWindowForElement(this);
-                // currentWindow?.Close();
+                this.Frame.Navigate(typeof(MarketMindsPage));
             }
             catch (Exception ex)
             {

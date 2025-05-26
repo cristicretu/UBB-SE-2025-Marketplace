@@ -156,6 +156,10 @@ namespace MarketMinds.Views
                 {
                     // Only buyers' cases
                     case "ChatSupport":
+                        if (ContentFrame.Content is HelpPage)
+                        {
+                            return; // if the HelpPage is already in the frame, do not navigate to it again
+                        }
                         ContentFrame.Navigate(typeof(HelpPage));
                         break;
                     case "Notifications":
@@ -165,6 +169,10 @@ namespace MarketMinds.Views
                         // Show wishlist page in frame
                         break;
                     case "Cart":
+                        if (ContentFrame.Content is MyCartView)
+                        {
+                            return; // if the MyCartView is already in the frame, do not navigate to it again
+                        }
                         ContentFrame.Navigate(typeof(MyCartView));
                         break;
                     case "MyAccount":
@@ -172,6 +180,10 @@ namespace MarketMinds.Views
                         break;
                     // Only sellers' cases
                     case "CreateListing":
+                        if (ContentFrame.Content is CreateListingView)
+                        {
+                            return; // if the CreateListingView is already in the frame, do not navigate to it again
+                        }
                         ContentFrame.Navigate(typeof(CreateListingView));
                         break;
                 }
@@ -191,15 +203,27 @@ namespace MarketMinds.Views
                         if (isBuyer)
                         {
                             // Show buyer profile page in frame
+                            if (ContentFrame.Content is BuyerProfileView)
+                            {
+                                return; // if the BuyerProfileView is already in the frame, do not navigate to it again
+                            }
                             ContentFrame.Navigate(typeof(BuyerProfileView));
                         }
                         else if (isSeller)
                         {
                             // Show seller profile page in frame
+                            if (ContentFrame.Content is SellerProfileView)
+                            {
+                                return; // if the SellerProfileView is already in the frame, do not navigate to it again
+                            }
                             ContentFrame.Navigate(typeof(SellerProfileView));
                         }
                         break;
                     case "OrderHistory":
+                        if (ContentFrame.Content is OrderHistoryView)
+                        {
+                            return; // if the OrderHistoryView is already in the frame, do not navigate to it again
+                        }
                         ContentFrame.Navigate(typeof(OrderHistoryView));
                         break;
                     case "MyReviews":

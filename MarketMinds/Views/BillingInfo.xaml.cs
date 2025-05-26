@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using MarketMinds.ViewModels;
 using MarketMinds.Shared.Models;
 
@@ -31,24 +32,27 @@ namespace MarketMinds.Views
             this.ViewModel = App.BillingInfoViewModel;
             this.DataContext = this.ViewModel;
 
-            this.Loaded += BillingInfo_Loaded;
             Debug.WriteLine("BillingInfo page initialized");
         }
 
         /// <summary>
-        /// Handler for the Loaded event.
+        /// Called when the page is navigated to.
         /// </summary>
-        private async void BillingInfo_Loaded(object sender, RoutedEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            base.OnNavigatedTo(e);
+
             if (!initialLoadComplete)
             {
                 try
                 {
-                    Debug.WriteLine("BillingInfo page loaded event handler running");
+                    Debug.WriteLine("BillingInfo page navigated to");
 
-                    // Autofill user information
-                    await ((BillingInfoViewModel)ViewModel).AutofillUserInformationAsync();
-                    Debug.WriteLine("Attempted to autofill user information");
+                    // Initialize the checkbox to unchecked by default
+                    if (UseSavedInfoCheckBox != null)
+                    {
+                        UseSavedInfoCheckBox.IsChecked = false; // do not autofill on navigation, only if user checks the checkbox
+                    }
 
                     // If we have cart data, skip loading from order history
                     if (dataWasLoaded)
@@ -65,7 +69,7 @@ namespace MarketMinds.Views
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error in BillingInfo_Loaded: {ex.Message}");
+                    Debug.WriteLine($"Error in OnNavigatedTo: {ex.Message}");
                 }
             }
         }
@@ -146,6 +150,9 @@ namespace MarketMinds.Views
                 // Call the view model to process the order
                 await ViewModel.OnFinalizeButtonClickedAsync();
                 Debug.WriteLine($"Purchase finalized successfully. Total: ${totalBeforeFinalize}");
+                this.Frame.Navigate(typeof(FinalisePurchase));
+                // Process notifications on finalisation success
+                App.FinalizePurchaseViewModel.HandleFinish();
             }
             catch (Exception ex)
             {
@@ -170,6 +177,42 @@ namespace MarketMinds.Views
                 {
                     button.IsEnabled = true;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handler for when the "Use saved information" checkbox is checked.
+        /// </summary>
+        private async void OnUseSavedInfoChecked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Debug.WriteLine("Use saved information checkbox checked");
+                // Populate all user information when checkbox is checked
+                await ((BillingInfoViewModel)ViewModel).AutofillUserInformationAsync();
+                Debug.WriteLine("Auto-filled all user information");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in OnUseSavedInfoChecked: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handler for when the "Use saved information" checkbox is unchecked.
+        /// </summary>
+        private async void OnUseSavedInfoUnchecked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Debug.WriteLine("Use saved information checkbox unchecked");
+                // Clear all fields except email when checkbox is unchecked
+                await ((BillingInfoViewModel)ViewModel).ClearUserInformationExceptEmailAsync();
+                Debug.WriteLine("Cleared user information except email");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in OnUseSavedInfoUnchecked: {ex.Message}");
             }
         }
     }

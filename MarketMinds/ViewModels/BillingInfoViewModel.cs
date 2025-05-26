@@ -14,6 +14,7 @@ using MarketMinds.Views;
 using Microsoft.UI.Xaml;
 using MarketMinds.Shared.Helper;
 using Microsoft.UI.Xaml.Controls;
+using MarketMinds.Shared.Services.UserService;
 
 namespace MarketMinds.ViewModels
 {
@@ -31,6 +32,8 @@ namespace MarketMinds.ViewModels
         private readonly IDummyWalletService dummyWalletService;
         private readonly IBuyProductsService buyProductsService;
         private readonly IShoppingCartService shoppingCartService;
+        private readonly IUserService userService;
+        private readonly IBuyerService buyerService;
 
         // Fields
         private int orderHistoryID;
@@ -75,6 +78,8 @@ namespace MarketMinds.ViewModels
             this.productService = App.ProductService;
             this.buyProductsService = App.BuyProductsService;
             this.shoppingCartService = App.ShoppingCartService;
+            this.userService = App.UserService;
+            this.buyerService = App.BuyerService;
 
             this.CartItems = new ObservableCollection<ProductViewModel>();
             this.ProductList = new ObservableCollection<Product>();
@@ -98,11 +103,11 @@ namespace MarketMinds.ViewModels
         /// Initializes a new instance of the <see cref="BillingInfoViewModel"/> class with a specific order history ID.
         /// </summary>
         /// <param name="orderHistoryID">The order history ID to load.</param>
-        public BillingInfoViewModel(int orderHistoryID) : this()
-        {
-            this.orderHistoryID = orderHistoryID;
-            _ = this.InitializeViewModelAsync();
-        }
+        // public BillingInfoViewModel(int orderHistoryID) : this()
+        // {
+        //     this.orderHistoryID = orderHistoryID;
+        //     _ = this.InitializeViewModelAsync();
+        // }
 
         public int GetQuantityForProduct(int productId)
         {
@@ -350,19 +355,19 @@ namespace MarketMinds.ViewModels
                     return;
                 }
 
-                // We need to get the user information from a service
-                // Assuming there's a user service or similar
-                var userService = App.UserService; // You need to make sure this service exists
-
-                if (userService != null)
+                if (this.userService != null && this.buyerService != null)
                 {
-                    var user = await userService.GetUserByIdAsync(userId);
+                    User? user = await this.userService.GetUserByIdAsync(userId);
+                    Buyer? buyer = await this.buyerService.GetBuyerByUser(App.CurrentUser);
 
-                    if (user != null)
+                    if (user != null && buyer != null)
                     {
                         // Fill in the user information fields
+                        this.FullName = buyer.FirstName + " " + buyer.LastName;
                         this.Email = user.Email ?? this.Email;
-                        this.PhoneNumber = this.PhoneNumber = user.PhoneNumber?.Trim() ?? this.PhoneNumber;
+                        this.PhoneNumber = buyer.PhoneNumber;
+                        this.Address = buyer.BillingAddress.StreetLine;
+                        this.ZipCode = buyer.BillingAddress.PostalCode;
 
                         Debug.WriteLine($"Autofilled user information for user ID: {userId}");
                     }
@@ -379,6 +384,25 @@ namespace MarketMinds.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error autofilling user information: {ex.Message}");
+            }
+        }
+
+        public async Task ClearUserInformationExceptEmailAsync()
+        {
+            try
+            {
+                // Clear all fields except email
+                this.FullName = string.Empty;
+                this.PhoneNumber = string.Empty;
+                this.Address = string.Empty;
+                this.ZipCode = string.Empty;
+                this.AdditionalInfo = string.Empty;
+                this.SelectedPaymentMethod = string.Empty;
+                Debug.WriteLine("Cleared user information except email");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error clearing user information: {ex.Message}");
             }
         }
 
@@ -449,7 +473,7 @@ namespace MarketMinds.ViewModels
             if (this.IsProcessing)
             {
                 Debug.WriteLine("Already processing order, ignoring request");
-                return;
+                throw new InvalidOperationException("Already processing order, ignoring request");
             }
 
             try
@@ -466,27 +490,8 @@ namespace MarketMinds.ViewModels
                     Debug.WriteLine($"No payment method selected, defaulting to: {this.SelectedPaymentMethod}");
                 }
 
-                // Ensure we have a valid order history ID
-                if (this.orderHistoryID <= 0)
-                {
-                    this.orderHistoryID = await this.CreateOrderHistoryAsync();
-                    Debug.WriteLine($"Generated new order history ID: {this.orderHistoryID}");
-
-                    if (this.orderHistoryID <= 0)
-                    {
-                        throw new InvalidOperationException("Failed to generate a valid order history ID");
-                    }
-                }
-
-                // Generate a fallback order history ID if needed
-                if (this.orderHistoryID <= 0)
-                {
-                    this.orderHistoryID = await this.CreateOrderHistoryAsync();
-                    Debug.WriteLine($"Generated new order history ID: {this.orderHistoryID}");
-                }
-
                 // Create order summary
-                await this.CreateOrUpdateOrderSummaryAsync();
+                await this.CreateOrderSummaryAsync();
 
                 // Process payment
                 if (this.SelectedPaymentMethod == "wallet")
@@ -539,7 +544,7 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Creates or updates the order summary.
         /// </summary>
-        private async Task CreateOrUpdateOrderSummaryAsync()
+        private async Task CreateOrderSummaryAsync()
         {
             try
             {
@@ -551,91 +556,48 @@ namespace MarketMinds.ViewModels
                 string safePhone = this.PhoneNumber ?? "000-000-0000";
                 string safeAddress = this.Address ?? "No Address Provided";
                 string safeZipCode = this.ZipCode ?? "00000";
+                string additionalInfo = this.AdditionalInfo ?? string.Empty;
 
                 // Fix for ContractDetails error - provide an empty string instead of null
-                string contractDetails = string.Empty;
+                string contractDetails = string.Empty; // TODO: Add contract details
 
-                // First, check if an order summary with this ID already exists
-                bool orderSummaryExists = false;
+                // Create a new OrderSummary object
+                var orderSummary = new OrderSummary
+                {
+                    // ID = this.orderHistoryID,
+                    Subtotal = this.Subtotal,
+                    WarrantyTax = this.WarrantyTax,
+                    DeliveryFee = this.DeliveryFee,
+                    FinalTotal = this.Total,
+                    FullName = safeName,
+                    Email = safeEmail,
+                    PhoneNumber = safePhone,
+                    Address = safeAddress,
+                    PostalCode = safeZipCode,
+                    AdditionalInfo = additionalInfo,
+                    ContractDetails = contractDetails
+                };
+
                 try
                 {
-                    var existingSummary = await this.orderSummaryService.GetOrderSummaryByIdAsync(this.orderHistoryID);
-                    orderSummaryExists = existingSummary != null;
-                    Debug.WriteLine($"Order summary check: exists = {orderSummaryExists}");
+                    Debug.WriteLine("Creating new order summary");
+                    int newOrderSummaryId = await this.orderSummaryService.CreateOrderSummaryAsync(orderSummary);
+
+                    // After successful creation, assign the generated ID
+                    this.orderHistoryID = newOrderSummaryId;
+                    this.OrderHistoryId = newOrderSummaryId; // update the property for the rest of the flow
+
+                    Debug.WriteLine($"Successfully created order summary with ID: {newOrderSummaryId}");
                 }
-                catch (Exception ex)
+                catch (Exception createEx)
                 {
-                    Debug.WriteLine($"Error checking if order summary exists: {ex.Message}");
-                    // Assume it doesn't exist
-                    orderSummaryExists = false;
-                }
-
-                if (!orderSummaryExists)
-                {
-                    // Create a new OrderSummary object
-                    var orderSummary = new OrderSummary
-                    {
-                        // ID = this.orderHistoryID,
-                        Subtotal = this.Subtotal,
-                        WarrantyTax = this.WarrantyTax,
-                        DeliveryFee = this.DeliveryFee,
-                        FinalTotal = this.Total,
-                        FullName = safeName,
-                        Email = safeEmail,
-                        PhoneNumber = safePhone,
-                        Address = safeAddress,
-                        PostalCode = safeZipCode,
-                        AdditionalInfo = this.AdditionalInfo ?? string.Empty,
-                        ContractDetails = contractDetails
-                    };
-
-                    try
-                    {
-                        Debug.WriteLine("Creating new order summary");
-                        var newOrderSummaryId = await this.orderSummaryService.CreateOrderSummaryAsync(orderSummary);
-
-                        // After successful creation, assign the generated ID
-                        this.orderHistoryID = newOrderSummaryId;
-                        this.OrderHistoryId = newOrderSummaryId; // update the property for the rest of the flow
-
-                        Debug.WriteLine($"Successfully created order summary with ID: {newOrderSummaryId}");
-                    }
-                    catch (Exception createEx)
-                    {
-                        Debug.WriteLine($"Error creating order summary: {createEx.Message}");
-                        throw new Exception($"Failed to create order summary: {createEx.Message}", createEx);
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        Debug.WriteLine("Updating existing order summary");
-                        await this.orderSummaryService.UpdateOrderSummaryAsync(
-                            this.orderHistoryID,
-                            this.Subtotal,
-                            this.WarrantyTax,
-                            this.DeliveryFee,
-                            this.Total,
-                            safeName,
-                            safeEmail,
-                            safePhone,
-                            safeAddress,
-                            safeZipCode,
-                            this.AdditionalInfo ?? string.Empty,
-                            contractDetails);
-                        Debug.WriteLine("Successfully updated existing order summary");
-                    }
-                    catch (Exception updateEx)
-                    {
-                        Debug.WriteLine($"Error updating order summary: {updateEx.Message}");
-                        throw new Exception($"Failed to update order summary: {updateEx.Message}", updateEx);
-                    }
+                    Debug.WriteLine($"Error creating order summary: {createEx.Message}");
+                    throw new Exception($"Failed to create order summary: {createEx.Message}", createEx);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error in CreateOrUpdateOrderSummaryAsync: {ex.Message}");
+                Debug.WriteLine($"Error in CreateOrderSummaryAsync: {ex.Message}");
                 throw; // Rethrow to handle in calling method
             }
         }
@@ -770,7 +732,7 @@ namespace MarketMinds.ViewModels
         {
             try
             {
-                int userId = this.buyerId > 0 ? this.buyerId : (UserSession.CurrentUserId ?? 1);
+                int userId = App.CurrentUser.Id;
                 Debug.WriteLine($"Processing wallet payment for user {userId}, amount: ${this.Total}");
 
                 double walletBalance = await this.dummyWalletService.GetWalletBalanceAsync(userId);
@@ -798,10 +760,11 @@ namespace MarketMinds.ViewModels
         /// </summary>
         public async Task OpenNextWindowAsync(string selectedPaymentMethod)
         {
+            // OBS, does not actually open the window, just sets the data for the next page
             try
             {
                 // Save the order history ID for access by the finalize purchase page
-                App.LastProcessedOrderId = this.orderHistoryID;
+                App.LastProcessedOrderId = this.orderHistoryID; // this is actually the order summary ID
                 Debug.WriteLine($"Setting App.LastProcessedOrderId = {this.orderHistoryID}");
 
                 // Create a new FinalizePurchaseViewModel if it doesn't exist
@@ -842,39 +805,6 @@ namespace MarketMinds.ViewModels
                 }
 
                 Debug.WriteLine($"Opening finalize purchase window for {selectedPaymentMethod} payment");
-
-                // Process wallet payment if needed
-                if (selectedPaymentMethod == "wallet")
-                {
-                    Debug.WriteLine("Processing wallet payment...");
-                    await this.ProcessWalletRefillAsync();
-                    Debug.WriteLine("Wallet payment processed successfully");
-                }
-
-                try
-                {
-                    // Create the finalize purchase page directly
-                    var billingInfoWindow = new BillingInfoWindow();
-                    var finalisePurchasePage = new Views.FinalisePurchase();
-
-                    // Show "Processing..." message to user before activating window
-                    this.ErrorMessage = "Processing your order...";
-                    this.OnPropertyChanged(nameof(this.ErrorMessage));
-
-                    // Set the content and activate the window
-                    billingInfoWindow.Content = finalisePurchasePage;
-                    billingInfoWindow.Activate();
-                    Debug.WriteLine("Finalize purchase window activated");
-
-                    // Clear error message once window is shown
-                    this.ErrorMessage = string.Empty;
-                    this.OnPropertyChanged(nameof(this.ErrorMessage));
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error activating finalize purchase window: {ex.Message}");
-                    this.ShowBasicSuccessMessage("Your order has been completed successfully!");
-                }
             }
             catch (Exception ex)
             {

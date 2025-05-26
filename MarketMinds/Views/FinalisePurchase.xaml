@@ -18,7 +18,6 @@
                 <Setter Property="FontSize" Value="20"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="Margin" Value="0,0,0,15"/>
-                <Setter Property="Foreground" Value="{ThemeResource SystemAccentColorDark2}"/>
             </Style>
 
             <!-- Info item style -->
@@ -75,6 +74,8 @@
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="Margin" Value="0,0,0,30"/>
             </Style>
+
+            <utils:SellerToVisibilityConverter x:Key="SellerToVisibilityConverter"/>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -155,7 +156,9 @@
 
             <!-- Products List with improved styling -->
             <ListView ItemsSource="{Binding ProductList}" Background="Transparent" 
-                      SelectionMode="None" Padding="0" MaxHeight="400">
+                      SelectionMode="None" Padding="0" MaxHeight="400"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Padding" Value="0"/>
@@ -167,38 +170,28 @@
                     <DataTemplate>
                         <Border Style="{StaticResource ProductPanelStyle}">
                             <StackPanel>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Name: " FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding Title}"/>
+                                </StackPanel>
 
-                                    <TextBlock Grid.Column="0" Text="Product name: " FontWeight="SemiBold"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Title}" TextWrapping="Wrap"/>
-                                </Grid>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Price: " FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                    <TextBlock>
+                                        <Run Text="{Binding Price}"/>
+                                        <Run Text=" €"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Quantity: " FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding Quantity}"/>
+                                </StackPanel>
 
-                                <Grid Margin="0,6,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Grid.Column="0" Text="Price: " FontWeight="SemiBold"/>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Price}" />
-                                        <TextBlock Text=" €" />
-                                    </StackPanel>
-                                </Grid>
-
-                                <Grid Margin="0,6,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Grid.Column="0" Text="Seller ID: " FontWeight="SemiBold"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding SellerId}" />
-                                </Grid>
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding SellerId, Converter={StaticResource SellerToVisibilityConverter}}" Margin="0,0,0,6">
+                                    <TextBlock Text="Seller ID: " FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding SellerId}"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </DataTemplate>

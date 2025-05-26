@@ -20,7 +20,7 @@ namespace MarketMinds.ViewModels
         private readonly INotificationViewModel notificationViewModel;
 
         // Fields
-        private int orderHistoryID;
+        private int lastOrderSummaryId;
         private double subtotal;
         private double deliveryFee;
         private double warrantyTax;
@@ -52,9 +52,9 @@ namespace MarketMinds.ViewModels
             OrderStatus = "Completed";
 
             // Use the last processed order history ID from App state if available
-            orderHistoryID = App.LastProcessedOrderId;
+            lastOrderSummaryId = App.LastProcessedOrderId;
 
-            if (orderHistoryID > 0)
+            if (lastOrderSummaryId > 0)
             {
                 // Use Task.Run to avoid blocking the UI thread during initialization
                 Task.Run(async () => await InitializeViewModelAsync()).ContinueWith(t =>
@@ -76,12 +76,12 @@ namespace MarketMinds.ViewModels
         /// </summary>
         public async Task InitializeViewModelAsync()
         {
-            Debug.WriteLine($"Loading data for order history ID: {orderHistoryID}");
+            Debug.WriteLine($"Loading data for order history ID: {lastOrderSummaryId}");
 
             try
             {
                 // Get products from order history
-                var products = await orderHistoryService.GetProductsFromOrderHistoryAsync(orderHistoryID);
+                var products = await orderHistoryService.GetProductsFromOrderHistoryAsync(lastOrderSummaryId);
 
                 // Clear and populate product list
                 ProductList.Clear();
@@ -98,7 +98,7 @@ namespace MarketMinds.ViewModels
                 OnPropertyChanged(nameof(ProductList));
 
                 // Get order summary info
-                var orderSummary = await orderSummaryService.GetOrderSummaryByIdAsync(orderHistoryID);
+                var orderSummary = await orderSummaryService.GetOrderSummaryByIdAsync(lastOrderSummaryId);
                 if (orderSummary != null)
                 {
                     await SetOrderHistoryInfo(orderSummary);
@@ -122,7 +122,7 @@ namespace MarketMinds.ViewModels
         {
             try
             {
-                Orders = await orderService.GetOrdersFromOrderHistoryAsync(orderHistoryID);
+                Orders = await orderService.GetOrdersFromOrderHistoryAsync(lastOrderSummaryId);
 
                 // Financial details
                 Subtotal = orderSummary.Subtotal;
@@ -142,7 +142,7 @@ namespace MarketMinds.ViewModels
                 }
 
                 // Set order number for display
-                OrderNumber = orderHistoryID;
+                OrderNumber = lastOrderSummaryId;
 
                 Debug.WriteLine("Order history info set successfully");
             }
@@ -155,10 +155,10 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Retrieves products from an order history.
         /// </summary>
-        /// <param name="orderHistoryID">The order history ID.</param>
-        public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryID)
+        /// <param name="lastOrderSummaryId">The order history ID.</param>
+        public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int lastOrderSummaryId)
         {
-            return await orderHistoryService.GetProductsFromOrderHistoryAsync(orderHistoryID);
+            return await orderHistoryService.GetProductsFromOrderHistoryAsync(lastOrderSummaryId);
         }
 
         /// <summary>
@@ -306,15 +306,15 @@ namespace MarketMinds.ViewModels
         }
 
         public int OrderNumber { get; private set; }
-        public int OrderHistoryID
+        public int OrderHistoryID // this is actually the order summary ID
         {
-            get => orderHistoryID;
+            get => lastOrderSummaryId;
             set
             {
-                if (orderHistoryID != value)
+                if (lastOrderSummaryId != value)
                 {
-                    orderHistoryID = value;
-                    OnPropertyChanged(nameof(OrderHistoryID));
+                    lastOrderSummaryId = value;
+                    OnPropertyChanged(nameof(lastOrderSummaryId));
                 }
             }
         }
