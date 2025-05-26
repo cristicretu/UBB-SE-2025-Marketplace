@@ -94,17 +94,19 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 throw new ArgumentNullException(nameof(product));
             }
 
-            var tagsToAdd = new List<ProductTag>();
-
             try
             {
+                // Store the tags before adding the product
+                var tags = product.Tags?.ToList();
+                product.Tags = null; // Clear the tags to avoid EF trying to create them
+
                 context.AuctionProducts.Add(product);
                 context.SaveChanges();
 
                 // Now add the tag relationships after the product has been saved and has an ID
-                if (tagsToAdd.Any())
+                if (tags != null && tags.Any())
                 {
-                    foreach (var tag in tagsToAdd)
+                    foreach (var tag in tags)
                     {
                         var auctionProductTag = new AuctionProductProductTag
                         {
