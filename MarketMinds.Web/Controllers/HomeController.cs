@@ -299,19 +299,53 @@ namespace MarketMinds.Web.Controllers
                 ViewBag.PrevPageUrl = currentPage > 1 ? BuildPaginationUrl(Math.Max(0, offset - count), count, tab, conditionIds, categoryIds, search, maxPrice) : null;
                 ViewBag.NextPageUrl = currentPage < totalPages ? BuildPaginationUrl(offset + count, count, tab, conditionIds, categoryIds, search, maxPrice) : null;
                 
+                // Dynamic pagination: show current page ± 2 pages (5 pages total)
                 var pageUrls = new Dictionary<int, string>();
-                for (int pageNum = 1; pageNum <= Math.Min(totalPages, 5); pageNum++)
+                int maxPagesToShow = 5;
+                int halfRange = maxPagesToShow / 2; // 2 pages on each side
+                
+                // Calculate the start and end page numbers
+                int startPage = Math.Max(1, currentPage - halfRange);
+                int endPage = Math.Min(totalPages, currentPage + halfRange);
+                
+                // Adjust if we're near the beginning or end
+                if (endPage - startPage + 1 < maxPagesToShow)
+                {
+                    if (startPage == 1)
+                    {
+                        endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+                    }
+                    else if (endPage == totalPages)
+                    {
+                        startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+                    }
+                }
+                
+                // Build URLs for the visible page range
+                for (int pageNum = startPage; pageNum <= endPage; pageNum++)
                 {
                     int pageOffset = (pageNum - 1) * count;
                     pageUrls[pageNum] = BuildPaginationUrl(pageOffset, count, tab, conditionIds, categoryIds, search, maxPrice);
                 }
                 ViewBag.PageUrls = pageUrls;
+                ViewBag.CurrentPage = currentPage;
+                ViewBag.StartPage = startPage;
+                ViewBag.EndPage = endPage;
                 
-                if (totalPages > 5)
+                // Show "..." and last page if there are more pages beyond our range
+                if (endPage < totalPages)
                 {
                     int lastPageOffset = (totalPages - 1) * count;
                     ViewBag.LastPageUrl = BuildPaginationUrl(lastPageOffset, count, tab, conditionIds, categoryIds, search, maxPrice);
                     ViewBag.LastPageNumber = totalPages;
+                    ViewBag.ShowLastPageEllipsis = endPage < totalPages - 1; // Show "..." if there's a gap
+                }
+                
+                // Show first page if our range doesn't start at 1
+                if (startPage > 1)
+                {
+                    ViewBag.FirstPageUrl = BuildPaginationUrl(0, count, tab, conditionIds, categoryIds, search, maxPrice);
+                    ViewBag.ShowFirstPageEllipsis = startPage > 2; // Show "..." if there's a gap
                 }
                 
                 // Debug logging to verify price range calculation

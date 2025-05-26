@@ -495,8 +495,28 @@
                         <!-- Page Numbers -->
                         @{
                             var pageUrls = ViewBag.PageUrls as Dictionary<int, string> ?? new Dictionary<int, string>();
+                            int startPage = ViewBag.StartPage ?? 1;
+                            int endPage = ViewBag.EndPage ?? 1;
+                            bool showFirstPageEllipsis = ViewBag.ShowFirstPageEllipsis ?? false;
+                            bool showLastPageEllipsis = ViewBag.ShowLastPageEllipsis ?? false;
                         }
-                        @foreach (var pageUrl in pageUrls)
+                        
+                        <!-- First page link if not in current range -->
+                        @if (ViewBag.FirstPageUrl != null && startPage > 1)
+                        {
+                            <a href="@ViewBag.FirstPageUrl" 
+                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                1
+                            </a>
+                            
+                            @if (showFirstPageEllipsis)
+                            {
+                                <span class="px-2 py-2 text-sm text-gray-500">...</span>
+                            }
+                        }
+                        
+                        <!-- Current page range -->
+                        @foreach (var pageUrl in pageUrls.OrderBy(p => p.Key))
                         {
                             if (pageUrl.Key == currentPage)
                             {
@@ -513,9 +533,14 @@
                             }
                         }
                         
-                        @if (ViewBag.LastPageUrl != null)
+                        <!-- Last page link if not in current range -->
+                        @if (ViewBag.LastPageUrl != null && endPage < totalPages)
                         {
-                            <span class="px-2 py-2 text-sm text-gray-500">...</span>
+                            @if (showLastPageEllipsis)
+                            {
+                                <span class="px-2 py-2 text-sm text-gray-500">...</span>
+                            }
+                            
                             <a href="@ViewBag.LastPageUrl" 
                                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
                                 @ViewBag.LastPageNumber
