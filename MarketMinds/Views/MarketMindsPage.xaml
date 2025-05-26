@@ -30,6 +30,9 @@
         <converters:BoolToAvailabilityConverter x:Key="BoolToAvailabilityConverter"/>
         <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
         <converters:DateTimeToShortDateConverter x:Key="DateTimeToShortDateConverter"/>
+        <converters:IntToBoolConverter x:Key="IntToBoolConverter"/>
+        <converters:StockToTextConverter x:Key="StockToTextConverter"/>
+        <converters:StockToGlyphConverter x:Key="StockToGlyphConverter"/>
         
         <!-- Custom GridView Item Container Style with rounded corners -->
         <Style x:Key="RoundedGridViewItemContainerStyle" TargetType="GridViewItem">
@@ -211,10 +214,27 @@
                                Visibility="{Binding Converter={StaticResource UserTypeVisibilityConverter}, ConverterParameter=Buyer}">
                         <!-- Add to Cart Button -->
                         <Button Style="{StaticResource ProductActionButtonStyle}"
-                               Click="BuyProductCard_AddToCart_Click">
+                               Click="BuyProductCard_AddToCart_Click"
+                               IsEnabled="{x:Bind Stock, Mode=OneWay, Converter={StaticResource IntToBoolConverter}}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <FontIcon Glyph="&#xE7BF;"/>
-                                <TextBlock Text="Add to Cart" FontWeight="SemiBold"/>
+                                <FontIcon>
+                                    <FontIcon.Glyph>
+                                        <Binding Path="Stock" Mode="OneWay">
+                                            <Binding.Converter>
+                                                <converters:StockToGlyphConverter/>
+                                            </Binding.Converter>
+                                        </Binding>
+                                    </FontIcon.Glyph>
+                                </FontIcon>
+                                <TextBlock FontWeight="SemiBold">
+                                    <TextBlock.Text>
+                                        <Binding Path="Stock" Mode="OneWay">
+                                            <Binding.Converter>
+                                                <converters:StockToTextConverter/>
+                                            </Binding.Converter>
+                                        </Binding>
+                                    </TextBlock.Text>
+                                </TextBlock>
                             </StackPanel>
                         </Button>
                     </StackPanel>
