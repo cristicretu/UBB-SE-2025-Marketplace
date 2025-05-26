@@ -31,6 +31,22 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 throw new ArgumentException("Product must be a BorrowProduct.", nameof(product));
             }
 
+            // Convert Tags to ProductTags if ProductTags is empty but Tags has data
+            if ((borrowProduct.ProductTags == null || !borrowProduct.ProductTags.Any()) &&
+                borrowProduct.Tags != null && borrowProduct.Tags.Any())
+            {
+                borrowProduct.ProductTags = new List<BorrowProductProductTag>();
+                foreach (var tag in borrowProduct.Tags)
+                {
+                    var productTag = new BorrowProductProductTag
+                    {
+                        TagId = tag.Id,
+                        Tag = tag
+                    };
+                    borrowProduct.ProductTags.Add(productTag);
+                }
+            }
+
             ApplyDefaultDates(borrowProduct);
 
             borrowProductsRepository.CreateListing(borrowProduct);

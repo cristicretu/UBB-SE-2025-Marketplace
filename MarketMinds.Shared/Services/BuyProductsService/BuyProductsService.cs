@@ -122,24 +122,53 @@ namespace MarketMinds.Shared.Services.BuyProductsService
 
             try
             {
-                var productToSend = new
+                var productTags = new List<BuyProductProductTag>();
+                if (product.Tags != null && product.Tags.Any())
                 {
-                    product.Title,
-                    product.Description,
+                    foreach (var tag in product.Tags)
+                    {
+                        var productTag = new BuyProductProductTag
+                        {
+                            TagId = tag.Id,
+                            Tag = tag
+                        };
+                        productTags.Add(productTag);
+                    }
+                }
+
+                var productToSend = new BuyProduct
+                {
+                    Title = product.Title,
+                    Description = product.Description,
                     SellerId = product.SellerId,
-                    ConditionId = product.Condition?.Id,
-                    CategoryId = product.Category?.Id,
-                    product.Price,
-                    Images = product.Images == null || !product.Images.Any()
-                           ? (product.NonMappedImages != null && product.NonMappedImages.Any()
-                              ? product.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
-                              : new List<object>())
-                           : product.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+                    ConditionId = product.Condition?.Id ?? 0,
+                    CategoryId = product.Category?.Id ?? 0,
+                    Price = product.Price,
+                    Stock = product.Stock,
+                    ProductTags = productTags,
+                    Images = new List<BuyProductImage>()
                 };
 
-                Console.WriteLine($"Sending to API: SellerId={productToSend.SellerId}");
+                // Add images
+                if (product.NonMappedImages != null && product.NonMappedImages.Any())
+                {
+                    foreach (var img in product.NonMappedImages)
+                    {
+                        productToSend.Images.Add(new BuyProductImage { Url = img.Url ?? string.Empty });
+                    }
+                }
+                else if (product.Images != null && product.Images.Any())
+                {
+                    foreach (var img in product.Images)
+                    {
+                        productToSend.Images.Add(new BuyProductImage { Url = img.Url });
+                    }
+                }
+
+                // Serialize the object to see what's actually being sent
+                var jsonToSend = System.Text.Json.JsonSerializer.Serialize(productToSend, new JsonSerializerOptions { WriteIndented = true });
+
                 var responseJson = buyProductsRepository.CreateListing(productToSend);
-                // Could deserialize response if needed
             }
             catch (HttpRequestException ex)
             {

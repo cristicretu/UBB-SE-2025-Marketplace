@@ -31,6 +31,15 @@ namespace MarketMinds.Repositories.ProductTagRepository
         {
             try
             {
+                // Check if a tag with this title already exists
+                var existingTag = databaseContext.ProductTags
+                    .FirstOrDefault(tag => tag.Title == displayTitle);
+
+                if (existingTag != null)
+                {
+                    return existingTag;
+                }
+
                 var tagToCreate = new ProductTag(0, displayTitle);
                 databaseContext.ProductTags.Add(tagToCreate);
                 databaseContext.SaveChanges();
@@ -38,7 +47,7 @@ namespace MarketMinds.Repositories.ProductTagRepository
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Error in CreateProductTag using EF: {exception.Message}");
+                Console.WriteLine($"Inner exception: {exception.InnerException?.Message}");
                 throw;
             }
         }

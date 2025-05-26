@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
@@ -38,6 +39,13 @@ namespace MarketMinds.Shared.ProxyRepository
             var conditionId = borrowProduct.Condition?.Id ?? borrowProduct.ConditionId;
             var categoryId = borrowProduct.Category?.Id ?? borrowProduct.CategoryId;
 
+            // Process tags for sending to API
+            var tagsToSend = new List<object>();
+            if (borrowProduct.Tags != null && borrowProduct.Tags.Any())
+            {
+                tagsToSend = borrowProduct.Tags.Select(tag => new { id = tag.Id, title = tag.Title }).Cast<object>().ToList();
+            }
+
             var productToSend = new
             {
                 borrowProduct.Title,
@@ -50,6 +58,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 EndDate = borrowProduct.EndDate,
                 TimeLimit = borrowProduct.TimeLimit,
                 borrowProduct.IsBorrowed,
+                Tags = tagsToSend,
                 Images = borrowProduct.Images == null || !borrowProduct.Images.Any()
                        ? (borrowProduct.NonMappedImages != null && borrowProduct.NonMappedImages.Any()
                           ? borrowProduct.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
@@ -155,7 +164,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
             serializerOptions.Converters.Add(new UserJsonConverter());
-            
+
             string url = $"borrowproducts?offset={offset}&count={count}";
             var response = httpClient.GetAsync(url).Result;
             response.EnsureSuccessStatusCode();
