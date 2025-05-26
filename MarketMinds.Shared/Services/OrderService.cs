@@ -197,6 +197,34 @@ namespace MarketMinds.Shared.Services
             return await orderRepository.GetOrdersWithProductInfoAsync(userId, searchText, timePeriod);
         }
 
+        public async Task<List<OrderDisplayInfo>> GetOrdersWithProductInfoAsync(int userId, int offset, int count, string searchText = null, string timePeriod = null)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be positive", nameof(userId));
+            }
+            if (offset < 0)
+            {
+                throw new ArgumentException("Offset cannot be negative", nameof(offset));
+            }
+            if (count <= 0)
+            {
+                throw new ArgumentException("Count must be positive", nameof(count));
+            }
+
+            return await orderRepository.GetOrdersWithProductInfoAsync(userId, offset, count, searchText, timePeriod);
+        }
+
+        public async Task<int> GetOrdersCountAsync(int userId, string searchText = null, string timePeriod = null)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be positive", nameof(userId));
+            }
+
+            return await orderRepository.GetOrdersCountAsync(userId, searchText, timePeriod);
+        }
+
         public async Task<Dictionary<int, string>> GetProductCategoryTypesAsync(int userId)
         {
             if (userId <= 0)

@@ -107,8 +107,15 @@
                             </svg>
                         </div>
                         <input type="text" id="searchInput" 
-                               class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                placeholder="Search by product name, order ID, or category...">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <button type="button" onclick="performSearch()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="lg:w-48">
@@ -236,22 +243,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                <div class="ml-6 flex-shrink-0 space-x-2">
-                                    <button onclick="showOrderDetails(@order.OrderSummaryID)" 
-                                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                        View Details
-                                    </button>
-                                    
-                                    @{
-                                        // Removed contract buttons from main list to align with user-provided previous version.
-                                        // Contract actions are now handled in the modal.
-                                    }
-                                    
-                                </div>
                                 }
                             </div>
                         </div>
@@ -259,6 +250,107 @@
                 }
             </ul>
         </div>
+
+        <!-- Pagination Controls -->
+        @if (ViewBag.TotalOrders != null && (int)ViewBag.TotalOrders > 0)
+        {
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow-sm">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    @if ((bool)ViewBag.HasPreviousPage)
+                    {
+                        <a href="@ViewBag.PrevPageUrl" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </a>
+                    }
+                    @if ((bool)ViewBag.HasNextPage)
+                    {
+                        <a href="@ViewBag.NextPageUrl" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </a>
+                    }
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing
+                            <span class="font-medium">@((int)ViewBag.CurrentOffset + 1)</span>
+                            to
+                            <span class="font-medium">@(Math.Min((int)ViewBag.CurrentOffset + (int)ViewBag.CurrentCount, (int)ViewBag.TotalOrders))</span>
+                            of
+                            <span class="font-medium">@ViewBag.TotalOrders</span>
+                            orders
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            @if ((bool)ViewBag.HasPreviousPage)
+                            {
+                                <a href="@ViewBag.PrevPageUrl" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Previous</span>
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            }
+
+                            @if ((bool)ViewBag.ShowFirstPageEllipsis)
+                            {
+                                <a href="@ViewBag.FirstPageUrl" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    1
+                                </a>
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                    ...
+                                </span>
+                            }
+
+                            @{
+                                var pageUrls = ViewBag.PageUrls as Dictionary<int, string>;
+                                int currentPage = (int)ViewBag.CurrentPage;
+                            }
+
+                            @if (pageUrls != null)
+                            {
+                                @for (int i = (int)ViewBag.StartPage; i <= (int)ViewBag.EndPage; i++)
+                                {
+                                    if (i == currentPage)
+                                    {
+                                        <span aria-current="page" class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            @i
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <a href="@pageUrls[i]" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            @i
+                                        </a>
+                                    }
+                                }
+                            }
+
+                            @if ((bool)ViewBag.ShowLastPageEllipsis)
+                            {
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                    ...
+                                </span>
+                                <a href="@ViewBag.LastPageUrl" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    @ViewBag.LastPageNumber
+                                </a>
+                            }
+
+                            @if ((bool)ViewBag.HasNextPage)
+                            {
+                                <a href="@ViewBag.NextPageUrl" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Next</span>
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            }
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
@@ -340,7 +432,7 @@
         const noResultsMessage = document.getElementById('noResultsMessage');
 
         document.addEventListener('DOMContentLoaded', function() {
-            loadOrders();
+            setInitialValues();
             
             // Auto-dismiss alerts after 5 seconds
             const successAlert = document.getElementById('successAlert');
@@ -359,66 +451,51 @@
             }
         });
 
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                loadOrders();
-            }, 300);
+        // Handle search with Enter key or button click
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
         });
 
-        timePeriodSelect.addEventListener('change', loadOrders);
+        timePeriodSelect.addEventListener('change', performSearch);
 
-        function loadOrders() {
-            const searchText = searchInput.value;
+        function performSearch() {
+            const searchText = searchInput.value.trim();
             const timePeriod = timePeriodSelect.value;
-
-            // Show loading state
-            ordersList.innerHTML = '<li class="px-6 py-8 text-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div></li>';
-            noResultsMessage.classList.add('hidden');
-
-            fetch(`/Order/GetFilteredOrders?searchText=${encodeURIComponent(searchText)}&timePeriod=${timePeriod}`)
-                .then(response => response.json())
-                .then(data => {
-                    ordersList.innerHTML = '';
-                    
-                    if (!data.success) {
-                        console.error('Error:', data.message);
-                        noResultsMessage.querySelector('p').textContent = data.message;
-                        noResultsMessage.classList.remove('hidden');
-                        return;
-                    }
-
-                    if (data.orders.length === 0) {
-                        noResultsMessage.querySelector('p').textContent = 'No orders found matching your criteria';
-                        noResultsMessage.classList.remove('hidden');
-                        return;
-                    }
-
-                    noResultsMessage.classList.add('hidden');
-                    
-                    // Group orders by OrderSummaryID
-                    const groupedOrders = {};
-                    data.orders.forEach(order => {
-                        if (!groupedOrders[order.orderSummaryID]) {
-                            groupedOrders[order.orderSummaryID] = [];
-                        }
-                        groupedOrders[order.orderSummaryID].push(order);
-                    });
-                    
-                    // Create elements for each group
-                    Object.keys(groupedOrders).forEach(summaryId => {
-                        const groupOrders = groupedOrders[summaryId];
-                        const groupElement = createOrderGroupElement(summaryId, groupOrders);
-                        ordersList.appendChild(groupElement);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading orders:', error);
-                    ordersList.innerHTML = '';
-                    noResultsMessage.querySelector('p').textContent = 'Error loading orders. Please try again.';
-                    noResultsMessage.classList.remove('hidden');
-                });
+            
+            // Redirect to OrderHistory with search parameters
+            const params = new URLSearchParams();
+            params.set('offset', '0');
+            params.set('count', '4');
+            if (searchText) {
+                params.set('search', searchText);
+            }
+            if (timePeriod && timePeriod !== 'all') {
+                params.set('timePeriod', timePeriod);
+            }
+            
+            window.location.href = `/Order/OrderHistory?${params.toString()}`;
         }
+
+        // Set initial values from URL parameters
+        function setInitialValues() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const search = urlParams.get('search');
+            const timePeriod = urlParams.get('timePeriod');
+            
+            if (search) {
+                searchInput.value = search;
+            }
+            
+            if (timePeriod) {
+                timePeriodSelect.value = timePeriod;
+            } else {
+                timePeriodSelect.value = 'all';
+            }
+        }
+
+        
         
         function createOrderGroupElement(summaryId, orders) {
             const li = document.createElement('li');
@@ -521,7 +598,8 @@
         }
 
         function refreshOrders() {
-            loadOrders();
+            // Refresh the page to reload orders with current filters
+            window.location.reload();
         }
 
         function showOrderDetails(orderId) {
