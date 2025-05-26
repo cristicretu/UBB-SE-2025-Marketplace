@@ -11,9 +11,105 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <!-- Root container for the page layout -->
     <Grid Padding="20">
-        <!-- Custom control that displays order tracking details -->
-        <local:TrackedOrderDetailsControl />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="20" Margin="0,0,0,20">
+            <TextBlock Text="Tracked Order Details" 
+                     Style="{StaticResource TitleLargeTextBlockStyle}"
+                     Margin="0,0,0,10"/>
+
+            <!-- Order Details Card -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8"
+                    Padding="16"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Order Details" 
+                               Style="{StaticResource SubtitleTextBlockStyle}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Order ID:" Grid.Row="0" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,4"/>
+                        <TextBlock Text="{Binding OrderID}" Grid.Row="0" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
+
+                        <TextBlock Text="Current Status:" Grid.Row="1" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,4"/>
+                        <TextBlock Text="{Binding CurrentStatus}" Grid.Row="1" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
+
+                        <TextBlock Text="Estimated Delivery:" Grid.Row="2" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,4"/>
+                        <TextBlock Text="{Binding EstimatedDeliveryDate, Converter={StaticResource DateFormatConverter}}" 
+                                 Grid.Row="2" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
+
+                        <TextBlock Text="Delivery Address:" Grid.Row="3" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,0"/>
+                        <TextBlock Text="{Binding DeliveryAddress}" Grid.Row="3" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="Wrap" Margin="0,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Checkpoints Timeline Card -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8"
+                    Padding="16"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Tracking History" 
+                               Style="{StaticResource SubtitleTextBlockStyle}"/>
+                    <ListView ItemsSource="{Binding Checkpoints}"
+                              SelectionMode="None">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Timeline marker and connecting line -->
+                                    <StackPanel Grid.Column="0" HorizontalAlignment="Center" Margin="0,0,16,0">
+                                        <Ellipse Width="12" Height="12" Fill="{ThemeResource SystemAccentColor}" VerticalAlignment="Center"/>
+                                        <Border Width="2" 
+                                                Background="{ThemeResource SystemFillColorSecondaryBrush}"
+                                                Height="40"
+                                                Margin="0,4,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- Checkpoint content -->
+                                    <Border Grid.Column="1" 
+                                            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                                            Padding="12"
+                                            CornerRadius="8"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="{Binding Status}" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                            <TextBlock Text="{Binding Description}" Style="{StaticResource BodyTextBlockStyle}"/>
+                                            <TextBlock Text="{Binding Timestamp, Converter={StaticResource DateTimeFormatConverter}}" 
+                                                     Style="{StaticResource CaptionTextBlockStyle}"/>
+                                            <TextBlock Text="{Binding Location, Converter={StaticResource LocationFormatConverter}}" 
+                                                     Style="{StaticResource CaptionTextBlockStyle}"
+                                                     Visibility="{Binding Location, Converter={StaticResource StringToVisibilityConverter}}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Border>
+        </StackPanel>
     </Grid>
 </Page>

@@ -4,7 +4,7 @@
     using System.Configuration;
     using System.Diagnostics;
     using System.Threading.Tasks;
-
+    using MarketMinds.Shared.Models;
     using MarketMinds.ViewModels;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
@@ -13,7 +13,7 @@
     public sealed partial class BuyerProfileView : Page
     {
         public IContractViewModel ContractViewModel { get; private set; }
-        private ITrackedOrderViewModel? trackedOrderViewModel;
+        private ITrackedOrderViewModel trackedOrderViewModel;
 
         public BuyerProfileView()
         {
@@ -22,8 +22,8 @@
             // Initialize ContractViewModel
             ContractViewModel = new ContractViewModel();
 
-            // Initialize trackedOrderViewModel
-            trackedOrderViewModel = new TrackedOrderViewModel();
+            // Use the static ViewModel from App.xaml.cs
+            trackedOrderViewModel = App.TrackedOrderViewModel;
         }
 
         public IBuyerProfileViewModel? ViewModel { get; set; }
@@ -110,18 +110,21 @@
                         return;
                     }
 
-                    bool hasControlAccess = true;
+                    // Determine if the user has control access based on their role
+                    bool hasControlAccess = ViewModel.User.UserType == (int)UserRole.Seller || ViewModel.User.UserType == (int)UserRole.Admin;
 
                     TrackedOrderWindow trackedOrderWindow = new TrackedOrderWindow();
                     if (hasControlAccess)
                     {
-                        var controlp = new TrackedOrderControlPage(trackedOrderViewModel, trackedOrderID);
-                        trackedOrderWindow.Content = controlp;
+                        var trackedOrderControlPage = new TrackedOrderControlPage();
+                        trackedOrderControlPage.SetTrackedOrderID(trackedOrderID);
+                        trackedOrderWindow.Content = trackedOrderControlPage;
                     }
                     else
                     {
-                        var buyerp = new TrackedOrderBuyerPage(trackedOrderViewModel, trackedOrderID);
-                        trackedOrderWindow.Content = buyerp;
+                        var trackedOrderBuyerPage = new TrackedOrderBuyerPage();
+                        trackedOrderBuyerPage.SetTrackedOrderID(trackedOrderID);
+                        trackedOrderWindow.Content = trackedOrderBuyerPage;
                     }
 
                     trackedOrderWindow.Activate();

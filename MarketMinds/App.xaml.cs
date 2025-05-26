@@ -110,6 +110,7 @@ namespace MarketMinds
         public static RegisterViewModel RegisterViewModel { get; private set; }
         public static MarketMinds.Shared.Models.User CurrentUser { get; set; }
         public static ContractRenewViewModel ContractRenewViewModel { get; private set; }
+        public static TrackedOrderViewModel TrackedOrderViewModel { get; private set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -386,6 +387,12 @@ namespace MarketMinds
             SeeSellerReviewsViewModel = null;
             SeeBuyerReviewsViewModel = null;
             BasketViewModel = null;
+
+            // Initialize TrackedOrderViewModel with proper services
+            var trackedOrderService = new TrackedOrderService(new TrackedOrderProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/"));
+            var notificationService = new MarketMinds.Shared.Services.NotificationService();
+            TrackedOrderViewModel = new TrackedOrderViewModel(trackedOrderService, new OrderViewModel(), notificationService);
+
             // Show login window first instead of main window
             LoginWindow = new LoginWindow();
             LoginWindow.Activate();
