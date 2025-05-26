@@ -50,7 +50,7 @@ namespace MarketMinds.ViewModels
         public ContractViewModel()
         {
             // Assign the injected service instance
-            this.contractService = new ContractService();
+            this.contractService = App.ContractService;
         }
 
         /// <summary>

@@ -59,6 +59,8 @@ namespace MarketMinds
         public static BasketProxyRepository BasketRepository;
         public static BuyProductsProxyRepository BuyProductsRepository;
         public static IBuyerLinkageRepository BuyerLinkageRepository;
+        public static IContractRepository ContractRepository;
+        public static ISellerRepository SellerRepository;
 
         // Service declarations
         public static IBuyerService BuyerService;
@@ -84,6 +86,9 @@ namespace MarketMinds
         public static IPDFService PDFService;
         public static IContractRenewalService ContractRenewalService;
         public static IFileSystem FileSystem;
+        public static IOrderSummaryService OrderSummaryService;
+        public static IOrderService OrderService;
+        public static ISellerService SellerService;
         public static IBuyerLinkageService BuyerLinkageService { get; private set; }
 
         // ViewModel declarations
@@ -128,12 +133,6 @@ namespace MarketMinds
                 // Create a new window
                 var sellerProfileWindow = new Window();
 
-                // First initialize the SellerService
-                // Change this line in ShowSellerProfile()
-                var sellerRepository = new SellerProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/");
-
-                var sellerService = new SellerService(sellerRepository);
-
                 // Initialize the ViewModel with the service and current user
                 if (CurrentUser == null)
                 {
@@ -146,7 +145,7 @@ namespace MarketMinds
                 sellerProfileWindow.Content = frame;
 
                 // Create and configure the view model
-                var viewModel = new SellerProfileViewModel(sellerService, CurrentUser);
+                var viewModel = new SellerProfileViewModel(SellerService, CurrentUser);
 
                 // Navigate to the page with the ViewModel as parameter
                 frame.Navigate(typeof(MarketMinds.Views.SellerProfileView), viewModel);
@@ -327,6 +326,8 @@ namespace MarketMinds
             BasketRepository = new BasketProxyRepository(Configuration);
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
             BuyerLinkageRepository = new BuyerLinkageProxyRepository(Configuration);
+            ContractRepository = new ContractProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/");
+            SellerRepository = new SellerProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/");
 
             // Initialize services
             AdminService = new AdminService(UserRepository);
@@ -348,8 +349,11 @@ namespace MarketMinds
             ChatBotService = new ChatbotService(ChatbotRepository);
             ChatService = new MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService(ChatRepository);
             NewChatbotService = new MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
-            ContractService = new ContractService();
             PDFService = new PDFService();
+            OrderSummaryService = new OrderSummaryService();
+            OrderService = new OrderService();
+            SellerService = new SellerService(SellerRepository);
+            ContractService = new ContractService(ContractRepository, OrderSummaryService, OrderService, SellerService, PDFService);
             ContractRenewalService = new ContractRenewalService();
             FileSystem = new FileSystemWrapper();
 
