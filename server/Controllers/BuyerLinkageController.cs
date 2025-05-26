@@ -34,17 +34,17 @@ namespace Server.Controllers
         }
 
         /// <summary>
-        /// Links two buyers together
+        /// Sends a linkage request to another buyer
         /// </summary>
         /// <param name="currentBuyerId">Current buyer's ID</param>
-        /// <param name="targetBuyerId">Target buyer's ID to link with</param>
-        /// <returns>True if linking was successful</returns>
-        [HttpPost("link")]
-        public async Task<ActionResult<bool>> LinkBuyers([FromQuery] int currentBuyerId, [FromQuery] int targetBuyerId)
+        /// <param name="targetBuyerId">Target buyer's ID to send request to</param>
+        /// <returns>True if request was sent successfully</returns>
+        [HttpPost("sendrequest")]
+        public async Task<ActionResult<bool>> SendLinkageRequest([FromQuery] int currentBuyerId, [FromQuery] int targetBuyerId)
         {
             try
             {
-                _logger.LogInformation("API: Linking buyer {CurrentBuyerId} with buyer {TargetBuyerId}", 
+                _logger.LogInformation("API: Sending linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
                     currentBuyerId, targetBuyerId);
 
                 // Validate input
@@ -55,7 +55,7 @@ namespace Server.Controllers
 
                 if (currentBuyerId == targetBuyerId)
                 {
-                    return BadRequest("A buyer cannot link to themselves");
+                    return BadRequest("A buyer cannot send a request to themselves");
                 }
 
                 // Check if buyers exist
@@ -72,43 +72,77 @@ namespace Server.Controllers
                     return BadRequest($"Target buyer {targetBuyerId} not found");
                 }
 
-                // Check if already linked
-                var alreadyLinked = await _buyerLinkageRepository.AreBuyersLinkedAsync(currentBuyerId, targetBuyerId);
-                if (alreadyLinked)
-                {
-                    _logger.LogInformation("Buyers {CurrentBuyerId} and {TargetBuyerId} are already linked", 
-                        currentBuyerId, targetBuyerId);
-                    return Ok(true); // Already linked is considered success
-                }
+                // Create the linkage request
+                await _buyerLinkageRepository.CreateLinkageRequestAsync(currentBuyerId, targetBuyerId);
 
-                // Create the linkage
-                await _buyerLinkageRepository.CreateLinkageAsync(currentBuyerId, targetBuyerId);
-
-                _logger.LogInformation("Successfully linked buyer {CurrentBuyerId} with buyer {TargetBuyerId}", 
+                _logger.LogInformation("Successfully sent linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
                     currentBuyerId, targetBuyerId);
 
                 return Ok(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error linking buyers {CurrentBuyerId} and {TargetBuyerId}", 
+                _logger.LogError(ex, "API: Error sending linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
                     currentBuyerId, targetBuyerId);
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to link buyers: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to send linkage request: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Unlinks two buyers
+        /// Accepts a pending linkage request
         /// </summary>
-        /// <param name="currentBuyerId">Current buyer's ID</param>
-        /// <param name="targetBuyerId">Target buyer's ID to unlink from</param>
-        /// <returns>True if unlinking was successful</returns>
-        [HttpPost("unlink")]
-        public async Task<ActionResult<bool>> UnlinkBuyers([FromQuery] int currentBuyerId, [FromQuery] int targetBuyerId)
+        /// <param name="currentBuyerId">Current buyer's ID (the one accepting)</param>
+        /// <param name="requestingBuyerId">Requesting buyer's ID (the one who sent the request)</param>
+        /// <returns>True if request was accepted successfully</returns>
+        [HttpPost("acceptrequest")]
+        public async Task<ActionResult<bool>> AcceptLinkageRequest([FromQuery] int currentBuyerId, [FromQuery] int requestingBuyerId)
         {
             try
             {
-                _logger.LogInformation("API: Unlinking buyer {CurrentBuyerId} from buyer {TargetBuyerId}", 
+                _logger.LogInformation("API: Buyer {CurrentBuyerId} accepting linkage request from buyer {RequestingBuyerId}", 
+                    currentBuyerId, requestingBuyerId);
+
+                // Validate input
+                if (currentBuyerId <= 0 || requestingBuyerId <= 0)
+                {
+                    return BadRequest("Valid buyer IDs are required");
+                }
+
+                if (currentBuyerId == requestingBuyerId)
+                {
+                    return BadRequest("A buyer cannot accept a request from themselves");
+                }
+
+                var result = await _buyerLinkageRepository.ApproveLinkageRequestAsync(requestingBuyerId, currentBuyerId);
+
+                if (result)
+                {
+                    _logger.LogInformation("Successfully accepted linkage request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                        requestingBuyerId, currentBuyerId);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "API: Error accepting linkage request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                    requestingBuyerId, currentBuyerId);
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to accept linkage request: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Removes a linkage or rejects/cancels a request
+        /// </summary>
+        /// <param name="currentBuyerId">Current buyer's ID</param>
+        /// <param name="targetBuyerId">Target buyer's ID</param>
+        /// <returns>True if removal was successful</returns>
+        [HttpPost("removelink")]
+        public async Task<ActionResult<bool>> RemoveLink([FromQuery] int currentBuyerId, [FromQuery] int targetBuyerId)
+        {
+            try
+            {
+                _logger.LogInformation("API: Removing link/request between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
                     currentBuyerId, targetBuyerId);
 
                 // Validate input
@@ -119,19 +153,14 @@ namespace Server.Controllers
 
                 if (currentBuyerId == targetBuyerId)
                 {
-                    return BadRequest("A buyer cannot unlink from themselves");
+                    return BadRequest("A buyer cannot remove a link with themselves");
                 }
 
                 var result = await _buyerLinkageRepository.RemoveLinkageAsync(currentBuyerId, targetBuyerId);
 
                 if (result)
                 {
-                    _logger.LogInformation("Successfully unlinked buyer {CurrentBuyerId} from buyer {TargetBuyerId}", 
-                        currentBuyerId, targetBuyerId);
-                }
-                else
-                {
-                    _logger.LogInformation("No linkage found between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
+                    _logger.LogInformation("Successfully removed link/request between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
                         currentBuyerId, targetBuyerId);
                 }
 
@@ -139,10 +168,36 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error unlinking buyers {CurrentBuyerId} and {TargetBuyerId}", 
+                _logger.LogError(ex, "API: Error removing link/request between buyers {CurrentBuyerId} and {TargetBuyerId}", 
                     currentBuyerId, targetBuyerId);
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to unlink buyers: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to remove link/request: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Links two buyers together (DEPRECATED - use sendrequest instead)
+        /// </summary>
+        /// <param name="currentBuyerId">Current buyer's ID</param>
+        /// <param name="targetBuyerId">Target buyer's ID to link with</param>
+        /// <returns>True if linking was successful</returns>
+        [HttpPost("link")]
+        public async Task<ActionResult<bool>> LinkBuyers([FromQuery] int currentBuyerId, [FromQuery] int targetBuyerId)
+        {
+            // Redirect to the new request-based system for backward compatibility
+            return await SendLinkageRequest(currentBuyerId, targetBuyerId);
+        }
+
+        /// <summary>
+        /// Unlinks two buyers (DEPRECATED - use removelink instead)
+        /// </summary>
+        /// <param name="currentBuyerId">Current buyer's ID</param>
+        /// <param name="targetBuyerId">Target buyer's ID to unlink from</param>
+        /// <returns>True if unlinking was successful</returns>
+        [HttpPost("unlink")]
+        public async Task<ActionResult<bool>> UnlinkBuyers([FromQuery] int currentBuyerId, [FromQuery] int targetBuyerId)
+        {
+            // Redirect to the new remove link system for backward compatibility
+            return await RemoveLink(currentBuyerId, targetBuyerId);
         }
 
         /// <summary>
@@ -177,9 +232,9 @@ namespace Server.Controllers
         /// </summary>
         /// <param name="currentBuyerId">Current buyer's ID</param>
         /// <param name="targetBuyerId">Target buyer's ID</param>
-        /// <returns>Linkage information</returns>
+        /// <returns>Linkage status as enum value</returns>
         [HttpGet("status")]
-        public async Task<ActionResult<BuyerLinkageInfo>> GetLinkageStatus([FromQuery] int currentBuyerId, [FromQuery] int targetBuyerId)
+        public async Task<ActionResult<BuyerLinkageStatus>> GetLinkageStatus([FromQuery] int currentBuyerId, [FromQuery] int targetBuyerId)
         {
             try
             {
@@ -188,23 +243,8 @@ namespace Server.Controllers
                     return BadRequest("Valid buyer IDs are required");
                 }
 
-                var linkageInfo = new BuyerLinkageInfo
-                {
-                    CanManageLink = currentBuyerId != targetBuyerId
-                };
-
-                if (currentBuyerId == targetBuyerId)
-                {
-                    // Viewing own profile - no linking allowed
-                    linkageInfo.IsLinked = false;
-                    return Ok(linkageInfo);
-                }
-
-                var linkage = await _buyerLinkageRepository.GetLinkageAsync(currentBuyerId, targetBuyerId);
-                linkageInfo.IsLinked = linkage != null;
-                linkageInfo.LinkedDate = linkage?.LinkedDate;
-
-                return Ok(linkageInfo);
+                var status = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
+                return Ok(status);
             }
             catch (Exception ex)
             {

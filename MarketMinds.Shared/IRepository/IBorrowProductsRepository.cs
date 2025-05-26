@@ -11,6 +11,20 @@ namespace MarketMinds.Shared.IRepository
         List<BorrowProduct> GetProducts();
 
         /// <summary>
+        /// Get borrow products with pagination support
+        /// </summary>
+        /// <param name="offset">The number of products to skip (0 for first page)</param>
+        /// <param name="count">The number of products to return (0 for all products)</param>
+        /// <returns>List of borrow products for the specified page</returns>
+        List<BorrowProduct> GetProducts(int offset, int count);
+
+        /// <summary>
+        /// Get the total count of borrow products
+        /// </summary>
+        /// <returns>The total number of borrow products</returns>
+        int GetProductCount();
+
+        /// <summary>
         /// Delete a borrow product
         /// </summary>
         /// <param name="product">The product to delete</param>

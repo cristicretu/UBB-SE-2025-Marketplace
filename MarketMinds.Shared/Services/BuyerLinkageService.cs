@@ -31,16 +31,16 @@ namespace MarketMinds.Server.Services
         }
 
         /// <summary>
-        /// Links two buyers together
+        /// Creates a linkage request between two buyers (pending approval)
         /// </summary>
         /// <param name="currentBuyerId">Current buyer's ID</param>
         /// <param name="targetBuyerId">Target buyer's ID to link with</param>
-        /// <returns>True if linking was successful, false otherwise</returns>
-        public async Task<bool> LinkBuyersAsync(int currentBuyerId, int targetBuyerId)
+        /// <returns>True if linkage request was created successfully, false otherwise</returns>
+        public async Task<bool> CreateLinkageRequestAsync(int currentBuyerId, int targetBuyerId)
         {
             try
             {
-                _logger.LogInformation("Attempting to link buyer {CurrentBuyerId} with buyer {TargetBuyerId}", 
+                _logger.LogInformation("Creating linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
                     currentBuyerId, targetBuyerId);
 
                 if (currentBuyerId == targetBuyerId)
@@ -65,33 +65,174 @@ namespace MarketMinds.Server.Services
                     return false;
                 }
 
-                // Check if already linked
-                var alreadyLinked = await _buyerLinkageRepository.AreBuyersLinkedAsync(currentBuyerId, targetBuyerId);
-                if (alreadyLinked)
+                // Check current status
+                var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
+                if (currentStatus != BuyerLinkageStatus.None)
                 {
-                    _logger.LogInformation("Buyers {CurrentBuyerId} and {TargetBuyerId} are already linked", 
-                        currentBuyerId, targetBuyerId);
-                    return true; // Already linked is considered success
+                    _logger.LogInformation("Linkage already exists between buyers {CurrentBuyerId} and {TargetBuyerId} with status {Status}", 
+                        currentBuyerId, targetBuyerId, currentStatus);
+                    return currentStatus == BuyerLinkageStatus.Linked; // Return true if already linked
                 }
 
-                // Create the linkage
-                await _buyerLinkageRepository.CreateLinkageAsync(currentBuyerId, targetBuyerId);
+                // Create the pending linkage request
+                await _buyerLinkageRepository.CreateLinkageRequestAsync(currentBuyerId, targetBuyerId);
 
-                _logger.LogInformation("Successfully linked buyer {CurrentBuyerId} with buyer {TargetBuyerId}", 
+                _logger.LogInformation("Successfully created linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
                     currentBuyerId, targetBuyerId);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error linking buyers {CurrentBuyerId} and {TargetBuyerId}", 
+                _logger.LogError(ex, "Error creating linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
                     currentBuyerId, targetBuyerId);
                 return false;
             }
         }
 
         /// <summary>
-        /// Unlinks two buyers
+        /// Accepts a pending linkage request
+        /// </summary>
+        /// <param name="currentBuyerId">Current buyer's ID (the one accepting)</param>
+        /// <param name="requestingBuyerId">Requesting buyer's ID (the one who sent the request)</param>
+        /// <returns>True if request was accepted successfully, false otherwise</returns>
+        public async Task<bool> AcceptLinkageRequestAsync(int currentBuyerId, int requestingBuyerId)
+        {
+            try
+            {
+                _logger.LogInformation("Buyer {CurrentBuyerId} accepting linkage request from buyer {RequestingBuyerId}", 
+                    currentBuyerId, requestingBuyerId);
+
+                if (currentBuyerId == requestingBuyerId)
+                {
+                    _logger.LogWarning("Buyer {BuyerId} attempted to accept request from themselves", currentBuyerId);
+                    return false;
+                }
+
+                // Verify the request exists and is pending
+                var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, requestingBuyerId);
+                if (currentStatus != BuyerLinkageStatus.PendingReceived)
+                {
+                    _logger.LogWarning("No pending request found from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}. Current status: {Status}", 
+                        requestingBuyerId, currentBuyerId, currentStatus);
+                    return false;
+                }
+
+                // Approve the linkage request
+                var result = await _buyerLinkageRepository.ApproveLinkageRequestAsync(requestingBuyerId, currentBuyerId);
+
+                if (result)
+                {
+                    _logger.LogInformation("Successfully accepted linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}", 
+                        requestingBuyerId, currentBuyerId);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error accepting linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}", 
+                    requestingBuyerId, currentBuyerId);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Rejects a pending linkage request
+        /// </summary>
+        /// <param name="currentBuyerId">Current buyer's ID (the one rejecting)</param>
+        /// <param name="requestingBuyerId">Requesting buyer's ID (the one who sent the request)</param>
+        /// <returns>True if request was rejected successfully, false otherwise</returns>
+        public async Task<bool> RejectLinkageRequestAsync(int currentBuyerId, int requestingBuyerId)
+        {
+            try
+            {
+                _logger.LogInformation("Buyer {CurrentBuyerId} rejecting linkage request from buyer {RequestingBuyerId}", 
+                    currentBuyerId, requestingBuyerId);
+
+                if (currentBuyerId == requestingBuyerId)
+                {
+                    _logger.LogWarning("Buyer {BuyerId} attempted to reject request from themselves", currentBuyerId);
+                    return false;
+                }
+
+                // Verify the request exists and is pending
+                var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, requestingBuyerId);
+                if (currentStatus != BuyerLinkageStatus.PendingReceived)
+                {
+                    _logger.LogWarning("No pending request found from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}. Current status: {Status}", 
+                        requestingBuyerId, currentBuyerId, currentStatus);
+                    return false;
+                }
+
+                // Remove the linkage request
+                var result = await _buyerLinkageRepository.RemoveLinkageAsync(requestingBuyerId, currentBuyerId);
+
+                if (result)
+                {
+                    _logger.LogInformation("Successfully rejected linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}", 
+                        requestingBuyerId, currentBuyerId);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rejecting linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}", 
+                    requestingBuyerId, currentBuyerId);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Cancels a pending linkage request that the current user sent
+        /// </summary>
+        /// <param name="currentBuyerId">Current buyer's ID (the one who sent the request)</param>
+        /// <param name="targetBuyerId">Target buyer's ID (the one who received the request)</param>
+        /// <returns>True if request was cancelled successfully, false otherwise</returns>
+        public async Task<bool> CancelLinkageRequestAsync(int currentBuyerId, int targetBuyerId)
+        {
+            try
+            {
+                _logger.LogInformation("Buyer {CurrentBuyerId} cancelling linkage request to buyer {TargetBuyerId}", 
+                    currentBuyerId, targetBuyerId);
+
+                if (currentBuyerId == targetBuyerId)
+                {
+                    _logger.LogWarning("Buyer {BuyerId} attempted to cancel request to themselves", currentBuyerId);
+                    return false;
+                }
+
+                // Verify the request exists and was sent by current user
+                var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
+                if (currentStatus != BuyerLinkageStatus.PendingSent)
+                {
+                    _logger.LogWarning("No pending request found from buyer {CurrentBuyerId} to buyer {TargetBuyerId}. Current status: {Status}", 
+                        currentBuyerId, targetBuyerId, currentStatus);
+                    return false;
+                }
+
+                // Remove the linkage request
+                var result = await _buyerLinkageRepository.RemoveLinkageAsync(currentBuyerId, targetBuyerId);
+
+                if (result)
+                {
+                    _logger.LogInformation("Successfully cancelled linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                        currentBuyerId, targetBuyerId);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cancelling linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                    currentBuyerId, targetBuyerId);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Unlinks two buyers (removes an existing approved linkage)
         /// </summary>
         /// <param name="currentBuyerId">Current buyer's ID</param>
         /// <param name="targetBuyerId">Target buyer's ID to unlink from</param>
@@ -106,6 +247,15 @@ namespace MarketMinds.Server.Services
                 if (currentBuyerId == targetBuyerId)
                 {
                     _logger.LogWarning("Buyer {BuyerId} attempted to unlink from themselves", currentBuyerId);
+                    return false;
+                }
+
+                // Verify they are actually linked
+                var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
+                if (currentStatus != BuyerLinkageStatus.Linked)
+                {
+                    _logger.LogWarning("Buyers {CurrentBuyerId} and {TargetBuyerId} are not linked. Current status: {Status}", 
+                        currentBuyerId, targetBuyerId, currentStatus);
                     return false;
                 }
 
@@ -133,7 +283,7 @@ namespace MarketMinds.Server.Services
         }
 
         /// <summary>
-        /// Checks if two buyers are linked
+        /// Checks if two buyers are linked (approved linkage)
         /// </summary>
         /// <param name="buyerId1">First buyer ID</param>
         /// <param name="buyerId2">Second buyer ID</param>
@@ -170,13 +320,20 @@ namespace MarketMinds.Server.Services
                 if (currentBuyerId == targetBuyerId)
                 {
                     // Viewing own profile - no linking allowed
-                    linkageInfo.IsLinked = false;
+                    linkageInfo.Status = BuyerLinkageStatus.None;
                     return linkageInfo;
                 }
 
-                var linkage = await _buyerLinkageRepository.GetLinkageAsync(currentBuyerId, targetBuyerId);
-                linkageInfo.IsLinked = linkage != null;
-                linkageInfo.LinkedDate = linkage?.LinkedDate;
+                // Get the current status from repository
+                var status = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
+                linkageInfo.Status = status;
+
+                // If linked, get the linkage date
+                if (status == BuyerLinkageStatus.Linked)
+                {
+                    var linkage = await _buyerLinkageRepository.GetLinkageAsync(currentBuyerId, targetBuyerId);
+                    linkageInfo.LinkedDate = linkage?.LinkedDate;
+                }
 
                 return linkageInfo;
             }
@@ -187,14 +344,14 @@ namespace MarketMinds.Server.Services
 
                 return new BuyerLinkageInfo
                 {
-                    IsLinked = false,
+                    Status = BuyerLinkageStatus.None,
                     CanManageLink = false
                 };
             }
         }
 
         /// <summary>
-        /// Gets all linked buyers for a specific buyer
+        /// Gets all linked buyers for a specific buyer (approved linkages only)
         /// </summary>
         /// <param name="buyerId">Buyer ID</param>
         /// <returns>List of linked buyer information</returns>
@@ -224,7 +381,7 @@ namespace MarketMinds.Server.Services
         }
 
         /// <summary>
-        /// Gets the count of linked buyers for a specific buyer
+        /// Gets the count of linked buyers for a specific buyer (approved linkages only)
         /// </summary>
         /// <param name="buyerId">Buyer ID</param>
         /// <returns>Number of linked buyers</returns>

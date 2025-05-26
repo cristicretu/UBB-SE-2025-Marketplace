@@ -451,12 +451,106 @@
                 }
             </div>
         </div>
+        
+        <!-- Pagination Controls -->
+        @if (ViewBag.TotalProducts != null && (int)ViewBag.TotalProducts > 0)
+        {
+            <div id="paginationContainer" class="mt-8 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <!-- Pagination Info (left side) -->
+                    <div id="paginationInfo" class="text-sm text-gray-600 order-1 sm:order-none">
+                        @{
+                            int currentOffset = ViewBag.CurrentOffset ?? 0;
+                            int currentCount = ViewBag.CurrentCount ?? 12;
+                            int totalProducts = ViewBag.TotalProducts ?? 0;
+                            int startItem = totalProducts > 0 ? currentOffset + 1 : 0;
+                            int endItem = Math.Min(currentOffset + currentCount, totalProducts);
+                        }
+                        Showing @startItem to @endItem of @totalProducts products
+                    </div>
+                    
+                    <!-- Pagination Navigation (center) -->
+                    <div id="paginationNav" class="flex items-center gap-2 order-2 sm:order-none mx-auto">
+                        @{
+                            int currentPage = currentCount > 0 ? (currentOffset / currentCount) + 1 : 1;
+                            int totalPages = currentCount > 0 ? (int)Math.Ceiling((double)totalProducts / currentCount) : 1;
+                            string currentTab = ViewBag.CurrentTab ?? "buy";
+                        }
+                        
+                        <!-- Previous Button -->
+                        @if (currentPage > 1)
+                        {
+                            <a href="@Url.Action("Index", new { offset = Math.Max(0, currentOffset - currentCount), count = currentCount, tab = currentTab })" 
+                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                Previous
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">
+                                Previous
+                            </span>
+                        }
+                        
+                        <!-- Page Numbers -->
+                        @for (int pageNum = 1; pageNum <= Math.Min(totalPages, 5); pageNum++)
+                        {
+                            int pageOffset = (pageNum - 1) * currentCount;
+                            if (pageNum == currentPage)
+                            {
+                                <span class="px-3 py-2 text-sm font-medium text-white bg-primary border border-primary rounded-md">
+                                    @pageNum
+                                </span>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Index", new { offset = pageOffset, count = currentCount, tab = currentTab })" 
+                                   class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                    @pageNum
+                                </a>
+                            }
+                        }
+                        
+                        @if (totalPages > 5)
+                        {
+                            <span class="px-2 py-2 text-sm text-gray-500">...</span>
+                            int lastPageOffset = (totalPages - 1) * currentCount;
+                            <a href="@Url.Action("Index", new { offset = lastPageOffset, count = currentCount, tab = currentTab })" 
+                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                @totalPages
+                            </a>
+                        }
+                        
+                        <!-- Next Button -->
+                        @if (currentPage < totalPages)
+                        {
+                            <a href="@Url.Action("Index", new { offset = currentOffset + currentCount, count = currentCount, tab = currentTab })" 
+                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                Next
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">
+                                Next
+                            </span>
+                        }
+                    </div>
+                    
+                    <!-- Empty space for balance (right side) -->
+                    <div class="hidden sm:block w-32"></div>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Get current tab from ViewBag
+            const currentTab = '@ViewBag.CurrentTab' || 'buy';
+            
             // Initialize price range slider immediately
             const priceRange = document.getElementById('priceRange');
             const currentPriceValue = document.getElementById('currentPriceValue');
@@ -491,38 +585,53 @@
             const tabButtons = document.querySelectorAll('.tab-btn');
             const tabContents = document.querySelectorAll('.tab-content');
             
-            tabButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Deactivate all tabs
-                    tabButtons.forEach(btn => {
-                        btn.classList.remove('active', 'text-white');
-                        btn.classList.add('text-gray-700', 'bg-white', 'border-gray-300');
-                        btn.classList.remove('bg-primary', 'bg-purple-600', 'bg-green-600', 'border-primary', 'border-purple-600', 'border-green-600');
-                    });
+            // Set initial active tab based on current tab parameter
+            function setActiveTab(tabName) {
+                // Deactivate all tabs
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active', 'text-white');
+                    btn.classList.add('text-gray-700', 'bg-white', 'border-gray-300');
+                    btn.classList.remove('bg-primary', 'bg-purple-600', 'bg-green-600', 'border-primary', 'border-purple-600', 'border-green-600');
+                });
+                
+                // Hide all content
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                // Activate the specified tab
+                const targetTab = document.getElementById(tabName + 'Tab');
+                if (targetTab) {
+                    targetTab.classList.add('active', 'text-white');
+                    targetTab.classList.remove('text-gray-700', 'bg-white', 'border-gray-300');
                     
-                    // Hide all content
-                    tabContents.forEach(content => {
-                        content.classList.add('hidden');
-                    });
-                    
-                    // Activate clicked tab with appropriate color
-                    this.classList.add('active', 'text-white');
-                    this.classList.remove('text-gray-700', 'bg-white', 'border-gray-300');
-                    
-                    if (this.id === 'buyTab') {
-                        this.classList.add('bg-primary', 'border-primary');
-                    } else if (this.id === 'auctionTab') {
-                        this.classList.add('bg-purple-600', 'border-purple-600');
-                    } else if (this.id === 'borrowTab') {
-                        this.classList.add('bg-green-600', 'border-green-600');
+                    if (tabName === 'buy') {
+                        targetTab.classList.add('bg-primary', 'border-primary');
+                    } else if (tabName === 'auction') {
+                        targetTab.classList.add('bg-purple-600', 'border-purple-600');
+                    } else if (tabName === 'borrow') {
+                        targetTab.classList.add('bg-green-600', 'border-green-600');
                     }
                     
                     // Show corresponding content
-                    const contentId = this.id.replace('Tab', 'Products');
-                    document.getElementById(contentId).classList.remove('hidden');
+                    const contentId = tabName + 'Products';
+                    const content = document.getElementById(contentId);
+                    if (content) {
+                        content.classList.remove('hidden');
+                    }
+                }
+            }
+            
+            // Set initial tab
+            setActiveTab(currentTab);
+            
+            // Tab switching with server-side navigation
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabName = this.id.replace('Tab', '');
                     
-                    // Apply filters to the newly shown tab
-                    applyFilters();
+                    // Navigate to the new tab with server-side pagination (reset to page 1)
+                    window.location.href = '@Url.Action("Index")?offset=0&count=12&tab=' + tabName;
                 });
             });
             
@@ -552,7 +661,7 @@
                 window.addEventListener('resize', handleResize);
             }
             
-            // Filter functionality
+            // Filter functionality (client-side filtering of current page results)
             const searchInput = document.getElementById('searchInput');
             const categoryPills = document.querySelectorAll('.category-pill');
             const conditionPills = document.querySelectorAll('.condition-pill');
@@ -628,113 +737,95 @@
                 });
             }
             
-            // Apply all filters
+            // Apply client-side filters to current page results only
             function applyFilters() {
                 try {
                     const activeTab = document.querySelector('.tab-btn.active');
                     if (!activeTab) return;
                     
-                    const activeGridId = activeTab.id.replace('Tab', 'ProductsGrid');
-                    const activeGrid = document.getElementById(activeGridId);
-                    if (!activeGrid) return;
+                    const tabName = activeTab.id.replace('Tab', '');
+                    const gridId = tabName + 'ProductsGrid';
+                    const grid = document.getElementById(gridId);
+                    if (!grid) return;
                     
-                    const productItems = document.querySelectorAll(`#${activeGridId} .product-item`);
-                    if (!productItems || productItems.length === 0) return;
+                    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+                    const maxPrice = priceRange ? parseFloat(priceRange.value) : Infinity;
                     
-                    const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
-                    const maxPriceFilter = priceRange ? parseFloat(priceRange.value) : Number.MAX_SAFE_INTEGER;
-                    
-                    const selectedCategories = categoryPills ? Array.from(categoryPills)
+                    // Get selected categories
+                    const selectedCategories = Array.from(categoryPills)
                         .filter(pill => pill.classList.contains('bg-primary'))
-                        .map(pill => parseInt(pill.getAttribute('data-category-id') || '0')) : [];
+                        .map(pill => pill.getAttribute('data-category-id'));
                     
-                    const selectedConditions = conditionPills ? Array.from(conditionPills)
+                    // Get selected conditions
+                    const selectedConditions = Array.from(conditionPills)
                         .filter(pill => pill.classList.contains('bg-primary'))
-                        .map(pill => parseInt(pill.getAttribute('data-condition-id') || '0')) : [];
+                        .map(pill => pill.getAttribute('data-condition-id'));
                     
+                    // Filter products
+                    const products = grid.querySelectorAll('.product-item');
                     let visibleCount = 0;
+                    let hasActiveFilters = false;
                     
-                    productItems.forEach(item => {
-                        if (!item) return;
+                    // Check if any filters are active
+                    if (searchTerm || maxPrice < parseFloat(priceRange.max) || selectedCategories.length > 0 || selectedConditions.length > 0) {
+                        hasActiveFilters = true;
+                    }
+                    
+                    products.forEach(product => {
+                        const title = product.getAttribute('data-title') || '';
+                        const seller = product.getAttribute('data-seller') || '';
+                        const price = parseFloat(product.getAttribute('data-price')) || 0;
+                        const category = product.getAttribute('data-category') || '';
+                        const condition = product.getAttribute('data-condition') || '';
                         
-                        // Parse the price as a float to handle decimal values properly
-                        const price = parseFloat(item.dataset.price || '0');
-                        const categoryId = parseInt(item.dataset.category || '0');
-                        const conditionId = parseInt(item.dataset.condition || '0');
-                        const title = (item.dataset.title || '').toLowerCase();
-                        const seller = (item.dataset.seller || '').toLowerCase();
+                        let show = true;
                         
-                        // Check all filter conditions
-                        const matchesSearch = !searchValue || 
-                                             title.includes(searchValue) || 
-                                             seller.includes(searchValue);
+                        // Search filter
+                        if (searchTerm && !title.includes(searchTerm) && !seller.includes(searchTerm)) {
+                            show = false;
+                        }
                         
-                        // Clear logging to debug price filtering
-                        console.log(`Product: ${title}, Price: ${price}, Max Filter: ${maxPriceFilter}, Matches: ${price <= maxPriceFilter}`);
+                        // Price filter
+                        if (price > maxPrice) {
+                            show = false;
+                        }
                         
-                        const matchesPrice = price <= maxPriceFilter;
+                        // Category filter
+                        if (selectedCategories.length > 0 && !selectedCategories.includes(category)) {
+                            show = false;
+                        }
                         
-                        const matchesCategory = !selectedCategories.length || 
-                                             selectedCategories.includes(categoryId);
+                        // Condition filter
+                        if (selectedConditions.length > 0 && !selectedConditions.includes(condition)) {
+                            show = false;
+                        }
                         
-                        const matchesCondition = !selectedConditions.length || 
-                                              selectedConditions.includes(conditionId);
-                        
-                        // Show or hide based on filter match
-                        if (matchesSearch && matchesPrice && matchesCategory && matchesCondition) {
-                            item.classList.remove('hidden');
+                        if (show) {
+                            product.style.display = 'block';
                             visibleCount++;
                         } else {
-                            item.classList.add('hidden');
+                            product.style.display = 'none';
                         }
                     });
                     
-                    // Check if no products are visible
-                    if (visibleCount === 0) {
-                        let noResultsElement = activeGrid.querySelector('.no-results');
-                        
-                        if (!noResultsElement) {
-                            noResultsElement = document.createElement('div');
-                            noResultsElement.className = 'no-results col-span-full py-10 text-center text-gray-500';
-                            noResultsElement.innerHTML = '<i class="fas fa-search mb-3 text-3xl"></i><p>No products match your filters.</p>';
-                            activeGrid.appendChild(noResultsElement);
-                        }
-                    } else {
-                        const noResultsElement = activeGrid.querySelector('.no-results');
-                        if (noResultsElement) {
-                            noResultsElement.remove();
+                    // Update clear filters button state
+                    if (clearFiltersBtn) {
+                        if (hasActiveFilters) {
+                            clearFiltersBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            clearFiltersBtn.disabled = false;
+                        } else {
+                            clearFiltersBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                            clearFiltersBtn.disabled = true;
                         }
                     }
                     
-                    // Update clear filters button visibility
-                    updateClearFiltersVisibility();
                 } catch (error) {
-                    console.error("Error applying filters:", error);
-                }
-            }
-            
-            // Update clear filters button visibility
-            function updateClearFiltersVisibility() {
-                if (!clearFiltersBtn) return;
-                
-                const hasActiveSearch = searchInput && searchInput.value.trim().length > 0;
-                const hasActivePrice = priceRange && parseInt(priceRange.value) < parseInt(priceRange.max);
-                const hasActiveCategories = categoryPills && Array.from(categoryPills).some(pill => pill.classList.contains('bg-primary'));
-                const hasActiveConditions = conditionPills && Array.from(conditionPills).some(pill => pill.classList.contains('bg-primary'));
-                
-                if (hasActiveSearch || hasActivePrice || hasActiveCategories || hasActiveConditions) {
-                    clearFiltersBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    clearFiltersBtn.disabled = false;
-                } else {
-                    clearFiltersBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    clearFiltersBtn.disabled = true;
+                    console.error('Error applying filters:', error);
                 }
             }
             
             // Initial filter application
-            setTimeout(function() {
-                applyFilters();
-            }, 100);
+            applyFilters();
         });
     </script>
 }

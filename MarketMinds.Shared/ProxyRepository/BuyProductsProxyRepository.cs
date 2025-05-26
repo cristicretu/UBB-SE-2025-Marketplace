@@ -36,6 +36,32 @@ namespace MarketMinds.Shared.ProxyRepository
             return response.Content.ReadAsStringAsync().Result;
         }
 
+        public string GetProducts(int offset, int count)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            string url = $"buyproducts?offset={offset}&count={count}";
+            var response = httpClient.GetAsync(url).Result;
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadAsStringAsync().Result;
+        }
+
+        public int GetProductCount()
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            var response = httpClient.GetAsync("buyproducts/count").Result;
+            response.EnsureSuccessStatusCode();
+            var countString = response.Content.ReadAsStringAsync().Result;
+            return int.Parse(countString);
+        }
+
         public string CreateListing(object productToSend)
         {
             var response = httpClient.PostAsJsonAsync("buyproducts", productToSend).Result;

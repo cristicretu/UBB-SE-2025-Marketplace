@@ -34,6 +34,11 @@ namespace WebMarketplace.Models
         public string Email { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the username
+        /// </summary>
+        public string Username { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the phone number
         /// </summary>
         [Required(ErrorMessage = "Phone number is required")]
@@ -142,6 +147,11 @@ namespace WebMarketplace.Models
         /// Gets or sets the email
         /// </summary>
         public string Email { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the username
+        /// </summary>
+        public string Username { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the badge

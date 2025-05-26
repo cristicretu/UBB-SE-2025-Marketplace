@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Services;
 using System.Diagnostics;
+using System;
+using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace WebMarketplace.Controllers
 {
-    [ApiController]
-    [Route("Notifications")]
     public class NotificationController : Controller
     {
         private readonly INotificationContentService _notificationService;
@@ -15,41 +17,22 @@ namespace WebMarketplace.Controllers
             _notificationService = notificationService;
         }
 
-
         /// <summary>
-        /// Fetches notifications for the user.
+        /// Returns the notifications dropdown partial view for the header
         /// </summary>
-        /// <returns>
-        /// JSON data if the request is an AJAX request; otherwise, a partial view.
-        /// </returns>
         [HttpGet]
-        public async Task<IActionResult> Notifications()
+        public async Task<IActionResult> Index()
         {
-            int userId = UserSession.CurrentUserId ?? 0; // Replace with actual user ID logic
-            var notifications = await _notificationService.GetNotificationsForUser(userId);
-            Debug.WriteLine($"Notifications count: {notifications.Count}");
-
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            if (!UserSession.CurrentUserId.HasValue)
             {
-                // Return JSON for fetch()
-                var jsonResult = notifications.Select(n => new
-                {
-                    content = n.Content,
-                    timestamp = n.Timestamp,
-                    isRead = n.IsRead
-                });
-
-                return Json(jsonResult);
+                return PartialView("_Notifications", new List<MarketMinds.Shared.Models.Notification>());
             }
 
-            // Otherwise return the partial view for normal requests
-            var unreadCount = notifications.Count(n => !n.IsRead);
-            var unreadCountText = _notificationService.GetUnreadNotificationsCountText(unreadCount);
-            ViewData["UnreadCountText"] = unreadCountText;
-
-            return PartialView("_NotificationsButton", notifications);
+            int userId = UserSession.CurrentUserId.Value;
+            var notifications = await _notificationService.GetNotificationsForUser(userId);
+            
+            return PartialView("_Notifications", notifications);
         }
-
 
         /// <summary>
         /// Fetches the count of unread notifications for the user.
@@ -60,41 +43,106 @@ namespace WebMarketplace.Controllers
         [HttpGet("Count")]
         public async Task<IActionResult> GetUnreadCount()
         {
-            int userId = UserSession.CurrentUserId ?? 0; // Replace with actual user logic
-            var notifications = await _notificationService.GetNotificationsForUser(userId);
-            var unreadCount = notifications.Count(n => !n.IsRead);
+            if (!UserSession.CurrentUserId.HasValue)
+            {
+                return Json(new { count = 0 });
+            }
+
+            int userId = UserSession.CurrentUserId.Value;
+            var unreadNotifications = await _notificationService.GetUnreadNotificationsForUser(userId);
+            var unreadCount = unreadNotifications.Count;
             return Json(new { count = unreadCount });
         }
-
 
         /// <summary>
         /// Marks all notifications as read for the user.
         /// </summary>
         /// <returns>
-        /// Partial view with updated notifications.
+        /// Redirect back to the referring page.
         /// </returns>
-        [HttpPost("MarkAllAsRead")]
+        [HttpPost]
         public async Task<IActionResult> MarkAllAsRead()
         {
-            int userId = UserSession.CurrentUserId ?? 0; // Replace with your actual user identity method
-            var notifications = await _notificationService.GetNotificationsForUser(userId);
-
-            foreach (var notification in notifications)
+            try
             {
-                if (!notification.IsRead)
+                if (!UserSession.CurrentUserId.HasValue)
                 {
-                    _notificationService.MarkAllAsRead(notification.NotificationID);
+                    TempData["ErrorMessage"] = "User not authenticated";
+                    return RedirectToReferrer();
                 }
+
+                int userId = UserSession.CurrentUserId.Value;
+                
+                // Call the service with the correct parameter (userId)
+                await _notificationService.MarkAllAsRead(userId);
+
+                return RedirectToReferrer();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Debug.WriteLine($"Error marking notifications as read: {ex.Message}");
+                TempData["ErrorMessage"] = "Error marking notifications as read";
+                return RedirectToReferrer();
+            }
+        }
+
+        /// <summary>
+        /// Clears all notifications for the current user.
+        /// </summary>
+        /// <returns>Redirect back to the referring page.</returns>
+        [HttpPost]
+        public async Task<IActionResult> ClearAll()
+        {
+            try
+            {
+                if (!UserSession.CurrentUserId.HasValue)
+                {
+                    TempData["ErrorMessage"] = "User not authenticated";
+                    return RedirectToReferrer();
+                }
+
+                int userId = UserSession.CurrentUserId.Value;
+                await _notificationService.ClearAllNotifications(userId);
+                
+                return RedirectToReferrer();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error clearing notifications: {ex.Message}");
+                TempData["ErrorMessage"] = "Error clearing notifications";
+                return RedirectToReferrer();
+            }
+        }
+
+        /// <summary>
+        /// Shows all notifications page
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> All()
+        {
+            if (!UserSession.CurrentUserId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
             }
 
-            // Return the updated partial view
-            notifications = await _notificationService.GetNotificationsForUser(userId);
-            var unreadCount = notifications.Count(n => !n.IsRead);
-            var unreadCountText = _notificationService.GetUnreadNotificationsCountText(unreadCount);
+            int userId = UserSession.CurrentUserId.Value;
+            var notifications = await _notificationService.GetNotificationsForUser(userId);
+            
+            return View(notifications);
+        }
 
-            ViewData["UnreadCountText"] = unreadCountText;
-            return PartialView("_NotificationListPartial", notifications);
+        /// <summary>
+        /// Helper method to redirect back to the referring page or Home if no referrer
+        /// </summary>
+        private IActionResult RedirectToReferrer()
+        {
+            string referrer = Request.Headers["Referer"].ToString();
+            if (!string.IsNullOrEmpty(referrer) && Uri.IsWellFormedUriString(referrer, UriKind.Absolute))
+            {
+                return Redirect(referrer);
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
-
 }

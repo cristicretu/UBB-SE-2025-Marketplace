@@ -74,13 +74,13 @@ namespace MarketMinds.Web.Controllers
             {
                 _logger.LogInformation($"Fetching auction product with ID {id}");
                 var auctionProduct = await _auctionProductService.GetAuctionProductByIdAsync(id);
-                
+
                 if (auctionProduct == null || auctionProduct.Id == 0)
                 {
                     _logger.LogWarning($"Auction product with ID {id} not found");
                     return NotFound();
                 }
-                
+
                 // Log condition information
                 _logger.LogInformation($"WEB: Details - ConditionId: {auctionProduct.ConditionId}");
                 if (auctionProduct.Condition != null)
@@ -91,7 +91,7 @@ namespace MarketMinds.Web.Controllers
                 {
                     _logger.LogWarning($"WEB: Details - Condition is NULL despite ConditionId={auctionProduct.ConditionId}");
                 }
-                
+
                 return View(auctionProduct);
             }
             catch (Exception ex)
@@ -135,7 +135,7 @@ namespace MarketMinds.Web.Controllers
                         return RedirectToAction("Login", "Account");
                     }
                 }
-                
+
                 // Validate the auction exists
                 var auction = await _auctionProductService.GetAuctionProductByIdAsync(id);
                 if (auction == null || auction.Id == 0)
@@ -144,9 +144,9 @@ namespace MarketMinds.Web.Controllers
                     TempData["ErrorMessage"] = "Auction not found.";
                     return RedirectToAction(nameof(Index));
                 }
-                
+
                 _logger.LogInformation($"Retrieved auction: ID={auction.Id}, CurrentPrice={auction.CurrentPrice}, EndTime={auction.EndTime}");
-                
+
                 // Validate bid is positive
                 if (bidAmount <= 0)
                 {
@@ -154,7 +154,7 @@ namespace MarketMinds.Web.Controllers
                     TempData["ErrorMessage"] = "Bid amount must be positive.";
                     return RedirectToAction(nameof(Details), new { id });
                 }
-                
+
                 // Check minimum bid
                 if (bidAmount <= auction.CurrentPrice)
                 {
@@ -162,7 +162,7 @@ namespace MarketMinds.Web.Controllers
                     TempData["ErrorMessage"] = $"Your bid must be higher than the current price (${auction.CurrentPrice}).";
                     return RedirectToAction(nameof(Details), new { id });
                 }
-                
+
                 // Check if auction ended
                 if (_auctionProductService.IsAuctionEnded(auction))
                 {
@@ -174,7 +174,7 @@ namespace MarketMinds.Web.Controllers
                 // Place the bid
                 _logger.LogInformation($"Calling PlaceBidAsync with auctionId={id}, userId={userId}, bidAmount={bidAmount}");
                 bool success = await _auctionProductService.PlaceBidAsync(id, userId, bidAmount);
-                
+
                 if (success)
                 {
                     _logger.LogInformation($"Bid successfully placed on auction {id}");
@@ -185,7 +185,7 @@ namespace MarketMinds.Web.Controllers
                     _logger.LogWarning($"Failed to place bid on auction {id}");
                     TempData["ErrorMessage"] = "Failed to place bid. It may be too low or the auction has ended.";
                 }
-                
+
                 return RedirectToAction(nameof(Details), new { id });
             }
             catch (Exception ex) when (ex.Message.Contains("permission") || ex.Message.Contains("buyer"))
@@ -229,7 +229,7 @@ namespace MarketMinds.Web.Controllers
                                 var tagTitle = tagId.Substring(4); // Remove "new_" prefix
                                 var productTagService = HttpContext.RequestServices.GetService<MarketMinds.Shared.Services.ProductTagService.IProductTagService>();
                                 var newTag = productTagService.CreateProductTag(tagTitle);
-                                
+
                                 // Add the tag to the product's tags (implementation depends on how AuctionProductService handles this)
                                 // This might need to be done after creating the product
                             }
@@ -241,18 +241,18 @@ namespace MarketMinds.Web.Controllers
                             }
                         }
                     }
-                    
+
                     // Process image URLs if provided
                     if (!string.IsNullOrEmpty(imageUrls))
                     {
                         var imageUrlList = imageUrls.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                         var imageUploadService = HttpContext.RequestServices.GetService<MarketMinds.Shared.Services.ImagineUploadService.IImageUploadService>();
                         var imagesList = imageUploadService.ParseImagesString(imageUrls);
-                        
+
                         // Set images to the product (implementation depends on how your service handles this)
                         // This might need to be done after creating the product
                     }
-                    
+
                     var result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
                     if (result)
                     {
@@ -265,14 +265,14 @@ namespace MarketMinds.Web.Controllers
                     ModelState.AddModelError(string.Empty, "An error occurred while creating the auction product");
                 }
             }
-            
+
             // If we got this far, something failed - redisplay form with proper selections
             var categoryService = HttpContext.RequestServices.GetService<MarketMinds.Shared.Services.ProductCategoryService.IProductCategoryService>();
             var conditionService = HttpContext.RequestServices.GetService<MarketMinds.Shared.Services.ProductConditionService.IProductConditionService>();
-            
+
             ViewBag.Categories = categoryService.GetAllProductCategories();
             ViewBag.Conditions = conditionService.GetAllProductConditions();
-            
+
             return View(auctionProduct);
         }
 
@@ -321,13 +321,13 @@ namespace MarketMinds.Web.Controllers
         public string GetTimeLeft(DateTime endTime)
         {
             var timeLeft = endTime - DateTime.Now;
-            
+
             if (timeLeft <= TimeSpan.Zero)
             {
                 return "Auction Ended";
             }
-            
+
             return $"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m";
         }
     }
-} 
+}

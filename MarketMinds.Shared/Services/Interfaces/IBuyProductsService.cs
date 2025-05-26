@@ -68,5 +68,25 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         /// <param name="decreaseAmount">Amount to decrease stock by</param>
         /// <returns>A task representing the asynchronous operation</returns>
         Task DecreaseProductStockAsync(int productId, int decreaseAmount);
+
+        /// <summary>
+        /// Gets all products (for backward compatibility).
+        /// </summary>
+        /// <returns>A list of all buy products.</returns>
+        List<BuyProduct> GetProducts();
+
+        /// <summary>
+        /// Gets products with pagination support.
+        /// </summary>
+        /// <param name="offset">The number of products to skip (0 for first page).</param>
+        /// <param name="count">The number of products to return (0 for all products).</param>
+        /// <returns>A list of buy products for the specified page.</returns>
+        List<BuyProduct> GetProducts(int offset, int count);
+
+        /// <summary>
+        /// Gets the total count of buy products.
+        /// </summary>
+        /// <returns>The total number of buy products.</returns>
+        int GetProductCount();
     }
 }

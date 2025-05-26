@@ -162,10 +162,50 @@ namespace WebMarketplace.Models
         public void SortProducts()
         {
             IsSortedByPrice = !IsSortedByPrice;
+            SortProductsWithDirection(IsSortedByPrice);
+        }
 
-            Products = IsSortedByPrice
-                ? Products.OrderBy(p => p.Price).ToList()
-                : Products.OrderByDescending(p => p.Price).ToList();
+        /// <summary>
+        /// Sorts the products by price in the specified direction.
+        /// </summary>
+        /// <param name="ascending">True for ascending order, false for descending order.</param>
+        public void SortProductsWithDirection(bool ascending)
+        {
+            if (ascending)
+            {
+                // Sort ascending by the appropriate price property for each product type
+                Products = Products.OrderBy(p => GetProductPrice(p)).ToList();
+            }
+            else
+            {
+                // Sort descending by the appropriate price property for each product type
+                Products = Products.OrderByDescending(p => GetProductPrice(p)).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets the appropriate price value for a product based on its type.
+        /// </summary>
+        /// <param name="product">The product to get the price for.</param>
+        /// <returns>The price value for sorting.</returns>
+        private decimal GetProductPrice(Product product)
+        {
+            if (product is MarketMinds.Shared.Models.BuyProduct buyProduct)
+            {
+                return (decimal)buyProduct.Price;
+            }
+            else if (product is MarketMinds.Shared.Models.AuctionProduct auctionProduct)
+            {
+                return (decimal)auctionProduct.CurrentPrice;
+            }
+            else if (product is MarketMinds.Shared.Models.BorrowProduct borrowProduct)
+            {
+                return (decimal)borrowProduct.DailyRate;
+            }
+            else
+            {
+                return (decimal)product.Price; // Fallback to base price
+            }
         }
 
         /// <summary>

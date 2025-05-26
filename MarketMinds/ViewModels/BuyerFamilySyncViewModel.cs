@@ -29,7 +29,7 @@ namespace MarketMinds.ViewModels
         private readonly IOnBuyerLinkageUpdatedCallback linkageUpdatedCallback = linkageUpdatedCallback;
         private readonly IBuyerLinkageService buyerLinkageService = buyerLinkageService;
         private List<IBuyerLinkageViewModel>? allItems;
-        private BuyerLinkageStatus status = BuyerLinkageStatus.Possible;
+        private BuyerLinkageStatus status = BuyerLinkageStatus.None;
 
         /// <summary>
         /// Event that is raised when a property value changes.
@@ -80,22 +80,22 @@ namespace MarketMinds.ViewModels
                 }
 
                 // Update the status based on the first pending linkage
-                var pendingSelf = this.allItems.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingSelf);
-                var pendingOther = this.allItems.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingOther);
+                var pendingSelf = this.allItems.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingSent);
+                var pendingOther = this.allItems.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingReceived);
 
                 if (pendingSelf != null)
                 {
-                    this.Status = BuyerLinkageStatus.PendingSelf;
+                    this.Status = BuyerLinkageStatus.PendingSent;
                     System.Diagnostics.Debug.WriteLine($"[LoadLinkages] Found pending self request, setting status to PendingSelf");
                 }
                 else if (pendingOther != null)
                 {
-                    this.Status = BuyerLinkageStatus.PendingOther;
+                    this.Status = BuyerLinkageStatus.PendingReceived;
                     System.Diagnostics.Debug.WriteLine($"[LoadLinkages] Found pending other request, setting status to PendingOther");
                 }
                 else
                 {
-                    this.Status = BuyerLinkageStatus.Possible;
+                    this.Status = BuyerLinkageStatus.None;
                     System.Diagnostics.Debug.WriteLine($"[LoadLinkages] No pending requests, setting status to Possible");
                 }
 
@@ -112,7 +112,7 @@ namespace MarketMinds.ViewModels
         /// <inheritdoc/>
         public async Task Approve()
         {
-            var pendingLinkage = this.allItems?.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingSelf);
+            var pendingLinkage = this.allItems?.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingSent);
             if (pendingLinkage != null)
             {
                 await pendingLinkage.Accept();
@@ -123,7 +123,7 @@ namespace MarketMinds.ViewModels
         /// <inheritdoc/>
         public async Task Reject()
         {
-            var pendingLinkage = this.allItems?.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingSelf);
+            var pendingLinkage = this.allItems?.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingSent);
             if (pendingLinkage != null)
             {
                 await pendingLinkage.Decline();
@@ -134,7 +134,7 @@ namespace MarketMinds.ViewModels
         /// <inheritdoc/>
         public async Task Cancel()
         {
-            var pendingLinkage = this.allItems?.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingOther);
+            var pendingLinkage = this.allItems?.FirstOrDefault(x => x.Status == BuyerLinkageStatus.PendingReceived);
             if (pendingLinkage != null)
             {
                 await pendingLinkage.Cancel();
@@ -184,7 +184,7 @@ namespace MarketMinds.ViewModels
                     {
                         // Buyer is linked - show as confirmed
                         System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Existing linkage for buyer {buyer.Id} ({buyer.FirstName} {buyer.LastName}): Confirmed");
-                        result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.Confirmed));
+                        result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.Linked));
                     }
                     else
                     {
@@ -194,14 +194,14 @@ namespace MarketMinds.ViewModels
                         if (linkageStatus.IsLinked)
                         {
                             // Already linked
-                            result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.Confirmed));
+                            result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.Linked));
                             System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] Buyer {buyer.Id} is linked, status: Confirmed");
                         }
                         else
                         {
                             // No linkage, possible
                             System.Diagnostics.Debug.WriteLine($"[LoadAllPossibleLinkages] No linkage for buyer {buyer.Id} ({buyer.FirstName} {buyer.LastName}), assigning status Possible");
-                            result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.Possible));
+                            result.Add(this.NewBuyerLinkageViewModel(buyer, BuyerLinkageStatus.None));
                         }
                     }
                 }
