@@ -639,7 +639,6 @@ namespace MarketMinds.ViewModels
                 {
                     string downloadsPath = this.fileSystem.GetDownloadsPath();
                     long idForFileName = savedNewContract.ContractID; // Use new contract ID
-                    
                     string fileName = $"RenewedContract_{idForFileName}_to_{this.NewEndDate:yyyyMMdd}.pdf";
                     string filePath = Path.Combine(downloadsPath, fileName);
                     await File.WriteAllBytesAsync(filePath, pdfBytes);
