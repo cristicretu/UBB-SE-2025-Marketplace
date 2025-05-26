@@ -352,6 +352,8 @@ namespace Server.Repository
                         case "This Year" when order.OrderDate.Year == DateTime.Now.Year:
                             orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
                             break;
+                        // Both cases are valid, the first one is used on web and the second one on desktop
+                        case "all":
                         case "All Orders":
                             orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
                             break;
@@ -417,7 +419,7 @@ namespace Server.Repository
             {
                 OrderID = order.Id,
                 ProductName = product.Title,
-                ProductTypeName = "merge-nicusor",
+                ProductTypeName = order.ProductType,
                 OrderDate = order.OrderDate.ToString("yyyy-MM-dd"),
                 PaymentMethod = order.PaymentMethod,
                 OrderSummaryID = order.OrderSummaryID,

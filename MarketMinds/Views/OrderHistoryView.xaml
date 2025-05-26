@@ -43,9 +43,10 @@
                     <StackPanel Orientation="Horizontal" Spacing="20" Padding="10">
                         <TextBlock Text="{Binding OrderID}" Width="80" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding ProductName}" Width="200"/>
+                        <TextBlock Text="{Binding ProductCategory}" Width="200"/>
                         <TextBlock Text="{Binding ProductTypeName}" Width="200"/>
 
-                        <TextBlock Text="{Binding OrderDate}" />
+                        <TextBlock Text="{Binding OrderDate}" Width="200" />
 
 
                         <TextBlock Text="{Binding PaymentMethod}" Width="150"/>
@@ -58,8 +59,9 @@
                 <StackPanel Orientation="Horizontal" Spacing="20" Padding="10" Background="LightGray">
                     <TextBlock Text="Order ID" Width="80" FontWeight="Bold"/>
                     <TextBlock Text="Product" Width="200" FontWeight="Bold"/>
+                    <TextBlock Text="Category" Width="200" FontWeight="Bold"/>
                     <TextBlock Text="Type" Width="200" FontWeight="Bold"/>
-                    <TextBlock Text="Date" Width="120" FontWeight="Bold"/>
+                    <TextBlock Text="Date" Width="200" FontWeight="Bold"/>
                     <TextBlock Text="Payment" Width="150" FontWeight="Bold"/>
                 </StackPanel>
             </ListView.Header>
