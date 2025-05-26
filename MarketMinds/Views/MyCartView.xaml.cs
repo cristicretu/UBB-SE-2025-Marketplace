@@ -19,12 +19,6 @@ namespace MarketMinds.Views
 
         public MyCartView()
         {
-            // Initialize value converters
-            Resources.Add("BoolToVisibilityConverter", new BoolToVisibilityConverter());
-            Resources.Add("InverseBoolToVisibilityConverter", new InverseBoolToVisibilityConverter());
-            Resources.Add("CurrencyConverter", new CurrencyConverter());
-            Resources.Add("InverseBoolConverter", new InverseBoolConverter());
-
             this.InitializeComponent();
 
             // Get the current user ID and ensure it's valid
@@ -177,63 +171,6 @@ namespace MarketMinds.Views
             {
                 Debug.WriteLine($"Error showing dialog: {ex.Message}");
             }
-        }
-    }
-
-    // Value converters
-    public class BoolToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            return (value is bool boolValue && boolValue) ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            return (value is Visibility visibility && visibility == Visibility.Visible);
-        }
-    }
-
-    public class InverseBoolToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            return (value is bool boolValue && !boolValue) ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            return (value is Visibility visibility && visibility == Visibility.Collapsed);
-        }
-    }
-
-    public class CurrencyConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            if (value is double amount)
-            {
-                return $"{amount:0.00} €";
-            }
-            return "0.00 €";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class InverseBoolConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            return !(value is bool boolValue && boolValue);
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            return !(value is bool boolValue && boolValue);
         }
     }
 }

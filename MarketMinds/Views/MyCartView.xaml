@@ -4,10 +4,17 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModel="using:MarketMinds.ViewModels"
+    xmlns:converters="using:MarketMinds.Converters"
     x:Name="Root"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
+        <!-- Converters -->
+        <converters:BoolVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:InvertedBoolVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        <converters:CurrencyConverter x:Key="CurrencyConverter"/>
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        
         <!-- Enhanced accent button style with full intensity colors -->
         <Style x:Key="AccentButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{ThemeResource SystemAccentColor}"/>
