@@ -170,7 +170,7 @@ Expected Delivery Date: {{DeliveryDate}}
                                 var seller = await _sellerService.GetSellerByIdAsync(order.SellerId);
                                 if (seller != null)
                                 {
-                                    actualSellerName = seller.StoreName ?? seller.Username ?? actualSellerName;
+                                    actualSellerName = !string.IsNullOrEmpty(seller.StoreName) ? seller.StoreName : seller.User?.Username ?? actualSellerName;
                                 }
                             }
                         }
