@@ -20,31 +20,24 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             try
             {
                 Console.WriteLine("DEBUG: AuctionProductsRepository.GetProducts - Starting to fetch products");
-                
+
                 var products = context.AuctionProducts
                     .Include(product => product.Condition)
                     .Include(product => product.Category)
                     .Include(product => product.Bids)
                     .Include(product => product.Images)
                     .ToList();
-                
-                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Fetched {products.Count} products");
-                
-                // Log price information for debugging
+
                 foreach (var product in products)
                 {
-                    Console.WriteLine($"DEBUG: AuctionProduct {product.Id}: StartPrice={product.StartPrice} (type: {product.StartPrice.GetType().Name}), CurrentPrice={product.CurrentPrice} (type: {product.CurrentPrice.GetType().Name})");
-                    
-                    if (product.Bids != null && product.Bids.Any())
-                    {
-                        foreach (var bid in product.Bids)
-                        {
-                            Console.WriteLine($"DEBUG: Bid {bid.Id} on product {product.Id}: Price={bid.Price} (type: {bid.Price.GetType().Name})");
-                        }
-                    }
+                    var productTags = context.Set<AuctionProductProductTag>()
+                        .Where(apt => apt.ProductId == product.Id)
+                        .Include(apt => apt.Tag)
+                        .Select(apt => apt.Tag)
+                        .ToList();
+                    product.Tags = productTags;
                 }
-                
-                // Load the bidder information for each product's bids
+                // Load the bidder information for each product's bids and tags
                 foreach (var product in products)
                 {
                     // Load seller information
@@ -52,13 +45,8 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     if (seller != null)
                     {
                         product.Seller = seller;
-                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Loaded seller for product {product.Id}: Id={seller.Id}, Username={seller.Username}");
                     }
-                    else
-                    {
-                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Could not find seller with ID {product.SellerId} for product {product.Id}");
-                    }
-                    
+
                     foreach (var bid in product.Bids)
                     {
                         var bidderUser = context.Users.FirstOrDefault(u => u.Id == bid.BidderId);
@@ -67,30 +55,21 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                             bid.Bidder = bidderUser;
                         }
                     }
+
+                    // Load tags for this product (for paginated results)
+                    var productTags = context.Set<AuctionProductProductTag>()
+                        .Where(apt => apt.ProductId == product.Id)
+                        .Include(apt => apt.Tag)
+                        .Select(apt => apt.Tag)
+                        .ToList();
+                    product.Tags = productTags;
                 }
-                
-                // Debug statement to check if categories are loaded
-                Console.WriteLine("========== DEBUG: AuctionProductsRepository.GetProducts ==========");
-                foreach (var product in products)
-                {
-                    Console.WriteLine($"Product ID: {product.Id}, Title: {product.Title}");
-                    Console.WriteLine($"Category ID: {product.CategoryId}, Category object: {(product.Category != null ? "Loaded" : "NULL")}");
-                    if (product.Category != null)
-                    {
-                        Console.WriteLine($"Category Name: {product.Category.Name}, Description: {product.Category.Description}");
-                    }
-                }
-                Console.WriteLine("================================================================");
 
                 return products;
             }
             catch (Exception exception)
             {
                 Console.WriteLine($"ERROR: GetProducts exception: {exception.Message}");
-                if (exception.InnerException != null)
-                {
-                    Console.WriteLine($"ERROR: Inner exception: {exception.InnerException.Message}");
-                }
                 throw new Exception($"Failed to retrieve auction products: {exception.Message}", exception);
             }
         }
@@ -110,16 +89,39 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
         public void AddProduct(AuctionProduct product)
         {
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product));
+            }
+
+            var tagsToAdd = new List<ProductTag>();
+
             try
             {
                 context.AuctionProducts.Add(product);
                 context.SaveChanges();
+
+                // Now add the tag relationships after the product has been saved and has an ID
+                if (tagsToAdd.Any())
+                {
+                    foreach (var tag in tagsToAdd)
+                    {
+                        var auctionProductTag = new AuctionProductProductTag
+                        {
+                            ProductId = product.Id,
+                            TagId = tag.Id
+                        };
+                        context.Set<AuctionProductProductTag>().Add(auctionProductTag);
+                    }
+                    context.SaveChanges();
+                }
             }
             catch (Exception exception)
             {
                 throw new Exception($"Failed to add auction product: {exception.Message}", exception);
             }
         }
+
 
         public void UpdateProduct(AuctionProduct product)
         {
@@ -170,27 +172,19 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     throw new KeyNotFoundException($"AuctionProduct with ID {id} not found.");
                 }
 
+                // Load tags for this product
+                var productTags = context.Set<AuctionProductProductTag>()
+                    .Where(apt => apt.ProductId == product.Id)
+                    .Include(apt => apt.Tag)
+                    .Select(apt => apt.Tag)
+                    .ToList();
+                product.Tags = productTags;
+
                 // Load seller information
                 var seller = context.Users.FirstOrDefault(u => u.Id == product.SellerId);
                 if (seller != null)
                 {
                     product.Seller = seller;
-                    Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Loaded seller: Id={seller.Id}, Username={seller.Username}");
-                }
-                else
-                {
-                    Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Could not find seller with ID {product.SellerId}");
-                }
-
-                // Log condition data
-                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Product {id}, ConditionId={product.ConditionId}");
-                if (product.Condition != null)
-                {
-                    Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Condition loaded: Id={product.Condition.Id}, Name={product.Condition.Name}, Description={product.Condition.Description}");
-                }
-                else
-                {
-                    Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProductByID - Condition is NULL despite Include!");
                 }
 
                 // Load the bidder information for each bid
@@ -221,8 +215,6 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
         {
             try
             {
-                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Starting to fetch products with pagination (offset: {offset}, count: {count})");
-                
                 var query = context.AuctionProducts
                     .Include(product => product.Condition)
                     .Include(product => product.Category)
@@ -231,7 +223,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     .OrderBy(p => p.Id); // Ensure consistent ordering for pagination
 
                 List<AuctionProduct> products;
-                
+
                 if (count > 0)
                 {
                     // Apply pagination
@@ -242,9 +234,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     // Return all products if count is 0
                     products = query.ToList();
                 }
-                
-                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Fetched {products.Count} products with pagination");
-                
+
                 // Load the bidder information for each product's bids
                 foreach (var product in products)
                 {
@@ -253,13 +243,8 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     if (seller != null)
                     {
                         product.Seller = seller;
-                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Loaded seller for product {product.Id}: Id={seller.Id}, Username={seller.Username}");
                     }
-                    else
-                    {
-                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetProducts - Could not find seller with ID {product.SellerId} for product {product.Id}");
-                    }
-                    
+
                     foreach (var bid in product.Bids)
                     {
                         var bidderUser = context.Users.FirstOrDefault(u => u.Id == bid.BidderId);
@@ -274,11 +259,6 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"ERROR: GetProducts with pagination exception: {exception.Message}");
-                if (exception.InnerException != null)
-                {
-                    Console.WriteLine($"ERROR: Inner exception: {exception.InnerException.Message}");
-                }
                 throw new Exception($"Failed to retrieve auction products with pagination: {exception.Message}", exception);
             }
         }

@@ -21,10 +21,28 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 throw new ArgumentNullException(nameof(product));
             }
 
+
+            if (product.ProductTags != null && product.ProductTags.Any())
+            {
+                foreach (var productTag in product.ProductTags)
+                {
+                    // Ensure the Tag exists in the database
+                    if (productTag.TagId > 0)
+                    {
+                        var existingTag = context.ProductTags.Find(productTag.TagId);
+                        if (existingTag != null)
+                        {
+                            productTag.Tag = existingTag; // Attach the tracked entity
+                        }
+                    }
+                }
+            }
+
             try
             {
                 context.BuyProducts.Add(product);
                 context.SaveChanges();
+
             }
             catch (DbUpdateException ex)
             {
@@ -110,7 +128,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                     .OrderBy(p => p.Id); // Ensure consistent ordering for pagination
 
                 List<BuyProduct> products;
-                
+
                 if (count > 0)
                 {
                     // Apply pagination

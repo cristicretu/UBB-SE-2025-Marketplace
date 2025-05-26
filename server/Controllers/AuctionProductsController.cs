@@ -28,7 +28,7 @@ namespace MarketMinds.Controllers
             try
             {
                 List<AuctionProduct> products;
-                
+
                 if (count > 0)
                 {
                     // Use pagination
@@ -39,12 +39,12 @@ namespace MarketMinds.Controllers
                     // Get all products (backward compatibility)
                     products = auctionProductsRepository.GetProducts();
                 }
-                
+
                 Console.WriteLine("========== DEBUG: AuctionProductsController.GetAuctionProducts ==========");
                 Console.WriteLine($"Retrieved {products.Count} products from repository (offset: {offset}, count: {count})");
-                
+
                 var dtos = AuctionProductMapper.ToDTOList(products);
-                
+
                 Console.WriteLine($"Mapped to {dtos.Count} DTOs");
                 foreach (var dto in dtos)
                 {
@@ -56,7 +56,7 @@ namespace MarketMinds.Controllers
                     }
                 }
                 Console.WriteLine("=====================================================================");
-                
+
                 return Ok(dtos);
             }
             catch (Exception exception)
@@ -90,14 +90,14 @@ namespace MarketMinds.Controllers
             try
             {
                 var product = auctionProductsRepository.GetProductByID(id);
-                
+
                 if (product == null)
                 {
                     return NotFound($"Auction product with ID {id} not found.");
                 }
-                
+
                 Console.WriteLine($"SERVER: GetAuctionProductById - Found auction {id} with {product.Bids.Count} bids");
-                
+
                 // Log seller information
                 Console.WriteLine($"SERVER: GetAuctionProductById - SellerId: {product.SellerId}");
                 if (product.Seller != null)
@@ -108,7 +108,7 @@ namespace MarketMinds.Controllers
                 {
                     Console.WriteLine($"SERVER: GetAuctionProductById - Seller is NULL despite having SellerId={product.SellerId}");
                 }
-                
+
                 // Log condition information
                 Console.WriteLine($"SERVER: GetAuctionProductById - ConditionId: {product.ConditionId}");
                 if (product.Condition != null)
@@ -119,14 +119,14 @@ namespace MarketMinds.Controllers
                 {
                     Console.WriteLine($"SERVER: GetAuctionProductById - Condition is NULL");
                 }
-                
+
                 foreach (var bid in product.Bids)
                 {
                     Console.WriteLine($"SERVER: GetAuctionProductById - Bid {bid.Id}: BidderId={bid.BidderId}, Bidder.Username={bid.Bidder?.Username ?? "NULL"}");
                 }
-                
+
                 var auctionProductDTO = AuctionProductMapper.ToDTO(product);
-                
+
                 // Log DTO seller information
                 if (auctionProductDTO.Seller != null)
                 {
@@ -136,7 +136,7 @@ namespace MarketMinds.Controllers
                 {
                     Console.WriteLine($"SERVER: GetAuctionProductById - DTO Seller is NULL");
                 }
-                
+
                 // Log DTO condition information
                 if (auctionProductDTO.Condition != null)
                 {
@@ -146,7 +146,7 @@ namespace MarketMinds.Controllers
                 {
                     Console.WriteLine($"SERVER: GetAuctionProductById - DTO Condition is NULL");
                 }
-                
+
                 return Ok(auctionProductDTO);
             }
             catch (KeyNotFoundException knfEx)
@@ -166,20 +166,20 @@ namespace MarketMinds.Controllers
         public IActionResult CreateAuctionProduct([FromBody] AuctionProduct product)
         {
             Console.WriteLine($"TRACE: CreateAuctionProduct API endpoint received EndTime: {product.EndTime}");
-            
+
             if (product?.Id != NULL_PRODUCT_ID)
             {
                 return BadRequest("Product ID should not be provided when creating a new product.");
             }
-            
+
             try
             {
                 InitializeDates(product);
                 var incomingImages = product.Images?.ToList() ?? new List<ProductImage>();
                 product.Images = new List<ProductImage>();
-                
+
                 auctionProductsRepository.AddProduct(product);
-                
+
                 if (incomingImages.Any())
                 {
                     foreach (var image in incomingImages)
@@ -190,7 +190,7 @@ namespace MarketMinds.Controllers
 
                     auctionProductsRepository.UpdateProduct(product);
                 }
-                
+
                 var auctionProductDTO = AuctionProductMapper.ToDTO(product);
                 return CreatedAtAction(nameof(GetAuctionProductById), new { id = product.Id }, auctionProductDTO);
             }
@@ -211,7 +211,7 @@ namespace MarketMinds.Controllers
             {
                 return BadRequest("ID mismatch between route and product.");
             }
-            
+
             try
             {
                 InitializeDates(product);
@@ -250,9 +250,9 @@ namespace MarketMinds.Controllers
         public IActionResult PlaceBid(int id, [FromBody] CreateBidDTO bidDTO)
         {
             try
-            {   
+            {
                 Console.WriteLine($"SERVER: PlaceBid - Received bid request for auction {id} from bidder {bidDTO.BidderId} amount {bidDTO.Amount}");
-                
+
                 // First check if the product exists
                 var product = auctionProductsRepository.GetProductByID(id);
                 if (product == null)
@@ -260,23 +260,23 @@ namespace MarketMinds.Controllers
                     Console.WriteLine($"SERVER: PlaceBid - Auction {id} not found");
                     return NotFound($"Auction product with ID {id} not found.");
                 }
-                
+
                 Console.WriteLine($"SERVER: PlaceBid - Found auction: {product.Title}, CurrentPrice={product.CurrentPrice}, EndTime={product.EndTime}");
-                
+
                 // Check if the auction has ended
                 if (DateTime.Now >= product.EndTime)
                 {
                     Console.WriteLine($"SERVER: PlaceBid - Auction has ended, EndTime={product.EndTime}, Now={DateTime.Now}");
                     return BadRequest("Cannot place bid on an ended auction.");
                 }
-                
+
                 // Validate bid amount is higher than current price
                 if (bidDTO.Amount <= product.CurrentPrice)
                 {
                     Console.WriteLine($"SERVER: PlaceBid - Bid amount {bidDTO.Amount} not higher than current price {product.CurrentPrice}");
                     return BadRequest($"Bid amount must be higher than the current price (${product.CurrentPrice}).");
                 }
-                
+
                 // Create and add the bid
                 var bid = new Bid
                 {
@@ -285,13 +285,13 @@ namespace MarketMinds.Controllers
                     Price = bidDTO.Amount,
                     Timestamp = DateTime.Now
                 };
-                
+
                 Console.WriteLine($"SERVER: PlaceBid - Adding bid to auction {id}");
                 product.Bids.Add(bid);
                 product.CurrentPrice = bidDTO.Amount;
-                
+
                 Console.WriteLine($"SERVER: PlaceBid - Updating product in repository");
-                
+
                 try
                 {
                     auctionProductsRepository.UpdateProduct(product);
@@ -301,13 +301,13 @@ namespace MarketMinds.Controllers
                 catch (Exception dbEx)
                 {
                     // Check for the foreign key constraint error for bidder_id
-                    if (dbEx.InnerException != null && 
+                    if (dbEx.InnerException != null &&
                         dbEx.InnerException.Message.Contains("FK_Bids_Buyers"))
                     {
                         Console.WriteLine($"SERVER: PlaceBid - User role error: User {bidDTO.BidderId} is not a buyer");
                         return BadRequest("Your account doesn't have permission to place bids. Only buyer accounts can place bids.");
                     }
-                    
+
                     // If it's not a buyer role error, re-throw
                     throw;
                 }
@@ -322,19 +322,19 @@ namespace MarketMinds.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred: {exception.Message}");
             }
         }
-        
+
         private void InitializeDates(AuctionProduct product)
         {
             var now = DateTime.Now;
-            
+
             Console.WriteLine($"TRACE: InitializeDates received EndTime: {product.EndTime}");
             Console.WriteLine($"TRACE: Conditions - Default: {product.EndTime == default}, < MINIMUM_SQL_DATETIME: {product.EndTime < MINIMUM_SQL_DATETIME}, < now: {product.EndTime < now}");
-            
+
             if (product.StartTime == default || product.StartTime < MINIMUM_SQL_DATETIME)
             {
                 product.StartTime = now;
             }
-            
+
             // Only set a default EndTime if it's invalid (default value, earlier than min SQL date, or in the past)
             if (product.EndTime == default || product.EndTime < MINIMUM_SQL_DATETIME || product.EndTime < now)
             {
@@ -345,16 +345,16 @@ namespace MarketMinds.Controllers
             {
                 Console.WriteLine($"TRACE: Keeping original EndTime: {product.EndTime}");
             }
-            
+
             // Still enforce that EndTime is after StartTime
             if (product.EndTime < product.StartTime)
             {
                 Console.WriteLine($"TRACE: EndTime is before StartTime, adjusting (was: {product.EndTime})");
                 product.EndTime = product.StartTime.AddDays(7);
             }
-            
+
             Console.WriteLine($"TRACE: InitializeDates final EndTime: {product.EndTime}");
-            
+
             if (product.StartPrice <= 0 && product.CurrentPrice > 0)
             {
                 product.StartPrice = product.CurrentPrice;
