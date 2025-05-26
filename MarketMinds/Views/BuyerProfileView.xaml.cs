@@ -43,6 +43,39 @@ namespace MarketMinds.Views
             }
         }
 
+        private void MyCartButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Create a new window for the cart view
+                var cartWindow = new Window();
+
+                // Create the content for the window
+                var cartView = new MyCartView();
+
+                // Set the content of the window to the cart view
+                cartWindow.Content = cartView;
+
+                // Set a title for the window (optional)
+                cartWindow.Title = "My Shopping Cart";
+
+                // Activate (show) the window
+                cartWindow.Activate();
+            }
+            catch (Exception ex)
+            {
+                // Show error message if something goes wrong
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = $"Unable to open cart: {ex.Message}",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                _ = dialog.ShowAsync();
+            }
+        }
+
         private async Task<int?> ShowTrackedOrderInputDialogAsync()
         {
             var contentDialog = new ContentDialog
@@ -131,7 +164,7 @@ namespace MarketMinds.Views
         {
             BillingInfoWindow billingInfoWindow = new BillingInfoWindow();
             // merge-nicusor FIX :)
-            var bp = new BillingInfo(1);
+            var bp = new BillingInfo();
             billingInfoWindow.Content = bp;
             billingInfoWindow.Activate();
         }
@@ -140,7 +173,7 @@ namespace MarketMinds.Views
         {
             BillingInfoWindow billingInfoWindow = new BillingInfoWindow();
             // merge-nicusor FIX :)
-            var bp = new BillingInfo(1);
+            var bp = new BillingInfo();
             billingInfoWindow.Content = bp;
             billingInfoWindow.Activate();
         }

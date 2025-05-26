@@ -2,862 +2,1232 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Linq;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.BorrowProductsService;
 using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.BuyProductsService;
 using MarketMinds.Views;
 using Microsoft.UI.Xaml;
-using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Helper;
+using Microsoft.UI.Xaml.Controls;
 
 namespace MarketMinds.ViewModels
 {
     /// <summary>
-    /// Represents the view model for billing information and processes order history and payment details.
+    /// Represents the view model for billing information and order processing.
     /// </summary>
-    public class BillingInfoViewModel : IBillingInfoViewModel, INotifyPropertyChanged
+    public class BillingInfoViewModel : INotifyPropertyChanged, IBillingInfoViewModel
     {
+        // Services
         private readonly IOrderHistoryService orderHistoryService;
         private readonly IOrderSummaryService orderSummaryService;
         private readonly IOrderService orderService;
         private readonly IProductService productService;
         private readonly IBorrowProductsService borrowProductService;
         private readonly IDummyWalletService dummyWalletService;
+        private readonly IBuyProductsService buyProductsService;
+        private readonly IShoppingCartService shoppingCartService;
 
+        // Fields
         private int orderHistoryID;
-
         private bool isWalletEnabled;
         private bool isCashEnabled;
         private bool isCardEnabled;
-
         private string selectedPaymentMethod;
-
         private string fullName;
         private string email;
         private string phoneNumber;
         private string address;
         private string zipCode;
         private string additionalInfo;
-
         private DateTimeOffset startDate;
         private DateTimeOffset endDate;
-
         private double subtotal;
         private double deliveryFee;
         private double total;
         private double warrantyTax;
+        private bool isProcessing;
+        private string errorMessage;
 
-        public ObservableCollection<Product> ProductList { get; set; }
-        public List<Product> Products;
-
+        // Properties for cart-related data
         private List<Product> cartItems;
+        public ObservableCollection<Product> ProductList { get; set; } = new ObservableCollection<Product>();
+        private Dictionary<int, int> cartQuantities = new Dictionary<int, int>();
         private double cartTotal;
         private int buyerId;
+        private Dictionary<int, int> productQuantities = new Dictionary<int, int>();
+
+        public ObservableCollection<ProductViewModel> CartItems { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BillingInfoViewModel"/> class and begins loading order history details.
+        /// Initializes a new instance of the <see cref="BillingInfoViewModel"/> class.
         /// </summary>
-        /// <param name="orderHistoryID">The unique identifier for the order history.</param>
-        public BillingInfoViewModel(int orderHistoryID)
+        public BillingInfoViewModel()
         {
-            // Initialize services with dependency injection support
-            // In a real-world application, these would ideally be injected through constructor
-            this.orderHistoryService = new OrderHistoryService();
-            this.orderService = new OrderService();
-            this.orderSummaryService = new OrderSummaryService();
-            this.dummyWalletService = new DummyWalletService();
-            this.productService = new ProductService(new BuyProductsProxyRepository(AppConfig.Configuration));
+            this.orderHistoryService = App.OrderHistoryService;
+            this.orderService = App.OrderService;
+            this.orderSummaryService = App.OrderSummaryService;
+            this.dummyWalletService = App.DummyWalletService;
+            this.productService = App.ProductService;
+            this.buyProductsService = App.BuyProductsService;
+            this.shoppingCartService = App.ShoppingCartService;
 
-            this.Products = new List<Product>();
-            this.orderHistoryID = orderHistoryID;
-
-            _ = this.InitializeViewModelAsync();
-
+            this.CartItems = new ObservableCollection<ProductViewModel>();
+            this.ProductList = new ObservableCollection<Product>();
+            this.cartItems = new List<Product>();
             this.warrantyTax = 0;
+
+            // Enable payment methods by default
+            this.IsWalletEnabled = true;
+            this.IsCashEnabled = true;
+            this.IsCardEnabled = true;
+
+            // Default values
+            this.deliveryFee = 0;
+            this.total = 0;
+            this.subtotal = 0;
+            this.isProcessing = false;
+            this.errorMessage = string.Empty;
         }
 
         /// <summary>
-        /// Sets the cart items for checkout and converts them to Products.
+        /// Initializes a new instance of the <see cref="BillingInfoViewModel"/> class with a specific order history ID.
         /// </summary>
-        /// <param name="cartItems">The list of products and quantities.</param>
-        public void SetCartItems(List<Product> cartItems)
+        /// <param name="orderHistoryID">The order history ID to load.</param>
+        public BillingInfoViewModel(int orderHistoryID) : this()
         {
-            this.cartItems = cartItems;
+            this.orderHistoryID = orderHistoryID;
+            _ = this.InitializeViewModelAsync();
+        }
 
-            // Convert the cart items to Products for display
-            this.Products = new List<Product>();
+        public int GetQuantityForProduct(int productId)
+        {
+            if (productQuantities.TryGetValue(productId, out int quantity))
+            {
+                return quantity;
+            }
+            return 1; // Default to 1 if not found
+        }
 
+        /// <summary>
+        /// Sets the cart items for checkout and properly handles quantities.
+        /// </summary>
+        public async void SetCartItems(List<Product> cartItems)
+        {
+            Debug.WriteLine($"Setting cart items: {cartItems?.Count ?? 0} products");
+
+            this.cartItems = cartItems ?? new List<Product>();
+
+            // Clear the dictionaries and product list collections
+            this.productQuantities.Clear();
+            this.cartQuantities.Clear();
+            this.ProductList.Clear();
+            this.CartItems.Clear();
+
+            // Process each cart item
             foreach (var item in this.cartItems)
             {
-                this.Products.Add(item);
+                try
+                {
+                    // Get the quantity from the shopping cart service
+                    int currentUser = UserSession.CurrentUserId ?? 1;
+                    int quantity;
+
+                    try
+                    {
+                        // Await the task to get the actual quantity value
+                        quantity = await this.shoppingCartService.GetProductQuantityAsync(currentUser, item.Id);
+                        Debug.WriteLine($"Retrieved quantity for product {item.Id}: {quantity}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error getting quantity from service: {ex.Message}");
+                        quantity = 1;
+                    }
+
+                    // Store quantities in dictionaries for reference
+                    this.productQuantities[item.Id] = quantity;
+                    this.cartQuantities[item.Id] = quantity;
+
+                    // Create a view model wrapper with the product and quantity
+                    var productVM = new ProductViewModel(item, quantity);
+
+                    // Add the product to both collections
+                    this.CartItems.Add(productVM);
+                    this.ProductList.Add(item); // Also add to ProductList for compatibility
+
+                    Debug.WriteLine($"Added product to display: {item.Id} - {item.Title} - ${item.Price} × {quantity}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error getting quantity for product {item.Id}: {ex.Message}");
+                    // Use default quantity of 1 if there was an error
+                    this.productQuantities[item.Id] = 1;
+                    this.cartQuantities[item.Id] = 1;
+                    this.CartItems.Add(new ProductViewModel(item, 1));
+                    this.ProductList.Add(item);
+                }
             }
 
-            this.ProductList = new ObservableCollection<Product>(this.Products);
+            // Update UI
+            this.OnPropertyChanged(nameof(this.CartItems));
             this.OnPropertyChanged(nameof(this.ProductList));
+            this.OnPropertyChanged(nameof(this.CartQuantities));
 
-            this.SetVisibilityRadioButtons();
+            // Calculate totals based on the new cart items - but don't add existing cartTotal
+            this.cartTotal = 0; // Reset to prevent doubling
             this.CalculateOrderTotal();
         }
 
         /// <summary>
-        /// Sets the cart total for the order.
-        /// </summary>
-        /// <param name="total">The total price of the cart.</param>
-        public void SetCartTotal(double total)
-        {
-            this.cartTotal = total;
-            this.Total = (double)total;
-            this.Subtotal = (double)total - this.DeliveryFee - this.WarrantyTax;
-            this.OnPropertyChanged(nameof(this.Total));
-            this.OnPropertyChanged(nameof(this.Subtotal));
-        }
-
-        /// <summary>
-        /// Sets the buyer ID for the order.
-        /// </summary>
-        /// <param name="buyerId">The ID of the buyer.</param>
-        public void SetBuyerId(int buyerId)
-        {
-            this.buyerId = buyerId;
-        }
-
-        /// <summary>
-        /// Calculates the order total based on the cart items.
+        /// Calculates the order total based on cart items and their quantities.
         /// </summary>
         public void CalculateOrderTotal()
         {
-            if (this.Products == null || this.Products.Count == 0)
+            Debug.WriteLine("Calculating order total");
+
+            if (this.cartItems == null || this.cartItems.Count == 0)
             {
+                Debug.WriteLine("No items in cart, setting totals to 0");
                 this.Total = 0;
                 this.Subtotal = 0;
                 this.DeliveryFee = 0;
                 return;
             }
 
+            // Calculate product subtotal taking quantities into account
             double subtotalProducts = 0;
-            foreach (var product in this.Products)
+            foreach (var product in this.cartItems)
             {
-                subtotalProducts += product.Price;
+                // Get quantity from our dictionary
+                int quantity = this.GetQuantityForProduct(product.Id);
+                subtotalProducts += product.Price * quantity;
+                Debug.WriteLine($"Product {product.Id}: {product.Title} - ${product.Price} × {quantity} = ${product.Price * quantity}");
             }
 
-            // For orders over 200, a fixed delivery fee of 13.99 will be added
-            // (this is only for orders of new, used or borrowed products)
+            // Calculate delivery fee based on subtotal
             this.Subtotal = subtotalProducts;
 
             if (subtotalProducts >= 200)
             {
-                this.Total = subtotalProducts;
+                Debug.WriteLine("Order total >= $200, no delivery fee");
                 this.DeliveryFee = 0;
+                this.Total = subtotalProducts;
             }
             else
             {
-                this.DeliveryFee = 13.99f;
+                Debug.WriteLine("Order total < $200, applying delivery fee");
+                this.DeliveryFee = 13.99;
                 this.Total = subtotalProducts + this.DeliveryFee;
             }
+
+            // If cart total was explicitly set, use that instead
+            // But ONLY if it was explicitly set and is not zero
+            if (this.cartTotal > 0)
+            {
+                Debug.WriteLine($"Using explicitly set cart total: ${this.cartTotal}");
+                this.Total = this.cartTotal;
+                this.Subtotal = this.cartTotal - this.DeliveryFee - this.WarrantyTax;
+            }
+
+            Debug.WriteLine($"Final calculation - Subtotal: ${this.Subtotal}, Delivery: ${this.DeliveryFee}, Total: ${this.Total}");
+
+            // Update UI
+            this.OnPropertyChanged(nameof(this.Subtotal));
+            this.OnPropertyChanged(nameof(this.DeliveryFee));
+            this.OnPropertyChanged(nameof(this.Total));
         }
 
+        /// <summary>
+        /// Sets the cart total value.
+        /// </summary>
+        /// <param name="total">The total price of the cart.</param>
+        public void SetCartTotal(double total)
+        {
+            Debug.WriteLine($"Setting cart total: ${total}");
+
+            this.cartTotal = total;
+            this.Total = total; // Direct assignment
+            this.Subtotal = total - this.DeliveryFee - this.WarrantyTax;
+
+            Debug.WriteLine($"Updated values - Total: ${this.Total}, Subtotal: ${this.Subtotal}");
+
+            // Update UI
+            this.OnPropertyChanged(nameof(this.Total));
+            this.OnPropertyChanged(nameof(this.Subtotal));
+
+            // Don't call CalculateOrderTotal() here as it would recalculate and potentially double-count
+        }
+
+        /// <summary>
+        /// Sets the buyer ID for the order.
+        /// </summary>
+        /// <param name="buyerId">The buyer ID.</param>
+        public void SetBuyerId(int buyerId)
+        {
+            Debug.WriteLine($"Setting buyer ID: {buyerId}");
+            this.buyerId = buyerId;
+        }
+
+        /// <summary>
+        /// Initializes the view model by loading data from various sources.
+        /// </summary>
         public async Task InitializeViewModelAsync()
         {
-            // If we already have cart items (from ShoppingCartView), don't load from order history
-            if (this.Products.Count == 0)
+            Debug.WriteLine("Initializing BillingInfoViewModel");
+
+            try
             {
+                // If we already have cart items, don't override with order history
+                if (this.ProductList != null && this.ProductList.Count > 0)
+                {
+                    Debug.WriteLine("Products already loaded - skipping order history load");
+                    return;
+                }
+
                 // Only try to get from order history if no cart items were passed and the ID is valid
                 if (this.orderHistoryID > 0)
                 {
+                    Debug.WriteLine($"Loading products from order history ID: {this.orderHistoryID}");
+
                     try
                     {
-                        this.Products = await this.GetProductsFromOrderHistoryAsync(this.orderHistoryID);
-                        this.ProductList = new ObservableCollection<Product>(this.Products);
-                        this.OnPropertyChanged(nameof(this.ProductList));
+                        var products = await this.orderHistoryService.GetProductsFromOrderHistoryAsync(this.orderHistoryID);
+                        if (products != null && products.Count > 0)
+                        {
+                            this.cartItems = products;
+                            this.ProductList = new ObservableCollection<Product>(products);
+                            Debug.WriteLine($"Loaded {products.Count} products from order history");
+                            this.OnPropertyChanged(nameof(this.ProductList));
+                        }
+                        else
+                        {
+                            Debug.WriteLine("No products found in order history");
+                        }
                     }
                     catch (Exception ex)
                     {
-                        // Handle case where there might not be order history yet
-                        System.Diagnostics.Debug.WriteLine($"Error loading from order history: {ex.Message}");
-                        // Initialize empty collections to avoid null references
-                        this.Products = new List<Product>();
-                        this.ProductList = new ObservableCollection<Product>();
+                        Debug.WriteLine($"Error loading from order history: {ex.Message}");
+                        this.ErrorMessage = $"Error loading order details: {ex.Message}";
                     }
                 }
-            }
 
-            // Make sure ProductList is never null
-            if (this.ProductList == null)
+                this.CalculateOrderTotal();
+            }
+            catch (Exception ex)
             {
-                this.ProductList = new ObservableCollection<Product>(this.Products ?? new List<Product>());
+                Debug.WriteLine($"Error in InitializeViewModelAsync: {ex.Message}");
+                this.ErrorMessage = $"Initialization error: {ex.Message}";
             }
+        }
 
-            this.SetVisibilityRadioButtons();
+        /// <summary>
+        /// Legacy method for backwards compatibility.
+        /// </summary>
+        public void CalculateOrderTotal(int orderHistoryID)
+        {
             this.CalculateOrderTotal();
         }
 
         /// <summary>
-        /// Sets the visibility of payment method radio buttons based on the first product's type.
+        /// Autofills billing information with the current user's data.
         /// </summary>
-        public void SetVisibilityRadioButtons()
-        {
-            if (this.ProductList.Count > 0)
-            {
-                this.IsCardEnabled = true;
-                this.IsCashEnabled = true;
-                this.IsWalletEnabled = true;
-            }
-        }
-        [ExcludeFromCodeCoverage]
-        /// <summary>
-        /// Handles the finalization button click event, updating orders and order summary, then opens the next window.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        // public async Task OnFinalizeButtonClickedAsync()
-        // {
-        //    string paymentMethod = SelectedPaymentMethod;
-
-        // // Get orders from order history using the service
-        //    List<Order> orderList = await orderService.GetOrdersFromOrderHistoryAsync(orderHistoryID);
-
-        // // Update each order with the selected payment method
-        //    foreach (var order in orderList)
-        //    {
-        //        await orderService.UpdateOrderAsync(order.OrderID, order.ProductType, SelectedPaymentMethod, DateTime.Now);
-        //    }
-
-        // // Update the order summary using the service
-        //    await orderSummaryService.UpdateOrderSummaryAsync(orderHistoryID, Subtotal, warrantyTax, DeliveryFee, Total, FullName, Email, PhoneNumber, Address, ZipCode, AdditionalInfo, null);
-
-        // await OpenNextWindowAsync(SelectedPaymentMethod);
-        // }
-
-        /// <summary>
-        /// Handles the finalization button click event, updating orders and order summary, then opens the next window.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        /// <summary>
-        /// Handles the finalization button click event, updating orders and order summary, then opens the next window.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        /// <summary>
-        /// Handles the finalization button click event, updating orders and order summary, then opens the next window.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task OnFinalizeButtonClickedAsync()
+        public async Task AutofillUserInformationAsync()
         {
             try
             {
-                // Set a default order history ID if we're going to have connection issues
-                int fallbackOrderHistoryId = this.orderHistoryID > 0 ? this.orderHistoryID : new Random().Next(10000, 99999);
+                // Get the current user ID
+                int userId = UserSession.CurrentUserId ?? 1;
 
-                string paymentMethod = this.SelectedPaymentMethod;
-                if (string.IsNullOrEmpty(paymentMethod))
+                // Check if we have a valid user ID
+                if (userId <= 0)
                 {
-                    // Set a default payment method if none is selected
-                    paymentMethod = this.IsCashEnabled ? "cash" : (this.IsCardEnabled ? "card" : "wallet");
-                    this.SelectedPaymentMethod = paymentMethod;
+                    Debug.WriteLine("Invalid user ID for autofill");
+                    return;
                 }
 
-                // Flag to track if we should continue despite errors
-                bool continueToNextWindow = false;
-                bool usesFallbackData = false;
+                // We need to get the user information from a service
+                // Assuming there's a user service or similar
+                var userService = App.UserService; // You need to make sure this service exists
 
-                // If this is a new order from the cart (not an existing order history)
-                if (this.cartItems != null && this.cartItems.Count > 0)
+                if (userService != null)
                 {
-                    try
+                    var user = await userService.GetUserByIdAsync(userId);
+
+                    if (user != null)
                     {
-                        // Create a new order history record - handling possible connection issues
-                        // try
-                        // {
-                        //    orderHistoryID = await orderHistoryService.CreateOrderHistoryAsync();
-                        //    continueToNextWindow = true;
-                        // }
-                        // catch (Exception ex)
-                        // {
-                        //    System.Diagnostics.Debug.WriteLine($"Database connection error: {ex.Message}");
-                        // Use the fallback ID since we couldn't get a real one
-                        this.orderHistoryID = fallbackOrderHistoryId;
-                        usesFallbackData = true;
-                        continueToNextWindow = true; // Continue despite the error
-                        // }
+                        // Fill in the user information fields
+                        this.Email = user.Email ?? this.Email;
+                        this.PhoneNumber = this.PhoneNumber = user.PhoneNumber?.Trim() ?? this.PhoneNumber;
 
-                        // Create order summary with error handling
-                        try
-                        {
-                            await this.orderSummaryService.UpdateOrderSummaryAsync(
-                                this.orderHistoryID,
-                                this.Subtotal,
-                                this.warrantyTax,
-                                this.DeliveryFee,
-                                this.Total,
-                                this.FullName ?? "Guest User",
-                                this.Email ?? "guest@example.com",
-                                this.PhoneNumber ?? "000-000-0000",
-                                this.Address ?? "No Address Provided",
-                                this.ZipCode ?? "00000",
-                                this.AdditionalInfo,
-                                null);
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error updating order summary: {ex.Message}");
-                            usesFallbackData = true;
-                            // Continue with the next steps - we can still proceed with order creation
-                        }
-
-                        // Create order entries for each product
-                        bool anyOrdersAdded = false;
-                        if (this.cartItems.Count > 0)
-                        {
-                            // Even if we can't add to database, we'll pretend we did for UI flow purposes
-                            anyOrdersAdded = true;
-                        }
-
-                        foreach (var item in this.cartItems)
-                        {
-                            try
-                            {
-                                var product = item;
-                                var quantity = item.Stock;
-
-                                for (int i = 0; i < quantity; i++)
-                                {
-                                    try
-                                    {
-                                        // Add each product to the order
-                                        await this.orderService.AddOrderAsync(
-                                            product.Id,
-                                            this.buyerId,
-                                            "merge-nicusor-product-type",
-                                            paymentMethod,
-                                            this.orderHistoryID,
-                                            DateTime.Now);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        System.Diagnostics.Debug.WriteLine($"Error adding order item: {ex.Message}");
-                                        usesFallbackData = true;
-                                        // Continue with next items
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Error processing cart item: {ex.Message}");
-                                // Continue with next items
-                            }
-                        }
-
-                        // If we should show a warning about using offline/fallback data
-                        if (usesFallbackData)
-                        {
-                            // We would show a message dialog here informing the user
-                            // that we're proceeding with offline data
-                            System.Diagnostics.Debug.WriteLine("Using fallback/offline data due to database connection issues");
-                        }
-
-                        // Skip the existing order flow since we just created new orders
-                        if (continueToNextWindow || anyOrdersAdded)
-                        {
-                            await this.OpenNextWindowAsync(paymentMethod);
-                            return;
-                        }
+                        Debug.WriteLine($"Autofilled user information for user ID: {userId}");
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error creating orders: {ex.Message}");
-                        // We'll still try to open the next window despite errors
-                        await this.OpenNextWindowAsync(paymentMethod);
-                        return;
+                        Debug.WriteLine($"Could not find user with ID: {userId}");
                     }
                 }
                 else
                 {
-                    // Existing order history flow - simplified to always proceed
+                    Debug.WriteLine("User service not available for autofill");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error autofilling user information: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Validates all input fields in the billing information.
+        /// </summary>
+        /// <returns>A list of validation error messages. Empty if all fields are valid.</returns>
+        public List<string> ValidateFields()
+        {
+            var errors = new List<string>();
+
+            // Full Name validation
+            if (string.IsNullOrWhiteSpace(this.FullName))
+            {
+                errors.Add("Full name is required.");
+            }
+
+            // Email validation
+            if (string.IsNullOrWhiteSpace(this.Email))
+            {
+                errors.Add("Email address is required.");
+            }
+            else if (!this.Email.Contains("@") || !this.Email.Contains("."))
+            {
+                errors.Add("Please enter a valid email address.");
+            }
+
+            // Phone Number validation - should be in format +40XXXXXXXXX
+            if (string.IsNullOrWhiteSpace(this.PhoneNumber))
+            {
+                errors.Add("Phone number is required.");
+            }
+            else if (!this.PhoneNumber.StartsWith("+40") || this.PhoneNumber.Length != 12)
+            {
+                errors.Add("Phone number must be in format +40XXXXXXXXX.");
+            }
+
+            // Address validation
+            if (string.IsNullOrWhiteSpace(this.Address))
+            {
+                errors.Add("Address is required.");
+            }
+
+            // Zip Code validation - should be 6 digits
+            if (string.IsNullOrWhiteSpace(this.ZipCode))
+            {
+                errors.Add("Zip code is required.");
+            }
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(this.ZipCode, @"^\d{6}$"))
+            {
+                errors.Add("Zip code must be a 6-digit number.");
+            }
+
+            // Payment Method validation
+            if (string.IsNullOrWhiteSpace(this.SelectedPaymentMethod))
+            {
+                errors.Add("Please select a payment method.");
+            }
+
+            return errors;
+        }
+
+        /// <summary>
+        /// Handles the finalization of an order.
+        /// </summary>
+        public async Task OnFinalizeButtonClickedAsync()
+        {
+            if (this.IsProcessing)
+            {
+                Debug.WriteLine("Already processing order, ignoring request");
+                return;
+            }
+
+            try
+            {
+                this.IsProcessing = true;
+                this.ErrorMessage = string.Empty;
+                Debug.WriteLine("Processing order finalization");
+
+                // Ensure we have a payment method selected
+                if (string.IsNullOrEmpty(this.SelectedPaymentMethod))
+                {
+                    this.SelectedPaymentMethod = this.IsCardEnabled ? "card" :
+                                              (this.IsCashEnabled ? "cash" : "wallet");
+                    Debug.WriteLine($"No payment method selected, defaulting to: {this.SelectedPaymentMethod}");
+                }
+
+                // Ensure we have a valid order history ID
+                if (this.orderHistoryID <= 0)
+                {
+                    this.orderHistoryID = await this.CreateOrderHistoryAsync();
+                    Debug.WriteLine($"Generated new order history ID: {this.orderHistoryID}");
+
+                    if (this.orderHistoryID <= 0)
+                    {
+                        throw new InvalidOperationException("Failed to generate a valid order history ID");
+                    }
+                }
+
+                // Generate a fallback order history ID if needed
+                if (this.orderHistoryID <= 0)
+                {
+                    this.orderHistoryID = await this.CreateOrderHistoryAsync();
+                    Debug.WriteLine($"Generated new order history ID: {this.orderHistoryID}");
+                }
+
+                // Create order summary
+                await this.CreateOrUpdateOrderSummaryAsync();
+
+                // Process payment
+                if (this.SelectedPaymentMethod == "wallet")
+                {
+                    await this.ProcessWalletRefillAsync();
+                }
+
+                // Create order entries
+                await this.CreateOrderEntriesAsync();
+
+                // Open next screen based on payment method
+                await this.OpenNextWindowAsync(this.SelectedPaymentMethod);
+
+                Debug.WriteLine("Order finalization complete");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in OnFinalizeButtonClickedAsync: {ex.Message}");
+                this.ErrorMessage = $"Error finalizing order: {ex.Message}";
+                throw; // Rethrow so the UI can show an error dialog
+            }
+            finally
+            {
+                this.IsProcessing = false;
+            }
+        }
+
+        /// <summary>
+        /// Creates a new order history record.
+        /// </summary>
+        private async Task<int> CreateOrderHistoryAsync()
+        {
+            try
+            {
+                int userId = this.buyerId > 0 ? this.buyerId : (UserSession.CurrentUserId ?? 1);
+                Debug.WriteLine($"Creating order history for user {userId}");
+
+                int newOrderHistoryId = await this.orderHistoryService.CreateOrderHistoryAsync(userId);
+                Debug.WriteLine($"Created order history with ID: {newOrderHistoryId}");
+
+                return newOrderHistoryId;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error creating order history: {ex.Message}");
+                throw new InvalidOperationException($"Failed to create order history: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Creates or updates the order summary.
+        /// </summary>
+        private async Task CreateOrUpdateOrderSummaryAsync()
+        {
+            try
+            {
+                Debug.WriteLine($"Creating or updating order summary for order history ID: {this.orderHistoryID}");
+
+                // Use null-safe default values for required fields
+                string safeName = this.FullName ?? "Guest User";
+                string safeEmail = this.Email ?? "guest@example.com";
+                string safePhone = this.PhoneNumber ?? "000-000-0000";
+                string safeAddress = this.Address ?? "No Address Provided";
+                string safeZipCode = this.ZipCode ?? "00000";
+
+                // Fix for ContractDetails error - provide an empty string instead of null
+                string contractDetails = string.Empty;
+
+                // First, check if an order summary with this ID already exists
+                bool orderSummaryExists = false;
+                try
+                {
+                    var existingSummary = await this.orderSummaryService.GetOrderSummaryByIdAsync(this.orderHistoryID);
+                    orderSummaryExists = existingSummary != null;
+                    Debug.WriteLine($"Order summary check: exists = {orderSummaryExists}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error checking if order summary exists: {ex.Message}");
+                    // Assume it doesn't exist
+                    orderSummaryExists = false;
+                }
+
+                if (!orderSummaryExists)
+                {
+                    // Create a new OrderSummary object
+                    var orderSummary = new OrderSummary
+                    {
+                        // ID = this.orderHistoryID,
+                        Subtotal = this.Subtotal,
+                        WarrantyTax = this.WarrantyTax,
+                        DeliveryFee = this.DeliveryFee,
+                        FinalTotal = this.Total,
+                        FullName = safeName,
+                        Email = safeEmail,
+                        PhoneNumber = safePhone,
+                        Address = safeAddress,
+                        PostalCode = safeZipCode,
+                        AdditionalInfo = this.AdditionalInfo ?? string.Empty,
+                        ContractDetails = contractDetails
+                    };
+
                     try
                     {
-                        // Get orders from order history using the service
-                        List<Order> orderList = null;
-                        try
-                        {
-                            orderList = await this.orderService.GetOrdersFromOrderHistoryAsync(this.orderHistoryID);
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error getting orders: {ex.Message}");
-                            // Continue without order list
-                        }
+                        Debug.WriteLine("Creating new order summary");
+                        var newOrderSummaryId = await this.orderSummaryService.CreateOrderSummaryAsync(orderSummary);
 
-                        // Update the order summary using the service
-                        try
-                        {
-                            await this.orderSummaryService.UpdateOrderSummaryAsync(
-                                this.orderHistoryID,
-                                this.Subtotal,
-                                this.warrantyTax,
-                                this.DeliveryFee,
-                                this.Total,
-                                this.FullName ?? "Guest User",
-                                this.Email ?? "guest@example.com",
-                                this.PhoneNumber ?? "000-000-0000",
-                                this.Address ?? "No Address Provided",
-                                this.ZipCode ?? "00000",
-                                this.AdditionalInfo,
-                                null);
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error updating order summary: {ex.Message}");
-                            // Continue to next window even if updating fails
-                        }
+                        // After successful creation, assign the generated ID
+                        this.orderHistoryID = newOrderSummaryId;
+                        this.OrderHistoryId = newOrderSummaryId; // update the property for the rest of the flow
 
-                        // Always proceed to next window in development mode
-                        await this.OpenNextWindowAsync(paymentMethod);
+                        Debug.WriteLine($"Successfully created order summary with ID: {newOrderSummaryId}");
                     }
-                    catch (Exception ex)
+                    catch (Exception createEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error processing existing order: {ex.Message}");
-                        // Still try to proceed to next window
-                        await this.OpenNextWindowAsync(paymentMethod);
+                        Debug.WriteLine($"Error creating order summary: {createEx.Message}");
+                        throw new Exception($"Failed to create order summary: {createEx.Message}", createEx);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        Debug.WriteLine("Updating existing order summary");
+                        await this.orderSummaryService.UpdateOrderSummaryAsync(
+                            this.orderHistoryID,
+                            this.Subtotal,
+                            this.WarrantyTax,
+                            this.DeliveryFee,
+                            this.Total,
+                            safeName,
+                            safeEmail,
+                            safePhone,
+                            safeAddress,
+                            safeZipCode,
+                            this.AdditionalInfo ?? string.Empty,
+                            contractDetails);
+                        Debug.WriteLine("Successfully updated existing order summary");
+                    }
+                    catch (Exception updateEx)
+                    {
+                        Debug.WriteLine($"Error updating order summary: {updateEx.Message}");
+                        throw new Exception($"Failed to update order summary: {updateEx.Message}", updateEx);
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in finalize button handler: {ex}");
-                // Last resort - still try to open next window with default payment method
-                try
-                {
-                    await this.OpenNextWindowAsync(this.SelectedPaymentMethod ?? "cash");
-                }
-                catch (Exception innerEx)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Failed to open next window: {innerEx.Message}");
-                }
+                Debug.WriteLine($"Error in CreateOrUpdateOrderSummaryAsync: {ex.Message}");
+                throw; // Rethrow to handle in calling method
             }
         }
 
-        [ExcludeFromCodeCoverage]
         /// <summary>
-        /// Opens the next window based on the selected payment method.
+        /// Creates order entries for each product in the cart.
         /// </summary>
-        /// <param name="selectedPaymentMethod">The selected payment method (e.g. "card", "wallet").</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        // public async Task OpenNextWindowAsync(string selectedPaymentMethod)
-        // {
-        //    if (selectedPaymentMethod == "card")
-        //    {
-        //        var billingInfoWindow = new BillingInfoWindow();
-        //        var cardInfoPage = new CardInfo(orderHistoryID);
-        //        billingInfoWindow.Content = cardInfoPage;
+        private async Task CreateOrderEntriesAsync()
+        {
+            if (this.cartItems == null || this.cartItems.Count == 0)
+            {
+                Debug.WriteLine("No cart items to process");
+                return;
+            }
 
-        // billingInfoWindow.Activate();
+            Debug.WriteLine($"Creating order entries for {this.cartItems.Count} products");
 
-        // // This is just a workaround until I figure out how to switch between pages
-        //    }
-        //    else
-        //    {
-        //        if (selectedPaymentMethod == "wallet")
-        //        {
-        //            await ProcessWalletRefillAsync();
-        //        }
-        //        var billingInfoWindow = new BillingInfoWindow();
-        //        var finalisePurchasePage = new FinalisePurchase(orderHistoryID);
-        //        billingInfoWindow.Content = finalisePurchasePage;
+            foreach (var item in this.cartItems)
+            {
+                try
+                {
+                    // Get quantity from our dictionaries instead of blindly using Stock
+                    int quantity = this.GetQuantityForProduct(item.Id);
+                    Debug.WriteLine($"Processing product {item.Id} ({item.Title}), quantity: {quantity}");
 
-        // billingInfoWindow.Activate();
-        //    }
-        // }
+                    // Create one order entry per item ordered
+                    for (int i = 0; i < quantity; i++)
+                    {
+                        try
+                        {
+                            // Based on the web app code, the server expects "new", "used", or "borrowed"
+                            // NOT "buy", "borrow", etc.
+                            string productType;
+
+                            if (item is BorrowProduct)
+                            {
+                                productType = "borrowed";
+                            }
+                            else if (item is AuctionProduct)
+                            {
+                                productType = "auction"; // This might need to change depending on your backend
+                            }
+                            else // Default to "new" for BuyProducts
+                            {
+                                productType = "new";
+                            }
+
+                            Debug.WriteLine($"Using product type: {productType} for product {item.Id}");
+
+                            await this.orderService.AddOrderAsync(
+                                item.Id,
+                                this.buyerId,
+                                productType,
+                                this.SelectedPaymentMethod,
+                                this.orderHistoryID,
+                                DateTime.Now);
+
+                            Debug.WriteLine($"Created order entry for product {item.Id}, iteration {i + 1}/{quantity}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error adding order entry: {ex.Message}");
+                        }
+                    }
+
+                    // Update stock for BuyProducts correctly - DECREASE BY quantity
+                    if (item is BuyProduct buyProd)
+                    {
+                        try
+                        {
+                            // Get the current stock first
+                            var product = await this.buyProductsService.GetProductByIdAsync(item.Id);
+                            if (product != null && product is BuyProduct buyProduct)
+                            {
+                                int currentStock = buyProduct.Stock;
+                                // Calculate new stock as current - quantity instead of setting to quantity
+                                int newStock = Math.Max(0, currentStock - quantity);
+
+                                // Use DecreaseProductStockAsync if available since that's what the web app uses
+                                if (this.buyProductsService is IBuyProductsService service &&
+                                    typeof(IBuyProductsService).GetMethod("DecreaseProductStockAsync") != null)
+                                {
+                                    await service.DecreaseProductStockAsync(item.Id, quantity);
+                                    Debug.WriteLine($"Decreased stock for product {item.Id} by {quantity} (from {currentStock})");
+                                }
+                                else
+                                {
+                                    // Fallback to UpdateProductStockAsync
+                                    await this.buyProductsService.UpdateProductStockAsync(item.Id, newStock);
+                                    Debug.WriteLine($"Updated stock for product {item.Id} from {currentStock} to {newStock}");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error updating stock: {ex.Message}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error processing product {item.Id}: {ex.Message}");
+                }
+            }
+
+            // After successful order creation, clear the shopping cart
+            await ClearShoppingCartAsync();
+        }
 
         /// <summary>
-        /// Opens the next window based on the selected payment method.
+        /// Clears the shopping cart after successful order creation
         /// </summary>
-        /// <param name="selectedPaymentMethod">The selected payment method (e.g. "card", "wallet").</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task ClearShoppingCartAsync()
+        {
+            try
+            {
+                int userId = this.buyerId > 0 ? this.buyerId : (UserSession.CurrentUserId ?? 1);
+                Debug.WriteLine($"Clearing shopping cart for user {userId}");
+                await this.shoppingCartService.ClearCartAsync(userId);
+                Debug.WriteLine("Shopping cart cleared successfully");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error clearing shopping cart: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Processes a wallet payment.
+        /// </summary>
+        public async Task ProcessWalletRefillAsync()
+        {
+            try
+            {
+                int userId = this.buyerId > 0 ? this.buyerId : (UserSession.CurrentUserId ?? 1);
+                Debug.WriteLine($"Processing wallet payment for user {userId}, amount: ${this.Total}");
+
+                double walletBalance = await this.dummyWalletService.GetWalletBalanceAsync(userId);
+                Debug.WriteLine($"Current wallet balance: ${walletBalance}");
+
+                if (walletBalance < this.Total)
+                {
+                    Debug.WriteLine("Insufficient funds in wallet");
+                    throw new InvalidOperationException($"Insufficient funds in wallet. Available: ${walletBalance}, Required: ${this.Total}");
+                }
+
+                double newBalance = walletBalance - this.Total;
+                await this.dummyWalletService.UpdateWalletBalance(userId, newBalance);
+                Debug.WriteLine($"Wallet payment successful. New balance: ${newBalance}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error processing wallet payment: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Opens the next screen based on payment method.
+        /// </summary>
         public async Task OpenNextWindowAsync(string selectedPaymentMethod)
         {
             try
             {
-                if (selectedPaymentMethod == "card")
-                {
-                    var billingInfoWindow = new BillingInfoWindow();
-                    var cardInfoPage = new Views.CardInfo(this.orderHistoryID);
-                    billingInfoWindow.Content = cardInfoPage;
+                // Save the order history ID for access by the finalize purchase page
+                App.LastProcessedOrderId = this.orderHistoryID;
+                Debug.WriteLine($"Setting App.LastProcessedOrderId = {this.orderHistoryID}");
 
-                    try
-                    {
-                        billingInfoWindow.Activate();
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error activating CardInfo window: {ex.Message}");
-                        // Try a different approach if activation fails
-                        this.ShowBasicSuccessMessage("Your order has been processed.");
-                    }
+                // Create a new FinalizePurchaseViewModel if it doesn't exist
+                if (App.FinalizePurchaseViewModel == null)
+                {
+                    Debug.WriteLine("Creating new FinalizePurchaseViewModel instance");
                 }
                 else
                 {
-                    if (selectedPaymentMethod == "wallet")
-                    {
-                        try
-                        {
-                            await this.ProcessWalletRefillAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error processing wallet refill: {ex.Message}");
-                            // Continue despite wallet processing error
-                        }
-                    }
+                    Debug.WriteLine("Using existing FinalizePurchaseViewModel instance");
+                }
 
-                    try
-                    {
-                        var billingInfoWindow = new BillingInfoWindow();
-                        var finalisePurchasePage = new Views.FinalisePurchase(this.orderHistoryID);
-                        billingInfoWindow.Content = finalisePurchasePage;
+                // Initialize it with our data for faster loading
+                var viewModel = App.FinalizePurchaseViewModel;
+                viewModel.FullName = this.FullName;
+                viewModel.Email = this.Email;
+                viewModel.PhoneNumber = this.PhoneNumber;
+                viewModel.PaymentMethod = this.SelectedPaymentMethod;
+                viewModel.OrderStatus = "Completed";
+                viewModel.Subtotal = this.Subtotal;
+                viewModel.DeliveryFee = this.DeliveryFee;
+                viewModel.WarrantyTax = this.WarrantyTax;
+                viewModel.Total = this.Total;
+                viewModel.OrderHistoryID = this.orderHistoryID;
 
-                        billingInfoWindow.Activate();
-                    }
-                    catch (Exception ex)
+                // Clear previous products
+                viewModel.ProductList.Clear();
+
+                // Set products if we have them
+                if (this.cartItems?.Count > 0)
+                {
+                    foreach (var product in this.cartItems)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error activating FinalisePurchase window: {ex.Message}");
-                        // Show a basic success message if window activation fails
-                        this.ShowBasicSuccessMessage("Your order has been completed successfully!");
+                        int qty = this.GetQuantityForProduct(product.Id);
+                        viewModel.ProductList.Add(new ProductViewModel(product, qty));
                     }
+                    Debug.WriteLine($"Added {viewModel.ProductList.Count} products to FinalizePurchaseViewModel");
+                }
+
+                Debug.WriteLine($"Opening finalize purchase window for {selectedPaymentMethod} payment");
+
+                // Process wallet payment if needed
+                if (selectedPaymentMethod == "wallet")
+                {
+                    Debug.WriteLine("Processing wallet payment...");
+                    await this.ProcessWalletRefillAsync();
+                    Debug.WriteLine("Wallet payment processed successfully");
+                }
+
+                try
+                {
+                    // Create the finalize purchase page directly
+                    var billingInfoWindow = new BillingInfoWindow();
+                    var finalisePurchasePage = new Views.FinalisePurchase();
+
+                    // Show "Processing..." message to user before activating window
+                    this.ErrorMessage = "Processing your order...";
+                    this.OnPropertyChanged(nameof(this.ErrorMessage));
+
+                    // Set the content and activate the window
+                    billingInfoWindow.Content = finalisePurchasePage;
+                    billingInfoWindow.Activate();
+                    Debug.WriteLine("Finalize purchase window activated");
+
+                    // Clear error message once window is shown
+                    this.ErrorMessage = string.Empty;
+                    this.OnPropertyChanged(nameof(this.ErrorMessage));
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error activating finalize purchase window: {ex.Message}");
+                    this.ShowBasicSuccessMessage("Your order has been completed successfully!");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error opening next window: {ex.Message}");
-                // Last resort - show simple message
+                Debug.WriteLine($"Error opening next window: {ex.Message}");
                 this.ShowBasicSuccessMessage("Thank you for your order!");
             }
         }
 
         /// <summary>
-        /// Shows a basic success message when other UI options fail
+        /// Shows a basic success message.
         /// </summary>
         private void ShowBasicSuccessMessage(string message)
         {
-            try
-            {
-                // This is a simplified fallback that should work in most scenarios
-                System.Diagnostics.Debug.WriteLine($"SUCCESS: {message}");
-
-                // Here we would ideally show a simple message box or dialog
-                // Since we can't be sure what UI framework will work, we'll just log it
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Even basic message display failed: {ex.Message}");
-            }
+            Debug.WriteLine($"SUCCESS: {message}");
         }
 
         /// <summary>
-        /// Processes the wallet refill by deducting the order total from the current wallet balance.
+        /// Retrieves products from an order history.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task ProcessWalletRefillAsync()
-        {
-            double walletBalance = await this.dummyWalletService.GetWalletBalanceAsync(1);
-
-            double newBalance = walletBalance - this.Total;
-
-            await this.dummyWalletService.UpdateWalletBalance(1, newBalance);
-        }
-
-        /// <summary>
-        /// Occurs when a property value changes.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Raises the <see cref="PropertyChanged"/> event for the specified property.
-        /// </summary>
-        /// <param name="propertyName">The name of the property that changed.</param>
-        protected void OnPropertyChanged(string propertyName)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        // <summary>
-        // Calculates the total order amount including applicable delivery fees.
-        // </summary>
-        // <param name="orderHistoryID">The order history identifier used for calculation.</param>
-        // public void CalculateOrderTotal(int orderHistoryID)
-        // {
-        //    double subtotalProducts = 0;
-        //    if (Products.Count == 0)
-        //    {
-        //        return;
-        //    }
-        //    foreach (var product in Products)
-        //    {
-        //        subtotalProducts += product.Price;
-        //    }
-
-        // // For orders over 200 RON, a fixed delivery fee of 13.99 will be added
-        //    // (this is only for orders of new, used or borrowed products)
-        //    Subtotal = subtotalProducts;
-        //    if (subtotalProducts >= 200 || Products[0].ProductType == "refill" || Products[0].ProductType == "bid")
-        //    {
-        //        Total = subtotalProducts;
-        //    }
-        //    else
-        //    {
-        //        Total = subtotalProducts + 13.99f;
-        //        DeliveryFee = 13.99f;
-        //    }
-        // }
-        public void CalculateOrderTotal(int orderHistoryID)
-        {
-            // Call the parameter-less version
-            this.CalculateOrderTotal();
-        }
-
-        /// <summary>
-        /// Asynchronously retrieves products associated with the specified order history.
-        /// </summary>
-        /// <param name="orderHistoryID">The unique identifier for the order history.</param>
-        /// <returns>A task representing the asynchronous operation that returns a list of <see cref="Product"/>.</returns>
         public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryID)
         {
             return await this.orderHistoryService.GetProductsFromOrderHistoryAsync(orderHistoryID);
         }
 
         /// <summary>
-        /// Applies the borrowed tax to the specified dummy product if applicable.
+        /// Applies borrowed tax to a product.
         /// </summary>
-        /// <param name="borrowProduct">The dummy product on which to apply the borrowed tax.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task ApplyBorrowedTax(BorrowProduct borrowProduct)
         {
             if (borrowProduct == null)
             {
                 return;
             }
+
             if (this.StartDate > this.EndDate)
             {
+                Debug.WriteLine("Start date is after end date, cannot apply borrowed tax");
                 return;
             }
-            int monthsBorrowed = ((this.EndDate.Year - this.StartDate.Year) * 12) + this.EndDate.Month - this.StartDate.Month;
+
+            int monthsBorrowed = ((this.EndDate.Year - this.StartDate.Year) * 12) +
+                               this.EndDate.Month - this.StartDate.Month;
             if (monthsBorrowed <= 0)
             {
                 monthsBorrowed = 1;
             }
 
-            double warrantyTaxAmount = 0.2;
+            Debug.WriteLine($"Calculating borrowed tax for {monthsBorrowed} months");
 
+            double warrantyTaxRate = 0.2; // 20% warranty tax
             double finalPrice = borrowProduct.Price * monthsBorrowed;
+            double calculatedWarrantyTax = finalPrice * warrantyTaxRate;
 
-            this.warrantyTax += finalPrice * warrantyTaxAmount;
+            this.warrantyTax += calculatedWarrantyTax;
+            this.WarrantyTax = this.warrantyTax;
 
-            this.WarrantyTax = (double)this.warrantyTax;
+            borrowProduct.Price = finalPrice + calculatedWarrantyTax;
 
-            borrowProduct.Price = finalPrice + this.WarrantyTax;
+            Debug.WriteLine($"Applied tax - Price: ${borrowProduct.Price}, Warranty Tax: ${this.WarrantyTax}");
 
-            this.CalculateOrderTotal(this.orderHistoryID);
+            this.CalculateOrderTotal();
 
+            // Update borrow product dates
             DateTime newStartDate = this.startDate.Date;
             DateTime newEndDate = this.endDate.Date;
-
             borrowProduct.StartDate = newStartDate;
             borrowProduct.EndDate = newEndDate;
 
             await this.borrowProductService.UpdateBorrowProductAsync(borrowProduct);
+            Debug.WriteLine("Borrow product updated with new dates and price");
         }
 
-        [ExcludeFromCodeCoverage]
         /// <summary>
-        /// Updates the start date for the product's rental period.
+        /// Updates the start date for a borrowed product.
         /// </summary>
-        /// <param name="date">The new start date as a <see cref="DateTimeOffset"/>.</param>
         public void UpdateStartDate(DateTimeOffset date)
         {
             this.startDate = date.DateTime;
-            this.StartDate = date.DateTime;
+            this.StartDate = date;
+            Debug.WriteLine($"Updated start date: {date.Date}");
         }
-        [ExcludeFromCodeCoverage]
 
         /// <summary>
-        /// Updates the end date for the product's rental period.
+        /// Updates the end date for a borrowed product.
         /// </summary>
-        /// <param name="date">The new end date as a <see cref="DateTimeOffset"/>.</param>
         public void UpdateEndDate(DateTimeOffset date)
         {
             this.endDate = date.DateTime;
-            this.EndDate = date.DateTime;
+            this.EndDate = date;
+            Debug.WriteLine($"Updated end date: {date.Date}");
         }
 
-        [ExcludeFromCodeCoverage]
         public string SelectedPaymentMethod
         {
             get => this.selectedPaymentMethod;
             set
             {
-                this.selectedPaymentMethod = value;
-                this.OnPropertyChanged(nameof(this.SelectedPaymentMethod));
+                if (this.selectedPaymentMethod != value)
+                {
+                    this.selectedPaymentMethod = value;
+                    this.OnPropertyChanged(nameof(this.SelectedPaymentMethod));
+                    Debug.WriteLine($"Selected payment method: {value}");
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public string FullName
         {
             get => this.fullName;
             set
             {
-                this.fullName = value;
-                this.OnPropertyChanged(nameof(this.FullName));
+                if (this.fullName != value)
+                {
+                    this.fullName = value;
+                    this.OnPropertyChanged(nameof(this.FullName));
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public string Email
         {
             get => this.email;
             set
             {
-                this.email = value;
-                this.OnPropertyChanged(nameof(this.Email));
+                if (this.email != value)
+                {
+                    this.email = value;
+                    this.OnPropertyChanged(nameof(this.Email));
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public string PhoneNumber
         {
             get => this.phoneNumber;
             set
             {
-                this.phoneNumber = value;
-                this.OnPropertyChanged(nameof(this.PhoneNumber));
+                if (this.phoneNumber != value)
+                {
+                    this.phoneNumber = value;
+                    this.OnPropertyChanged(nameof(this.PhoneNumber));
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public string Address
         {
             get => this.address;
             set
             {
-                this.address = value;
-                this.OnPropertyChanged(nameof(this.Address));
+                if (this.address != value)
+                {
+                    this.address = value;
+                    this.OnPropertyChanged(nameof(this.Address));
+                }
             }
         }
-        [ExcludeFromCodeCoverage]
+
         public string ZipCode
         {
             get => this.zipCode;
             set
             {
-                this.zipCode = value;
-                this.OnPropertyChanged(nameof(this.ZipCode));
+                if (this.zipCode != value)
+                {
+                    this.zipCode = value;
+                    this.OnPropertyChanged(nameof(this.ZipCode));
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public string AdditionalInfo
         {
             get => this.additionalInfo;
             set
             {
-                this.additionalInfo = value;
-                this.OnPropertyChanged(nameof(this.AdditionalInfo));
+                if (this.additionalInfo != value)
+                {
+                    this.additionalInfo = value;
+                    this.OnPropertyChanged(nameof(this.AdditionalInfo));
+                }
             }
         }
-        [ExcludeFromCodeCoverage]
+
+        /// <summary>
+        /// Gets the dictionary of product quantities in the cart.
+        /// </summary>
+        public Dictionary<int, int> CartQuantities
+        {
+            get => this.cartQuantities;
+        }
+
         public bool IsWalletEnabled
         {
             get => this.isWalletEnabled;
             set
             {
-                this.isWalletEnabled = value;
-                this.OnPropertyChanged(nameof(this.IsWalletEnabled));
+                if (this.isWalletEnabled != value)
+                {
+                    this.isWalletEnabled = value;
+                    this.OnPropertyChanged(nameof(this.IsWalletEnabled));
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public bool IsCashEnabled
         {
             get => this.isCashEnabled;
             set
             {
-                this.isCashEnabled = value;
-                this.OnPropertyChanged(nameof(this.IsCashEnabled));
+                if (this.isCashEnabled != value)
+                {
+                    this.isCashEnabled = value;
+                    this.OnPropertyChanged(nameof(this.IsCashEnabled));
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public bool IsCardEnabled
         {
             get => this.isCardEnabled;
             set
             {
-                this.isCardEnabled = value;
-                this.OnPropertyChanged(nameof(this.IsCardEnabled));
+                if (this.isCardEnabled != value)
+                {
+                    this.isCardEnabled = value;
+                    this.OnPropertyChanged(nameof(this.IsCardEnabled));
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public double Subtotal
         {
             get => this.subtotal;
             set
             {
-                this.subtotal = value;
-                this.OnPropertyChanged(nameof(this.Subtotal));
+                if (this.subtotal != value)
+                {
+                    this.subtotal = value;
+                    this.OnPropertyChanged(nameof(this.Subtotal));
+                }
             }
         }
-        [ExcludeFromCodeCoverage]
+
         public double DeliveryFee
         {
             get => this.deliveryFee;
             set
             {
-                this.deliveryFee = value;
-                this.OnPropertyChanged(nameof(this.DeliveryFee));
+                if (this.deliveryFee != value)
+                {
+                    this.deliveryFee = value;
+                    this.OnPropertyChanged(nameof(this.DeliveryFee));
+                }
             }
         }
-        [ExcludeFromCodeCoverage]
+
         public double Total
         {
             get => this.total;
             set
             {
-                this.total = value;
-                this.OnPropertyChanged(nameof(this.Total));
+                if (this.total != value)
+                {
+                    this.total = value;
+                    this.OnPropertyChanged(nameof(this.Total));
+                }
             }
         }
-        [ExcludeFromCodeCoverage]
+
         public double WarrantyTax
         {
             get => this.warrantyTax;
             set
             {
-                this.warrantyTax = value;
-                this.OnPropertyChanged(nameof(this.warrantyTax));
+                if (this.warrantyTax != value)
+                {
+                    this.warrantyTax = value;
+                    this.OnPropertyChanged(nameof(this.WarrantyTax));
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public DateTimeOffset StartDate
         {
             get => this.startDate;
             set
             {
-                this.startDate = value;
-                this.OnPropertyChanged(nameof(this.StartDate));
+                if (this.startDate != value)
+                {
+                    this.startDate = value;
+                    this.OnPropertyChanged(nameof(this.StartDate));
+                }
             }
         }
 
-        [ExcludeFromCodeCoverage]
         public DateTimeOffset EndDate
         {
             get => this.endDate;
             set
             {
-                this.endDate = value;
-                this.OnPropertyChanged(nameof(this.EndDate));
+                if (this.endDate != value)
+                {
+                    this.endDate = value;
+                    this.OnPropertyChanged(nameof(this.EndDate));
+                }
             }
+        }
+
+        public bool IsProcessing
+        {
+            get => this.isProcessing;
+            set
+            {
+                if (this.isProcessing != value)
+                {
+                    this.isProcessing = value;
+                    this.OnPropertyChanged(nameof(this.IsProcessing));
+                }
+            }
+        }
+
+        public string ErrorMessage
+        {
+            get => this.errorMessage;
+            set
+            {
+                if (this.errorMessage != value)
+                {
+                    this.errorMessage = value;
+                    this.OnPropertyChanged(nameof(this.ErrorMessage));
+                }
+            }
+        }
+
+        public int OrderHistoryId
+        {
+            get => this.orderHistoryID;
+            set
+            {
+                if (this.orderHistoryID != value)
+                {
+                    this.orderHistoryID = value;
+                    this.OnPropertyChanged(nameof(this.OrderHistoryId));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

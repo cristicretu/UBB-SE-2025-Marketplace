@@ -5,152 +5,290 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModel="using:MarketMinds.ViewModels"
     x:Name="Root"
-    Background="#FFF0F0F0">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <!-- Custom Button Style for blue buttons with darker blue on hover and rounded corners -->
-        <Style x:Key="BlueButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#0D47A1"/>
-            <Setter Property="Foreground" Value="White"/>
+        <!-- Accent button style using system colors -->
+        <Style x:Key="AccentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}"/>
+            <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
-                            <ContentPresenter x:Name="ContentPresenter"
-                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                          Margin="{TemplateBinding Padding}"
-                                          CornerRadius="{TemplateBinding CornerRadius}"/>
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Normal"/>
-                                    <VisualState x:Name="PointerOver">
-                                        <VisualState.Setters>
-                                            <Setter Target="RootGrid.Background" Value="#083983"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="Pressed">
-                                        <VisualState.Setters>
-                                            <Setter Target="RootGrid.Background" Value="#062C65"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Quantity control button style -->
+        <Style x:Key="QuantityButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{ThemeResource ControlFillColorSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <!-- System accent button style -->
+        <Style x:Key="PurpleButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}"/>
+            <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
     </Page.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <!-- Main content fills almost the entire window with equal padding -->
+    <Grid Padding="20">
+        <!-- Border takes up most of the window space -->
+        <Border
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource SystemAccentColorDark1}"
+            BorderThickness="1"
+            CornerRadius="12"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch">
 
-        <!-- Title with blue text and underline -->
-        <TextBlock 
-            Text="My Cart" 
-            FontSize="40" 
-            FontWeight="Bold" 
-            Foreground="#0D47A1" 
-            HorizontalAlignment="Center"
-            Margin="0,20,0,5"
-            Grid.Row="0"/>
+            <Grid Padding="40">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-        <!-- Blue line separator -->
-        <Rectangle 
-            Height="2" 
-            Fill="#0D47A1" 
-            Grid.Row="1" 
-            Margin="50,0,50,15"/>
+                <!-- Title with system accent text -->
+                <TextBlock 
+                    Text="My Cart" 
+                    FontSize="40" 
+                    FontWeight="Bold" 
+                    Foreground="{ThemeResource SystemAccentColorDark2}" 
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,10"
+                    Grid.Row="0"/>
 
-        <!-- Purchase Button with custom style with rounded corners -->
-        <Button 
-        Content="Purchase" 
-        Style="{StaticResource BlueButtonStyle}"
-        FontWeight="SemiBold"
-        Padding="15,8"
-        Grid.Row="2"
-        Margin="50,10,0,20" 
-        HorizontalAlignment="Left"
-        Click="PurchaseButton_Click"/>
+                <!-- System accent line separator -->
+                <Rectangle 
+                    Height="2" 
+                    Fill="{ThemeResource SystemAccentColor}" 
+                    Grid.Row="1" 
+                    Margin="0,0,0,20"/>
 
-        <!-- Cart Items ListView with styled elements -->
-        <ListView 
-            ItemsSource="{x:Bind ViewModel.CartItems, Mode=OneWay}" 
-            Grid.Row="3"
-            Margin="50,0,50,20"
-            SelectionMode="None">
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="Padding" Value="0"/>
-                    <Setter Property="Margin" Value="0,5"/>
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="viewModel:CartItemViewModel">
-                    <Grid Margin="5" Padding="10">
+                <!-- Checkout Button - Left aligned -->
+                <Button 
+                    Content="Checkout" 
+                    Style="{StaticResource AccentButtonStyle}"
+                    Grid.Row="2"
+                    Margin="0,0,0,20" 
+                    HorizontalAlignment="Left"
+                    Click="CheckoutButton_Click"
+                    Visibility="{x:Bind ViewModel.IsCartEmpty, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+
+                <!-- Content based on cart state -->
+                <Grid Grid.Row="3">
+                    <!-- Empty Cart Message -->
+                    <StackPanel 
+                        Visibility="{x:Bind ViewModel.IsCartEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center">
+                        <TextBlock 
+                            Text="Your cart is empty" 
+                            FontSize="24"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,20"/>
+                        <Button 
+                            Content="Continue Shopping" 
+                            Style="{StaticResource AccentButtonStyle}"
+                            Click="ContinueShoppingButton_Click"/>
+                    </StackPanel>
+
+                    <!-- Cart Items -->
+                    <Grid 
+                        Visibility="{x:Bind ViewModel.IsCartEmpty, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+
+                        <!-- Header row -->
+                        <Grid VerticalAlignment="Top" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <!-- Product -->
+                                <ColumnDefinition Width="*"/>
+                                <!-- Price -->
+                                <ColumnDefinition Width="*"/>
+                                <!-- Quantity -->
+                                <ColumnDefinition Width="*"/>
+                                <!-- Total -->
+                                <ColumnDefinition Width="*"/>
+                                <!-- Action -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- All headers aligned with their respective content columns -->
+                            <TextBlock Text="Product" FontWeight="SemiBold" Grid.Column="0" Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <TextBlock Text="Price" FontWeight="SemiBold" Grid.Column="1" Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Quantity" FontWeight="SemiBold" Grid.Column="2" Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Total" FontWeight="SemiBold" Grid.Column="3" Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Action" FontWeight="SemiBold" Grid.Column="4" Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- List of items -->
+                        <ListView 
+                            ItemsSource="{x:Bind ViewModel.CartItems, Mode=OneWay}"
+                            Margin="0,40,0,0"
+                            SelectionMode="None"
+                            IsItemClickEnabled="False"
+                            Background="Transparent"
+                            Padding="0">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="viewModel:CartItemViewModel">
+                                    <Grid Padding="0,15" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="3*"/>
+                                            <!-- Product -->
+                                            <ColumnDefinition Width="*"/>
+                                            <!-- Price -->
+                                            <ColumnDefinition Width="*"/>
+                                            <!-- Quantity -->
+                                            <ColumnDefinition Width="*"/>
+                                            <!-- Total -->
+                                            <ColumnDefinition Width="*"/>
+                                            <!-- Action -->
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Product Name - Left aligned like header -->
+                                        <TextBlock 
+                                            Grid.Column="0"
+                                            Text="{x:Bind Product.Title}" 
+                                            FontWeight="SemiBold" 
+                                            Foreground="{ThemeResource SystemAccentColor}"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Left"/>
+
+                                        <!-- Price - Center aligned like header -->
+                                        <TextBlock 
+                                            Grid.Column="1"
+                                            Text="{x:Bind Product.Price, Mode=OneWay, Converter={StaticResource CurrencyConverter}}" 
+                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"/>
+
+                                        <!-- Quantity Controls - Center aligned like header -->
+                                        <Grid Grid.Column="2" HorizontalAlignment="Center">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Quantity controls in top row -->
+                                            <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Button 
+                                                    Content="-" 
+                                                    Style="{StaticResource QuantityButtonStyle}"
+                                                    Command="{x:Bind DecrementCommand}"
+                                                    VerticalAlignment="Center"/>
+
+                                                <TextBlock 
+                                                    Text="{x:Bind Quantity, Mode=TwoWay}"
+                                                    FontSize="16"
+                                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Center"
+                                                    MinWidth="30"
+                                                    TextAlignment="Center"
+                                                    Margin="10,0"/>
+
+                                                <Button 
+                                                    Content="+" 
+                                                    Style="{StaticResource QuantityButtonStyle}"
+                                                    Command="{x:Bind IncrementCommand}"
+                                                    VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <!-- Stock info in bottom row -->
+                                            <TextBlock 
+                                                Grid.Row="1"
+                                                Text="{x:Bind StockMessage}" 
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                FontSize="12"
+                                                HorizontalAlignment="Center"
+                                                Margin="0,4,0,0"/>
+                                        </Grid>
+
+                                        <!-- Total Price - Center aligned like header -->
+                                        <TextBlock 
+                                            Grid.Column="3"
+                                            Text="{x:Bind TotalPrice, Mode=OneWay, Converter={StaticResource CurrencyConverter}}" 
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"/>
+
+                                        <!-- Remove Button - Center aligned like header -->
+                                        <Button 
+                                            Grid.Column="4"
+                                            Content="Remove" 
+                                            Style="{StaticResource AccentButtonStyle}"
+                                            Padding="12,5"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            Command="{x:Bind RemoveCommand}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </Grid>
+
+                <!-- Cart Total -->
+                <Grid 
+                    Grid.Row="4" 
+                    Visibility="{x:Bind ViewModel.IsCartEmpty, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+
+                    <Rectangle Fill="{ThemeResource CardStrokeColorDefaultBrush}" Height="1" VerticalAlignment="Top" Margin="0,10,0,20"/>
+
+                    <Grid Margin="0,30,0,0" HorizontalAlignment="Right">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="3*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Product Name - Bold and Blue -->
                         <TextBlock 
-                            Text="{x:Bind Product.Title}" 
-                            FontWeight="Bold" 
-                            Foreground="#0D47A1"
-                            VerticalAlignment="Center"
-                            Grid.Column="0"/>
-
-                        <!-- Price - Black -->
-                        <TextBlock 
-                            Text="{x:Bind Product.Price, Mode=OneWay}" 
-                            Foreground="Black"
-                            VerticalAlignment="Center"
-                            Grid.Column="1"/>
-
-                        <!-- Quantity TextBox - Simple -->
-                        <TextBox 
-                            Text="{x:Bind Quantity, Mode=TwoWay}" 
-                            Width="60" 
-                            Foreground="Black"
-                            VerticalAlignment="Center"
-                            Grid.Column="2"
-                            CornerRadius="4"/>
-                        <!-- Added rounded corners to TextBox -->
-
-                        <!-- Total Price - Black -->
-                        <TextBlock 
-                            Text="{x:Bind TotalPrice, Mode=OneWay}" 
-                            Foreground="Black"
-                            VerticalAlignment="Center"
-                            Grid.Column="3"/>
-
-                        <!-- Remove Button with custom style and rounded corners -->
-                        <!-- <Button 
-                            Content="Remove" 
-                            Command="{x:Bind RemoveFromCartCommand}"
-                            CommandParameter="{x:Bind Product}"
-                            Grid.Column="4"
-                            Style="{StaticResource BlueButtonStyle}"
-                            Padding="10,5"
+                            Grid.Column="0"
+                            Text="Total:" 
+                            FontSize="20" 
+                            FontWeight="Bold"
                             HorizontalAlignment="Right"
-                            VerticalAlignment="Center"/> -->
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <TextBlock 
+                            Grid.Column="1"
+                            Text="{x:Bind ViewModel.CartTotal, Mode=OneWay, Converter={StaticResource CurrencyConverter}}" 
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Margin="15,0,0,0"
+                            Foreground="{ThemeResource SystemAccentColorDark1}"
+                            VerticalAlignment="Center"/>
                     </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </Page>
-

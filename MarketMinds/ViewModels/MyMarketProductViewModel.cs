@@ -15,7 +15,7 @@
             this.Product = product;
             this.AddToCartCommand = new RelayCommand<Product>(async (product) =>
             {
-                var shoppingCartViewModel = new ShoppingCartViewModel(new ShoppingCartService(), buyerId: UserSession.CurrentUserId ?? 1);
+                var shoppingCartViewModel = new ShoppingCartViewModel();
                 await shoppingCartViewModel.AddToCartAsync(product, 1);
             });
         }

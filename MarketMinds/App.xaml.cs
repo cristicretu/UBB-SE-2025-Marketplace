@@ -4,9 +4,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Dispatching;
+using Microsoft.Extensions.Logging;
 using BusinessLogicLayer.ViewModel;
 using DataAccessLayer;
 using MarketMinds.ViewModels;
+// using MarketMinds.ViewModels.ContractRenewViewModel;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Shared.Services.BorrowProductsService;
@@ -16,7 +18,6 @@ using MarketMinds.Shared.Services.ProductCategoryService;
 using MarketMinds.Shared.Services.ProductConditionService;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.Services.ProductTagService;
-using MarketMinds.ViewModels;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Services.ImagineUploadService;
@@ -61,6 +62,10 @@ namespace MarketMinds
         public static BasketProxyRepository BasketRepository;
         public static BuyProductsProxyRepository BuyProductsRepository;
         public static IBuyerLinkageRepository BuyerLinkageRepository;
+        public static ShoppingCartProxyRepository ShoppingCartRepository;
+        public static OrderHistoryProxyRepository OrderHistoryRepository;
+        public static OrderProxyRepository OrderRepository;
+        public static BuyProductsProxyRepository BuyProductsProxyRepository;
 
         // Service declarations
         public static IBuyerService BuyerService;
@@ -85,8 +90,15 @@ namespace MarketMinds
         public static IContractService ContractService;
         public static IPDFService PDFService;
         public static IContractRenewalService ContractRenewalService;
-        public static IFileSystem FileSystem;
+        public static MarketMinds.ViewModels.ContractRenewViewModel.IFileSystem FileSystem;
         public static IBuyerLinkageService BuyerLinkageService { get; private set; }
+        public static IShoppingCartService ShoppingCartService;
+        public static IOrderHistoryService OrderHistoryService;
+        public static IOrderService OrderService;
+        public static IOrderSummaryService OrderSummaryService;
+        public static IDummyWalletService DummyWalletService;
+        public static IProductService ProductService;
+        public static int LastProcessedOrderId { get; set; }
 
         // ViewModel declarations
         public static BuyerProfileViewModel BuyerProfileViewModel { get; private set; }
@@ -114,6 +126,11 @@ namespace MarketMinds
         public static BuyerWishlistItemViewModel BuyerWishlistItemViewModel { get; private set; }
         public static MarketMinds.Shared.Models.User CurrentUser { get; set; } // this acts like the session user (desktop session)
         public static ContractRenewViewModel ContractRenewViewModel { get; private set; }
+        public static ShoppingCartViewModel ShoppingCartViewModel { get; private set; }
+        public static CartItemViewModel CartItemViewModel { get; private set; }
+        public static BillingInfoViewModel BillingInfoViewModel { get; private set; }
+        public static FinalizePurchaseViewModel FinalizePurchaseViewModel { get; private set; }
+        public static NotificationViewModel NotificationViewModel { get; private set; }
 
         private const int ADMIN = 1;
         private const int BUYER = 2;
@@ -297,6 +314,7 @@ namespace MarketMinds
             BasketRepository = new BasketProxyRepository(Configuration);
             BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
             BuyerLinkageRepository = new BuyerLinkageProxyRepository(Configuration);
+            ShoppingCartRepository = new ShoppingCartProxyRepository(Configuration);
 
             // Initialize services
             AdminService = new AdminService(UserRepository);
@@ -322,9 +340,14 @@ namespace MarketMinds
             PDFService = new PDFService();
             ContractRenewalService = new ContractRenewalService();
             FileSystem = new FileSystemWrapper();
-
-            Microsoft.Extensions.Logging.ILogger<BuyerLinkageService> logger = new Logger<BuyerLinkageService>(new LoggerFactory());
+            ILogger<BuyerLinkageService> logger = new Logger<BuyerLinkageService>(new LoggerFactory());
             BuyerLinkageService = new BuyerLinkageService(BuyerLinkageRepository, BuyerService, logger);
+            ShoppingCartService = new ShoppingCartService(ShoppingCartRepository);
+            OrderHistoryService = new OrderHistoryService();
+            OrderService = new OrderService();
+            OrderSummaryService = new OrderSummaryService();
+            DummyWalletService = new DummyWalletService();
+            ProductService = new ProductService(BuyProductsRepository);
 
             // Initialize non-user dependent view models
             BuyerWishlistItemViewModel = new BuyerWishlistItemViewModel();
@@ -342,7 +365,12 @@ namespace MarketMinds
             MainMarketplaceViewModel = new MainMarketplaceViewModel();
             ContractRenewViewModel = new ContractRenewViewModel(ContractService, PDFService, ContractRenewalService, UserService, FileSystem);
             SellerProfileViewModel = new SellerProfileViewModel(SellerService);
+            ShoppingCartViewModel = new ShoppingCartViewModel();
+            BillingInfoViewModel = new BillingInfoViewModel();
+            FinalizePurchaseViewModel = new FinalizePurchaseViewModel();
+            NotificationViewModel = new NotificationViewModel(UserSession.CurrentUserId ?? 1);
             BuyerProfileViewModel = new BuyerProfileViewModel(BuyerService, BuyProductsService, BuyerLinkageService);
+
             // Initialize login and register view models with proper callbacks
             AdminViewModel = new AdminViewModel(AdminService, AnalyticsService, UserService);
             LoginViewModel = new LoginViewModel(UserService, new LoginSuccessHandler(), new CaptchaService());

@@ -66,7 +66,7 @@ namespace MarketMinds.ViewModels
                 if (product is Product typedProduct)
                 {
                     System.Diagnostics.Debug.WriteLine($"[AddToCart] Attempting to add product ID: {typedProduct.Id}, Title: {typedProduct.Title}");
-                    var shoppingCartViewModel = new ShoppingCartViewModel(new ShoppingCartService(), buyerId: UserSession.CurrentUserId ?? 1);
+                    var shoppingCartViewModel = new ShoppingCartViewModel();
                     await shoppingCartViewModel.AddToCartAsync(typedProduct, 1);
                 }
                 else
