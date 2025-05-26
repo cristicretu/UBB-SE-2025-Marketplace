@@ -22,10 +22,13 @@
         
         @if (unreadCount > 0)
         {
-            <button id="markAllAsReadBtn" 
-                    class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 hover:underline focus:outline-none">
-                Mark all as read
-            </button>
+            <form asp-controller="Notification" asp-action="MarkAllAsRead" method="post" class="inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" 
+                        class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 hover:underline focus:outline-none">
+                    Mark all as read
+                </button>
+            </form>
         }
     </div>
     
@@ -36,7 +39,7 @@
             <div class="divide-y divide-gray-100">
                 @foreach (var notification in Model.Take(5)) // Limit to recent 5 notifications
                 {
-                    <div class="p-4 hover:bg-gray-50 transition-colors duration-150 @(notification.IsRead ? "" : "bg-blue-50 border-l-2 border-l-blue-500")" data-notification-id="@notification.NotificationID">
+                    <div class="p-4 hover:bg-gray-50 transition-colors duration-150 @(notification.IsRead ? "" : "bg-blue-50 border-l-4 border-l-blue-500")" data-notification-id="@notification.NotificationID">
                         <div class="flex items-start space-x-3">
                             <!-- Notification Icon -->
                             <div class="flex-shrink-0 mt-0.5">
@@ -83,6 +86,7 @@
                                             iconPath = "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z";
                                             break;
                                         default:
+                                            iconClass = "text-gray-500";
                                             iconPath = "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9";
                                             break;
                                     }
@@ -97,78 +101,77 @@
                             
                             <!-- Notification Content -->
                             <div class="flex-1 min-w-0">
-                                <!-- Title based on notification type -->
+                                <!-- Title -->
                                 <p class="text-sm font-medium text-gray-900 @(notification.IsRead ? "" : "font-semibold")">
                                     @notification.Title
                                 </p>
                                 
                                 <!-- Content with formatted information -->
                                 <p class="text-sm text-gray-600 mt-1">
-                                    @{                                        
-                                        // Extract and format specific IDs from different notification types
-                                        if (notification is OrderShippingProgressNotification orderShipping)
-                                        {
+                                    @switch (notification)
+                                    {
+                                        case OrderShippingProgressNotification orderShipping:
                                             <span>
                                                 Order <span class="font-medium text-gray-900">#@orderShipping.OrderID</span> - 
                                                 <span class="@(orderShipping.ShippingState == "Delivered" ? "text-green-600" : "text-blue-600") font-medium">@orderShipping.ShippingState</span>
                                                 <span class="block text-xs text-gray-500 mt-1">Expected delivery: @orderShipping.DeliveryDate.ToString("MMM dd, yyyy")</span>
                                             </span>
-                                        }
-                                        else if (notification is PaymentConfirmationNotification paymentConfirmation)
-                                        {
+                                            break;
+                                        
+                                        case PaymentConfirmationNotification paymentConfirmation:
                                             <span>
                                                 Your payment for order <span class="font-medium text-gray-900">#@paymentConfirmation.OrderID</span> has been confirmed.
                                                 <span class="block text-xs text-gray-500 mt-1">Product ID: @paymentConfirmation.ProductID</span>
                                             </span>
-                                        }
-                                        else if (notification is ContractExpirationNotification contractExpiration)
-                                        {
+                                            break;
+                                        
+                                        case ContractExpirationNotification contractExpiration:
                                             <span>
                                                 Contract <span class="font-medium text-gray-900">#@contractExpiration.ContractID</span> will expire on 
                                                 <span class="font-medium text-yellow-600">@contractExpiration.ExpirationDate.ToString("MMM dd, yyyy")</span>
                                             </span>
-                                        }
-                                        else if (notification is ProductAvailableNotification productAvailable)
-                                        {
+                                            break;
+                                        
+                                        case ProductAvailableNotification productAvailable:
                                             <span>
                                                 Product <span class="font-medium text-gray-900">#@productAvailable.ProductID</span> is now back in stock!
                                             </span>
-                                        }
-                                        else if (notification is ProductRemovedNotification productRemoved)
-                                        {
+                                            break;
+                                        
+                                        case ProductRemovedNotification productRemoved:
                                             <span>
                                                 Product <span class="font-medium text-gray-900">#@productRemoved.ProductID</span> has been removed from the marketplace.
                                             </span>
-                                        }
-                                        else if (notification is OutbiddedNotification outbidded)
-                                        {
+                                            break;
+                                        
+                                        case OutbiddedNotification outbidded:
                                             <span>
                                                 You've been outbid on product <span class="font-medium text-gray-900">#@outbidded.ProductID</span>. Place a new bid now!
                                             </span>
-                                        }
-                                        else if (notification is ContractRenewalRequestNotification contractRenewal)
-                                        {
+                                            break;
+                                        
+                                        case ContractRenewalRequestNotification contractRenewal:
                                             <span>
                                                 Contract renewal request for contract <span class="font-medium text-gray-900">#@contractRenewal.ContractID</span>.
                                             </span>
-                                        }
-                                        else if (notification is ContractRenewalAnswerNotification contractAnswer)
-                                        {
+                                            break;
+                                        
+                                        case ContractRenewalAnswerNotification contractAnswer:
                                             <span>
                                                 Contract <span class="font-medium text-gray-900">#@contractAnswer.ContractID</span> renewal request has been 
                                                 <span class="@(contractAnswer.IsAccepted ? "text-green-600" : "text-red-600") font-medium">@(contractAnswer.IsAccepted ? "accepted" : "rejected")</span>.
                                             </span>
-                                        }
-                                        else if (notification is ContractRenewalWaitlistNotification waitlist)
-                                        {
+                                            break;
+                                        
+                                        case ContractRenewalWaitlistNotification waitlist:
                                             <span>
                                                 A user has renewed their contract for product <span class="font-medium text-gray-900">#@waitlist.ProductID</span> that you are on the waitlist for.
                                             </span>
-                                        }
-                                        else
-                                        {
+                                            break;
+                                        
+                                        default:
                                             <span>@notification.Content</span>
-                                        }
+                                            break;
                                     }
                                 </p>
                                 
@@ -202,7 +205,7 @@
             @if (Model.Count > 5)
             {
                 <div class="p-3 bg-gray-50 border-t border-gray-200 text-center">
-                    <a href="/Notifications/All" 
+                    <a href="@Url.Action("All", "Notification")" 
                        class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 inline-flex items-center hover:underline">
                         View all @Model.Count notifications
                         <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,10 +234,14 @@
     @if (Model.Any())
     {
         <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-center items-center">
-            <button id="clearAllNotificationsBtn" 
-                    class="text-xs text-red-600 hover:text-red-800 transition-colors duration-200 hover:underline focus:outline-none">
-                Clear all notifications
-            </button>
+            <form asp-controller="Notification" asp-action="ClearAll" method="post" class="inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" 
+                        class="text-xs text-red-600 hover:text-red-800 transition-colors duration-200 hover:underline focus:outline-none"
+                        onclick="return confirm('Are you sure you want to clear all notifications? This action cannot be undone.')">
+                    Clear all notifications
+                </button>
+            </form>
         </div>
     }
 </div>
