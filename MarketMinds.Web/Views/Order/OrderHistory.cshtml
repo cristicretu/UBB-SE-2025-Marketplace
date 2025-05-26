@@ -35,6 +35,53 @@
         var groupedOrders = Model.GroupBy(o => o.OrderSummaryID).ToList();
     }
 
+<!-- TempData Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="fixed top-4 right-4 z-[10001] bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg" role="alert" id="successAlert">
+        <div class="flex">
+            <div class="py-1">
+                <svg class="fill-current h-6 w-6 text-green-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="font-bold">Success!</p>
+                <p class="text-sm">@TempData["Success"]</p>
+            </div>
+            <button type="button" class="ml-4" onclick="document.getElementById('successAlert').style.display='none'">
+                <svg class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <title>Close</title>
+                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="fixed top-4 right-4 z-[10001] bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg" role="alert" id="errorAlert">
+        <div class="flex">
+            <div class="py-1">
+                <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="font-bold">Error!</p>
+                <p class="text-sm">@TempData["Error"]</p>
+            </div>
+            <button type="button" class="ml-4" onclick="document.getElementById('errorAlert').style.display='none'">
+                <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <title>Close</title>
+                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+}
+
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
@@ -189,6 +236,22 @@
                                             </div>
                                         </div>
                                     </div>
+                                <div class="ml-6 flex-shrink-0 space-x-2">
+                                    <button onclick="showOrderDetails(@order.OrderSummaryID)" 
+                                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        View Details
+                                    </button>
+                                    
+                                    @{
+                                        // Removed contract buttons from main list to align with user-provided previous version.
+                                        // Contract actions are now handled in the modal.
+                                    }
+                                    
+                                </div>
                                 }
                             </div>
                         </div>
@@ -200,7 +263,7 @@
 </div>
 
 <!-- Order Details Modal -->
-<div id="orderDetailsModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 z-50 hidden">
+<div id="orderDetailsModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 z-[9999] hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
             <!-- Modal Header -->
@@ -232,6 +295,39 @@
     </div>
 </div>
 
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 z-[10000] hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">Success</h3>
+                    <button onclick="closeSuccessModal()" class="text-gray-400 hover:text-gray-500">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-center mb-4">
+                    <svg class="h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <p class="text-center text-gray-700" id="successMessage">Contract generated successfully!</p>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 flex justify-end">
+                <button onclick="closeSuccessModal()" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         // Set seller status for JavaScript
@@ -245,6 +341,22 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             loadOrders();
+            
+            // Auto-dismiss alerts after 5 seconds
+            const successAlert = document.getElementById('successAlert');
+            const errorAlert = document.getElementById('errorAlert');
+            
+            if (successAlert) {
+                setTimeout(() => {
+                    successAlert.style.display = 'none';
+                }, 5000);
+            }
+            
+            if (errorAlert) {
+                setTimeout(() => {
+                    errorAlert.style.display = 'none';
+                }, 5000);
+            }
         });
 
         searchInput.addEventListener('input', function() {
@@ -424,6 +536,7 @@
                 success: function(response) {
                     if (response.success) {
                         const summary = response.summary;
+                        console.log('OrderSummaryID for modal details (summary.id):', summary.id);
                         let content = `
                             <div class="space-y-8">
                                 <!-- Order Summary -->
@@ -507,8 +620,7 @@
                                 </div>
                                 ` : ''}
 
-                                <!-- Contract Details -->
-                                ${summary.contractDetails ? `
+                                <!-- Contract Details & Actions -->
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -516,11 +628,31 @@
                                         </svg>
                                         Contract Details
                                     </h4>
-                                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                                    ${summary.contractDetails ? `
+                                    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
                                         <p class="text-base text-gray-900">${summary.contractDetails}</p>
                                     </div>
+                                    ` : `
+                                    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                                        <p class="text-sm text-gray-500">No specific contract details available. You can generate a contract if needed.</p>
+                                    </div>
+                                    `}
+                                    <div class="mt-4 space-x-4">
+                                        <button onclick="generateContract(${summary.id})"
+                                                id="generateBtn_${summary.id}"
+                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            ${summary.existingContractId ? 'Re-generate Contract' : 'Generate Contract'}
+                                        </button>
+                                        <button onclick="downloadContract(${summary.id}, '${summary.existingContractId || ''}')"
+                                                id="downloadBtn_${summary.id}"
+                                                data-contract-id="${summary.existingContractId || ''}"
+                                                class="${summary.existingContractId ? 'inline-flex' : 'hidden'} items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            Download PDF
+                                        </button>
+                                    </div>
                                 </div>
-                                ` : ''}
                             </div>`;
                         document.getElementById('orderDetailsContent').innerHTML = content;
                     } else {
@@ -557,6 +689,132 @@
                 closeOrderDetailsModal();
             }
         });
+
+        function showSuccessModal(message) {
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        function generateContract(orderId) { // orderId is OrderSummaryID
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Generating...';
+            button.disabled = true;
+
+            const downloadButton = $(`#downloadBtn_${orderId}`);
+            const downloadButtonWasDisabled = downloadButton.prop('disabled');
+            downloadButton.prop('disabled', true);
+
+            $.ajax({
+                url: '@Url.Action("GenerateContract", "Order")', // Expects OrderSummaryID, returns { success, generatedContractId, message }
+                type: 'POST',
+                data: { orderId: orderId },
+                success: function(response) {
+                    console.log("Server response from GenerateContract for OrderSummaryID " + orderId + ":", response);
+
+                    if (response.success && response.generatedContractId) {
+                        const actualGeneratedContractId = response.generatedContractId;
+                        const generateButton = $(`#generateBtn_${orderId}`);
+                        
+                        console.log(`Storing actualGeneratedContractId: ${actualGeneratedContractId} on downloadBtn_${orderId}`);
+
+                        generateButton.html('<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Re-generate Contract');
+                        downloadButton.attr('data-contract-id', actualGeneratedContractId);
+                        downloadButton.removeClass('hidden').addClass('inline-flex');
+                        showSuccessModal('Contract generated successfully! You can now download the PDF.');
+                        
+                        downloadButton.off('click').on('click', function() {
+                            downloadContract(orderId, String(actualGeneratedContractId));
+                        });
+
+                    } else {
+                        let errorMessage = 'Error generating contract.';
+                        if (response.message) {
+                            errorMessage = 'Error: ' + response.message;
+                        } else if (response.success && !response.generatedContractId) {
+                            errorMessage = 'Error: Contract generated, but its new ID was not returned by the server.';
+                        }
+                        console.error("GenerateContract error or missing generatedContractId. Response:", response);
+                        showSuccessModal(errorMessage);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showSuccessModal('Error generating contract: ' + error);
+                },
+                complete: function() {
+                    // Set text based on whether it was updated to Re-generate or should revert
+                    const currentGenerateBtnText = $(`#generateBtn_${orderId}`).text().trim();
+                    if (!currentGenerateBtnText.includes("Re-generate Contract")){ // if not successfully updated
+                         button.textContent = originalText; // revert to original if not 'Re-generate'
+                    } else {
+                        button.innerHTML = $(`#generateBtn_${orderId}`).html(); // keep Re-generate with icon
+                    }
+                    button.disabled = false;
+                    if (!downloadButtonWasDisabled) {
+                        downloadButton.prop('disabled', false);
+                    }
+                }
+            });
+        }
+
+        function downloadContract(orderSummaryId, existingContractIdFromModal) {
+            console.log(`downloadContract called. orderSummaryId: ${orderSummaryId}, existingContractIdFromModal: ${existingContractIdFromModal}`);
+
+            const apiBaseUrl = '@ViewData["ApiBaseUrl"]';
+            if (!apiBaseUrl || apiBaseUrl.trim() === "") {
+                console.error("ApiBaseUrl is not defined or empty in ViewData.");
+                showSuccessModal("Error: API base URL is not configured for download.");
+                return;
+            }
+            
+            let fullApiUrl = apiBaseUrl;
+            if (!fullApiUrl.endsWith('/')) {
+                fullApiUrl += '/';
+            }
+
+            const downloadButton = $(`#downloadBtn_${orderSummaryId}`);
+            const currentDataContractId = downloadButton.attr('data-contract-id');
+            console.log(`Value of data-contract-id from #downloadBtn_${orderSummaryId}: '${currentDataContractId}'`);
+
+            let contractIdToUse;
+
+            if (currentDataContractId && currentDataContractId.trim() !== "" && currentDataContractId !== 'null' && currentDataContractId !== 'undefined') {
+                contractIdToUse = currentDataContractId;
+                console.log(`Using contractId from data-contract-id: ${contractIdToUse}`);
+            } else if (existingContractIdFromModal && existingContractIdFromModal.trim() !== "" && existingContractIdFromModal !== 'null' && existingContractIdFromModal !== 'undefined') {
+                contractIdToUse = existingContractIdFromModal;
+                console.log(`Using existingContractId passed from modal: ${contractIdToUse}`);
+                // Update data-contract-id if it was empty/invalid and we're using existingContractIdFromModal
+                 downloadButton.attr('data-contract-id', existingContractIdFromModal);
+            } else {
+                const errorMsg = "Error: Contract ID is not available for download. Please generate the contract first.";
+                showSuccessModal(errorMsg);
+                console.error("downloadContract: Cannot determine Contract ID.", { orderSummaryId, existingContractIdFromModal, currentDataContractId });
+                return;
+            }
+            
+            if (!contractIdToUse || String(contractIdToUse).trim() === "" || String(contractIdToUse) === '0') {
+                 const errorMsg = "Error: Invalid Contract ID for download (" + contractIdToUse + ").";
+                showSuccessModal(errorMsg);
+                console.error("downloadContract: Final contractIdToUse is invalid.", { contractIdToUse });
+                return;
+            }
+
+            console.log(`Final contractIdToUse for API call: ${contractIdToUse}`);
+            fullApiUrl += `api/contracts/${contractIdToUse}/download-pdf`;
+
+            const link = document.createElement('a');
+            link.href = fullApiUrl;
+            link.download = `contract_${contractIdToUse}.pdf`; 
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
         // Close modal with ESC key
         document.addEventListener('keydown', function(e) {
