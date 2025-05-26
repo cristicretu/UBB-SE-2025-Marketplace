@@ -8,11 +8,134 @@ SET @sellerID = 3
 
 SELECT * FROM PredefinedContracts
 
-INSERT INTO PredefinedContracts
+-- First, clear existing predefined contracts
+DELETE FROM PredefinedContracts;
+
+-- Insert predefined contracts with their respective IDs matching the enum values
+INSERT INTO PredefinedContracts (ContractID, ContractContent)
 VALUES
-    ('This is a standard artwork purchase contract that outlines the terms and conditions...'),
-    ('This is a premium artwork purchase contract with extended warranty...'),
-    ('This is a custom artwork commission contract...');
+    (1, 'PURCHASE AGREEMENT
+Contract ID: {ContractID}
+Order Reference: {OrderID}
+
+THIS PURCHASE AGREEMENT (the "Agreement") is made and entered into on {AgreementDate} (the "Effective Date"),
+
+BETWEEN:
+{SellerName} ("Seller"), a registered vendor on the MarketMinds Marketplace,
+
+AND:
+{BuyerName} ("Buyer"), a registered user on the MarketMinds Marketplace.
+
+BUYER CONTACT DETAILS:
+Full Name: {fullName}
+Email: {email}
+Phone Number: {phoneNumber}
+Address: {address}
+Postal Code: {postalCode}
+
+PRODUCT DETAILS:
+Description: {ProductDescription}
+Purchase Price: ${Price}
+Subtotal: ${subtotal}
+Warranty Fee: ${warrantyTax}
+Delivery Fee: ${deliveryFee}
+Final Total: ${finalTotal}
+Payment Method: {PaymentMethod}
+Expected Delivery Date: {DeliveryDate}
+
+1. PURCHASE AND SALE
+   1.1 The Seller agrees to sell and the Buyer agrees to purchase the Product described above according to the terms and conditions outlined in this Agreement.
+   1.2 The Buyer acknowledges having had the opportunity to inspect the Product''s description and specifications prior to purchase.
+
+2. PAYMENT
+   2.1 The Buyer agrees to pay the Final Total amount stated above.
+   2.2 Payment has been processed through the MarketMinds payment system via the Payment Method indicated above.
+   2.3 All prices are inclusive of applicable taxes unless otherwise specified.'),
+
+    (2, 'SELLING AGREEMENT
+Contract ID: {ContractID}
+Order Reference: {OrderID}
+
+THIS SELLING AGREEMENT (the "Agreement") is made and entered into on {AgreementDate} (the "Effective Date"),
+
+BETWEEN:
+{SellerName} ("Seller"), a registered vendor on the MarketMinds Marketplace,
+
+AND:
+{BuyerName} ("Buyer"), a registered user on the MarketMinds Marketplace.
+
+SELLER CONTACT DETAILS:
+Full Name: {fullName}
+Email: {email}
+Phone Number: {phoneNumber}
+Address: {address}
+Postal Code: {postalCode}
+
+PRODUCT DETAILS:
+Description: {ProductDescription}
+Selling Price: ${Price}
+Subtotal: ${subtotal}
+Warranty Fee: ${warrantyTax}
+Delivery Fee: ${deliveryFee}
+Final Total: ${finalTotal}
+Payment Method: {PaymentMethod}
+Expected Delivery Date: {DeliveryDate}
+
+1. SALE AND TRANSFER
+   1.1 The Seller agrees to sell and transfer ownership of the Product to the Buyer according to the terms and conditions outlined in this Agreement.
+   1.2 The Seller warrants that they have full legal right to sell the Product.
+
+2. PAYMENT AND DELIVERY
+   2.1 The Buyer agrees to pay the Final Total amount stated above.
+   2.2 Payment will be processed through the MarketMinds payment system.
+   2.3 The Seller agrees to deliver the Product according to the delivery terms specified.'),
+
+    (3, 'BORROWING AGREEMENT
+Contract ID: {ContractID}
+Order Reference: {OrderID}
+
+THIS BORROWING AGREEMENT (the "Agreement") is made and entered into on {AgreementDate} (the "Effective Date"),
+
+BETWEEN:
+{SellerName} ("Lender"), a registered vendor on the MarketMinds Marketplace,
+
+AND:
+{BuyerName} ("Borrower"), a registered user on the MarketMinds Marketplace.
+
+BORROWER CONTACT DETAILS:
+Full Name: {fullName}
+Email: {email}
+Phone Number: {phoneNumber}
+Address: {address}
+Postal Code: {postalCode}
+
+PRODUCT DETAILS:
+Description: {ProductDescription}
+Borrowing Fee: ${Price}
+Subtotal: ${subtotal}
+Warranty Fee: ${warrantyTax}
+Delivery Fee: ${deliveryFee}
+Final Total: ${finalTotal}
+Payment Method: {PaymentMethod}
+Expected Delivery Date: {DeliveryDate}
+Borrowing Period: {StartDate} to {EndDate}
+
+1. BORROWING TERMS
+   1.1 The Lender agrees to lend the Product to the Borrower for the specified Borrowing Period.
+   1.2 The Borrower agrees to return the Product in the same condition as received, subject to normal wear and tear.
+
+2. PAYMENT AND DELIVERY
+   2.1 The Borrower agrees to pay the Final Total amount stated above.
+   2.2 Payment will be processed through the MarketMinds payment system.
+   2.3 The Lender agrees to deliver the Product according to the delivery terms specified.
+
+3. RETURN CONDITIONS
+   3.1 The Borrower must return the Product by the end of the Borrowing Period.
+   3.2 Any damage beyond normal wear and tear will be subject to additional charges.
+   3.3 Late returns will incur additional fees as specified in the marketplace terms.');
+
+-- Verify the inserted data
+SELECT * FROM PredefinedContracts;
 
 UPDATE PredefinedContracts
 SET ContractContent='PURCHASE AGREEMENT

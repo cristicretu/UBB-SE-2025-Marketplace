@@ -273,6 +273,33 @@ namespace Server.Controllers
         }
 
         /// <summary>
+        /// Asynchronously adds a new PDF record.
+        /// </summary>
+        /// <param name="pdf">The PDF entity to add.</param>
+        /// <returns>The added PDF entity with its ID.</returns>
+        [HttpPost("pdf")]
+        [ProducesResponseType(typeof(PDF), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PDF>> AddPdf([FromBody] PDF pdf)
+        {
+            if (pdf == null)
+            {
+                return this.BadRequest("Valid PDF data is required.");
+            }
+
+            try
+            {
+                var addedPdf = await this.contractRepository.AddPdfAsync(pdf);
+                return this.CreatedAtAction(nameof(this.GetPdfByContractId), new { contractId = addedPdf.ContractID }, addedPdf);
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while adding PDF: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Asynchronously retrieves a predefined contract by predefined contract type.
         /// </summary>
         /// <param name="predefinedContractType">The type of predefined contract to retrieve.</param>
@@ -321,6 +348,38 @@ namespace Server.Controllers
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while retrieving product details for contract ID {contractId}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously downloads the PDF file for a contract.
+        /// </summary>
+        /// <param name="contractId">The ID of the contract.</param>
+        /// <returns>The PDF file as a downloadable attachment.</returns>
+        [HttpGet("{contractId}/download-pdf")]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> DownloadContractPdf(long contractId)
+        {
+            try
+            {
+                Console.WriteLine($"ContractApiController: Attempting to download PDF for ContractID: {contractId}");
+                var pdfFile = await this.contractRepository.GetPdfByContractIdAsync(contractId);
+
+                if (pdfFile == null || pdfFile.Length == 0)
+                {
+                    Console.WriteLine($"ContractApiController: PDF not found or empty for ContractID: {contractId}. Returning NotFound.");
+                    return this.NotFound($"PDF not found for contract ID {contractId}");
+                }
+
+                Console.WriteLine($"ContractApiController: PDF found for ContractID: {contractId}. Length: {pdfFile.Length}. Returning FileResult.");
+                return this.File(pdfFile, "application/pdf", $"contract_{contractId}.pdf");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ContractApiController: Error downloading PDF for ContractID: {contractId}. Error: {ex.Message}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while downloading PDF for contract ID {contractId}: {ex.Message}");
             }
         }
     }

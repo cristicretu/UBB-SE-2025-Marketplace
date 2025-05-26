@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 using System.Security.Claims;
+using Microsoft.Extensions.Configuration;
 
 namespace WebMarketplace.Controllers
 {
@@ -11,13 +12,23 @@ namespace WebMarketplace.Controllers
         private readonly IOrderService _orderService;
         private readonly ILogger<OrderController> _logger;
         private readonly IOrderSummaryService _orderSummaryService;
+        private readonly IContractService _contractService;
+        private readonly IConfiguration _configuration;
 
-        public OrderController(ITrackedOrderService trackedOrderService, IOrderService orderService, ILogger<OrderController> logger, IOrderSummaryService orderSummaryService)
+        public OrderController(
+            ITrackedOrderService trackedOrderService, 
+            IOrderService orderService, 
+            ILogger<OrderController> logger, 
+            IOrderSummaryService orderSummaryService,
+            IContractService contractService,
+            IConfiguration configuration)
         {
             _trackedOrderService = trackedOrderService;
             _orderService = orderService;
             _logger = logger;
             _orderSummaryService = orderSummaryService;
+            _contractService = contractService;
+            _configuration = configuration;
         }
 
         // GET: Order/Test
@@ -29,6 +40,7 @@ namespace WebMarketplace.Controllers
         // GET: Order/OrderHistory
         public async Task<IActionResult> OrderHistory(int userId = 0)
         {
+            ViewData["ApiBaseUrl"] = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
             try
             {
                 _logger.LogInformation($"OrderHistory action called with userId parameter: {userId}");
@@ -268,6 +280,63 @@ namespace WebMarketplace.Controllers
             {
                 _logger.LogError(ex, "Error getting order summary details");
                 return Json(new { success = false, message = "Error retrieving order summary details" });
+            }
+        }
+
+        // POST: Order/GenerateContract
+        [HttpPost]
+        public async Task<IActionResult> GenerateContract(int orderId)
+        {
+            try
+            {
+                // First get the order to ensure it exists
+                var order = await _orderService.GetOrderByIdAsync(orderId);
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Order not found" });
+                }
+
+                var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(order.OrderSummaryID);
+                if (orderSummary == null)
+                {
+                    return Json(new { success = false, message = "Order summary not found" });
+                }
+
+                // Create a new contract
+                var contract = new Contract
+                {
+                    OrderID = orderId, // Use the actual Order ID
+                    ContractStatus = "ACTIVE",
+                    ContractContent = orderSummary.ContractDetails ?? "Standard contract terms",
+                    RenewalCount = 0,
+                    AdditionalTerms = string.Empty
+                };
+
+                // Get the predefined contract type (assuming BorrowingContract for now)
+                var predefinedContract = await _contractService.GetPredefinedContractByPredefineContractTypeAsync(PredefinedContractType.BorrowingContract);
+
+                // Generate PDF content (empty for now, will be filled by the server)
+                byte[] pdfContent = new byte[0];
+
+                // Add the contract to the database
+                var newContract = await _contractService.AddContractAsync(contract, pdfContent);
+
+                // IMPORTANT: Include the generatedContractId in the response
+                if (newContract != null)
+                {
+                    _logger.LogInformation($"Contract generated successfully with ID: {newContract.ContractID} for OrderID: {orderId}");
+                    return Json(new { success = true, message = "Contract generated successfully!", generatedContractId = newContract.ContractID });
+                }
+                else
+                {
+                    _logger.LogError($"Contract service returned null after adding contract for OrderID: {orderId}");
+                    return Json(new { success = false, message = "Error generating contract: Failed to retrieve new contract details after creation." });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating contract");
+                return Json(new { success = false, message = $"Error generating contract: {ex.Message}" });
             }
         }
 
