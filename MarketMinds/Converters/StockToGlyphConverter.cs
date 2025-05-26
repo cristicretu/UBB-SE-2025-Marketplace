@@ -21,17 +21,17 @@ namespace MarketMinds.Converters
             if (value is int stockValue)
             {
                 // Shopping cart icon for available items, warning icon for out of stock
-                return stockValue > 0 ? "\uE7BF" : "\uE814";
+                return stockValue > 0 ? "\uE7BF" : "\uE7BA";
             }
             
             // Try to parse if it's a string representation of an integer
             if (value is string stringValue && int.TryParse(stringValue, out int parsedValue))
             {
-                return parsedValue > 0 ? "\uE7BF" : "\uE814";
+                return parsedValue > 0 ? "\uE7BF" : "\uE7BA";
             }
             
             // Default to warning icon for invalid/null values
-            return "\uE814";
+            return "\uE7BA";
         }
 
         /// <summary>
