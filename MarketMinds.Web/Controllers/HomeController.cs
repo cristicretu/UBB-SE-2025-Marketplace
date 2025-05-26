@@ -62,7 +62,8 @@ namespace MarketMinds.Web.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int offset = 0, int count = 12, string tab = "buy")
+        public async Task<IActionResult> Index(int offset = 0, int count = 12, string tab = "buy", 
+            List<int>? conditionIds = null, List<int>? categoryIds = null, string search = null, double? maxPrice = null)
         {
             try
             {
@@ -155,13 +156,29 @@ namespace MarketMinds.Web.Controllers
                 
                 try
                 {
-                    // Get total counts
+                    // Get total counts (filtered if filters are applied)
                     if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService concreteService)
                     {
-                        totalBuyProducts = concreteService.GetProductCount();
+                        if (conditionIds?.Any() == true || categoryIds?.Any() == true || !string.IsNullOrEmpty(search) || maxPrice.HasValue)
+                        {
+                            totalBuyProducts = concreteService.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, search);
+                        }
+                        else
+                        {
+                            totalBuyProducts = concreteService.GetProductCount();
+                        }
                     }
-                    totalAuctionProducts = await _auctionProductService.GetAuctionProductCountAsync();
-                    totalBorrowProducts = await _borrowProductsService.GetBorrowProductCountAsync();
+                    
+                    if (conditionIds?.Any() == true || categoryIds?.Any() == true || !string.IsNullOrEmpty(search) || maxPrice.HasValue)
+                    {
+                        totalAuctionProducts = await _auctionProductService.GetFilteredAuctionProductCountAsync(conditionIds, categoryIds, maxPrice, search);
+                        totalBorrowProducts = _borrowProductsService.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, search);
+                    }
+                    else
+                    {
+                        totalAuctionProducts = await _auctionProductService.GetAuctionProductCountAsync();
+                        totalBorrowProducts = await _borrowProductsService.GetBorrowProductCountAsync();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -171,11 +188,11 @@ namespace MarketMinds.Web.Controllers
                 // Load products based on pagination parameters
                 if (count > 0)
                 {
-                    // Apply pagination to the active tab only
+                    // Apply pagination and filtering to the active tab only
                     switch (tab.ToLower())
                     {
                         case "auction":
-                            auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync(offset, count);
+                            auctionProducts = await _auctionProductService.GetFilteredAuctionProductsAsync(offset, count, conditionIds, categoryIds, maxPrice, search);
                             // Load first page of other tabs for tab switching
                             if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService)
                             {
@@ -185,7 +202,7 @@ namespace MarketMinds.Web.Controllers
                             break;
                             
                         case "borrow":
-                            borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync(offset, count);
+                            borrowProducts = _borrowProductsService.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, search);
                             // Load first page of other tabs for tab switching
                             if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService2)
                             {
@@ -197,8 +214,7 @@ namespace MarketMinds.Web.Controllers
                         default: // "buy"
                             if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService3)
                             {
-                                buyProducts = buyService3.GetProducts(offset, count);
-                                buyProducts = buyProducts.Where(p => p.Stock > 0).ToList();
+                                buyProducts = buyService3.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, search);
                             }
                             // Load first page of other tabs for tab switching
                             auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync(0, 12);
@@ -212,7 +228,6 @@ namespace MarketMinds.Web.Controllers
                     if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService allBuyService)
                     {
                         buyProducts = allBuyService.GetProducts();
-                        buyProducts = buyProducts.Where(p => p.Stock > 0).ToList();
                     }
                     auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
                     borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync();
@@ -271,6 +286,34 @@ namespace MarketMinds.Web.Controllers
                 ViewBag.HasNextPage = hasNextPage;
                 ViewBag.HasPreviousPage = hasPreviousPage;
                 
+                // Add filter metadata
+                ViewBag.SelectedConditionIds = conditionIds ?? new List<int>();
+                ViewBag.SelectedCategoryIds = categoryIds ?? new List<int>();
+                ViewBag.SearchQuery = search ?? string.Empty;
+                ViewBag.SelectedMaxPrice = maxPrice;
+
+                // Build pagination URLs
+                int currentPage = count > 0 ? (offset / count) + 1 : 1;
+                int totalPages = count > 0 ? (int)Math.Ceiling((double)totalProducts / count) : 1;
+                
+                ViewBag.PrevPageUrl = currentPage > 1 ? BuildPaginationUrl(Math.Max(0, offset - count), count, tab, conditionIds, categoryIds, search, maxPrice) : null;
+                ViewBag.NextPageUrl = currentPage < totalPages ? BuildPaginationUrl(offset + count, count, tab, conditionIds, categoryIds, search, maxPrice) : null;
+                
+                var pageUrls = new Dictionary<int, string>();
+                for (int pageNum = 1; pageNum <= Math.Min(totalPages, 5); pageNum++)
+                {
+                    int pageOffset = (pageNum - 1) * count;
+                    pageUrls[pageNum] = BuildPaginationUrl(pageOffset, count, tab, conditionIds, categoryIds, search, maxPrice);
+                }
+                ViewBag.PageUrls = pageUrls;
+                
+                if (totalPages > 5)
+                {
+                    int lastPageOffset = (totalPages - 1) * count;
+                    ViewBag.LastPageUrl = BuildPaginationUrl(lastPageOffset, count, tab, conditionIds, categoryIds, search, maxPrice);
+                    ViewBag.LastPageNumber = totalPages;
+                }
+                
                 // Debug logging to verify price range calculation
                 _logger.LogInformation($"HOME: Calculated price range - Min: {ViewBag.MinPrice}, Max: {ViewBag.MaxPrice}");
                 _logger.LogInformation($"HOME: Pagination - Offset: {offset}, Count: {count}, Total: {totalProducts}");
@@ -290,6 +333,68 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogError(ex, "Error loading products for home page");
                 TempData["ErrorMessage"] = "Error loading products. Please try again later.";
                 return View(new HomeViewModel());
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> FilterProducts([FromBody] FilterRequest request)
+        {
+            try
+            {
+                List<BuyProduct> buyProducts = new List<BuyProduct>();
+                List<AuctionProduct> auctionProducts = new List<AuctionProduct>();
+                List<BorrowProduct> borrowProducts = new List<BorrowProduct>();
+                
+                int totalProducts = 0;
+                
+                // Apply filtering based on the active tab
+                switch (request.Tab.ToLower())
+                {
+                    case "auction":
+                        auctionProducts = await _auctionProductService.GetFilteredAuctionProductsAsync(
+                            request.Offset, request.Count, request.ConditionIds, request.CategoryIds);
+                        totalProducts = await _auctionProductService.GetFilteredAuctionProductCountAsync(
+                            request.ConditionIds, request.CategoryIds);
+                        break;
+                        
+                    case "borrow":
+                        borrowProducts = _borrowProductsService.GetFilteredProducts(
+                            request.Offset, request.Count, request.ConditionIds, request.CategoryIds);
+                        totalProducts = _borrowProductsService.GetFilteredProductCount(
+                            request.ConditionIds, request.CategoryIds);
+                        break;
+                        
+                    default: // "buy"
+                        if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService)
+                        {
+                            buyProducts = buyService.GetFilteredProducts(
+                                request.Offset, request.Count, request.ConditionIds, request.CategoryIds);
+                            totalProducts = buyService.GetFilteredProductCount(request.ConditionIds, request.CategoryIds);
+                        }
+                        break;
+                }
+                
+                bool hasNextPage = request.Count > 0 && (request.Offset + request.Count) < totalProducts;
+                bool hasPreviousPage = request.Offset > 0;
+                
+                return Json(new
+                {
+                    success = true,
+                    buyProducts = buyProducts,
+                    auctionProducts = auctionProducts,
+                    borrowProducts = borrowProducts,
+                    totalProducts = totalProducts,
+                    hasNextPage = hasNextPage,
+                    hasPreviousPage = hasPreviousPage,
+                    currentOffset = request.Offset,
+                    currentCount = request.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error filtering products");
+                return Json(new { success = false, error = ex.Message });
             }
         }
 
@@ -1098,5 +1203,48 @@ namespace MarketMinds.Web.Controllers
                 
             return View(errorModel);
         }
+
+        private string BuildPaginationUrl(int offset, int count, string tab, List<int>? conditionIds, List<int>? categoryIds, string? search, double? maxPrice = null)
+        {
+            var queryParams = new List<string>
+            {
+                $"offset={offset}",
+                $"count={count}",
+                $"tab={tab}"
+            };
+
+            if (conditionIds?.Any() == true)
+            {
+                queryParams.AddRange(conditionIds.Select(id => $"conditionIds={id}"));
+            }
+
+            if (categoryIds?.Any() == true)
+            {
+                queryParams.AddRange(categoryIds.Select(id => $"categoryIds={id}"));
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                queryParams.Add($"search={Uri.EscapeDataString(search)}");
+            }
+
+            if (maxPrice.HasValue)
+            {
+                queryParams.Add($"maxPrice={maxPrice.Value}");
+            }
+
+            return $"{Url.Action("Index")}?{string.Join("&", queryParams)}";
+        }
+    }
+
+    public class FilterRequest
+    {
+        public string Tab { get; set; } = "buy";
+        public int Offset { get; set; } = 0;
+        public int Count { get; set; } = 12;
+        public List<int>? ConditionIds { get; set; }
+        public List<int>? CategoryIds { get; set; }
+        public string? Search { get; set; }
+        public double? MaxPrice { get; set; }
     }
 } 

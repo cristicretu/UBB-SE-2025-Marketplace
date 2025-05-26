@@ -343,6 +343,111 @@ namespace MarketMinds.Shared.ProxyRepository
             }
         }
 
+        public List<BorrowProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null)
+        {
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
+
+                var queryParams = new List<string>
+                {
+                    $"offset={offset}",
+                    $"count={count}"
+                };
+
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    foreach (var conditionId in conditionIds)
+                    {
+                        queryParams.Add($"conditionIds={conditionId}");
+                    }
+                }
+
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    foreach (var categoryId in categoryIds)
+                    {
+                        queryParams.Add($"categoryIds={categoryId}");
+                    }
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    queryParams.Add($"maxPrice={maxPrice.Value}");
+                }
+
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+                }
+
+                string url = $"borrowproducts/filtered?{string.Join("&", queryParams)}";
+                var response = httpClient.GetAsync(url).Result;
+                response.EnsureSuccessStatusCode();
+                var json = response.Content.ReadAsStringAsync().Result;
+
+                var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
+                return products ?? new List<BorrowProduct>();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error getting filtered borrow products: {ex.Message}", ex);
+            }
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null)
+        {
+            try
+            {
+                var queryParams = new List<string>();
+
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    foreach (var conditionId in conditionIds)
+                    {
+                        queryParams.Add($"conditionIds={conditionId}");
+                    }
+                }
+
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    foreach (var categoryId in categoryIds)
+                    {
+                        queryParams.Add($"categoryIds={categoryId}");
+                    }
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    queryParams.Add($"maxPrice={maxPrice.Value}");
+                }
+
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+                }
+
+                string url = queryParams.Any() 
+                    ? $"borrowproducts/filtered/count?{string.Join("&", queryParams)}"
+                    : "borrowproducts/filtered/count";
+                
+                var response = httpClient.GetAsync(url).Result;
+                response.EnsureSuccessStatusCode();
+                var countString = response.Content.ReadAsStringAsync().Result;
+                return int.Parse(countString);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error getting filtered borrow product count: {ex.Message}", ex);
+            }
+        }
+
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)

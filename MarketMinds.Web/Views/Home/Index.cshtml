@@ -59,8 +59,8 @@
             <!-- Search bar -->
             <div class="mb-5">
                 <div class="relative">
-                    <input type="text" id="searchInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition" placeholder="Search products...">
-                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <input type="text" id="searchInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition" placeholder="Search products..." onkeypress="handleSearchKeyPress(event)">
+                    <button id="searchButton" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer" onclick="performSearch()">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -478,9 +478,9 @@
                         }
                         
                         <!-- Previous Button -->
-                        @if (currentPage > 1)
+                        @if (ViewBag.PrevPageUrl != null)
                         {
-                            <a href="@Url.Action("Index", new { offset = Math.Max(0, currentOffset - currentCount), count = currentCount, tab = currentTab })" 
+                            <a href="@ViewBag.PrevPageUrl" 
                                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
                                 Previous
                             </a>
@@ -493,38 +493,39 @@
                         }
                         
                         <!-- Page Numbers -->
-                        @for (int pageNum = 1; pageNum <= Math.Min(totalPages, 5); pageNum++)
+                        @{
+                            var pageUrls = ViewBag.PageUrls as Dictionary<int, string> ?? new Dictionary<int, string>();
+                        }
+                        @foreach (var pageUrl in pageUrls)
                         {
-                            int pageOffset = (pageNum - 1) * currentCount;
-                            if (pageNum == currentPage)
+                            if (pageUrl.Key == currentPage)
                             {
                                 <span class="px-3 py-2 text-sm font-medium text-white bg-primary border border-primary rounded-md">
-                                    @pageNum
+                                    @pageUrl.Key
                                 </span>
                             }
                             else
                             {
-                                <a href="@Url.Action("Index", new { offset = pageOffset, count = currentCount, tab = currentTab })" 
+                                <a href="@pageUrl.Value" 
                                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                                    @pageNum
+                                    @pageUrl.Key
                                 </a>
                             }
                         }
                         
-                        @if (totalPages > 5)
+                        @if (ViewBag.LastPageUrl != null)
                         {
                             <span class="px-2 py-2 text-sm text-gray-500">...</span>
-                            int lastPageOffset = (totalPages - 1) * currentCount;
-                            <a href="@Url.Action("Index", new { offset = lastPageOffset, count = currentCount, tab = currentTab })" 
+                            <a href="@ViewBag.LastPageUrl" 
                                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                                @totalPages
+                                @ViewBag.LastPageNumber
                             </a>
                         }
                         
                         <!-- Next Button -->
-                        @if (currentPage < totalPages)
+                        @if (ViewBag.NextPageUrl != null)
                         {
-                            <a href="@Url.Action("Index", new { offset = currentOffset + currentCount, count = currentCount, tab = currentTab })" 
+                            <a href="@ViewBag.NextPageUrl" 
                                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
                                 Next
                             </a>
@@ -547,24 +548,36 @@
 
 @section Scripts {
     <script>
+        // Global variables
+        let searchInput, categoryPills, conditionPills, priceRange, currentPriceValue;
+        
         document.addEventListener('DOMContentLoaded', function() {
             // Get current tab from ViewBag
             const currentTab = '@ViewBag.CurrentTab' || 'buy';
             
-            // Initialize price range slider immediately
-            const priceRange = document.getElementById('priceRange');
-            const currentPriceValue = document.getElementById('currentPriceValue');
+            // Initialize DOM elements
+            searchInput = document.getElementById('searchInput');
+            categoryPills = document.querySelectorAll('.category-pill');
+            conditionPills = document.querySelectorAll('.condition-pill');
+            priceRange = document.getElementById('priceRange');
+            currentPriceValue = document.getElementById('currentPriceValue');
             const minPriceValue = document.getElementById('minPriceValue');
             const maxPriceValue = document.getElementById('maxPriceValue');
             
-            if (priceRange) {
-                // Make sure the slider is at maximum by default
-                priceRange.value = priceRange.max;
-                
-                // Update display values
-                if (currentPriceValue) {
+            // Initialize price range slider
+            if (priceRange && currentPriceValue) {
+                // Set initial value from ViewBag if available
+                const selectedMaxPrice = @(ViewBag.SelectedMaxPrice ?? "null");
+                if (selectedMaxPrice !== null) {
+                    priceRange.value = selectedMaxPrice;
+                    currentPriceValue.textContent = selectedMaxPrice;
+                } else {
+                    // Make sure the slider is at maximum by default
+                    priceRange.value = priceRange.max;
                     currentPriceValue.textContent = priceRange.max;
                 }
+                
+                // Update display values
                 if (minPriceValue) {
                     minPriceValue.textContent = priceRange.min;
                 }
@@ -572,11 +585,13 @@
                     maxPriceValue.textContent = priceRange.max;
                 }
                 
-                // Add event listener for price range changes
+                // Add event listeners for price range changes
                 priceRange.addEventListener('input', function() {
-                    if (currentPriceValue) {
-                        currentPriceValue.textContent = this.value;
-                    }
+                    currentPriceValue.textContent = this.value;
+                });
+                
+                priceRange.addEventListener('change', function() {
+                    updateClearFiltersButton();
                     applyFilters();
                 });
             }
@@ -630,8 +645,39 @@
                 button.addEventListener('click', function() {
                     const tabName = this.id.replace('Tab', '');
                     
-                    // Navigate to the new tab with server-side pagination (reset to page 1)
-                    window.location.href = '@Url.Action("Index")?offset=0&count=12&tab=' + tabName;
+                    // Get current filters to preserve them when switching tabs
+                    const searchTerm = searchInput ? searchInput.value : '';
+                    const selectedCategories = Array.from(categoryPills)
+                        .filter(pill => pill.classList.contains('bg-primary'))
+                        .map(pill => parseInt(pill.getAttribute('data-category-id')))
+                        .filter(id => !isNaN(id));
+                    const selectedConditions = Array.from(conditionPills)
+                        .filter(pill => pill.classList.contains('bg-primary'))
+                        .map(pill => parseInt(pill.getAttribute('data-condition-id')))
+                        .filter(id => !isNaN(id));
+                    const maxPrice = priceRange && parseInt(priceRange.value) < parseInt(priceRange.max) ? priceRange.value : null;
+                    
+                    // Build URL with current filters
+                    const params = new URLSearchParams();
+                    params.set('offset', '0');
+                    params.set('count', '12');
+                    params.set('tab', tabName);
+                    
+                    if (selectedConditions.length > 0) {
+                        selectedConditions.forEach(id => params.append('conditionIds', id.toString()));
+                    }
+                    if (selectedCategories.length > 0) {
+                        selectedCategories.forEach(id => params.append('categoryIds', id.toString()));
+                    }
+                    if (searchTerm) {
+                        params.set('search', searchTerm);
+                    }
+                    if (maxPrice) {
+                        params.set('maxPrice', maxPrice);
+                    }
+                    
+                    // Navigate to the new tab with current filters
+                    window.location.href = '@Url.Action("Index")?' + params.toString();
                 });
             });
             
@@ -661,16 +707,30 @@
                 window.addEventListener('resize', handleResize);
             }
             
-            // Filter functionality (client-side filtering of current page results)
-            const searchInput = document.getElementById('searchInput');
-            const categoryPills = document.querySelectorAll('.category-pill');
-            const conditionPills = document.querySelectorAll('.condition-pill');
+            // Initialize selected filters from ViewBag
+            const selectedConditionIds = @Html.Raw(Json.Serialize(ViewBag.SelectedConditionIds));
+            const selectedCategoryIds = @Html.Raw(Json.Serialize(ViewBag.SelectedCategoryIds));
             
-            // Search functionality
+            // Set initial filter states
+            categoryPills.forEach(pill => {
+                const categoryId = parseInt(pill.getAttribute('data-category-id'));
+                if (selectedCategoryIds.includes(categoryId)) {
+                    pill.classList.add('bg-primary', 'text-white', 'border-primary');
+                    pill.classList.remove('bg-gray-100', 'text-gray-700', 'border-gray-200');
+                }
+            });
+            
+            conditionPills.forEach(pill => {
+                const conditionId = parseInt(pill.getAttribute('data-condition-id'));
+                if (selectedConditionIds.includes(conditionId)) {
+                    pill.classList.add('bg-primary', 'text-white', 'border-primary');
+                    pill.classList.remove('bg-gray-100', 'text-gray-700', 'border-gray-200');
+                }
+            });
+            
+            // Search functionality - trigger on Enter key or search button click
             if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    applyFilters();
-                });
+                searchInput.value = '@ViewBag.SearchQuery';
             }
             
             // Category filters
@@ -685,6 +745,7 @@
                         this.classList.toggle('text-gray-700');
                         this.classList.toggle('border-gray-200');
                         
+                        updateClearFiltersButton(); // Update button state immediately
                         applyFilters();
                     });
                 });
@@ -702,6 +763,7 @@
                         this.classList.toggle('text-gray-700');
                         this.classList.toggle('border-gray-200');
                         
+                        updateClearFiltersButton(); // Update button state immediately
                         applyFilters();
                     });
                 });
@@ -715,7 +777,7 @@
                     if (searchInput) searchInput.value = '';
                     
                     // Reset price range
-                    if (priceRange) {
+                    if (priceRange && currentPriceValue) {
                         priceRange.value = priceRange.max;
                         currentPriceValue.textContent = priceRange.max;
                     }
@@ -732,101 +794,129 @@
                         pill.classList.add('bg-gray-100', 'text-gray-700', 'border-gray-200');
                     });
                     
+                    // Update button state immediately
+                    updateClearFiltersButton();
+                    
                     // Apply filters (show all)
                     applyFilters();
                 });
             }
             
-            // Apply client-side filters to current page results only
-            function applyFilters() {
-                try {
-                    const activeTab = document.querySelector('.tab-btn.active');
-                    if (!activeTab) return;
-                    
-                    const tabName = activeTab.id.replace('Tab', '');
-                    const gridId = tabName + 'ProductsGrid';
-                    const grid = document.getElementById(gridId);
-                    if (!grid) return;
-                    
-                    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-                    const maxPrice = priceRange ? parseFloat(priceRange.value) : Infinity;
-                    
-                    // Get selected categories
-                    const selectedCategories = Array.from(categoryPills)
-                        .filter(pill => pill.classList.contains('bg-primary'))
-                        .map(pill => pill.getAttribute('data-category-id'));
-                    
-                    // Get selected conditions
-                    const selectedConditions = Array.from(conditionPills)
-                        .filter(pill => pill.classList.contains('bg-primary'))
-                        .map(pill => pill.getAttribute('data-condition-id'));
-                    
-                    // Filter products
-                    const products = grid.querySelectorAll('.product-item');
-                    let visibleCount = 0;
-                    let hasActiveFilters = false;
-                    
-                    // Check if any filters are active
-                    if (searchTerm || maxPrice < parseFloat(priceRange.max) || selectedCategories.length > 0 || selectedConditions.length > 0) {
-                        hasActiveFilters = true;
-                    }
-                    
-                    products.forEach(product => {
-                        const title = product.getAttribute('data-title') || '';
-                        const seller = product.getAttribute('data-seller') || '';
-                        const price = parseFloat(product.getAttribute('data-price')) || 0;
-                        const category = product.getAttribute('data-category') || '';
-                        const condition = product.getAttribute('data-condition') || '';
-                        
-                        let show = true;
-                        
-                        // Search filter
-                        if (searchTerm && !title.includes(searchTerm) && !seller.includes(searchTerm)) {
-                            show = false;
-                        }
-                        
-                        // Price filter
-                        if (price > maxPrice) {
-                            show = false;
-                        }
-                        
-                        // Category filter
-                        if (selectedCategories.length > 0 && !selectedCategories.includes(category)) {
-                            show = false;
-                        }
-                        
-                        // Condition filter
-                        if (selectedConditions.length > 0 && !selectedConditions.includes(condition)) {
-                            show = false;
-                        }
-                        
-                        if (show) {
-                            product.style.display = 'block';
-                            visibleCount++;
-                        } else {
-                            product.style.display = 'none';
-                        }
-                    });
-                    
-                    // Update clear filters button state
-                    if (clearFiltersBtn) {
-                        if (hasActiveFilters) {
-                            clearFiltersBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                            clearFiltersBtn.disabled = false;
-                        } else {
-                            clearFiltersBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                            clearFiltersBtn.disabled = true;
-                        }
-                    }
-                    
-                } catch (error) {
-                    console.error('Error applying filters:', error);
+            // Update clear filters button state initially
+            updateClearFiltersButton();
+        });
+        
+        // Global functions
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                performSearch();
+            }
+        }
+        
+        function performSearch() {
+            updateClearFiltersButton();
+            applyFilters();
+        }
+        
+        function updateClearFiltersButton() {
+            const searchTerm = searchInput ? searchInput.value : '';
+            
+            // Get selected categories
+            const selectedCategories = Array.from(categoryPills)
+                .filter(pill => pill.classList.contains('bg-primary'))
+                .map(pill => parseInt(pill.getAttribute('data-category-id')))
+                .filter(id => !isNaN(id));
+            
+            // Get selected conditions
+            const selectedConditions = Array.from(conditionPills)
+                .filter(pill => pill.classList.contains('bg-primary'))
+                .map(pill => parseInt(pill.getAttribute('data-condition-id')))
+                .filter(id => !isNaN(id));
+            
+            // Check if price filter is active (not at maximum)
+            const isPriceFiltered = priceRange && parseInt(priceRange.value) < parseInt(priceRange.max);
+            
+            // Check if any filters are active
+            const hasActiveFilters = searchTerm || selectedCategories.length > 0 || selectedConditions.length > 0 || isPriceFiltered;
+            
+            // Update clear filters button state
+            const clearFiltersBtn = document.getElementById('clearFilters');
+            if (clearFiltersBtn) {
+                if (hasActiveFilters) {
+                    clearFiltersBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    clearFiltersBtn.disabled = false;
+                } else {
+                    clearFiltersBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    clearFiltersBtn.disabled = true;
                 }
             }
-            
-            // Initial filter application
-            applyFilters();
-        });
+        }
+
+        function applyFilters(resetOffset = true) {
+            try {
+                const activeTab = document.querySelector('.tab-btn.active');
+                if (!activeTab) {
+                    console.error('No active tab found');
+                    return;
+                }
+                
+                const tabName = activeTab.id.replace('Tab', '');
+                const searchTerm = searchInput ? searchInput.value : '';
+                
+                // Get selected categories
+                const selectedCategories = Array.from(categoryPills)
+                    .filter(pill => pill.classList.contains('bg-primary'))
+                    .map(pill => parseInt(pill.getAttribute('data-category-id')))
+                    .filter(id => !isNaN(id));
+                
+                // Get selected conditions
+                const selectedConditions = Array.from(conditionPills)
+                    .filter(pill => pill.classList.contains('bg-primary'))
+                    .map(pill => parseInt(pill.getAttribute('data-condition-id')))
+                    .filter(id => !isNaN(id));
+                
+                // Get price filter
+                const maxPrice = priceRange && parseInt(priceRange.value) < parseInt(priceRange.max) ? priceRange.value : null;
+                
+                // Update clear filters button state
+                updateClearFiltersButton();
+                
+                // Build URL with filters for navigation
+                const currentOffset = resetOffset ? 0 : (@ViewBag.CurrentOffset ?? 0);
+                const params = new URLSearchParams();
+                params.set('offset', currentOffset.toString());
+                params.set('count', '12');
+                params.set('tab', tabName);
+                
+                if (selectedConditions.length > 0) {
+                    selectedConditions.forEach(id => params.append('conditionIds', id.toString()));
+                }
+                if (selectedCategories.length > 0) {
+                    selectedCategories.forEach(id => params.append('categoryIds', id.toString()));
+                }
+                if (searchTerm) {
+                    params.set('search', searchTerm);
+                }
+                if (maxPrice) {
+                    params.set('maxPrice', maxPrice);
+                }
+                
+                console.log('Applying filters:', {
+                    tab: tabName,
+                    search: searchTerm,
+                    categories: selectedCategories,
+                    conditions: selectedConditions,
+                    maxPrice: maxPrice
+                });
+                
+                // Navigate to filtered results
+                window.location.href = '@Url.Action("Index")?' + params.toString();
+                
+            } catch (error) {
+                console.error('Error applying filters:', error);
+            }
+        }
     </script>
 }
 

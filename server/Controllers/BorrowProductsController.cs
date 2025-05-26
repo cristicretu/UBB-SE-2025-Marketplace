@@ -64,6 +64,48 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet("filtered")]
+        [ProducesResponseType(typeof(List<BorrowProduct>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredBorrowProducts(
+            [FromQuery] int offset = 0, 
+            [FromQuery] int count = 0,
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null)
+        {
+            try
+            {
+                List<BorrowProduct> products = borrowProductsRepository.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm);
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to retrieve filtered borrow products: {ex.Message}");
+            }
+        }
+
+        [HttpGet("filtered/count")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredBorrowProductsCount(
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null)
+        {
+            try
+            {
+                var count = borrowProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm);
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to get filtered borrow products count: {ex.Message}");
+            }
+        }
+
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(BorrowProduct), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]

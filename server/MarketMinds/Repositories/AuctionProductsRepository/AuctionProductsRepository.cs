@@ -295,5 +295,143 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 throw new Exception($"Failed to get auction products count: {exception.Message}", exception);
             }
         }
+
+        public List<AuctionProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null)
+        {
+            try
+            {
+                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetFilteredProducts - Starting to fetch filtered products (offset: {offset}, count: {count}, conditions: {string.Join(",", conditionIds ?? new List<int>())}, categories: {string.Join(",", categoryIds ?? new List<int>())}, maxPrice: {maxPrice}, searchTerm: {searchTerm})");
+                
+                var query = context.AuctionProducts
+                    .Include(product => product.Condition)
+                    .Include(product => product.Category)
+                    .Include(product => product.Bids)
+                    .Include(product => product.Images)
+                    .AsQueryable();
+
+                // Apply condition filter if provided
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    query = query.Where(p => conditionIds.Contains(p.ConditionId));
+                }
+
+                // Apply category filter if provided
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    query = query.Where(p => categoryIds.Contains(p.CategoryId));
+                }
+
+                // Apply maximum price filter if provided
+                if (maxPrice.HasValue)
+                {
+                    query = query.Where(p => p.CurrentPrice <= maxPrice.Value);
+                }
+
+                // Apply search term filter if provided
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    var lowerSearchTerm = searchTerm.ToLower();
+                    query = query.Where(p => 
+                        p.Title.ToLower().Contains(lowerSearchTerm) ||
+                        p.Description.ToLower().Contains(lowerSearchTerm));
+                }
+
+                // Ensure consistent ordering for pagination
+                query = query.OrderBy(p => p.Id);
+
+                List<AuctionProduct> products;
+                
+                if (count > 0)
+                {
+                    // Apply pagination
+                    products = query.Skip(offset).Take(count).ToList();
+                }
+                else
+                {
+                    // Return all filtered products if count is 0
+                    products = query.ToList();
+                }
+                
+                Console.WriteLine($"DEBUG: AuctionProductsRepository.GetFilteredProducts - Fetched {products.Count} filtered products");
+                
+                // Load the bidder information for each product's bids
+                foreach (var product in products)
+                {
+                    // Load seller information
+                    var seller = context.Users.FirstOrDefault(u => u.Id == product.SellerId);
+                    if (seller != null)
+                    {
+                        product.Seller = seller;
+                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetFilteredProducts - Loaded seller for product {product.Id}: Id={seller.Id}, Username={seller.Username}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"DEBUG: AuctionProductsRepository.GetFilteredProducts - Could not find seller with ID {product.SellerId} for product {product.Id}");
+                    }
+                    
+                    foreach (var bid in product.Bids)
+                    {
+                        var bidderUser = context.Users.FirstOrDefault(u => u.Id == bid.BidderId);
+                        if (bidderUser != null)
+                        {
+                            bid.Bidder = bidderUser;
+                        }
+                    }
+                }
+
+                return products;
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"ERROR: GetFilteredProducts exception: {exception.Message}");
+                if (exception.InnerException != null)
+                {
+                    Console.WriteLine($"ERROR: Inner exception: {exception.InnerException.Message}");
+                }
+                throw new Exception($"Failed to retrieve filtered auction products: {exception.Message}", exception);
+            }
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null)
+        {
+            try
+            {
+                var query = context.AuctionProducts.AsQueryable();
+
+                // Apply condition filter if provided
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    query = query.Where(p => conditionIds.Contains(p.ConditionId));
+                }
+
+                // Apply category filter if provided
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    query = query.Where(p => categoryIds.Contains(p.CategoryId));
+                }
+
+                // Apply maximum price filter if provided
+                if (maxPrice.HasValue)
+                {
+                    query = query.Where(p => p.CurrentPrice <= maxPrice.Value);
+                }
+
+                // Apply search term filter if provided
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    var lowerSearchTerm = searchTerm.ToLower();
+                    query = query.Where(p => 
+                        p.Title.ToLower().Contains(lowerSearchTerm) ||
+                        p.Description.ToLower().Contains(lowerSearchTerm));
+                }
+
+                return query.Count();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"ERROR: GetFilteredProductCount exception: {exception.Message}");
+                throw new Exception($"Failed to get filtered auction products count: {exception.Message}", exception);
+            }
+        }
     }
 }

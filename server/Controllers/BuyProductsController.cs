@@ -71,6 +71,57 @@ namespace MarketMinds.Controllers
             }
         }
 
+        [HttpGet("filtered")]
+        [ProducesResponseType(typeof(List<BuyProductDTO>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredBuyProducts(
+            [FromQuery] int offset = 0, 
+            [FromQuery] int count = 0,
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null)
+        {
+            try
+            {
+                List<BuyProduct> products = _buyProductsRepository.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm);
+                var dtos = BuyProductMapper.ToDTOList(products);
+                return Ok(dtos);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+            }
+        }
+
+        [HttpGet("filtered/count")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredBuyProductsCount(
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null)
+        {
+            try
+            {
+                var count = _buyProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm);
+                return Ok(count);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+            }
+        }
+
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(BuyProductDTO), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
