@@ -2,6 +2,7 @@ using Server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
+using System.Data;
 
 namespace MarketMinds.Repositories.ChatbotRepository
 {
@@ -9,6 +10,7 @@ namespace MarketMinds.Repositories.ChatbotRepository
     {
         private readonly ApplicationDbContext databaseContext;
         private readonly static int BUYER_TYPE_VALUE = 1;
+        private readonly static int DEFAULT_PAGE_SIZE = 10;
 
         public ChatbotRepository(
             ApplicationDbContext newDatabaseContext)
@@ -34,14 +36,52 @@ namespace MarketMinds.Repositories.ChatbotRepository
 
         public async Task<Basket> GetUserBasketAsync(int userId)
         {
-            // Baskets table is commented out in ApplicationDbContext
+            // Baskets are replaced with ShoppingCart
             return null;
         }
 
         public async Task<List<BasketItem>> GetBasketItemsAsync(int basketId)
         {
-            // BasketItems table is commented out in ApplicationDbContext
+            // BasketItems are replaced with ShoppingCart items
             return new List<BasketItem>();
+        }
+
+        public async Task<List<Product>> GetShoppingCartItemsAsync(int userId)
+        {
+            try
+            {
+                var cartItems = await databaseContext.BuyerCartItems
+                    .Where(item => item.BuyerId == userId)
+                    .ToListAsync();
+
+                List<Product> products = new List<Product>();
+                foreach (var cartItem in cartItems)
+                {
+                    var product = await databaseContext.BuyProducts.FindAsync(cartItem.ProductId);
+                    if (product != null)
+                    {
+                        // Create a copy with quantity info from cart
+                        var productWithQuantity = new BuyProduct(
+                            product.Title,
+                            product.Description,
+                            product.SellerId,
+                            product.ConditionId,
+                            product.CategoryId,
+                            product.Price
+                        );
+                        
+                        productWithQuantity.Id = product.Id;
+                        productWithQuantity.Stock = cartItem.Quantity;
+                        products.Add(productWithQuantity);
+                    }
+                }
+
+                return products;
+            }
+            catch (Exception)
+            {
+                return new List<Product>();
+            }
         }
 
         public async Task<BuyProduct> GetBuyProductAsync(int productId)
@@ -75,6 +115,7 @@ namespace MarketMinds.Repositories.ChatbotRepository
             return await databaseContext.Orders
                 .Where(order => order.BuyerId == userId)
                 .OrderByDescending(order => order.Id)
+                .Take(DEFAULT_PAGE_SIZE)
                 .ToListAsync();
         }
 
@@ -83,7 +124,82 @@ namespace MarketMinds.Repositories.ChatbotRepository
             return await databaseContext.Orders
                 .Where(order => order.SellerId == userId)
                 .OrderByDescending(order => order.Id)
+                .Take(DEFAULT_PAGE_SIZE)
                 .ToListAsync();
+        }
+
+        public async Task<List<TrackedOrder>> GetTrackedOrdersAsync(int userId)
+        {
+            try
+            {
+                // First get user's orders
+                var orders = await databaseContext.Orders
+                    .Where(o => o.BuyerId == userId)
+                    .ToListAsync();
+
+                var trackedOrders = new List<TrackedOrder>();
+                foreach (var order in orders)
+                {
+                    var trackedOrder = await databaseContext.TrackedOrders
+                        .FirstOrDefaultAsync(to => to.OrderID == order.Id);
+                    
+                    if (trackedOrder != null)
+                    {
+                        trackedOrders.Add(trackedOrder);
+                    }
+                }
+
+                return trackedOrders;
+            }
+            catch (Exception)
+            {
+                return new List<TrackedOrder>();
+            }
+        }
+
+        public async Task<List<UserWaitList>> GetUserWaitlistsAsync(int userId)
+        {
+            try
+            {
+                return await databaseContext.UserWaitList
+                    .Where(uwl => uwl.UserID == userId)
+                    .ToListAsync();
+            }
+            catch (Exception)
+            {
+                return new List<UserWaitList>();
+            }
+        }
+
+        public async Task<List<AuctionProduct>> GetUserAuctionProductsAsync(int userId)
+        {
+            try
+            {
+                return await databaseContext.AuctionProducts
+                    .Where(ap => ap.SellerId == userId)
+                    .Take(DEFAULT_PAGE_SIZE)
+                    .ToListAsync();
+            }
+            catch (Exception)
+            {
+                return new List<AuctionProduct>();
+            }
+        }
+
+        public async Task<List<Bid>> GetUserBidsAsync(int userId)
+        {
+            try
+            {
+                return await databaseContext.Bids
+                    .Where(b => b.BidderId == userId)
+                    .OrderByDescending(b => b.Timestamp)
+                    .Take(DEFAULT_PAGE_SIZE)
+                    .ToListAsync();
+            }
+            catch (Exception)
+            {
+                return new List<Bid>();
+            }
         }
 
         public async Task<string> GetUserContextAsync(int userId)
