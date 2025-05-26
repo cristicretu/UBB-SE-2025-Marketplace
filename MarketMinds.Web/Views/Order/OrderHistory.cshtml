@@ -2,6 +2,35 @@
 @{
     ViewData["Title"] = "Order History";
 }
+ @{
+        bool isAuthenticated = User.Identity?.IsAuthenticated == true && UserSession.CurrentUserId.HasValue;
+        string username = isAuthenticated ? (User.Identity.Name ?? "User") : null;
+
+        var sessionRole = UserSession.CurrentUserRole ?? "null";
+
+        int userType = 0;
+        if (isAuthenticated && !string.IsNullOrEmpty(UserSession.CurrentUserRole))
+        {
+            if (int.TryParse(UserSession.CurrentUserRole, out int parsedType))
+            {
+                userType = parsedType;
+            }
+            else
+            {
+                switch (UserSession.CurrentUserRole)
+                {
+                    case "Admin": userType = 1; break;
+                    case "Buyer": userType = 2; break;
+                    case "Seller": userType = 3; break;
+                    default: userType = 0; break;
+                }
+            }
+        }
+
+        bool isAdmin = isAuthenticated && userType == 1;
+        bool isBuyer = isAuthenticated && userType == 2;
+        bool isSeller = isAuthenticated && userType == 3;
+    }
 
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -121,14 +150,27 @@
                                     </div>
                                 </div>
                                 <div class="ml-6 flex-shrink-0">
-                                    <button onclick="showOrderDetails(@order.OrderSummaryID)" 
-                                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                        View Details
-                                    </button>
+                                    @if (isSeller)
+                                    {
+                                        <a href="@Url.Action("TrackOrder", "Order", new { orderId = order.OrderID, hasControl = true })" 
+                                           class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
+                                            </svg>
+                                            Track Order
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button onclick="showOrderDetails(@order.OrderSummaryID)" 
+                                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                            View Details
+                                        </button>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -174,6 +216,9 @@
 
 @section Scripts {
     <script>
+        // Set seller status for JavaScript
+        window.isSeller = @(ViewBag.IsSeller?.ToString().ToLower() ?? "false");
+        
         let searchTimeout;
         const searchInput = document.getElementById('searchInput');
         const timePeriodSelect = document.getElementById('timePeriodSelect');
@@ -281,14 +326,24 @@
                             </div>
                         </div>
                         <div class="ml-6 flex-shrink-0">
-                            <button onclick="showOrderDetails(${order.orderSummaryID})" 
-                                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                </svg>
-                                View Details
-                            </button>
+                            ${isSeller ? `
+                                <a href="/Order/TrackOrder/${order.orderID}?hasControl=true" 
+                                   class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
+                                    </svg>
+                                    Track Order
+                                </a>
+                            ` : `
+                                <button onclick="showOrderDetails(${order.orderSummaryID})" 
+                                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                    View Details
+                                </button>
+                            `}
                         </div>
                     </div>
                 </div>
