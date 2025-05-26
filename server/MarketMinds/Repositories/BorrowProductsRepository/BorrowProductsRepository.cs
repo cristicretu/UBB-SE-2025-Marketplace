@@ -37,7 +37,7 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
                 .OrderBy(p => p.Id); // Ensure consistent ordering for pagination
 
             List<BorrowProduct> products;
-            
+
             if (count > 0)
             {
                 // Apply pagination
@@ -178,8 +178,51 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
 
         public void AddProduct(BorrowProduct product)
         {
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product));
+            }
+
+            // Store tags for processing after product creation
+            var tagsToProcess = new List<ProductTag>();
+            if (product.Tags != null && product.Tags.Any())
+            {
+                tagsToProcess = product.Tags.ToList();
+            }
+
+            if (product.ProductTags != null && product.ProductTags.Any())
+            {
+                foreach (var productTag in product.ProductTags)
+                {
+                    if (productTag.TagId > 0)
+                    {
+                        var existingTag = context.ProductTags.Find(productTag.TagId);
+                        if (existingTag != null)
+                        {
+                            productTag.Tag = existingTag;
+                        }
+                    }
+                }
+            }
+
             context.BorrowProducts.Add(product);
             context.SaveChanges();
+
+            // Process tags after product is saved and has an ID
+            if (tagsToProcess.Any())
+            {
+                foreach (var tag in tagsToProcess)
+                {
+                    var borrowProductTag = new BorrowProductProductTag
+                    {
+                        ProductId = product.Id,
+                        TagId = tag.Id
+                    };
+                    context.BorrowProductProductTags.Add(borrowProductTag);
+                }
+                context.SaveChanges();
+
+            }
         }
 
         public void UpdateProduct(BorrowProduct product)
@@ -259,6 +302,15 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
                         .Load();
                 }
             }
+
+            // Load tags into the Tags property from ProductTags
+            var tags = context.BorrowProductProductTags
+                .Where(bppt => bppt.ProductId == product.Id)
+                .Include(bppt => bppt.Tag)
+                .Select(bppt => bppt.Tag)
+                .ToList();
+
+            product.Tags = tags;
         }
     }
 }

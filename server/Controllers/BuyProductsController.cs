@@ -26,7 +26,7 @@ namespace MarketMinds.Controllers
             try
             {
                 List<BuyProduct> products;
-                
+
                 if (count > 0)
                 {
                     // Use pagination
@@ -37,7 +37,7 @@ namespace MarketMinds.Controllers
                     // Get all products (backward compatibility)
                     products = _buyProductsRepository.GetProducts();
                 }
-                
+
                 var dtos = BuyProductMapper.ToDTOList(products);
                 return Ok(dtos);
             }
@@ -159,9 +159,20 @@ namespace MarketMinds.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (product.Id != 0)
+            // Convert Tags to ProductTags if ProductTags is empty but Tags has data
+            if ((product.ProductTags == null || !product.ProductTags.Any()) &&
+                product.Tags != null && product.Tags.Any())
             {
-                return BadRequest("Product ID should not be provided when creating a new product.");
+                product.ProductTags = new List<BuyProductProductTag>();
+                foreach (var tag in product.Tags)
+                {
+                    var productTag = new BuyProductProductTag
+                    {
+                        TagId = tag.Id,
+                        Tag = tag
+                    };
+                    product.ProductTags.Add(productTag);
+                }
             }
 
             try

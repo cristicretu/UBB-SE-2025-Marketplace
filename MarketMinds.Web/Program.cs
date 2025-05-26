@@ -14,10 +14,15 @@ using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Services;
+using QuestPDF;
+using QuestPDF.Infrastructure;
 using MarketMinds.Shared.Repositories;
 using MarketMinds.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Set QuestPDF license type to Community
+QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
@@ -136,6 +141,9 @@ builder.Services.AddSingleton<ShoppingCartProxyRepository>(sp =>
 builder.Services.AddSingleton<DummyWalletProxyRepository>(sp =>
     new DummyWalletProxyRepository(
         sp.GetRequiredService<IConfiguration>()["ApiSettings:BaseUrl"] ?? "http://localhost:5001"));
+builder.Services.AddSingleton<ContractProxyRepository>(sp =>
+    new ContractProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
 
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
@@ -177,6 +185,7 @@ builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
 builder.Services.AddTransient<IOrderSummaryService, OrderSummaryService>();
 builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddTransient<IDummyWalletService, DummyWalletService>();
+builder.Services.AddTransient<IContractService, ContractService>();
 
 // BuyerLinkage service
 builder.Services.AddTransient<IBuyerLinkageService>(sp =>

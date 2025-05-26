@@ -120,8 +120,8 @@ namespace MarketMinds.Web.Controllers
                         catch (Exception ex)
                         {
                             _logger.LogWarning(ex, "Failed to load buyer info for user ID {UserId}. This may be because the buyer doesn't exist yet. Attempting to create buyer profile.", currentUserId);
-                            
-                            try 
+
+                            try
                             {
                                 // Attempt to create buyer profile
                                 // This is a placeholder - the actual buyer creation logic would go here
@@ -148,12 +148,12 @@ namespace MarketMinds.Web.Controllers
                 List<BuyProduct> buyProducts = new List<BuyProduct>();
                 List<AuctionProduct> auctionProducts = new List<AuctionProduct>();
                 List<BorrowProduct> borrowProducts = new List<BorrowProduct>();
-                
+
                 // Get total counts for all product types
                 int totalBuyProducts = 0;
                 int totalAuctionProducts = 0;
                 int totalBorrowProducts = 0;
-                
+
                 try
                 {
                     // Get total counts (filtered if filters are applied)
@@ -200,7 +200,7 @@ namespace MarketMinds.Web.Controllers
                             }
                             borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync(0, 12);
                             break;
-                            
+
                         case "borrow":
                             borrowProducts = _borrowProductsService.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, search);
                             // Load first page of other tabs for tab switching
@@ -210,7 +210,7 @@ namespace MarketMinds.Web.Controllers
                             }
                             auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync(0, 12);
                             break;
-                            
+
                         default: // "buy"
                             if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService3)
                             {
@@ -240,7 +240,7 @@ namespace MarketMinds.Web.Controllers
                     "borrow" => totalBorrowProducts,
                     _ => totalBuyProducts
                 };
-                
+
                 bool hasNextPage = count > 0 && (offset + count) < totalProducts;
                 bool hasPreviousPage = offset > 0;
 
@@ -249,28 +249,28 @@ namespace MarketMinds.Web.Controllers
 
                 ViewBag.Categories = categories;
                 ViewBag.Conditions = conditions;
-                
+
                 // Calculate min and max prices based on ALL product types (not just paginated ones)
                 var allPrices = new List<double>();
-                
+
                 // Add buy product prices
                 if (buyProducts.Any())
                 {
                     allPrices.AddRange(buyProducts.Select(p => p.Price));
                 }
-                
+
                 // Add auction product current prices
                 if (auctionProducts.Any())
                 {
                     allPrices.AddRange(auctionProducts.Select(p => p.CurrentPrice));
                 }
-                
+
                 // Add borrow product daily rates
                 if (borrowProducts.Any())
                 {
                     allPrices.AddRange(borrowProducts.Select(p => p.DailyRate));
                 }
-                
+
                 // Set price range based on all products
                 ViewBag.MinPrice = allPrices.Any() ? (int)Math.Floor(allPrices.Min()) : 0;
                 ViewBag.MaxPrice = allPrices.Any() ? (int)Math.Ceiling(allPrices.Max()) : 1000;
@@ -347,12 +347,12 @@ namespace MarketMinds.Web.Controllers
                     ViewBag.FirstPageUrl = BuildPaginationUrl(0, count, tab, conditionIds, categoryIds, search, maxPrice);
                     ViewBag.ShowFirstPageEllipsis = startPage > 2; // Show "..." if there's a gap
                 }
-                
+ 
                 // Debug logging to verify price range calculation
                 _logger.LogInformation($"HOME: Calculated price range - Min: {ViewBag.MinPrice}, Max: {ViewBag.MaxPrice}");
                 _logger.LogInformation($"HOME: Pagination - Offset: {offset}, Count: {count}, Total: {totalProducts}");
                 _logger.LogInformation($"HOME: Returned products - Buy: {buyProducts.Count}, Auction: {auctionProducts.Count}, Borrow: {borrowProducts.Count}");
-                
+
                 var viewModel = new HomeViewModel
                 {
                     BuyProducts = buyProducts,
@@ -458,7 +458,7 @@ namespace MarketMinds.Web.Controllers
         public async Task<IActionResult> Create(AuctionProduct auctionProduct, string productType, string tagIds, string imageUrls)
         {
             _logger.LogInformation("POST: Home/Create - Starting product creation");
-            _logger.LogInformation("Received parameters - productType: {ProductType}, tagIds: {TagIds}, imageUrls: {ImageUrls}", 
+            _logger.LogInformation("Received parameters - productType: {ProductType}, tagIds: {TagIds}, imageUrls: {ImageUrls}",
                 productType, tagIds, imageUrls);
             _logger.LogInformation("TRACE: Original EndTime from form: {EndTime}", auctionProduct?.EndTime);
             _logger.LogInformation("AuctionProduct details - Title: {Title}, Description: {Description}, StartPrice: {StartPrice}, CategoryId: {CategoryId}, ConditionId: {ConditionId}, SellerId: {SellerId}",
@@ -491,13 +491,13 @@ namespace MarketMinds.Web.Controllers
                 var errors = ModelState
                     .Where(x => x.Value.Errors.Count > 0)
                     .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) });
-                
+
                 foreach (var error in errors)
                 {
-                    _logger.LogWarning("ModelState validation error for field '{Field}': {Errors}", 
+                    _logger.LogWarning("ModelState validation error for field '{Field}': {Errors}",
                         error.Field, string.Join(", ", error.Errors));
                 }
-                
+
                 var allErrors = ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage);
@@ -513,8 +513,8 @@ namespace MarketMinds.Web.Controllers
 
             // Only set a default EndTime if one wasn't provided or it's invalid
             // Check for both default value and a date that's earlier than startup
-            _logger.LogInformation("TRACE: Before EndTime check - Current value: {EndTime}, Default: {IsDefault}, Earlier than now: {IsEarlier}", 
-                auctionProduct.EndTime, 
+            _logger.LogInformation("TRACE: Before EndTime check - Current value: {EndTime}, Default: {IsDefault}, Earlier than now: {IsEarlier}",
+                auctionProduct.EndTime,
                 auctionProduct.EndTime == default,
                 auctionProduct.EndTime < DateTime.Now);
 
@@ -695,6 +695,13 @@ namespace MarketMinds.Web.Controllers
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Service connectivity check failed");
+                        }
+
+                        // Assign the processed tags to the auction product
+                        if (productTags.Any())
+                        {
+                            auctionProduct.Tags = productTags;
+                            _logger.LogInformation("Assigned {TagCount} tags to auction product", productTags.Count);
                         }
 
                         // Create the auction product
@@ -911,6 +918,9 @@ namespace MarketMinds.Web.Controllers
                 }
             }
 
+            // Assign tags to the borrow product
+            borrowProduct.Tags = productTags;
+
             if (ModelState.IsValid)
             {
                 try
@@ -979,12 +989,12 @@ namespace MarketMinds.Web.Controllers
                     var errors = modelError.Value.Errors;
                     foreach (var error in errors)
                     {
-                        _logger.LogWarning("Model validation error - Field: {Field}, Error: {ErrorMessage}, AttemptedValue: {AttemptedValue}", 
+                        _logger.LogWarning("Model validation error - Field: {Field}, Error: {ErrorMessage}, AttemptedValue: {AttemptedValue}",
                             field, error.ErrorMessage, modelError.Value.AttemptedValue);
                     }
                 }
-                
-                _logger.LogWarning("Invalid model state when creating borrow product: {Errors}", 
+
+                _logger.LogWarning("Invalid model state when creating borrow product: {Errors}",
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
 
@@ -1212,7 +1222,7 @@ namespace MarketMinds.Web.Controllers
             }
             else
             {
-                _logger.LogWarning("Invalid model state when creating buy product: {Errors}", 
+                _logger.LogWarning("Invalid model state when creating buy product: {Errors}",
                     string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             }
 
@@ -1226,15 +1236,15 @@ namespace MarketMinds.Web.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            var errorModel = new ErrorViewModel 
-            { 
+            var errorModel = new ErrorViewModel
+            {
                 RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
                 ErrorMessage = TempData["ErrorMessage"] as string ?? "An unexpected error occurred"
             };
-            
-            _logger.LogInformation("Displaying error page. RequestId: {RequestId}, Message: {Message}", 
+
+            _logger.LogInformation("Displaying error page. RequestId: {RequestId}, Message: {Message}",
                 errorModel.RequestId, errorModel.ErrorMessage);
-                
+
             return View(errorModel);
         }
 
@@ -1281,4 +1291,4 @@ namespace MarketMinds.Web.Controllers
         public string? Search { get; set; }
         public double? MaxPrice { get; set; }
     }
-} 
+}

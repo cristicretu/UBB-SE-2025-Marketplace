@@ -166,8 +166,16 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/pdf");
             await this.ThrowOnError(nameof(GetPdfByContractIdAsync), response);
-            var pdfFile = await response.Content.ReadAsByteArrayAsync();
-            return pdfFile;
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<PDF> AddPdfAsync(PDF pdf)
+        {
+            var response = await this.httpClient.PostAsJsonAsync($"{ApiBaseRoute}/pdf", pdf);
+            await this.ThrowOnError(nameof(AddPdfAsync), response);
+            var addedPdf = await response.Content.ReadFromJsonAsync<PDF>();
+            return addedPdf ?? new PDF();
         }
 
         /// <inheritdoc />
@@ -195,6 +203,13 @@
             {
                 return null;
             }
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateContractPdfIdAsync(long contractId, int pdfId)
+        {
+            var response = await this.httpClient.PutAsync($"{ApiBaseRoute}/{contractId}/pdf/{pdfId}", null);
+            await this.ThrowOnError(nameof(UpdateContractPdfIdAsync), response);
         }
 
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)

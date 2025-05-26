@@ -611,14 +611,26 @@ namespace MarketMinds.ViewModels
                     AdditionalTerms = this.SelectedContract.AdditionalTerms ?? "Standard renewal terms apply"
                 };
 
+                IContract savedNewContract = null;
                 try
                 {
-                    await this.renewalService.AddRenewedContractAsync(updatedContract);
+                    // Capture the newly created contract, assuming the service returns it with its ID
+                    savedNewContract = await this.renewalService.AddRenewedContractAsync(updatedContract);
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Error adding renewed contract: {ex.Message}");
                     this.ShowErrorMessage($"Error creating renewal: {ex.Message}");
+                    this.IsLoading = false; // Ensure IsLoading is reset on error
+                    return;
+                }
+
+                // Ensure savedNewContract is not null and has a valid ID before proceeding
+                if (savedNewContract == null || savedNewContract.ContractID <= 0)
+                {
+                    Debug.WriteLine($"Error: AddRenewedContractAsync returned null or invalid contract ID ({savedNewContract?.ContractID}). Cannot proceed with PDF saving with new ID.");
+                    this.ShowErrorMessage("Error creating renewal: Failed to get renewed contract details.");
+                    this.IsLoading = false; // Ensure IsLoading is reset on error
                     return;
                 }
 
@@ -626,36 +638,52 @@ namespace MarketMinds.ViewModels
                 try
                 {
                     string downloadsPath = this.fileSystem.GetDownloadsPath();
-                    string fileName = $"RenewedContract_{this.SelectedContract.ContractID}_to_{this.NewEndDate:yyyyMMdd}.pdf";
+                    long idForFileName = savedNewContract.ContractID; // Use new contract ID
+                    
+                    string fileName = $"RenewedContract_{idForFileName}_to_{this.NewEndDate:yyyyMMdd}.pdf";
                     string filePath = Path.Combine(downloadsPath, fileName);
                     await File.WriteAllBytesAsync(filePath, pdfBytes);
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Error saving PDF locally: {ex.Message}");
-                    // Continue even if local save fails
+                    // Continue even if local save fails, as contract is already in DB
+                    // Optionally, inform the user that local save failed but renewal was successful.
                 }
 
                 // After successful renewal:
                 this.ShowSuccessMessage("Contract renewed successfully!");
 
-                // Instead of setting SelectedContract to null immediately, set it after refresh
+                long originalSelectedContractIdBeforeRenewal = this.SelectedContract.ContractID; // Store for potential fallback
                 await this.RefreshContractsAsync();
-
-                // After refresh, try to select the renewed contract in the dropdown
-                var renewedContract = this.Contracts.FirstOrDefault(c =>
-                    c.RenewedFromContractID == this.SelectedContract.ContractID);
 
                 // Clear current selection
                 this.SelectedContract = null;
 
-                // If the renewed contract is found in the refreshed list, select it after a brief delay
-                if (renewedContract != null)
+                // Try to select the newly renewed contract in the dropdown
+                var contractInList = this.Contracts.FirstOrDefault(c => c.ContractID == savedNewContract.ContractID);
+                if (contractInList != null)
                 {
                     // Small delay to allow UI to update
                     await Task.Delay(100);
-                    this.SelectedContract = renewedContract;
-                    Debug.WriteLine($"Selected renewed contract ID: {renewedContract.ContractID}");
+                    this.SelectedContract = contractInList;
+                    Debug.WriteLine($"Selected renewed contract ID: {contractInList.ContractID}");
+                }
+                else
+                {
+                    Debug.WriteLine($"Renewed contract (ID: {savedNewContract.ContractID}) not found by ID in refreshed list. Trying fallback using RenewedFromContractID.");
+                    // Fallback: try to find it based on the RenewedFromContractID relationship
+                    var fallbackRenewedContract = this.Contracts.FirstOrDefault(c => c.RenewedFromContractID == originalSelectedContractIdBeforeRenewal);
+                    if (fallbackRenewedContract != null)
+                    {
+                        await Task.Delay(100);
+                        this.SelectedContract = fallbackRenewedContract;
+                        Debug.WriteLine($"Selected renewed contract (fallback by RenewedFromContractID) ID: {fallbackRenewedContract.ContractID}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Could not select the renewed contract (Original ID: {originalSelectedContractIdBeforeRenewal}, New ID: {savedNewContract.ContractID}) in the list after refresh.");
+                    }
                 }
             }
             catch (Exception ex)
