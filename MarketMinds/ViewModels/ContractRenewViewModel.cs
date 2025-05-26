@@ -615,7 +615,8 @@ namespace MarketMinds.ViewModels
                 try
                 {
                     // Capture the newly created contract, assuming the service returns it with its ID
-                    savedNewContract = await this.renewalService.AddRenewedContractAsync(updatedContract);
+                    // savedNewContract = await this.renewalService.AddRenewedContractAsync(updatedContract);
+                    await this.renewalService.AddRenewedContractAsync(updatedContract);
                 }
                 catch (Exception ex)
                 {
