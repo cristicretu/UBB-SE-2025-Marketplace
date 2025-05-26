@@ -363,14 +363,23 @@ namespace Server.Repository
                         case null:
                             orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
                             break;
-                        case "Last 3 Months" when order.OrderDate >= DateTime.Now.AddMonths(-3):
-                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                        case "Last 3 Months":
+                            if (order.OrderDate >= DateTime.Now.AddMonths(-3))
+                            {
+                                orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            }
                             break;
-                        case "Last 6 Months" when order.OrderDate >= DateTime.Now.AddMonths(-6):
-                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                        case "Last 6 Months":
+                            if (order.OrderDate >= DateTime.Now.AddMonths(-6))
+                            {
+                                orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            }
                             break;
-                        case "This Year" when order.OrderDate.Year == DateTime.Now.Year:
-                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                        case "This Year":
+                            if (order.OrderDate.Year == DateTime.Now.Year)
+                            {
+                                orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            }
                             break;
                         // Both cases are valid, the first one is used on web and the second one on desktop
                         case "all":
