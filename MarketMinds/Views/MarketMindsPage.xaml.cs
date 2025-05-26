@@ -43,6 +43,7 @@ namespace MarketMinds.Views
         public AuctionProductsViewModel AuctionProductsViewModel { get; set; }
         public BorrowProductsViewModel BorrowProductsViewModel { get; set; }
         public BuyerWishlistItemViewModel BuyerWishlistItemViewModel { get; set; }
+        public ShoppingCartViewModel ShoppingCartViewModel { get; set; }
 
         // observable collections
         public ObservableCollection<BuyProduct> BuyProductsCollection { get; private set; }
@@ -157,7 +158,7 @@ namespace MarketMinds.Views
             }
         }
 
-        private string pageInfoText = "";
+        private string pageInfoText = string.Empty;
         public string PageInfoText
         {
             get => pageInfoText;
@@ -252,6 +253,9 @@ namespace MarketMinds.Views
             this.AuctionProductsViewModel = App.AuctionProductsViewModel ?? throw new InvalidOperationException("AuctionProductsViewModel not initialized");
             this.BorrowProductsViewModel = App.BorrowProductsViewModel ?? throw new InvalidOperationException("BorrowProductsViewModel not initialized");
             this.BuyerWishlistItemViewModel = App.BuyerWishlistItemViewModel ?? throw new InvalidOperationException("BuyerWishlistItemViewModel not initialized");
+            this.ShoppingCartViewModel = App.ShoppingCartViewModel ?? throw new InvalidOperationException("ShoppingCartViewModel not initialized");
+
+            this.ShoppingCartViewModel.BuyerId = App.CurrentUser.Id;
 
             this.BuyProductsCollection = new ObservableCollection<BuyProduct>();
             this.AuctionProductsCollection = new ObservableCollection<AuctionProduct>();
@@ -578,7 +582,7 @@ namespace MarketMinds.Views
                 return;
             }
 
-            this.BuyerWishlistItemViewModel.AddToCartCommand.Execute(product);
+            this.ShoppingCartViewModel.AddToCartAsync(product, 1);
         }
 
         private void BuyProductCard_AddToWishlist_Click(object sender, RoutedEventArgs e)

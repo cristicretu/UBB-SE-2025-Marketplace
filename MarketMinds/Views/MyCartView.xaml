@@ -8,9 +8,9 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <!-- Accent button style using system colors -->
+        <!-- Enhanced accent button style with full intensity colors -->
         <Style x:Key="AccentButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}"/>
+            <Setter Property="Background" Value="{ThemeResource SystemAccentColor}"/>
             <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -28,28 +28,18 @@
             <Setter Property="Height" Value="32"/>
             <Setter Property="CornerRadius" Value="4"/>
         </Style>
-
-        <!-- System accent button style -->
-        <Style x:Key="PurpleButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}"/>
-            <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="15,8"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
     </Page.Resources>
 
     <!-- Main content fills almost the entire window with equal padding -->
     <Grid Padding="20">
         <!-- Border takes up most of the window space -->
-        <Border
+        <!-- <Border
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource SystemAccentColorDark1}"
             BorderThickness="1"
             CornerRadius="12"
             VerticalAlignment="Stretch"
-            HorizontalAlignment="Stretch">
+            HorizontalAlignment="Stretch"> -->
 
             <Grid Padding="40">
                 <Grid.RowDefinitions>
@@ -65,7 +55,7 @@
                     Text="My Cart" 
                     FontSize="40" 
                     FontWeight="Bold" 
-                    Foreground="{ThemeResource SystemAccentColorDark2}" 
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                     HorizontalAlignment="Center"
                     Margin="0,0,0,10"
                     Grid.Row="0"/>
@@ -85,6 +75,7 @@
                     Margin="0,0,0,20" 
                     HorizontalAlignment="Left"
                     Click="CheckoutButton_Click"
+                    IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}"
                     Visibility="{x:Bind ViewModel.IsCartEmpty, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
 
                 <!-- Content based on cart state -->
@@ -103,7 +94,8 @@
                         <Button 
                             Content="Continue Shopping" 
                             Style="{StaticResource AccentButtonStyle}"
-                            Click="ContinueShoppingButton_Click"/>
+                            Click="ContinueShoppingButton_Click"
+                            IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}"/>
                     </StackPanel>
 
                     <!-- Cart Items -->
@@ -202,6 +194,7 @@
                                                     Content="-" 
                                                     Style="{StaticResource QuantityButtonStyle}"
                                                     Command="{x:Bind DecrementCommand}"
+                                                    IsEnabled="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}"
                                                     VerticalAlignment="Center"/>
 
                                                 <TextBlock 
@@ -218,6 +211,7 @@
                                                     Content="+" 
                                                     Style="{StaticResource QuantityButtonStyle}"
                                                     Command="{x:Bind IncrementCommand}"
+                                                    IsEnabled="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}"
                                                     VerticalAlignment="Center"/>
                                             </StackPanel>
 
@@ -248,7 +242,8 @@
                                             Padding="12,5"
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Center"
-                                            Command="{x:Bind RemoveCommand}"/>
+                                            Command="{x:Bind RemoveCommand}"
+                                            IsEnabled="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}"/>
                                     </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -289,6 +284,6 @@
                     </Grid>
                 </Grid>
             </Grid>
-        </Border>
+        <!-- </Border> -->
     </Grid>
 </Page>

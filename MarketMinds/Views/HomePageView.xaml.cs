@@ -135,15 +135,6 @@ namespace MarketMinds.Views
             ProfileButton.Label = $"{username} {userRole}";
         }
 
-        private void ConfigureBackend()
-        {
-            // some additional configs after we have the user session available
-            if (isBuyer)
-            {
-                return;
-            }
-        }
-
         private void MarketMinds_Title_Click(object sender, RoutedEventArgs e)
         {
             if (ContentFrame.Content is MarketMindsPage)

@@ -7,6 +7,7 @@ namespace MarketMinds.ViewModels
     public interface IShoppingCartViewModel
     {
         ObservableCollection<CartItemViewModel> CartItems { get; }
+        bool IsLoading { get; }
         Task LoadCartItemsAsync();
         Task AddToCartAsync(Product product, int quantity);
         Task RemoveFromCartAsync(Product product);

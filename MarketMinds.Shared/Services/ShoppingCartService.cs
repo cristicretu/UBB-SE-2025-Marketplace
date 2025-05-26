@@ -40,7 +40,7 @@ namespace MarketMinds.Shared.Services
         /// </remarks>
         public ShoppingCartService()
         {
-            this.shoppingCartRepository = new ShoppingCartProxyRepository(AppConfig.GetBaseApiUrl());
+            this.shoppingCartRepository = new ShoppingCartProxyRepository(AppConfig.GetBaseApiUrl()); // whf is this don't use it please :)))
         }
 
         /// <summary>

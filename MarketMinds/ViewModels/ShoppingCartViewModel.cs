@@ -19,7 +19,7 @@ namespace MarketMinds.ViewModels
     {
         private readonly IShoppingCartService shoppingCartService;
         private readonly IBuyProductsService buyProductsService;
-        private readonly int buyerId;
+        private int buyerId;
         private bool isLoading;
         private bool isCartEmpty = true;
         private double cartTotal;
@@ -32,8 +32,7 @@ namespace MarketMinds.ViewModels
         {
             this.shoppingCartService = App.ShoppingCartService ?? throw new InvalidOperationException("ShoppingCartService is not initialized in App");
             this.buyProductsService = App.BuyProductsService ?? throw new InvalidOperationException("BuyProductsService is not initialized in App");
-            this.buyerId = UserSession.CurrentUserId ?? 10;
-
+            // buyer id will be set when the view(s) using this viewmodel is/are being loaded
             Debug.WriteLine($"Initialized ShoppingCartViewModel with buyer ID: {buyerId}");
 
             CheckoutCommand = new RelayCommand(async _ => await CheckoutAsync());
@@ -44,6 +43,18 @@ namespace MarketMinds.ViewModels
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public int BuyerId
+        {
+            get => buyerId;
+            set
+            {
+                if (buyerId != value)
+                {
+                    buyerId = value;
+                }
+            }
         }
 
         public bool IsLoading
@@ -84,11 +95,6 @@ namespace MarketMinds.ViewModels
                 }
             }
         }
-
-        /// <summary>
-        /// Gets the buyer ID associated with this shopping cart.
-        /// </summary>
-        public int BuyerId => this.buyerId;
 
         /// <summary>
         /// Gets the total price of all items in the cart.

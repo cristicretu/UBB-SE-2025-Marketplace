@@ -23,32 +23,21 @@ namespace MarketMinds.Views
             Resources.Add("BoolToVisibilityConverter", new BoolToVisibilityConverter());
             Resources.Add("InverseBoolToVisibilityConverter", new InverseBoolToVisibilityConverter());
             Resources.Add("CurrencyConverter", new CurrencyConverter());
+            Resources.Add("InverseBoolConverter", new InverseBoolConverter());
 
             this.InitializeComponent();
 
             // Get the current user ID and ensure it's valid
-            int userId = UserSession.CurrentUserId ?? 10; // Fallback to user ID 10 for testing
+            int userId = App.CurrentUser.Id;
+            if (userId == null)
+            {
+                throw new Exception("User ID is null");
+            }
             Debug.WriteLine($"Creating ShoppingCartViewModel with buyer ID: {userId}");
 
             this.ViewModel = App.ShoppingCartViewModel;
+            this.ViewModel.BuyerId = userId; // set the buyer id for the shopping cart view model only here
             this.DataContext = this.ViewModel;
-
-            // Load cart items when the page is initialized
-            Loaded += OnLoaded;
-        }
-
-        private async void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                Debug.WriteLine("MyCartView loaded, loading cart items...");
-                await this.ViewModel.LoadCartItemsAsync();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading cart items: {ex.Message}");
-                await ShowErrorDialog("Failed to load cart items", ex.Message);
-            }
         }
 
         /// <summary>
@@ -101,15 +90,11 @@ namespace MarketMinds.Views
         {
             try
             {
-                // Close this window and return to the marketplace
-                if (Window.Current != null)
+                // Navigate back to the MarketMindsPage (same as MarketMinds_Title_Click)
+                if (this.Frame != null)
                 {
-                    Window.Current.Close();
+                    this.Frame.Navigate(typeof(MarketMindsPage));
                 }
-                // else if (this.XamlRoot?.Content is Window window)
-                // {
-                //    window.Close();
-                // }
             }
             catch (Exception ex)
             {
@@ -130,12 +115,29 @@ namespace MarketMinds.Views
                     this.DataContext = this.ViewModel;
                 }
 
-                // Ensure cart items are loaded
-                _ = this.ViewModel.LoadCartItemsAsync();
+                // Always load cart items when navigating to this page (similar to pivot selection pattern)
+                Debug.WriteLine("MyCartView navigated to, loading cart items...");
+                _ = LoadCartItemsWithErrorHandlingAsync();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error in OnNavigatedTo: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads cart items with proper error handling
+        /// </summary>
+        private async Task LoadCartItemsWithErrorHandlingAsync()
+        {
+            try
+            {
+                await this.ViewModel.LoadCartItemsAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading cart items: {ex.Message}");
+                await ShowErrorDialog("Failed to load cart items", ex.Message);
             }
         }
 
@@ -213,14 +215,27 @@ namespace MarketMinds.Views
         {
             if (value is double amount)
             {
-                return $"{amount:0.00} €";
+                return $"{amount:0.00} â‚¬";
             }
-            return "0.00 €";
+            return "0.00 â‚¬";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public class InverseBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            return !(value is bool boolValue && boolValue);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            return !(value is bool boolValue && boolValue);
         }
     }
 }

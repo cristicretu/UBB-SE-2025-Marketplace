@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -7,7 +8,7 @@ using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.ViewModels
 {
-    public class CartItemViewModel : ICartItemViewModel, INotifyPropertyChanged
+    public class CartItemViewModel : ICartItemViewModel, INotifyPropertyChanged, IDisposable
     {
         private readonly IShoppingCartViewModel shoppingCartViewModel;
         private int quantity;
@@ -61,6 +62,12 @@ namespace MarketMinds.ViewModels
         // Format stock message
         public string StockMessage => $"Stock: {AvailableStock}";
 
+        // Expose parent ViewModel for binding
+        public IShoppingCartViewModel ParentViewModel => shoppingCartViewModel;
+
+        // Expose IsLoading directly for better binding support in DataTemplate
+        public bool IsLoading => shoppingCartViewModel?.IsLoading ?? false;
+
         public ICommand IncrementCommand { get; }
         public ICommand DecrementCommand { get; }
         public ICommand RemoveCommand { get; }
@@ -71,9 +78,23 @@ namespace MarketMinds.ViewModels
             this.quantity = quantity;
             shoppingCartViewModel = parentViewModel;
 
+            // Subscribe to parent's property changes to update our IsLoading property
+            if (shoppingCartViewModel is INotifyPropertyChanged parentNotify)
+            {
+                parentNotify.PropertyChanged += OnParentPropertyChanged;
+            }
+
             IncrementCommand = new RelayCommand(_ => Increment());
             DecrementCommand = new RelayCommand(_ => Decrement());
             RemoveCommand = new RelayCommand(_ => Remove());
+        }
+
+        private void OnParentPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IShoppingCartViewModel.IsLoading))
+            {
+                OnPropertyChanged(nameof(IsLoading));
+            }
         }
 
         private void Increment()
@@ -125,6 +146,15 @@ namespace MarketMinds.ViewModels
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public void Dispose()
+        {
+            // Unsubscribe from parent's property changes to prevent memory leaks
+            if (shoppingCartViewModel is INotifyPropertyChanged parentNotify)
+            {
+                parentNotify.PropertyChanged -= OnParentPropertyChanged;
+            }
         }
     }
 }

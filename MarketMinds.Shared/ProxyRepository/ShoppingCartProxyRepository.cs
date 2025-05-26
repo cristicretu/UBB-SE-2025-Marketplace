@@ -48,7 +48,11 @@ namespace MarketMinds.Shared.ProxyRepository
             {
                 baseUrl += "/";
             }
-            this.httpClient.BaseAddress = new System.Uri(baseUrl + "api/");
+
+            // Don't add "api/" here since it's already included in ApiBaseRoute
+            this.httpClient.BaseAddress = new System.Uri(baseUrl);
+
+            Debug.WriteLine($"ShoppingCartProxyRepository initialized with base URL: {baseUrl}");
 
             // Configure JSON options
             jsonOptions = new JsonSerializerOptions
