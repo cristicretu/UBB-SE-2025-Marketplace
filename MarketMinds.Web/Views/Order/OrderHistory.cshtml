@@ -30,6 +30,9 @@
         bool isAdmin = isAuthenticated && userType == 1;
         bool isBuyer = isAuthenticated && userType == 2;
         bool isSeller = isAuthenticated && userType == 3;
+        
+        // Group orders by OrderSummaryID
+        var groupedOrders = Model.GroupBy(o => o.OrderSummaryID).ToList();
     }
 
 <div class="min-h-screen bg-gray-50 py-8">
@@ -98,89 +101,95 @@
         <!-- Orders List -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <ul id="ordersList" class="divide-y divide-gray-200">
-                @foreach (var order in Model)
+                @foreach (var orderGroup in groupedOrders)
                 {
                     <li class="hover:bg-gray-50 transition-colors">
                         <div class="px-6 py-6">
-                            <div class="flex items-center justify-between">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center space-x-3 mb-3">
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                            </svg>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-lg font-semibold text-gray-900">
-                                                Order #@order.OrderSummaryID
-                                            </p>
-                                            <p class="text-sm text-gray-500">
-                                                @order.OrderDate
-                                            </p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                        <div>
-                                            <p class="font-medium text-gray-700">Product</p>
-                                            <p class="text-gray-600 truncate">@order.ProductName</p>
-                                        </div>
-                                        <div>
-                                            <p class="font-medium text-gray-700">Category</p>
-                                            <p class="text-gray-600">@order.ProductCategory</p>
-                                        </div>
-                                        <div>
-                                            <p class="font-medium text-gray-700">Payment</p>
-                                            <div class="flex items-center">
-                                                @if (order.PaymentMethod?.ToLower() == "cash")
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-gray-900">
+                                    Order #@orderGroup.Key
+                                </h3>
+                                <span class="text-gray-500">@orderGroup.First().OrderDate</span>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                @foreach (var order in orderGroup)
+                                {
+                                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center space-x-3 mb-3">
+                                                    <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                                    <div>
+                                                        <p class="font-medium text-gray-700">Product</p>
+                                                        <p class="text-gray-600 truncate">@order.ProductName</p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-medium text-gray-700">Category</p>
+                                                        <p class="text-gray-600">@order.ProductCategory</p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-medium text-gray-700">Payment</p>
+                                                        <div class="flex items-center">
+                                                            @if (order.PaymentMethod?.ToLower() == "cash")
+                                                            {
+                                                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                                </svg>
+                                                            }
+                                                            else if (order.PaymentMethod?.ToLower() == "card")
+                                                            {
+                                                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                                                </svg>
+                                                            }
+                                                            <p class="text-gray-600">@order.PaymentMethod</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="ml-6 flex-shrink-0">
+                                                @if (isSeller)
                                                 {
-                                                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                                    </svg>
+                                                    <a href="@Url.Action("TrackOrder", "Order", new { orderId = order.OrderID, hasControl = true })" 
+                                                       class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
+                                                        </svg>
+                                                        Track Order
+                                                    </a>
                                                 }
-                                                else if (order.PaymentMethod?.ToLower() == "card")
+                                                else
                                                 {
-                                                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                                    </svg>
+                                                    <div class="flex space-x-2">
+                                                        <button onclick="showOrderDetails(@order.OrderSummaryID)" 
+                                                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                            </svg>
+                                                            View Details
+                                                        </button>
+                                                        <a href="@Url.Action("TrackOrder", "Order", new { orderId = order.OrderID, hasControl = false })"
+                                                           class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
+                                                            </svg>
+                                                            Track Order
+                                                        </a>
+                                                    </div>
                                                 }
-                                                <p class="text-gray-600">@order.PaymentMethod</p>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="ml-6 flex-shrink-0">
-                                    @if (isSeller)
-                                    {
-                                        <a href="@Url.Action("TrackOrder", "Order", new { orderId = order.OrderID, hasControl = true })" 
-                                           class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
-                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
-                                            </svg>
-                                            Track Order
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <div class="flex space-x-2">
-                                            <button onclick="showOrderDetails(@order.OrderSummaryID)" 
-                                                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                </svg>
-                                                View Details
-                                            </button>
-                                            <a href="@Url.Action("TrackOrder", "Order", new { orderId = order.OrderID, hasControl = false })"
-                                               class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
-                                                </svg>
-                                                Track Order
-                                            </a>
-                                        </div>
-                                    }
-                                </div>
+                                }
                             </div>
                         </div>
                     </li>
@@ -274,9 +283,21 @@
                     }
 
                     noResultsMessage.classList.add('hidden');
+                    
+                    // Group orders by OrderSummaryID
+                    const groupedOrders = {};
                     data.orders.forEach(order => {
-                        const orderElement = createOrderElement(order);
-                        ordersList.appendChild(orderElement);
+                        if (!groupedOrders[order.orderSummaryID]) {
+                            groupedOrders[order.orderSummaryID] = [];
+                        }
+                        groupedOrders[order.orderSummaryID].push(order);
+                    });
+                    
+                    // Create elements for each group
+                    Object.keys(groupedOrders).forEach(summaryId => {
+                        const groupOrders = groupedOrders[summaryId];
+                        const groupElement = createOrderGroupElement(summaryId, groupOrders);
+                        ordersList.appendChild(groupElement);
                     });
                 })
                 .catch(error => {
@@ -286,87 +307,105 @@
                     noResultsMessage.classList.remove('hidden');
                 });
         }
-
-        function createOrderElement(order) {
+        
+        function createOrderGroupElement(summaryId, orders) {
             const li = document.createElement('li');
             li.className = 'hover:bg-gray-50 transition-colors';
             
-            const paymentIcon = order.paymentMethod?.toLowerCase() === 'cash' ? 
-                '<svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>' :
-                order.paymentMethod?.toLowerCase() === 'card' ?
-                '<svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>' : '';
-            
-            li.innerHTML = `
+            let header = `
                 <div class="px-6 py-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center space-x-3 mb-3">
-                                <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                    </svg>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-900">
+                            Order #${summaryId}
+                        </h3>
+                        <span class="text-gray-500">${orders[0].orderDate}</span>
+                    </div>
+                    <div class="space-y-4">
+            `;
+            
+            let orderItems = '';
+            orders.forEach(order => {
+                const paymentIcon = order.paymentMethod?.toLowerCase() === 'cash' ? 
+                    '<svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>' :
+                    order.paymentMethod?.toLowerCase() === 'card' ?
+                    '<svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>' : '';
+                
+                orderItems += `
+                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                        </svg>
+                                    </div>
                                 </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-lg font-semibold text-gray-900">
-                                        Order #${order.orderSummaryID}
-                                    </p>
-                                    <p class="text-sm text-gray-500">
-                                        ${order.orderDate}
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                <div>
-                                    <p class="font-medium text-gray-700">Product</p>
-                                    <p class="text-gray-600 truncate">${order.productName}</p>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-700">Category</p>
-                                    <p class="text-gray-600">${order.productCategory}</p>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-700">Payment</p>
-                                    <div class="flex items-center">
-                                        ${paymentIcon}
-                                        <p class="text-gray-600">${order.paymentMethod}</p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <p class="font-medium text-gray-700">Product</p>
+                                        <p class="text-gray-600 truncate">${order.productName}</p>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-700">Category</p>
+                                        <p class="text-gray-600">${order.productCategory}</p>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-700">Payment</p>
+                                        <div class="flex items-center">
+                                            ${paymentIcon}
+                                            <p class="text-gray-600">${order.paymentMethod}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="ml-6 flex-shrink-0">
-                            ${isSeller ? `
-                                <a href="/Order/TrackOrder/${order.orderID}?hasControl=true" 
-                                   class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
-                                    </svg>
-                                    Track Order
-                                </a>
-                            ` : `
-                                <div class="flex space-x-2">
-                                    <button onclick="showOrderDetails(${order.orderSummaryID})" 
-                                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                        View Details
-                                    </button>
-                                    <a href="/Order/TrackOrder/${order.orderID}?hasControl=false"
-                                       class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                            <div class="ml-6 flex-shrink-0">
+                                ${isSeller ? `
+                                    <a href="/Order/TrackOrder/${order.orderID}?hasControl=true" 
+                                       class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
                                         </svg>
                                         Track Order
                                     </a>
-                                </div>
-                            `}
+                                ` : `
+                                    <div class="flex space-x-2">
+                                        <button onclick="showOrderDetails(${order.orderSummaryID})" 
+                                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                            View Details
+                                        </button>
+                                        <a href="/Order/TrackOrder/${order.orderID}?hasControl=false"
+                                           class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m5 0h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-5 4v6m5-6v6"></path>
+                                            </svg>
+                                            Track Order
+                                        </a>
+                                    </div>
+                                `}
+                            </div>
                         </div>
+                    </div>
+                `;
+            });
+            
+            let footer = `
                     </div>
                 </div>
             `;
+            
+            li.innerHTML = header + orderItems + footer;
             return li;
+        }
+
+        function createOrderElement(order) {
+            // Keep this for backward compatibility if needed
+            // ... existing code ...
         }
 
         function refreshOrders() {
