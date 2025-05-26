@@ -3,6 +3,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using Server.DataAccessLayer;
 using System.Diagnostics;
+using Server.DataModels;
 
 namespace Server.MarketMinds.Repositories.UserRepository
 {
@@ -64,8 +65,6 @@ namespace Server.MarketMinds.Repositories.UserRepository
             return await _context.Users.FirstOrDefaultAsync(user => user.Username == username);
         }
 
-
-
         // merge-nicusor
         /// <summary>
         /// Connects to the database and adds a new user.
@@ -85,6 +84,8 @@ namespace Server.MarketMinds.Repositories.UserRepository
                         User = user,
                     };
                     this._context.Buyers.Add(buyer);
+                    DummyWalletEntity buyerWallet = new DummyWalletEntity(user.Id, 10000);
+                    this._context.DummyWallets.Add(buyerWallet);
                     break;
                 case (int)UserRole.Seller:
                     Seller seller = new Seller(user);
