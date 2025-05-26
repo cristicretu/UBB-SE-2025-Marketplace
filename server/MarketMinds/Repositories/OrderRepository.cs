@@ -382,6 +382,208 @@ namespace Server.Repository
         }
 
         /// <summary>
+        /// Retrieves orders with product information for a user (buyer or seller) with pagination.
+        /// Filters orders by search text and time period only if present.
+        /// </summary>
+        /// <param name="userId">The ID of the user (buyer or seller).</param>
+        /// <param name="offset">The number of orders to skip.</param>
+        /// <param name="count">The number of orders to take.</param>
+        /// <param name="searchText">The text to search for.</param>
+        /// <param name="timePeriod">The time period to filter by.</param>
+        /// <returns>A list of orders with product information.</returns>
+        /// <exception cref="KeyNotFoundException">Thrown when the product with the specified ID is not found.</exception>
+        /// <exception cref="ArgumentException">Thrown when the time period is invalid.</exception>
+        public async Task<List<OrderDisplayInfo>> GetOrdersWithProductInfoAsync(int userId, int offset, int count, string? searchText = null, string? timePeriod = null)
+        {
+            // Check if the user is a seller by looking in the Sellers table
+            bool isUserSeller = await this.dbContext.Sellers.AnyAsync(s => s.Id == userId);
+            
+            // Debug logging
+            Console.WriteLine($"[DEBUG] GetOrdersWithProductInfoAsync (Paginated) - UserId: {userId}, IsUserSeller: {isUserSeller}, Offset: {offset}, Count: {count}");
+            
+            List<Order> ordersDb;
+            if (isUserSeller)
+            {
+                // For sellers, get orders where they are the seller
+                ordersDb = await this.dbContext.Orders
+                    .Where(order => order.SellerId == userId)
+                    .OrderByDescending(order => order.OrderDate)
+                    .ToListAsync();
+                Console.WriteLine($"[DEBUG] Seller query found {ordersDb.Count} orders");
+            }
+            else
+            {
+                // For buyers, get orders where they are the buyer
+                ordersDb = await this.dbContext.Orders
+                    .Where(order => order.BuyerId == userId)
+                    .OrderByDescending(order => order.OrderDate)
+                    .ToListAsync();
+                Console.WriteLine($"[DEBUG] Buyer query found {ordersDb.Count} orders");
+            }
+
+            List<OrderDisplayInfo> allOrderDisplayInfos = new List<OrderDisplayInfo>();
+
+            foreach (Order order in ordersDb)
+            {
+                Product? product = null;
+                
+                // Try to find the product in different tables based on product type
+                if (order.ProductType == "new" || order.ProductType == "used")
+                {
+                    product = await this.dbContext.BuyProducts.FindAsync(order.ProductID);
+                }
+                else if (order.ProductType == "borrowed")
+                {
+                    product = await this.dbContext.BorrowProducts.FindAsync(order.ProductID);
+                }
+                
+                if (product == null)
+                {
+                    // Try auction products as fallback
+                    product = await this.dbContext.AuctionProducts.FindAsync(order.ProductID);
+                }
+                
+                if (product == null)
+                {
+                    Console.WriteLine($"[WARNING] Product with ID {order.ProductID} not found for order {order.Id}");
+                    continue; // Skip this order if product not found
+                }
+
+                // This boolean is used to check if the product name corresponds to the search text, if the search text is present.
+                bool shouldIncludeProductBySearchText = searchText == null || (searchText != null && product.Title.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                if (shouldIncludeProductBySearchText) // if searching by text corresponds, then we can check the time period
+                {
+                    bool shouldIncludeByTimePeriod = false;
+                    
+                    switch (timePeriod)
+                    {
+                        case null:
+                        case "all":
+                            shouldIncludeByTimePeriod = true;
+                            break;
+                        case "Last 3 Months":
+                            shouldIncludeByTimePeriod = order.OrderDate >= DateTime.Now.AddMonths(-3);
+                            break;
+                        case "Last 6 Months":
+                            shouldIncludeByTimePeriod = order.OrderDate >= DateTime.Now.AddMonths(-6);
+                            break;
+                        case "This Year":
+                            shouldIncludeByTimePeriod = order.OrderDate.Year == DateTime.Now.Year;
+                            break;
+                        default:
+                            throw new ArgumentException($"GetOrdersWithProductInfoAsync: Invalid time period: {timePeriod}");
+                    }
+                    
+                    if (shouldIncludeByTimePeriod)
+                    {
+                        allOrderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                    }
+                }
+            }
+
+            // Apply pagination
+            var paginatedOrders = allOrderDisplayInfos
+                .Skip(offset)
+                .Take(count)
+                .ToList();
+
+            Console.WriteLine($"[DEBUG] Returning {paginatedOrders.Count} orders out of {allOrderDisplayInfos.Count} total filtered orders");
+            return paginatedOrders;
+        }
+
+        /// <summary>
+        /// Gets the total count of orders for a user with optional filtering.
+        /// </summary>
+        /// <param name="userId">The ID of the user (buyer or seller).</param>
+        /// <param name="searchText">The text to search for.</param>
+        /// <param name="timePeriod">The time period to filter by.</param>
+        /// <returns>The total count of orders matching the criteria.</returns>
+        public async Task<int> GetOrdersCountAsync(int userId, string? searchText = null, string? timePeriod = null)
+        {
+            // Check if the user is a seller by looking in the Sellers table
+            bool isUserSeller = await this.dbContext.Sellers.AnyAsync(s => s.Id == userId);
+            
+            List<Order> ordersDb;
+            if (isUserSeller)
+            {
+                // For sellers, get orders where they are the seller
+                ordersDb = await this.dbContext.Orders
+                    .Where(order => order.SellerId == userId)
+                    .ToListAsync();
+            }
+            else
+            {
+                // For buyers, get orders where they are the buyer
+                ordersDb = await this.dbContext.Orders
+                    .Where(order => order.BuyerId == userId)
+                    .ToListAsync();
+            }
+
+            int count = 0;
+
+            foreach (Order order in ordersDb)
+            {
+                Product? product = null;
+                
+                // Try to find the product in different tables based on product type
+                if (order.ProductType == "new" || order.ProductType == "used")
+                {
+                    product = await this.dbContext.BuyProducts.FindAsync(order.ProductID);
+                }
+                else if (order.ProductType == "borrowed")
+                {
+                    product = await this.dbContext.BorrowProducts.FindAsync(order.ProductID);
+                }
+                
+                if (product == null)
+                {
+                    // Try auction products as fallback
+                    product = await this.dbContext.AuctionProducts.FindAsync(order.ProductID);
+                }
+                
+                if (product == null)
+                {
+                    continue; // Skip this order if product not found
+                }
+
+                // This boolean is used to check if the product name corresponds to the search text, if the search text is present.
+                bool shouldIncludeProductBySearchText = searchText == null || (searchText != null && product.Title.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                if (shouldIncludeProductBySearchText) // if searching by text corresponds, then we can check the time period
+                {
+                    bool shouldIncludeByTimePeriod = false;
+                    
+                    switch (timePeriod)
+                    {
+                        case null:
+                        case "all":
+                            shouldIncludeByTimePeriod = true;
+                            break;
+                        case "Last 3 Months":
+                            shouldIncludeByTimePeriod = order.OrderDate >= DateTime.Now.AddMonths(-3);
+                            break;
+                        case "Last 6 Months":
+                            shouldIncludeByTimePeriod = order.OrderDate >= DateTime.Now.AddMonths(-6);
+                            break;
+                        case "This Year":
+                            shouldIncludeByTimePeriod = order.OrderDate.Year == DateTime.Now.Year;
+                            break;
+                        default:
+                            throw new ArgumentException($"GetOrdersCountAsync: Invalid time period: {timePeriod}");
+                    }
+                    
+                    if (shouldIncludeByTimePeriod)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        /// <summary>
         /// Retrieves the product category types for a user (buyer or seller).
         /// </summary>
         /// <param name="userId">The ID of the user (buyer or seller).</param>
