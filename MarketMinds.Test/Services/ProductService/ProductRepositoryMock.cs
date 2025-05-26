@@ -66,9 +66,9 @@ namespace MarketMinds.Tests.Mocks
         private readonly Dictionary<int, string> _sellerNames = new();
         private readonly List<BorrowProduct> _borrowableProducts = new();
 
-        public MockProductRepository() : base("mock-url") { }
+        public MockProductRepository() : base(null) { }
 
-        public override Task<string> GetProductByIdAsync(int productId)
+        public  Task<string> GetProductByIdAsync(int productId)
         {
             if (_productStore.TryGetValue(productId, out var product))
             {
@@ -77,7 +77,7 @@ namespace MarketMinds.Tests.Mocks
             return Task.FromResult<string>(null);
         }
 
-        public override Task<string> GetSellerNameAsync(int? sellerId)
+        public Task<string> GetSellerNameAsync(int? sellerId)
         {
             if (sellerId.HasValue && _sellerNames.TryGetValue(sellerId.Value, out var name))
             {
@@ -86,7 +86,7 @@ namespace MarketMinds.Tests.Mocks
             return Task.FromResult<string>(null);
         }
 
-        public override Task<List<BorrowProduct>> GetBorrowableProductsAsync()
+        public Task<List<BorrowProduct>> GetBorrowableProductsAsync()
         {
             return Task.FromResult(_borrowableProducts);
         }

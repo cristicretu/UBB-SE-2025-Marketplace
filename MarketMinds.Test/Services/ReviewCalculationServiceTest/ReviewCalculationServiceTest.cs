@@ -31,7 +31,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.CalculateAverageRating(reviews);
 
             // Assert
-            Assert.AreEqual(4.0, result);
+            Assert.That(result, Is.EqualTo(4.0));
         }
 
         [Test]
@@ -44,7 +44,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.CalculateAverageRating(reviews);
 
             // Assert
-            Assert.AreEqual(0, result);
+            Assert.That(result, Is.EqualTo(0));
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.CalculateAverageRating(null);
 
             // Assert
-            Assert.AreEqual(0, result);
+            Assert.That(result, Is.EqualTo(0));
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.CalculateAverageRating(reviews);
 
             // Assert
-            Assert.AreEqual(4.5, result);
+            Assert.That(result, Is.EqualTo(4.5));
         }
 
         [Test]
@@ -88,7 +88,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.GetReviewCount(reviews);
 
             // Assert
-            Assert.AreEqual(3, result);
+            Assert.That(result, Is.EqualTo(3));
         }
 
         [Test]
@@ -101,7 +101,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.GetReviewCount(reviews);
 
             // Assert
-            Assert.AreEqual(0, result);
+            Assert.That(result, Is.EqualTo(0));
         }
 
         [Test]
@@ -111,7 +111,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.GetReviewCount(null);
 
             // Assert
-            Assert.AreEqual(0, result);
+            Assert.That(result, Is.EqualTo(0));
         }
 
         [Test]
@@ -121,7 +121,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.AreReviewsEmpty(null);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.That(result, Is.True);
         }
 
         [Test]
@@ -134,7 +134,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.AreReviewsEmpty(reviews);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.That(result, Is.True);
         }
 
         [Test]
@@ -150,7 +150,7 @@ namespace MarketMinds.Test.Services.ReviewCalculationServiceTest
             var result = reviewCalculationService.AreReviewsEmpty(reviews);
 
             // Assert
-            Assert.IsFalse(result);
+            Assert.That(result, Is.False);
         }
     }
 }

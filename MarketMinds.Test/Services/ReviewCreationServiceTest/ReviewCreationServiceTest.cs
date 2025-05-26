@@ -244,7 +244,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
 
             public ReviewsServiceMock() : base(null, null, null) { }
 
-            public override void AddReview(string description, List<Image> images, double rating, User seller, User buyer)
+            public void AddReview(string description, List<Image> images, double rating, User seller, User buyer)
             {
                 AddReviewCallCount++;
                 LastAddedDescription = description;
@@ -254,7 +254,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
                 LastAddedBuyer = buyer;
             }
 
-            public override void EditReview(string description, List<Image> images, double rating, int sellerId, int buyerId, string newDescription, double newRating)
+            public void EditReview(string description, List<Image> images, double rating, int sellerId, int buyerId, string newDescription, double newRating)
             {
                 EditReviewCallCount++;
                 LastEditedOriginalDescription = description;
@@ -266,7 +266,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
                 LastEditedNewRating = newRating;
             }
 
-            public override void DeleteReview(string description, List<Image> images, double rating, int sellerId, int buyerId)
+            public void DeleteReview(string description, List<Image> images, double rating, int sellerId, int buyerId)
             {
                 DeleteReviewCallCount++;
                 LastDeletedDescription = description;

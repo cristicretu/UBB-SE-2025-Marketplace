@@ -21,12 +21,12 @@ namespace MarketMinds.Test.Services.ProductTagServiceTest
             productTags = tags;
         }
 
-        public override string GetAllProductTagsRaw()
+        public string GetAllProductTagsRaw()
         {
             return JsonSerializer.Serialize(productTags);
         }
 
-        public override string CreateProductTagRaw(string displayTitle)
+        public string CreateProductTagRaw(string displayTitle)
         {
             var newTag = new ProductTag
             {
@@ -38,7 +38,7 @@ namespace MarketMinds.Test.Services.ProductTagServiceTest
             return JsonSerializer.Serialize(newTag);
         }
 
-        public override void DeleteProductTag(string displayTitle)
+        public void DeleteProductTag(string displayTitle)
         {
             var tagToDelete = productTags.FirstOrDefault(t => t.Title == displayTitle);
             if (tagToDelete != null)

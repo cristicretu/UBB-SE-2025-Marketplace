@@ -24,20 +24,16 @@ namespace MarketMinds.Test.Services.ReviewService
             repositoryMock = new ReviewProxyRepositoryMock();
             userServiceMock = new UserServiceMock();
 
-            // Create test users
             testSeller = new User { Id = 1, Username = "TestSeller", Email = "seller@test.com" };
             testBuyer = new User { Id = 2, Username = "TestBuyer", Email = "buyer@test.com" };
 
             userServiceMock.SetupUsers(new List<User> { testSeller, testBuyer });
-
-            // Setup the service with mocks
             reviewsService = new TestableReviewsService(repositoryMock, userServiceMock, null);
         }
 
         [Test]
         public void GetReviewsBySeller_WithValidSeller_ReturnsCorrectReviews()
         {
-            // Arrange
             var reviews = new List<Review>
             {
                 new Review { Id = 1, SellerId = testSeller.Id, BuyerId = testBuyer.Id, Description = "Great seller", Rating = 5 },
@@ -45,30 +41,25 @@ namespace MarketMinds.Test.Services.ReviewService
             };
             repositoryMock.SetupSellerReviews(reviews);
 
-            // Act
             var result = reviewsService.GetReviewsBySeller(testSeller);
 
-            // Assert
-            Assert.AreEqual(2, result.Count);
-            Assert.AreEqual("Great seller", result[0].Description);
-            Assert.AreEqual(5, result[0].Rating);
-            Assert.AreEqual(testSeller.Username, result[0].SellerUsername);
+            Assert.That(result.Count, Is.EqualTo(2));
+            Assert.That(result[0].Description, Is.EqualTo("Great seller"));
+            Assert.That(result[0].Rating, Is.EqualTo(5));
+            Assert.That(result[0].SellerUsername, Is.EqualTo(testSeller.Username));
         }
 
         [Test]
         public void GetReviewsBySeller_WithNullSeller_ReturnsEmptyCollection()
         {
-            // Act
             var result = reviewsService.GetReviewsBySeller(null);
 
-            // Assert
-            Assert.IsEmpty(result);
+            Assert.That(result, Is.Empty);
         }
 
         [Test]
         public void GetReviewsByBuyer_WithValidBuyer_ReturnsCorrectReviews()
         {
-            // Arrange
             var reviews = new List<Review>
             {
                 new Review { Id = 1, SellerId = testSeller.Id, BuyerId = testBuyer.Id, Description = "Great buyer", Rating = 5 },
@@ -76,110 +67,98 @@ namespace MarketMinds.Test.Services.ReviewService
             };
             repositoryMock.SetupBuyerReviews(reviews);
 
-            // Act
             var result = reviewsService.GetReviewsByBuyer(testBuyer);
 
-            // Assert
-            Assert.AreEqual(2, result.Count);
-            Assert.AreEqual("Great buyer", result[0].Description);
-            Assert.AreEqual(5, result[0].Rating);
-            Assert.AreEqual(testBuyer.Username, result[0].BuyerUsername);
+            Assert.That(result.Count, Is.EqualTo(2));
+            Assert.That(result[0].Description, Is.EqualTo("Great buyer"));
+            Assert.That(result[0].Rating, Is.EqualTo(5));
+            Assert.That(result[0].BuyerUsername, Is.EqualTo(testBuyer.Username));
         }
 
         [Test]
         public void GetReviewsByBuyer_WithNullBuyer_ReturnsEmptyCollection()
         {
-            // Act
             var result = reviewsService.GetReviewsByBuyer(null);
 
-            // Assert
-            Assert.IsEmpty(result);
+            Assert.That(result, Is.Empty);
         }
 
         [Test]
         public void AddReview_WithValidData_CreatesReview()
         {
-            // Arrange
             string description = "Great product and fast shipping";
             double rating = 4.5;
             var images = new List<Image> { new Image { Id = 1, Url = "http://example.com/image.jpg" } };
 
-            // Act
             reviewsService.AddReview(description, images, rating, testSeller, testBuyer);
 
-            // Assert
             var sellerReviews = repositoryMock.GetCurrentSellerReviews();
-            Assert.AreEqual(1, sellerReviews.Count);
-            Assert.AreEqual(description, sellerReviews[0].Description);
-            Assert.AreEqual(rating, sellerReviews[0].Rating);
-            Assert.AreEqual(testSeller.Id, sellerReviews[0].SellerId);
-            Assert.AreEqual(testBuyer.Id, sellerReviews[0].BuyerId);
+            Assert.That(sellerReviews.Count, Is.EqualTo(1));
+            Assert.That(sellerReviews[0].Description, Is.EqualTo(description));
+            Assert.That(sellerReviews[0].Rating, Is.EqualTo(rating));
+            Assert.That(sellerReviews[0].SellerId, Is.EqualTo(testSeller.Id));
+            Assert.That(sellerReviews[0].BuyerId, Is.EqualTo(testBuyer.Id));
         }
 
         [Test]
         public void AddReview_WithNullSeller_ThrowsArgumentNullException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => 
-                reviewsService.AddReview("Description", new List<Image>(), 4, null, testBuyer));
+            Assert.That(() =>
+                reviewsService.AddReview("Description", new List<Image>(), 4, null, testBuyer),
+                Throws.TypeOf<ArgumentNullException>());
         }
 
         [Test]
         public void AddReview_WithNullBuyer_ThrowsArgumentNullException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => 
-                reviewsService.AddReview("Description", new List<Image>(), 4, testSeller, null));
+            Assert.That(() =>
+                reviewsService.AddReview("Description", new List<Image>(), 4, testSeller, null),
+                Throws.TypeOf<ArgumentNullException>());
         }
 
         [Test]
         public void AddReview_WithEmptyDescription_ThrowsArgumentException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => 
-                reviewsService.AddReview("", new List<Image>(), 4, testSeller, testBuyer));
+            Assert.That(() =>
+                reviewsService.AddReview("", new List<Image>(), 4, testSeller, testBuyer),
+                Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         public void AddReview_WithNullDescription_ThrowsArgumentException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => 
-                reviewsService.AddReview(null, new List<Image>(), 4, testSeller, testBuyer));
+            Assert.That(() =>
+                reviewsService.AddReview(null, new List<Image>(), 4, testSeller, testBuyer),
+                Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         public void AddReview_WithRatingOutOfRange_ClampsRating()
         {
-            // Arrange
             double tooHighRating = 6.0;
 
-            // Act
             reviewsService.AddReview("Good product", new List<Image>(), tooHighRating, testSeller, testBuyer);
 
-            // Assert
             var reviews = repositoryMock.GetCurrentSellerReviews();
-            Assert.AreEqual(5.0, reviews[0].Rating); // Should be clamped to 5.0
+            Assert.That(reviews[0].Rating, Is.EqualTo(5.0));
         }
 
         [Test]
         public void EditReview_WithValidData_UpdatesReview()
         {
-            // Arrange
-            var initialReview = new Review 
-            { 
-                Id = 1, 
-                SellerId = testSeller.Id, 
+            var initialReview = new Review
+            {
+                Id = 1,
+                SellerId = testSeller.Id,
                 BuyerId = testBuyer.Id,
                 Description = "Initial description",
                 Rating = 3.0
             };
             repositoryMock.SetupBuyerReviews(new List<Review> { initialReview });
-            
+
             string newDescription = "Updated description";
             double newRating = 4.0;
 
-            // Act
             reviewsService.EditReview(
                 initialReview.Description,
                 new List<Image>(),
@@ -189,74 +168,70 @@ namespace MarketMinds.Test.Services.ReviewService
                 newDescription,
                 newRating);
 
-            // Assert
             var updatedReviews = repositoryMock.GetCurrentBuyerReviews();
-            Assert.AreEqual(1, updatedReviews.Count);
-            Assert.AreEqual(newDescription, updatedReviews[0].Description);
-            Assert.AreEqual(newRating, updatedReviews[0].Rating);
+            Assert.That(updatedReviews.Count, Is.EqualTo(1));
+            Assert.That(updatedReviews[0].Description, Is.EqualTo(newDescription));
+            Assert.That(updatedReviews[0].Rating, Is.EqualTo(newRating));
         }
 
         [Test]
         public void EditReview_WithNonExistingReview_ThrowsArgumentException()
         {
-            // Arrange
             repositoryMock.SetupBuyerReviews(new List<Review>());
 
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => 
-                reviewsService.EditReview("Non-existing", new List<Image>(), 3.0, 999, 999, "New Description", 4.0));
+            Assert.That(() =>
+                reviewsService.EditReview("Non-existing", new List<Image>(), 3.0, 999, 999, "New Description", 4.0),
+                Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         public void EditReview_WithEmptyNewDescription_ThrowsArgumentException()
         {
-            // Arrange
-            var initialReview = new Review 
-            { 
-                Id = 1, 
-                SellerId = testSeller.Id, 
+            var initialReview = new Review
+            {
+                Id = 1,
+                SellerId = testSeller.Id,
                 BuyerId = testBuyer.Id,
                 Description = "Initial description",
                 Rating = 3.0
             };
             repositoryMock.SetupBuyerReviews(new List<Review> { initialReview });
 
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => 
+            Assert.That(() =>
                 reviewsService.EditReview(
                     initialReview.Description,
                     new List<Image>(),
                     initialReview.Rating,
                     initialReview.SellerId,
                     initialReview.BuyerId,
-                    "",  // Empty description
-                    4.0));
+                    "",  // Empty new description
+                    4.0),
+                Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         public void EditReview_WithInvalidSellerId_ThrowsArgumentException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => 
-                reviewsService.EditReview("Description", new List<Image>(), 3.0, 0, 1, "New Description", 4.0));
+            Assert.That(() =>
+                reviewsService.EditReview("Description", new List<Image>(), 3.0, 0, 1, "New Description", 4.0),
+                Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         public void EditReview_WithInvalidBuyerId_ThrowsArgumentException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => 
-                reviewsService.EditReview("Description", new List<Image>(), 3.0, 1, 0, "New Description", 4.0));
+            Assert.That(() =>
+                reviewsService.EditReview("Description", new List<Image>(), 3.0, 1, 0, "New Description", 4.0),
+                Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         public void DeleteReview_WithValidData_RemovesReview()
         {
-            // Arrange
-            var reviewToDelete = new Review 
-            { 
-                Id = 1, 
-                SellerId = testSeller.Id, 
+            var reviewToDelete = new Review
+            {
+                Id = 1,
+                SellerId = testSeller.Id,
                 BuyerId = testBuyer.Id,
                 Description = "Review to delete",
                 Rating = 3.0
@@ -264,7 +239,6 @@ namespace MarketMinds.Test.Services.ReviewService
             repositoryMock.SetupBuyerReviews(new List<Review> { reviewToDelete });
             repositoryMock.SetupSellerReviews(new List<Review> { reviewToDelete });
 
-            // Act
             reviewsService.DeleteReview(
                 reviewToDelete.Description,
                 new List<Image>(),
@@ -272,49 +246,46 @@ namespace MarketMinds.Test.Services.ReviewService
                 reviewToDelete.SellerId,
                 reviewToDelete.BuyerId);
 
-            // Assert
-            Assert.IsEmpty(repositoryMock.GetCurrentBuyerReviews());
-            Assert.IsEmpty(repositoryMock.GetCurrentSellerReviews());
+            Assert.That(repositoryMock.GetCurrentBuyerReviews(), Is.Empty);
+            Assert.That(repositoryMock.GetCurrentSellerReviews(), Is.Empty);
         }
 
         [Test]
         public void DeleteReview_WithNonExistingReview_ThrowsArgumentException()
         {
-            // Arrange
             repositoryMock.SetupBuyerReviews(new List<Review>());
 
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => 
-                reviewsService.DeleteReview("Non-existing", new List<Image>(), 3.0, 999, 999));
+            Assert.That(() =>
+                reviewsService.DeleteReview("Non-existing", new List<Image>(), 3.0, 999, 999),
+                Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         public void DeleteReview_WithInvalidSellerId_ThrowsArgumentException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => 
-                reviewsService.DeleteReview("Description", new List<Image>(), 3.0, 0, 1));
+            Assert.That(() =>
+                reviewsService.DeleteReview("Description", new List<Image>(), 3.0, 0, 1),
+                Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         public void DeleteReview_WithInvalidBuyerId_ThrowsArgumentException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => 
-                reviewsService.DeleteReview("Description", new List<Image>(), 3.0, 1, 0));
+            Assert.That(() =>
+                reviewsService.DeleteReview("Description", new List<Image>(), 3.0, 1, 0),
+                Throws.TypeOf<ArgumentException>());
         }
 
-        // Helper test class
         private class TestableReviewsService : ReviewsService
         {
             public TestableReviewsService(
-                ReviewProxyRepositoryMock repositoryMock, 
+                ReviewProxyRepositoryMock repositoryMock,
                 IUserService userService,
-                User currentUser) 
+                User currentUser)
                 : base(null, userService, currentUser)
             {
-                this.GetType().GetField("repository", 
-                    System.Reflection.BindingFlags.NonPublic | 
+                this.GetType().GetField("repository",
+                    System.Reflection.BindingFlags.NonPublic |
                     System.Reflection.BindingFlags.Instance)
                     .SetValue(this, repositoryMock);
             }

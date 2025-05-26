@@ -36,10 +36,10 @@ namespace MarketMinds.Test.Services.ProductTagServiceTest
             var result = productTagService.GetAllProductTags();
 
             // Assert
-            Assert.AreEqual(3, result.Count);
-            Assert.AreEqual("Electronics", result[0].Title);
-            Assert.AreEqual("Clothing", result[1].Title);
-            Assert.AreEqual("Books", result[2].Title);
+            Assert.That(result, Has.Count.EqualTo(3));
+            Assert.That(result[0].Title, Is.EqualTo("Electronics"));
+            Assert.That(result[1].Title, Is.EqualTo("Clothing"));
+            Assert.That(result[2].Title, Is.EqualTo("Books"));
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace MarketMinds.Test.Services.ProductTagServiceTest
             var result = productTagService.GetAllProductTags();
 
             // Assert
-            Assert.IsEmpty(result);
+            Assert.That(result, Is.Empty);
         }
 
         [Test]
@@ -65,7 +65,7 @@ namespace MarketMinds.Test.Services.ProductTagServiceTest
             var result = mockService.GetAllProductTags();
 
             // Assert
-            Assert.IsEmpty(result);
+            Assert.That(result, Is.Empty);
         }
 
         [Test]
@@ -78,60 +78,50 @@ namespace MarketMinds.Test.Services.ProductTagServiceTest
             var result = productTagService.CreateProductTag(tagTitle);
 
             // Assert
-            Assert.AreEqual(tagTitle, result.Title);
-            Assert.AreEqual(1, result.Id);
-            Assert.AreEqual(1, repositoryMock.GetCurrentTags().Count);
+            Assert.That(result.Title, Is.EqualTo(tagTitle));
+            Assert.That(result.Id, Is.EqualTo(1));
+            Assert.That(repositoryMock.GetCurrentTags(), Has.Count.EqualTo(1));
         }
 
         [Test]
         public void CreateProductTag_NullTitle_ThrowsArgumentException()
         {
-            // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() => productTagService.CreateProductTag(null));
-            Assert.That(ex.Message, Contains.Substring("Product tag display title cannot be null or empty"));
+            Assert.That(ex.Message, Does.Contain("Product tag display title cannot be null or empty"));
         }
 
         [Test]
         public void CreateProductTag_EmptyTitle_ThrowsArgumentException()
         {
-            // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() => productTagService.CreateProductTag(""));
-            Assert.That(ex.Message, Contains.Substring("Product tag display title cannot be null or empty"));
+            Assert.That(ex.Message, Does.Contain("Product tag display title cannot be null or empty"));
         }
 
         [Test]
         public void CreateProductTag_WhitespaceTitle_ThrowsArgumentException()
         {
-            // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() => productTagService.CreateProductTag("   "));
-            Assert.That(ex.Message, Contains.Substring("Product tag display title cannot be null or empty"));
+            Assert.That(ex.Message, Does.Contain("Product tag display title cannot be null or empty"));
         }
 
         [Test]
         public void CreateProductTag_TitleTooLong_ThrowsArgumentException()
         {
-            // Arrange
-            var longTitle = new string('a', 101); // 101 characters
-
-            // Act & Assert
+            var longTitle = new string('a', 101);
             var ex = Assert.Throws<ArgumentException>(() => productTagService.CreateProductTag(longTitle));
-            Assert.That(ex.Message, Contains.Substring("Product tag display title cannot exceed 100 characters"));
+            Assert.That(ex.Message, Does.Contain("Product tag display title cannot exceed 100 characters"));
         }
 
         [Test]
         public void CreateProductTag_ExceptionThrown_PropagatesException()
         {
-            // Arrange
             var mockService = new ExceptionThrowingProductTagService(repositoryMock);
-
-            // Act & Assert
             Assert.Throws<InvalidOperationException>(() => mockService.CreateProductTag("Test Tag"));
         }
 
         [Test]
         public void DeleteProductTag_ExistingTitle_RemovesTag()
         {
-            // Arrange
             const string tagTitle = "Tag to Delete";
             repositoryMock.SetupProductTags(new List<ProductTag>
             {
@@ -142,57 +132,50 @@ namespace MarketMinds.Test.Services.ProductTagServiceTest
             productTagService.DeleteProductTag(tagTitle);
 
             // Assert
-            Assert.IsEmpty(repositoryMock.GetCurrentTags());
+            Assert.That(repositoryMock.GetCurrentTags(), Is.Empty);
         }
 
         [Test]
         public void DeleteProductTag_NonExistingTitle_ThrowsException()
         {
-            // Arrange
             repositoryMock.SetupProductTags(new List<ProductTag>
             {
                 new ProductTag { Id = 1, Title = "Existing Tag" }
             });
 
-            // Act & Assert
             Assert.Throws<InvalidOperationException>(() => productTagService.DeleteProductTag("Non-existing Tag"));
         }
 
         [Test]
         public void DeleteProductTag_NullTitle_ThrowsArgumentException()
         {
-            // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() => productTagService.DeleteProductTag(null));
-            Assert.That(ex.Message, Contains.Substring("Product tag display title cannot be null or empty"));
+            Assert.That(ex.Message, Does.Contain("Product tag display title cannot be null or empty"));
         }
 
         [Test]
         public void DeleteProductTag_EmptyTitle_ThrowsArgumentException()
         {
-            // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() => productTagService.DeleteProductTag(""));
-            Assert.That(ex.Message, Contains.Substring("Product tag display title cannot be null or empty"));
+            Assert.That(ex.Message, Does.Contain("Product tag display title cannot be null or empty"));
         }
 
         [Test]
         public void DeleteProductTag_WhitespaceTitle_ThrowsArgumentException()
         {
-            // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() => productTagService.DeleteProductTag("   "));
-            Assert.That(ex.Message, Contains.Substring("Product tag display title cannot be null or empty"));
+            Assert.That(ex.Message, Does.Contain("Product tag display title cannot be null or empty"));
         }
 
         [Test]
         public void DeleteProductTag_ExceptionThrown_PropagatesException()
         {
-            // Arrange
             var mockService = new ExceptionThrowingProductTagService(repositoryMock);
             repositoryMock.SetupProductTags(new List<ProductTag>
             {
                 new ProductTag { Id = 1, Title = "Test Tag" }
             });
 
-            // Act & Assert
             Assert.Throws<InvalidOperationException>(() => mockService.DeleteProductTag("Test Tag"));
         }
 
