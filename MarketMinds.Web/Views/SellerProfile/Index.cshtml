@@ -200,7 +200,7 @@
                                     </div>
                                     <div class="flex items-center justify-between">
                                         <span class="text-sm font-medium text-gray-700">Products</span>
-                                        <span class="text-sm font-semibold text-gray-900">@(Model.Products?.Count ?? 0)</span>
+                                        <span class="text-sm font-semibold text-gray-900">@(Model.AllProductsCount)</span>
                                     </div>
                                 </div>
                             </div>
@@ -316,6 +316,118 @@
                             <div id="productsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                 @await Html.PartialAsync("_ProductsListPartial", Model)
                             </div>
+                            
+                            <!-- Pagination Controls -->
+                            @{
+                                int totalProducts = ViewBag.TotalProducts ?? 0;
+                                int currentPage = ViewBag.CurrentPage ?? 1;
+                                bool hasNextPage = ViewBag.HasNextPage ?? false;
+                                bool hasPreviousPage = ViewBag.HasPreviousPage ?? false;
+                                string searchQuery = ViewBag.SearchQuery ?? "";
+                            }
+                            
+                            @if (totalProducts > 0)
+                            {
+                                <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-200">
+                                    <!-- Results Info -->
+                                    <div class="text-sm text-gray-700">
+                                        Showing <span class="font-medium">@((ViewBag.CurrentOffset ?? 0) + 1)</span> to 
+                                        <span class="font-medium">@Math.Min((ViewBag.CurrentOffset ?? 0) + (ViewBag.CurrentCount ?? 12), totalProducts)</span> of 
+                                        <span class="font-medium">@totalProducts</span> products
+                                    </div>
+                                    
+                                    <!-- Pagination Navigation -->
+                                    <div class="flex items-center space-x-1">
+                                        <!-- Previous Button -->
+                                        @if (hasPreviousPage && ViewBag.PrevPageUrl != null)
+                                        {
+                                            <a href="@ViewBag.PrevPageUrl" 
+                                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                                Previous
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-300 rounded-l-md cursor-not-allowed">
+                                                Previous
+                                            </span>
+                                        }
+                                        
+                                        <!-- First Page and Ellipsis -->
+                                        @if (ViewBag.ShowFirstPageEllipsis == true)
+                                        {
+                                            <a href="@ViewBag.FirstPageUrl" 
+                                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                                1
+                                            </a>
+                                            <span class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300">...</span>
+                                        }
+                                        else if (ViewBag.FirstPageUrl != null && ViewBag.StartPage > 1)
+                                        {
+                                            <a href="@ViewBag.FirstPageUrl" 
+                                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                                1
+                                            </a>
+                                        }
+                                        
+                                        <!-- Page Numbers -->
+                                        @{
+                                            var pageUrls = ViewBag.PageUrls as Dictionary<int, string> ?? new Dictionary<int, string>();
+                                        }
+                                        @foreach (var pageUrl in pageUrls)
+                                        {
+                                            if (pageUrl.Key == currentPage)
+                                            {
+                                                <span class="px-3 py-2 text-sm font-medium text-white bg-primary border border-primary rounded-md">
+                                                    @pageUrl.Key
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <a href="@pageUrl.Value" 
+                                                   class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                                    @pageUrl.Key
+                                                </a>
+                                            }
+                                        }
+                                        
+                                        <!-- Last Page and Ellipsis -->
+                                        @if (ViewBag.ShowLastPageEllipsis == true)
+                                        {
+                                            <span class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300">...</span>
+                                            <a href="@ViewBag.LastPageUrl" 
+                                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                                @ViewBag.LastPageNumber
+                                            </a>
+                                        }
+                                        else if (ViewBag.LastPageUrl != null && ViewBag.EndPage < ViewBag.LastPageNumber)
+                                        {
+                                            <a href="@ViewBag.LastPageUrl" 
+                                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                                @ViewBag.LastPageNumber
+                                            </a>
+                                        }
+                                        
+                                        <!-- Next Button -->
+                                        @if (hasNextPage && ViewBag.NextPageUrl != null)
+                                        {
+                                            <a href="@ViewBag.NextPageUrl" 
+                                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                                Next
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-300 rounded-r-md cursor-not-allowed">
+                                                Next
+                                            </span>
+                                        }
+                                    </div>
+                                    
+                                    <!-- Mobile-friendly pagination info -->
+                                    <div class="hidden sm:block w-32"></div>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -326,76 +438,143 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             var sellerId = @(profileSellerId?.ToString() ?? "null");
             var isManageMode = @(isOwnProfile ? "true" : "false");
-            var currentSortAscending = null; // Track current sort direction
+            var searchQuery = '@ViewBag.SearchQuery';
             
-            // Handle product search
-            $('#productSearchInput').on('keyup', function() {
-                const searchText = $(this).val();
-                var requestData = { searchText: searchText };
+            // Initialize search input with current search value
+            const searchInput = document.getElementById('productSearchInput');
+            if (searchInput && searchQuery) {
+                searchInput.value = searchQuery;
+            }
+            
+            // Handle search on Enter key press
+            function handleSearchKeyPress(event) {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            }
+            
+            // Perform search function
+            function performSearch() {
+                const searchText = searchInput.value.trim();
                 
-                // Add sellerId for public profiles
+                // Build the URL based on profile type
+                let url;
                 if (sellerId !== null) {
-                    requestData.sellerId = sellerId;
+                    // Public profile
+                    url = '@Url.Action("PublicProfile", "SellerProfile")'.replace('0', sellerId) + 
+                          '?offset=0&count=12' + 
+                          (searchText ? '&search=' + encodeURIComponent(searchText) : '');
                 } else {
-                    // For private profiles, indicate if we're in manage mode
-                    requestData.isManageMode = isManageMode;
+                    // Manage mode
+                    url = '@Url.Action("Manage", "SellerProfile")' + 
+                          '?offset=0&count=12' + 
+                          (searchText ? '&search=' + encodeURIComponent(searchText) : '');
                 }
                 
-                $.ajax({
-                    url: '@Url.Action("FilterProducts", "SellerProfile")',
-                    type: 'POST',
-                    data: requestData,
-                    success: function(result) {
-                        $('#productsContainer').html(result);
-                        // Reset sort state when filtering
-                        currentSortAscending = null;
-                        updateSortButtonText();
-                    }
-                });
-            });
+                window.location.href = url;
+            }
+            
+            // Add event listeners
+            if (searchInput) {
+                searchInput.addEventListener('keypress', handleSearchKeyPress);
+            }
+            
+            // Add search button functionality
+            const searchButton = document.createElement('button');
+            searchButton.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>';
+            searchButton.className = 'absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer';
+            searchButton.onclick = performSearch;
+            
+            // Add search button to the search input container
+            if (searchInput && searchInput.parentElement) {
+                searchInput.parentElement.style.position = 'relative';
+                searchInput.parentElement.appendChild(searchButton);
+                searchInput.style.paddingRight = '2.5rem';
+            }
 
-            // Handle product sorting
-            $('#sortButton').on('click', function() {
-                var requestData = {};
+            // Handle product sorting with server-side redirect to preserve pagination
+            const sortButton = document.getElementById('sortButton');
+            if (sortButton) {
+                // Update button text on page load
+                updateSortButtonText();
                 
-                // Add sellerId for public profiles
-                if (sellerId !== null) {
-                    requestData.sellerId = sellerId;
-                } else {
-                    // For private profiles, indicate if we're in manage mode
-                    requestData.isManageMode = isManageMode;
-                }
-                
-                // Add current sort direction
-                if (currentSortAscending !== null) {
-                    requestData.sortAscending = currentSortAscending;
-                }
-                
-                $.ajax({
-                    url: '@Url.Action("SortProducts", "SellerProfile")',
-                    type: 'POST',
-                    data: requestData,
-                    success: function(result) {
-                        $('#productsContainer').html(result);
-                        // Toggle sort direction for next click
-                        currentSortAscending = currentSortAscending === null ? false : !currentSortAscending;
-                        updateSortButtonText();
+                sortButton.addEventListener('click', function() {
+                    // Get current URL parameters (fresh each time)
+                    const freshUrlParams = new URLSearchParams(window.location.search);
+                    const currentSearch = freshUrlParams.get('search') || '';
+                    const currentOffset = freshUrlParams.get('offset') || '0';
+                    const currentCount = freshUrlParams.get('count') || '12';
+                    
+                    // Get the current sort state from URL (fresh each time)
+                    let currentSortFromUrl = freshUrlParams.get('sortAscending');
+                    if (currentSortFromUrl !== null) {
+                        currentSortFromUrl = currentSortFromUrl === 'true';
                     }
+                    
+                    // Create form and submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '@Url.Action("SortProducts", "SellerProfile")';
+                    
+                    // Add CSRF token
+                    const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '__RequestVerificationToken';
+                        csrfInput.value = csrfToken;
+                        form.appendChild(csrfInput);
+                    }
+                    
+                    // Add parameters - pass the current sort state so the server can toggle it
+                    const params = {
+                        search: currentSearch,
+                        offset: currentOffset,
+                        count: currentCount,
+                        sortAscending: currentSortFromUrl // Pass current state so server can toggle
+                    };
+                    
+                    if (sellerId !== null) {
+                        params.sellerId = sellerId;
+                    } else {
+                        params.isManageMode = isManageMode;
+                    }
+                    
+                    // Create hidden inputs for all parameters
+                    Object.keys(params).forEach(key => {
+                        if (params[key] !== null && params[key] !== undefined) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = params[key];
+                            form.appendChild(input);
+                        }
+                    });
+                    
+                    document.body.appendChild(form);
+                    form.submit();
                 });
-            });
-            
-            // Function to update sort button text based on current state
-            function updateSortButtonText() {
-                var buttonText = 'Sort by Price';
-                if (currentSortAscending === true) {
-                    buttonText = 'Sort by Price (↓ Desc)';
-                } else if (currentSortAscending === false) {
-                    buttonText = 'Sort by Price (↑ Asc)';
+                
+                // Function to update sort button text based on current state
+                function updateSortButtonText() {
+                    // Always read fresh URL parameters
+                    const freshUrlParams = new URLSearchParams(window.location.search);
+                    let currentSortFromUrl = freshUrlParams.get('sortAscending');
+                    if (currentSortFromUrl !== null) {
+                        currentSortFromUrl = currentSortFromUrl === 'true';
+                    }
+                    
+                    var buttonText = 'Sort by Price';
+                    if (currentSortFromUrl === true) {
+                        buttonText = 'Sort by Price (↑ Asc)';
+                    } else if (currentSortFromUrl === false) {
+                        buttonText = 'Sort by Price (↓ Desc)';
+                    }
+                    sortButton.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>' + buttonText;
                 }
-                $('#sortButton').html('<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>' + buttonText);
             }
         });
     </script>

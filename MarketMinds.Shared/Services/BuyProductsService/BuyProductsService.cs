@@ -95,6 +95,46 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             }
         }
 
+        public List<BuyProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null)
+        {
+            try
+            {
+                var json = buyProductsRepository.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm);
+                Console.WriteLine($"Received filtered JSON from server (offset: {offset}, count: {count}, conditions: {string.Join(",", conditionIds ?? new List<int>())}, categories: {string.Join(",", categoryIds ?? new List<int>())}, maxPrice: {maxPrice}, searchTerm: {searchTerm}):");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+
+                // First deserialize to DTOs
+                var productDTOs = JsonSerializer.Deserialize<List<BuyProductDTO>>(json, jsonOptions);
+
+                // Then map DTOs to domain models
+                var products = BuyProductMapper.FromDTOList(productDTOs);
+
+                return products ?? new List<BuyProduct>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered products: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                return new List<BuyProduct>();
+            }
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null)
+        {
+            try
+            {
+                return buyProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered product count: {ex.Message}");
+                return 0;
+            }
+        }
+
         public void CreateListing(BuyProduct product)
         {
             if (product == null)

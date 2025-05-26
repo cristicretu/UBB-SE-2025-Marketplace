@@ -459,5 +459,157 @@ namespace MarketMinds.Shared.ProxyRepository
                 throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
             }
         }
+
+        public async Task<List<AuctionProduct>> GetFilteredAuctionProductsAsync(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new AuctionProductJsonConverter());
+                serializerOptions.Converters.Add(new UserJsonConverter());
+                serializerOptions.Converters.Add(new CategoryJsonConverter());
+                serializerOptions.Converters.Add(new ConditionJsonConverter());
+                serializerOptions.Converters.Add(new SellerJsonConverter());
+                serializerOptions.Converters.Add(new BidJsonConverter());
+
+                var queryParams = new List<string>
+                {
+                    $"offset={offset}",
+                    $"count={count}"
+                };
+
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    foreach (var conditionId in conditionIds)
+                    {
+                        queryParams.Add($"conditionIds={conditionId}");
+                    }
+                }
+
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    foreach (var categoryId in categoryIds)
+                    {
+                        queryParams.Add($"categoryIds={categoryId}");
+                    }
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    queryParams.Add($"maxPrice={maxPrice.Value}");
+                }
+
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+                }
+
+                string url = $"auctionproducts/filtered?{string.Join("&", queryParams)}";
+                var response = await httpClient.GetAsync(url);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
+                }
+                
+                var json = await response.Content.ReadAsStringAsync();
+                
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<AuctionProduct>();
+                }
+                
+                try
+                {
+                    var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
+                    return products ?? new List<AuctionProduct>();
+                }
+                catch (System.Text.Json.JsonException jsonEx)
+                {
+                    throw new InvalidOperationException($"Failed to deserialize API response: {jsonEx.Message}", jsonEx);
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new InvalidOperationException($"Failed to communicate with API: {httpEx.Message}", httpEx);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<int> GetFilteredAuctionProductCountAsync(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var queryParams = new List<string>();
+
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    foreach (var conditionId in conditionIds)
+                    {
+                        queryParams.Add($"conditionIds={conditionId}");
+                    }
+                }
+
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    foreach (var categoryId in categoryIds)
+                    {
+                        queryParams.Add($"categoryIds={categoryId}");
+                    }
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    queryParams.Add($"maxPrice={maxPrice.Value}");
+                }
+
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+                }
+
+                string url = queryParams.Any() 
+                    ? $"auctionproducts/filtered/count?{string.Join("&", queryParams)}"
+                    : "auctionproducts/filtered/count";
+                
+                var response = await httpClient.GetAsync(url);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
+                }
+                
+                var countString = await response.Content.ReadAsStringAsync();
+                return int.Parse(countString);
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new InvalidOperationException($"Failed to communicate with API: {httpEx.Message}", httpEx);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
+            }
+        }
     }
 }
