@@ -209,7 +209,6 @@ namespace MarketMinds.ViewModels
                     {
                         var linkedBuyerItems = await this.BuyerService.GetWishlistItems(linkedBuyerId);
                         linkedItems.AddRange(await Task.WhenAll(linkedBuyerItems.Select(item => GetWishlistItemDetailsAsync(item))));
-
                     }
                 }
 

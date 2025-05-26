@@ -1,11 +1,9 @@
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ReviewCreationService;
 using MarketMinds.Shared.Services.ReviewService;
-using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace MarketMinds.Test.Services.ReviewCreationServiceTest
 {
@@ -39,18 +37,19 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
             var result = reviewCreationService.CreateReview(description, images, rating, testSeller, testBuyer);
 
             // Assert
-            Assert.AreEqual(description, result.Description);
-            Assert.AreEqual(rating, result.Rating);
-            Assert.AreEqual(testSeller.Id, result.SellerId);
-            Assert.AreEqual(testBuyer.Id, result.BuyerId);
-            Assert.AreEqual(images, result.Images);
-            
+            Assert.That(result.Description, Is.EqualTo(description));
+            Assert.That(result.Rating, Is.EqualTo(rating));
+            Assert.That(result.SellerId, Is.EqualTo(testSeller.Id));
+            Assert.That(result.BuyerId, Is.EqualTo(testBuyer.Id));
+            Assert.That(result.Images, Is.EqualTo(images));
+
             // Verify reviewsServiceMock was called correctly
-            Assert.AreEqual(1, reviewsServiceMock.AddReviewCallCount);
-            Assert.AreEqual(description, reviewsServiceMock.LastAddedDescription);
-            Assert.AreEqual(rating, reviewsServiceMock.LastAddedRating);
-            Assert.AreEqual(testSeller, reviewsServiceMock.LastAddedSeller);
-            Assert.AreEqual(testBuyer, reviewsServiceMock.LastAddedBuyer);
+            Assert.That(reviewsServiceMock.AddReviewCallCount, Is.EqualTo(1));
+            Assert.That(reviewsServiceMock.LastAddedDescription, Is.EqualTo(description));
+            Assert.That(reviewsServiceMock.LastAddedRating, Is.EqualTo(rating));
+            Assert.That(reviewsServiceMock.LastAddedSeller, Is.EqualTo(testSeller));
+            Assert.That(reviewsServiceMock.LastAddedBuyer, Is.EqualTo(testBuyer));
+
         }
 
         [Test]
@@ -103,13 +102,14 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
             reviewCreationService.UpdateReview(review, newDescription, newRating);
 
             // Assert
-            Assert.AreEqual(1, reviewsServiceMock.EditReviewCallCount);
-            Assert.AreEqual(review.Description, reviewsServiceMock.LastEditedOriginalDescription);
-            Assert.AreEqual(review.Rating, reviewsServiceMock.LastEditedOriginalRating);
-            Assert.AreEqual(review.SellerId, reviewsServiceMock.LastEditedSellerId);
-            Assert.AreEqual(review.BuyerId, reviewsServiceMock.LastEditedBuyerId);
-            Assert.AreEqual(newDescription, reviewsServiceMock.LastEditedNewDescription);
-            Assert.AreEqual(newRating, reviewsServiceMock.LastEditedNewRating);
+            Assert.That(reviewsServiceMock.EditReviewCallCount, Is.EqualTo(1));
+            Assert.That(reviewsServiceMock.LastEditedOriginalDescription, Is.EqualTo(review.Description));
+            Assert.That(reviewsServiceMock.LastEditedOriginalRating, Is.EqualTo(review.Rating));
+            Assert.That(reviewsServiceMock.LastEditedSellerId, Is.EqualTo(review.SellerId));
+            Assert.That(reviewsServiceMock.LastEditedBuyerId, Is.EqualTo(review.BuyerId));
+            Assert.That(reviewsServiceMock.LastEditedNewDescription, Is.EqualTo(newDescription));
+            Assert.That(reviewsServiceMock.LastEditedNewRating, Is.EqualTo(newRating));
+
         }
 
         [Test]
@@ -141,13 +141,14 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
             reviewCreationService.EditReview(review, newDescription, newRating);
 
             // Assert
-            Assert.AreEqual(1, reviewsServiceMock.EditReviewCallCount);
-            Assert.AreEqual(review.Description, reviewsServiceMock.LastEditedOriginalDescription);
-            Assert.AreEqual(review.Rating, reviewsServiceMock.LastEditedOriginalRating);
-            Assert.AreEqual(review.SellerId, reviewsServiceMock.LastEditedSellerId);
-            Assert.AreEqual(review.BuyerId, reviewsServiceMock.LastEditedBuyerId);
-            Assert.AreEqual(newDescription, reviewsServiceMock.LastEditedNewDescription);
-            Assert.AreEqual(newRating, reviewsServiceMock.LastEditedNewRating);
+            Assert.That(reviewsServiceMock.EditReviewCallCount, Is.EqualTo(1));
+            Assert.That(reviewsServiceMock.LastEditedOriginalDescription, Is.EqualTo(review.Description));
+            Assert.That(reviewsServiceMock.LastEditedOriginalRating, Is.EqualTo(review.Rating));
+            Assert.That(reviewsServiceMock.LastEditedSellerId, Is.EqualTo(review.SellerId));
+            Assert.That(reviewsServiceMock.LastEditedBuyerId, Is.EqualTo(review.BuyerId));
+            Assert.That(reviewsServiceMock.LastEditedNewDescription, Is.EqualTo(newDescription));
+            Assert.That(reviewsServiceMock.LastEditedNewRating, Is.EqualTo(newRating));
+
         }
 
         [Test]
@@ -177,11 +178,12 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
             reviewCreationService.DeleteReview(review);
 
             // Assert
-            Assert.AreEqual(1, reviewsServiceMock.DeleteReviewCallCount);
-            Assert.AreEqual(review.Description, reviewsServiceMock.LastDeletedDescription);
-            Assert.AreEqual(review.Rating, reviewsServiceMock.LastDeletedRating);
-            Assert.AreEqual(review.SellerId, reviewsServiceMock.LastDeletedSellerId);
-            Assert.AreEqual(review.BuyerId, reviewsServiceMock.LastDeletedBuyerId);
+            Assert.That(reviewsServiceMock.DeleteReviewCallCount, Is.EqualTo(1));
+            Assert.That(reviewsServiceMock.LastDeletedDescription, Is.EqualTo(review.Description));
+            Assert.That(reviewsServiceMock.LastDeletedRating, Is.EqualTo(review.Rating));
+            Assert.That(reviewsServiceMock.LastDeletedSellerId, Is.EqualTo(review.SellerId));
+            Assert.That(reviewsServiceMock.LastDeletedBuyerId, Is.EqualTo(review.BuyerId));
+
         }
 
         [Test]

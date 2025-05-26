@@ -1,7 +1,7 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Data;
 using System;
 using MarketMinds.Shared.Models;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Data;
 
 namespace MarketMinds.Converters
 {
@@ -13,11 +13,19 @@ namespace MarketMinds.Converters
             {
                 var param = parameter?.ToString();
                 if (param == "ShowActions")
+                {
                     return (status == BuyerLinkageStatus.PendingSent || status == BuyerLinkageStatus.PendingReceived) ? Visibility.Visible : Visibility.Collapsed;
+                }
+
                 if (param == "PendingSelf")
+                {
                     return status == BuyerLinkageStatus.PendingSent ? Visibility.Visible : Visibility.Collapsed;
+                }
+
                 if (param == "PendingOther")
+                {
                     return status == BuyerLinkageStatus.PendingReceived ? Visibility.Visible : Visibility.Collapsed;
+                }
             }
             return Visibility.Collapsed;
         }
@@ -27,4 +35,4 @@ namespace MarketMinds.Converters
             throw new NotImplementedException();
         }
     }
-} 
+}
