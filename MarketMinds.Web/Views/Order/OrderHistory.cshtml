@@ -243,22 +243,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                <div class="ml-6 flex-shrink-0 space-x-2">
-                                    <button onclick="showOrderDetails(@order.OrderSummaryID)" 
-                                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                        View Details
-                                    </button>
-                                    
-                                    @{
-                                        // Removed contract buttons from main list to align with user-provided previous version.
-                                        // Contract actions are now handled in the modal.
-                                    }
-                                    
-                                </div>
                                 }
                             </div>
                         </div>
@@ -483,7 +467,7 @@
             // Redirect to OrderHistory with search parameters
             const params = new URLSearchParams();
             params.set('offset', '0');
-            params.set('count', '12');
+            params.set('count', '4');
             if (searchText) {
                 params.set('search', searchText);
             }
