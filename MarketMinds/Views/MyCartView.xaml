@@ -95,7 +95,8 @@
                             Content="Continue Shopping" 
                             Style="{StaticResource AccentButtonStyle}"
                             Click="ContinueShoppingButton_Click"
-                            IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}"/>
+                            IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}"
+                            HorizontalAlignment="Center"/>
                     </StackPanel>
 
                     <!-- Cart Items -->
