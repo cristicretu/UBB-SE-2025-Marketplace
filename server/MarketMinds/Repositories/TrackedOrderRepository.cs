@@ -107,7 +107,10 @@ namespace Server.Repository
         /// <returns>List of order checkpoints.</returns>
         public async Task<List<OrderCheckpoint>> GetAllOrderCheckpointsAsync(int trackedOrderID)
         {
-            return await dbContext.OrderCheckpoints.Where(checkpoint => checkpoint.TrackedOrderID == trackedOrderID).ToListAsync();
+            return await dbContext.OrderCheckpoints
+                .Where(checkpoint => checkpoint.TrackedOrderID == trackedOrderID)
+                .OrderBy(checkpoint => checkpoint.Timestamp)
+                .ToListAsync();
         }
 
         /// <summary>
@@ -139,8 +142,15 @@ namespace Server.Repository
         /// <exception cref="Exception">Thrown when the tracked order is not found.</exception>
         public async Task<TrackedOrder> GetTrackedOrderByIdAsync(int trackOrderID)
         {
-            return await dbContext.TrackedOrders.FindAsync(trackOrderID)
-                            ?? throw new Exception($"GetTrackedOrderByIdAsync: No TrackedOrder with id: {trackOrderID}");
+            var trackedOrder = await dbContext.TrackedOrders
+                .FirstOrDefaultAsync(t => t.TrackedOrderID == trackOrderID);
+
+            if (trackedOrder == null)
+            {
+                throw new Exception($"GetTrackedOrderByIdAsync: No TrackedOrder with id: {trackOrderID}");
+            }
+
+            return trackedOrder;
         }
 
         /// <summary>

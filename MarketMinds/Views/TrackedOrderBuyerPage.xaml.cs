@@ -1,23 +1,37 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class TrackedOrderBuyerPage : Page
     {
-        internal ITrackedOrderViewModel ViewModel { get; set; }
         public int TrackedOrderID { get; set; }
+        public int OrderID { get; set; }
+        public string CurrentStatus { get; set; } = string.Empty;
+        public DateTime EstimatedDeliveryDate { get; set; }
+        public string DeliveryAddress { get; set; } = string.Empty;
+        public ObservableCollection<OrderCheckpoint> Checkpoints { get; set; } = new ObservableCollection<OrderCheckpoint>();
 
-        internal TrackedOrderBuyerPage(ITrackedOrderViewModel viewModel, int trackedOrderID)
+        public TrackedOrderBuyerPage()
         {
             this.InitializeComponent();
-            ViewModel = viewModel;
+            DataContext = App.TrackedOrderViewModel;
+        }
+
+        public void SetTrackedOrderID(int trackedOrderID)
+        {
             TrackedOrderID = trackedOrderID;
-            DataContext = ViewModel;
+
+            if (DataContext is TrackedOrderViewModel viewModel)
+            {
+                _ = viewModel.LoadOrderDataAsync(trackedOrderID);
+            }
         }
 
         private async Task ShowErrorDialog(string errorMessage)

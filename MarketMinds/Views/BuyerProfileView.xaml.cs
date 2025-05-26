@@ -4,7 +4,7 @@ namespace MarketMinds.Views
     using System.Configuration;
     using System.Diagnostics;
     using System.Threading.Tasks;
-
+    using MarketMinds.Shared.Models;
     using MarketMinds.ViewModels;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
@@ -13,15 +13,15 @@ namespace MarketMinds.Views
     public sealed partial class BuyerProfileView : Page
     {
         private IContractViewModel? contractViewModel;
-        private ITrackedOrderViewModel? trackedOrderViewModel;
+        private ITrackedOrderViewModel trackedOrderViewModel;
 
         public BuyerProfileView()
         {
             // Initialize contract and contractViewModel
             contractViewModel = new ContractViewModel();
 
-            // Initialize trackedOrderViewModel
-            trackedOrderViewModel = new TrackedOrderViewModel();
+            // Use the static ViewModel from App.xaml.cs
+            trackedOrderViewModel = App.TrackedOrderViewModel;
 
             // Set the ViewModel from the App
             this.ViewModel = App.BuyerProfileViewModel;
@@ -121,6 +121,12 @@ namespace MarketMinds.Views
 
         private async void TrackOrderButton_Clicked(object sender, RoutedEventArgs e)
         {
+            if (trackedOrderViewModel == null)
+            {
+                await ShowNoTrackedOrderDialogAsync("Unable to track orders at this time. Please try again later.");
+                return;
+            }
+
             var inputID = await ShowTrackedOrderInputDialogAsync();
             if (inputID == null)
             {
@@ -129,7 +135,7 @@ namespace MarketMinds.Views
 
             if (inputID == -1)
             {
-                await ShowNoTrackedOrderDialogAsync("Please enter an integer!");
+                await ShowNoTrackedOrderDialogAsync("Please enter a valid order ID number!");
             }
             else
             {
@@ -137,25 +143,34 @@ namespace MarketMinds.Views
                 try
                 {
                     var order = await trackedOrderViewModel.GetTrackedOrderByIDAsync(trackedOrderID);
-                    bool hasControlAccess = true;
+                    if (order == null)
+                    {
+                        await ShowNoTrackedOrderDialogAsync($"No tracked order found with ID {trackedOrderID}. Please verify the order ID and try again.");
+                        return;
+                    }
+
+                    // Determine if the user has control access based on their role
+                    bool hasControlAccess = ViewModel.User.UserType == (int)UserRole.Seller || ViewModel.User.UserType == (int)UserRole.Admin;
 
                     TrackedOrderWindow trackedOrderWindow = new TrackedOrderWindow();
                     if (hasControlAccess)
                     {
-                        var controlp = new TrackedOrderControlPage(trackedOrderViewModel, trackedOrderID);
-                        trackedOrderWindow.Content = controlp;
+                        var trackedOrderControlPage = new TrackedOrderControlPage();
+                        trackedOrderControlPage.SetTrackedOrderID(trackedOrderID);
+                        trackedOrderWindow.Content = trackedOrderControlPage;
                     }
                     else
                     {
-                        var buyerp = new TrackedOrderBuyerPage(trackedOrderViewModel, trackedOrderID);
-                        trackedOrderWindow.Content = buyerp;
+                        var trackedOrderBuyerPage = new TrackedOrderBuyerPage();
+                        trackedOrderBuyerPage.SetTrackedOrderID(trackedOrderID);
+                        trackedOrderWindow.Content = trackedOrderBuyerPage;
                     }
 
                     trackedOrderWindow.Activate();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    await ShowNoTrackedOrderDialogAsync("No TrackedOrder has been found with ID " + trackedOrderID.ToString());
+                    await ShowNoTrackedOrderDialogAsync($"Unable to retrieve tracked order {trackedOrderID}. Error: {ex.Message}");
                 }
             }
         }

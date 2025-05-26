@@ -19,65 +19,77 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+
     <Grid Padding="20">
         <Grid.RowDefinitions>
-            <!-- Header section for order details -->
             <RowDefinition Height="Auto"/>
-            <!-- Expandable section for checkpoints timeline -->
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Order Details Section: Displays basic information about the tracked order -->
-        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,10">
-            <TextBlock Text="Tracked Order Details" FontSize="18" FontWeight="Bold"/>
-            <!-- Order identifier information -->
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="Tracked Order ID: " FontWeight="Bold"/>
-                <TextBlock Text="{Binding TrackedOrderID}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="Attached to Order ID: " FontWeight="Bold"/>
-                <TextBlock Text="{Binding OrderID}" />
-            </StackPanel>
+        <!-- Order Details -->
+        <StackPanel Grid.Row="0" Spacing="16">
+            <TextBlock Text="Order Details" Style="{StaticResource SubtitleTextBlockStyle}"/>
+            
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-            <!-- Current order status - reflects the most recent checkpoint status -->
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="Current Status: " FontWeight="Bold"/>
-                <TextBlock Text="{Binding CurrentStatus}"/>
-            </StackPanel>
+                <TextBlock Text="Order ID:" Grid.Row="0" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,8"/>
+                <TextBlock Text="{Binding OrderID}" Grid.Row="0" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,8"/>
 
-            <!-- Delivery information -->
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="Estimated Delivery Date: " FontWeight="Bold"/>
-                <!-- Displays DateOnly object from the ViewModel -->
-                <TextBlock Text="{Binding EstimatedDeliveryDate}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="Delivery Address: " FontWeight="Bold"/>
-                <TextBlock Text="{Binding DeliveryAddress}" />
-            </StackPanel>
+                <TextBlock Text="Current Status:" Grid.Row="1" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,8"/>
+                <TextBlock Text="{Binding CurrentStatus}" Grid.Row="1" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="Estimated Delivery:" Grid.Row="2" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,8"/>
+                <TextBlock Text="{Binding EstimatedDeliveryDate, Converter={StaticResource DateFormatConverter}}" 
+                         Grid.Row="2" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="Delivery Address:" Grid.Row="3" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,8"/>
+                <TextBlock Text="{Binding DeliveryAddress}" Grid.Row="3" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,8"/>
+            </Grid>
         </StackPanel>
 
-        <!-- Checkpoint Timeline Section: Displays chronological history of order status updates -->
-        <!-- ListView is bound to the Checkpoints collection from the ViewModel -->
-        <ListView Grid.Row="1" ItemsSource="{Binding Checkpoints}" VerticalAlignment="Bottom">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <!-- Each checkpoint is displayed as a card with border -->
-                    <Border Padding="10" BorderThickness="1" BorderBrush="Gray" Margin="5">
-                        <StackPanel>
-                            <!-- Status is displayed prominently at the top -->
-                            <TextBlock Text="{Binding Status}" FontWeight="Bold"/>
-                            <!-- Additional checkpoint information -->
-                            <TextBlock Text="{Binding Description}" />
-                            <!-- Timestamp shows when this status was recorded -->
-                            <TextBlock Text="{Binding Timestamp}" FontWeight="Bold"/>
-                            <!-- Location indicates where the package was at this checkpoint -->
-                            <TextBlock Text="{Binding Location}" Foreground="Gray"/>
-                        </StackPanel>
-                    </Border>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <!-- Checkpoints Timeline -->
+        <StackPanel Grid.Row="1" Margin="0,24,0,0" Spacing="16">
+            <TextBlock Text="Order Timeline" Style="{StaticResource SubtitleTextBlockStyle}"/>
+            
+            <ListView ItemsSource="{Binding Checkpoints}" Margin="0,8,0,0">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <Ellipse Width="16" Height="16" Fill="{ThemeResource SystemAccentColor}"/>
+                                <Line x:Name="TimelineLine" X1="0" Y1="0" X2="0" Y2="100" 
+                                      Stroke="{ThemeResource SystemAccentColor}" 
+                                      StrokeThickness="2" 
+                                      Margin="7,0,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Spacing="8">
+                                <TextBlock Text="{Binding Status}" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                <TextBlock Text="{Binding Description}" Style="{StaticResource BodyTextBlockStyle}"/>
+                                <TextBlock Text="{Binding Timestamp, Converter={StaticResource DateTimeFormatConverter}}" 
+                                         Style="{StaticResource CaptionTextBlockStyle}"/>
+                                <TextBlock Text="{Binding Location}" Style="{StaticResource CaptionTextBlockStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
     </Grid>
 </UserControl>

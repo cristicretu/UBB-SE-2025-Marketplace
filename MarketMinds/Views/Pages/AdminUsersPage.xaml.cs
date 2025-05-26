@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Navigation;
 using MarketMinds.ViewModels;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -41,6 +42,64 @@ namespace MarketMinds.Views.Pages
         {
             get => (IAdminViewModel)this.DataContext;
             set => this.DataContext = value;
+        }
+
+        private async void TrackOrderButton_Click(object sender, RoutedEventArgs e)
+        {
+            var contentDialog = new ContentDialog
+            {
+                Title = "Enter Tracked Order ID",
+                PrimaryButtonText = "Confirm",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            TextBox inputTextBox = new TextBox { PlaceholderText = "Enter Tracked Order ID" };
+            contentDialog.Content = inputTextBox;
+
+            var result = await contentDialog.ShowAsync();
+            bool parseSuccessful = int.TryParse(inputTextBox.Text, out int trackedOrderID);
+
+            if (result == ContentDialogResult.Primary && parseSuccessful)
+            {
+                try
+                {
+                    // Validate that the tracked order exists
+                    var trackedOrder = await App.TrackedOrderViewModel.GetTrackedOrderByIDAsync(trackedOrderID);
+                    if (trackedOrder == null)
+                    {
+                        await ShowErrorDialog($"No tracked order found with ID {trackedOrderID}. Please verify the order ID and try again.");
+                        return;
+                    }
+
+                    var trackedOrderWindow = new TrackedOrderWindow();
+                    var trackedOrderControlPage = new TrackedOrderControlPage();
+                    trackedOrderControlPage.SetTrackedOrderID(trackedOrderID);
+                    trackedOrderWindow.Content = trackedOrderControlPage;
+                    trackedOrderWindow.Activate();
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorDialog($"Error loading tracked order: {ex.Message}");
+                }
+            }
+            else if (result == ContentDialogResult.Primary && !parseSuccessful)
+            {
+                await ShowErrorDialog("Please enter a valid order ID number!");
+            }
+        }
+
+        private async Task ShowErrorDialog(string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Error",
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+            await dialog.ShowAsync();
         }
     }
 }
