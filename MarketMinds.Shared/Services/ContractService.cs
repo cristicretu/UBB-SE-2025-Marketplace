@@ -302,5 +302,15 @@ Generated on: {generatedOnDate}";
                 throw new Exception($"AddContractAsync: {ex.Message}", ex);
             }
         }
+
+        public Task UpdateContractPdfIdAsync(long contractId, int pdfId)
+        {
+            return contractRpository.UpdateContractPdfIdAsync(contractId, pdfId);
+        }
+
+        public Task UpdateContractStatusAsync(long contractId, string status)
+        {
+            return contractRpository.UpdateContractStatusAsync(contractId, status);
+        }
     }
 }

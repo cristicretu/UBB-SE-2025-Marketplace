@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace MarketMinds.Views
     public sealed partial class RenewContractView : Window
     {
         private readonly IContractRenewViewModel viewModel;
+        private ObservableCollection<IContract> filteredContracts;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RenewContractView"/> class.
@@ -26,6 +28,9 @@ namespace MarketMinds.Views
         public RenewContractView()
         {
             this.InitializeComponent();
+
+            // Initialize filtered contracts collection
+            this.filteredContracts = new ObservableCollection<IContract>();
 
             // Set window size
             // this.AppWindow.Resize(new Windows.Graphics.SizeInt32(1000, 700));
@@ -145,142 +150,194 @@ namespace MarketMinds.Views
         }
 
         /// <summary>
-        /// Loads contracts for the current buyer and sets them as ComboBox items.
+        /// Loads contracts for the current buyer and updates the ListView.
         /// </summary>
         private async Task LoadContractsAsync()
         {
             try
             {
+                Debug.WriteLine("=== STARTING CONTRACT LOAD ===");
+                
                 // Show loading indicator
                 if (LoadingOverlay != null)
                 {
                     LoadingOverlay.Visibility = Visibility.Visible;
                 }
 
+                // Clear current selection and UI
+                if (ContractListView != null)
+                {
+                    ContractListView.SelectedItem = null;
+                }
+                this.ResetUI();
+
+                // Refresh contracts from the view model
                 await this.viewModel.RefreshContractsAsync();
 
-                // Use UI thread to update UI elements
+                // Small delay to ensure ViewModel has finished updating
+                await Task.Delay(100);
+
+                // Update the UI on the UI thread
                 this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
                 {
-                    if (ContractComboBox != null && this.viewModel.Contracts != null)
-                    {
-                        // Create wrapper objects for display
-                        var contractDisplayItems = this.viewModel.Contracts.Select(c =>
-                        {
-                            // Add DisplayName property to each contract
-                            dynamic contractWrapper = new System.Dynamic.ExpandoObject();
-                            var wrapperDict = (System.Collections.Generic.IDictionary<string, object>)contractWrapper;
-
-                            // Copy all properties from the original contract
-                            foreach (var prop in c.GetType().GetProperties())
-                            {
-                                wrapperDict[prop.Name] = prop.GetValue(c);
-                            }
-
-                            // Add the display name property
-                            wrapperDict["DisplayName"] = $"Contract {c.ContractID} - {c.ContractStatus}";
-
-                            return contractWrapper;
-                        }).ToList();
-
-                        ContractComboBox.ItemsSource = contractDisplayItems;
-                        Debug.WriteLine($"Loaded {contractDisplayItems.Count} contracts");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("ContractComboBox or Contracts collection is null");
-                    }
-
-                    // Hide loading indicator
+                    UpdateContractsList();
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ERROR in LoadContractsAsync: {ex.Message}");
+                await ShowErrorDialogAsync("Error Loading Contracts", $"Failed to load contracts: {ex.Message}");
+            }
+            finally
+            {
+                // Always hide loading indicator
+                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                {
                     if (LoadingOverlay != null)
                     {
                         LoadingOverlay.Visibility = Visibility.Collapsed;
                     }
                 });
             }
+        }
+
+        /// <summary>
+        /// Updates the contracts list in the UI.
+        /// </summary>
+        private void UpdateContractsList()
+        {
+            try
+            {
+                if (ContractListView != null && this.viewModel.Contracts != null)
+                {
+                    Debug.WriteLine($"Updating UI with {this.viewModel.Contracts.Count} contracts from ViewModel");
+                    
+                    // Clear and repopulate the filtered contracts
+                    this.filteredContracts.Clear();
+                    foreach (var contract in this.viewModel.Contracts)
+                    {
+                        this.filteredContracts.Add(contract);
+                    }
+
+                    // Force update the ListView source
+                    ContractListView.ItemsSource = null;
+                    ContractListView.ItemsSource = this.filteredContracts;
+                    
+                    Debug.WriteLine($"UI Updated: {this.filteredContracts.Count} contracts displayed in ListView");
+                }
+                else
+                {
+                    Debug.WriteLine($"ContractListView is null: {ContractListView == null}, Contracts is null: {this.viewModel.Contracts == null}");
+                }
+            }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading contracts: {ex.Message}");
-                await ShowErrorDialogAsync("Error loading contracts", ex.Message);
-
-                // Hide loading indicator even if there was an error
-                if (LoadingOverlay != null)
-                {
-                    LoadingOverlay.Visibility = Visibility.Collapsed;
-                }
+                Debug.WriteLine($"ERROR updating contracts list: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Handles the selection change event of the contract ComboBox.
+        /// Handles the selection change event for the contract ListView.
         /// </summary>
-        /// <summary>
-        /// Handles the selection change event of the contract ComboBox.
-        /// </summary>
-        private async void ContractComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void ContractListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                if (sender is ComboBox comboBox && comboBox.SelectedItem != null)
+                if (sender is ListView listView && listView.SelectedItem is IContract selectedContract)
                 {
-                    // Show loading indicator before starting any operations
-                    if (LoadingOverlay != null)
+                    Debug.WriteLine($"=== CONTRACT SELECTED: ID {selectedContract.ContractID} ===");
+
+                    // Set the selected contract in the view model (this triggers LoadContractDetailsAsync)
+                    this.viewModel.SelectedContract = selectedContract;
+
+                    // Wait longer for the async loading to complete
+                    await Task.Delay(1000);
+
+                    // Ensure we're still on the same contract
+                    if (this.viewModel.SelectedContract?.ContractID == selectedContract.ContractID)
                     {
-                        LoadingOverlay.Visibility = Visibility.Visible;
-                    }
-
-                    // Extract the ContractID from the dynamic wrapper object
-                    dynamic selectedItem = comboBox.SelectedItem;
-                    long contractId = selectedItem.ContractID;
-
-                    Debug.WriteLine($"Contract selected, ID: {contractId}");
-
-                    // Get the actual contract from the view model's collection
-                    var actualContract = this.viewModel.Contracts.FirstOrDefault(c => c.ContractID == contractId);
-
-                    if (actualContract != null)
-                    {
-                        // Set the selected contract in the view model
-                        this.viewModel.SelectedContract = actualContract;
-
-                        // Wait for the async operations to complete
-                        await Task.Delay(300); // Give the LoadContractDetailsAsync method time to complete
-
-                        // Update UI on UI thread
+                        // Update UI with the loaded details
                         this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
                         {
                             UpdateUIWithContractDetails();
-                            Debug.WriteLine($"Updated UI with details for contract ID: {contractId}");
+                            Debug.WriteLine($"UI updated for contract ID: {selectedContract.ContractID}");
                         });
                     }
                     else
                     {
-                        Debug.WriteLine($"Could not find contract with ID {contractId} in Contracts collection");
-                        ResetUI();
+                        Debug.WriteLine($"Contract selection changed during loading, skipping UI update");
                     }
                 }
                 else
                 {
-                    Debug.WriteLine("No contract selected");
+                    Debug.WriteLine("No contract selected - resetting UI");
+                    this.viewModel.SelectedContract = null;
                     ResetUI();
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error in ContractComboBox_SelectionChanged: {ex.Message}");
-                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                Debug.WriteLine($"ERROR in ContractListView_SelectionChanged: {ex.Message}");
                 ResetUI();
             }
-            finally
+        }
+
+        /// <summary>
+        /// Handles the refresh button click to reload all contracts.
+        /// </summary>
+        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
             {
-                // Hide loading indicator
-                if (LoadingOverlay != null)
+                Debug.WriteLine("=== REFRESH BUTTON CLICKED ===");
+                
+                // Clear search box
+                if (SearchBox != null)
                 {
-                    this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                    {
-                        LoadingOverlay.Visibility = Visibility.Collapsed;
-                    });
+                    SearchBox.Text = string.Empty;
                 }
+                
+                // Reload contracts
+                await LoadContractsAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ERROR in RefreshButton_Click: {ex.Message}");
+                await ShowErrorDialogAsync("Refresh Error", $"Failed to refresh contracts: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles the text change event for the search box to filter contracts.
+        /// </summary>
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                if (sender is TextBox searchBox && this.viewModel.Contracts != null)
+                {
+                    string searchText = searchBox.Text?.ToLower() ?? string.Empty;
+
+                    // Clear and repopulate filtered contracts
+                    this.filteredContracts.Clear();
+
+                    var filtered = this.viewModel.Contracts.Where(contract =>
+                        string.IsNullOrEmpty(searchText) ||
+                        contract.ContractID.ToString().Contains(searchText) ||
+                        contract.ContractStatus.ToLower().Contains(searchText) ||
+                        contract.OrderID.ToString().Contains(searchText));
+
+                    foreach (var contract in filtered)
+                    {
+                        this.filteredContracts.Add(contract);
+                    }
+
+                    Debug.WriteLine($"Filtered to {this.filteredContracts.Count} contracts");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in SearchBox_TextChanged: {ex.Message}");
             }
         }
 
@@ -289,8 +346,11 @@ namespace MarketMinds.Views
         /// </summary>
         private void UpdateUIWithContractDetails()
         {
-            Debug.WriteLine($"UpdateUIWithContractDetails - StartDate from viewModel: {this.viewModel.StartDate}");
-            Debug.WriteLine($"UpdateUIWithContractDetails - EndDate from viewModel: {this.viewModel.EndDate}");
+            Debug.WriteLine($"=== UPDATING UI WITH CONTRACT DETAILS ===");
+            Debug.WriteLine($"StartDate: {this.viewModel.StartDate}");
+            Debug.WriteLine($"EndDate: {this.viewModel.EndDate}");
+            Debug.WriteLine($"StatusText: {this.viewModel.StatusText}");
+            Debug.WriteLine($"IsRenewalAllowed: {this.viewModel.IsRenewalAllowed}");
 
             // Update date text blocks
             if (StartDateTextBlock != null)
@@ -325,9 +385,18 @@ namespace MarketMinds.Views
             if (StatusTextBlock != null)
             {
                 StatusTextBlock.Text = this.viewModel.StatusText ?? "Status: Unknown";
-                StatusTextBlock.Foreground = this.viewModel.StatusColor == "Green"
-                    ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green)
-                    : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red);
+                
+                // Handle different status colors
+                var color = this.viewModel.StatusColor switch
+                {
+                    "Green" => Microsoft.UI.Colors.Green,
+                    "Orange" => Microsoft.UI.Colors.Orange,
+                    "Gray" => Microsoft.UI.Colors.Gray,
+                    _ => Microsoft.UI.Colors.Red
+                };
+                
+                StatusTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(color);
+                Debug.WriteLine($"Set status: {StatusTextBlock.Text} with color: {this.viewModel.StatusColor}");
             }
 
             // Set start date for renewal
@@ -442,12 +511,9 @@ namespace MarketMinds.Views
                         {
                             await ShowSuccessDialogAsync("Success", this.viewModel.Message);
 
-                            // Reset the UI
-                            if (ContractComboBox != null)
-                            {
-                                ContractComboBox.SelectedItem = null;
-                            }
-                            ResetUI();
+                            // Force refresh the contracts list in the UI
+                            Debug.WriteLine("=== FORCING UI REFRESH AFTER RENEWAL ===");
+                            await LoadContractsAsync();
                         }
                         else if (!string.IsNullOrEmpty(this.viewModel.Message))
                         {

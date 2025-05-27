@@ -18,5 +18,6 @@ namespace MarketMinds.Shared.Services
         // Add the missing methods
         Task<List<IContract>> GetAllContractsAsync();
         Task<IContract> AddContractAsync(IContract contract, byte[] pdfFile);
+        Task UpdateContractStatusAsync(long contractId, string status);
     }
 }

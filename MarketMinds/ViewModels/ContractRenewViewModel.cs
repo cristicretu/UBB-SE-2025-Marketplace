@@ -117,7 +117,19 @@ namespace MarketMinds.ViewModels
                     this.selectedContract = value;
                     this.OnPropertyChanged(nameof(this.SelectedContract));
                     this.IsContractSelected = value != null;
-                    this.LoadContractDetailsAsync();
+                    
+                    // Use Task.Run to properly handle the async operation
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await this.LoadContractDetailsAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error in SelectedContract setter: {ex.Message}");
+                        }
+                    });
                 }
             }
         }
@@ -423,51 +435,53 @@ namespace MarketMinds.ViewModels
             try
             {
                 this.IsLoading = true;
+                Debug.WriteLine($"=== REFRESHING CONTRACTS FOR BUYER ID: {this.BuyerId} ===");
 
-                Debug.WriteLine($"Current buyer ID in ViewModel: {this.BuyerId}");
+                // Clear existing contracts first
+                this.Contracts.Clear();
 
                 // Get contracts for the current buyer
                 var allContracts = await this.contractService.GetContractsByBuyerAsync(this.BuyerId);
 
-                // Debug the returned contracts
-                if (allContracts == null)
+                if (allContracts == null || allContracts.Count == 0)
                 {
-                    Debug.WriteLine("GetContractsByBuyerAsync returned null");
-                }
-                else
-                {
-                    Debug.WriteLine($"GetContractsByBuyerAsync returned {allContracts.Count} contracts");
-                    foreach (var c in allContracts)
-                    {
-                        Debug.WriteLine($"Contract ID: {c.ContractID}, Status: {c.ContractStatus}");
-                    }
+                    Debug.WriteLine("No contracts found for this buyer");
+                    this.ShowErrorMessage("No contracts found for your account.");
+                    return;
                 }
 
+                Debug.WriteLine($"Retrieved {allContracts.Count} total contracts from service");
+
                 // Include all contracts with case-insensitive comparison ACTIVE, RENEWED, and EXPIRED contracts
-                var filteredContracts = allContracts?.Where(c =>
+                var filteredContracts = allContracts.Where(c =>
                     c.ContractStatus.Equals("ACTIVE", StringComparison.OrdinalIgnoreCase) ||
                     c.ContractStatus.Equals("RENEWED", StringComparison.OrdinalIgnoreCase) ||
                     c.ContractStatus.Equals("EXPIRED", StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(c => c.ContractID) // Show newest contracts first
-                    .ToList() ?? new List<IContract>();
+                    .ToList();
 
-                Debug.WriteLine($"After filtering: {filteredContracts.Count} contracts");
+                Debug.WriteLine($"After filtering by status: {filteredContracts.Count} contracts");
 
-                // Update the contracts collection
-                this.Contracts.Clear();
+                // Add contracts to the observable collection
                 foreach (var contract in filteredContracts)
                 {
                     this.Contracts.Add(contract);
-                    Debug.WriteLine($"Added to collection: Contract ID {contract.ContractID}, Status: {contract.ContractStatus}");
+                    Debug.WriteLine($"Added Contract ID: {contract.ContractID}, Status: {contract.ContractStatus}, Order: {contract.OrderID}");
                 }
 
-                Debug.WriteLine($"Loaded {this.Contracts.Count} contracts");
+                // Notify that contracts collection has changed
+                this.OnPropertyChanged(nameof(this.Contracts));
+
+                Debug.WriteLine($"=== CONTRACTS REFRESH COMPLETE: {this.Contracts.Count} contracts loaded ===");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error in RefreshContractsAsync: {ex.Message}");
+                Debug.WriteLine($"ERROR in RefreshContractsAsync: {ex.Message}");
                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 this.ShowErrorMessage($"Error loading contracts: {ex.Message}");
+                
+                // Ensure contracts collection is cleared on error
+                this.Contracts.Clear();
             }
             finally
             {
@@ -549,7 +563,7 @@ namespace MarketMinds.ViewModels
                         else
                         {
                             // If we can't get the end date, use a default value
-                            oldEndDate = DateTime.Now;
+                            oldEndDate = DateTime.Now.AddMonths(3); // just like in the repository
                             Debug.WriteLine("Using current date as fallback for end date");
                         }
                     }
@@ -567,13 +581,7 @@ namespace MarketMinds.ViewModels
                     return;
                 }
 
-                // Check renewal limit
-                bool canSellerApprove = this.SelectedContract.RenewalCount < 1;
-                if (!canSellerApprove)
-                {
-                    this.ShowErrorMessage("Renewal not allowed: seller limit exceeded.");
-                    return;
-                }
+                // No renewal limit - allow unlimited renewals
 
                 // Generate contract content
                 string contractContent = $"Renewed Contract for Order {this.SelectedContract.OrderID}.\n" +
@@ -600,7 +608,7 @@ namespace MarketMinds.ViewModels
                 var updatedContract = new Contract
                 {
                     OrderID = this.SelectedContract.OrderID,
-                    ContractStatus = "RENEWED",
+                    ContractStatus = "ACTIVE",
                     ContractContent = contractContent,
                     RenewalCount = this.SelectedContract.RenewalCount + 1,
                     PredefinedContractID = this.SelectedContract.PredefinedContractID,
@@ -613,6 +621,10 @@ namespace MarketMinds.ViewModels
                 {
                     // Add the renewed contract to the database
                     await renewalService.AddRenewedContractAsync(updatedContract);
+                    
+                    // Update the original contract status to "RENEWED"
+                    await this.contractService.UpdateContractStatusAsync(this.SelectedContract.ContractID, "RENEWED");
+                    Debug.WriteLine($"Updated original contract {this.SelectedContract.ContractID} status to RENEWED");
                 }
                 catch (Exception ex)
                 {
@@ -623,44 +635,34 @@ namespace MarketMinds.ViewModels
                 }
 
                 // Save PDF locally - handle errors gracefully
-                try
-                {
-                    string downloadsPath = this.fileSystem.GetDownloadsPath();
-                    long idForFileName = this.SelectedContract.ContractID; // Use original contract ID for filename
+                // try
+                // {
+                //     string downloadsPath = this.fileSystem.GetDownloadsPath();
+                //     long idForFileName = this.SelectedContract.ContractID; // Use original contract ID for filename
 
-                    string fileName = $"RenewedContract_{idForFileName}_to_{this.NewEndDate:yyyyMMdd}.pdf";
-                    string filePath = Path.Combine(downloadsPath, fileName);
-                    await File.WriteAllBytesAsync(filePath, pdfBytes);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error saving PDF locally: {ex.Message}");
-                    // Continue even if local save fails, as contract is already in DB
-                    // Optionally, inform the user that local save failed but renewal was successful.
-                }
+                //     string fileName = $"RenewedContract_{idForFileName}_to_{this.NewEndDate:yyyyMMdd}.pdf";
+                //     string filePath = Path.Combine(downloadsPath, fileName);
+                //     await File.WriteAllBytesAsync(filePath, pdfBytes);
+                // }
+                // catch (Exception ex)
+                // {
+                //     Debug.WriteLine($"Error saving PDF locally: {ex.Message}");
+                //     // Continue even if local save fails, as contract is already in DB
+                //     // Optionally, inform the user that local save failed but renewal was successful.
+                // }
 
                 // After successful renewal:
-                this.ShowSuccessMessage("Contract renewed successfully!");
+                this.ShowSuccessMessage("Contract renewed successfully! The contract list will be refreshed automatically.");
 
-                long originalSelectedContractIdBeforeRenewal = this.SelectedContract.ContractID; // Store for potential fallback
-                await this.RefreshContractsAsync();
-
-                // Clear current selection
+                Debug.WriteLine($"=== RENEWAL SUCCESSFUL - REFRESHING CONTRACTS ===");
+                
+                // Clear current selection first
                 this.SelectedContract = null;
-
-                // Try to select the newly renewed contract in the dropdown by finding the contract that was renewed from the original
-                var renewedContract = this.Contracts.FirstOrDefault(c => c.RenewedFromContractID == originalSelectedContractIdBeforeRenewal);
-                if (renewedContract != null)
-                {
-                    // Small delay to allow UI to update
-                    await Task.Delay(100);
-                    this.SelectedContract = renewedContract;
-                    Debug.WriteLine($"Selected renewed contract ID: {renewedContract.ContractID}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Could not find renewed contract in the list with RenewedFromContractID: {originalSelectedContractIdBeforeRenewal}");
-                }
+                
+                // Force refresh the contracts list to show the new renewed contract
+                await this.RefreshContractsAsync();
+                
+                Debug.WriteLine($"=== CONTRACTS REFRESHED AFTER RENEWAL ===");
             }
             catch (Exception ex)
             {
@@ -769,7 +771,9 @@ namespace MarketMinds.ViewModels
 
         private async Task LoadContractDetailsAsync()
         {
-            if (this.SelectedContract == null)
+            var currentContract = this.SelectedContract; // Capture current value to avoid race conditions
+            
+            if (currentContract == null)
             {
                 this.ResetContractDetails();
                 return;
@@ -777,11 +781,23 @@ namespace MarketMinds.ViewModels
 
             try
             {
-                this.IsLoading = true;
-                Debug.WriteLine($"Loading details for contract ID: {this.SelectedContract.ContractID}");
+                Debug.WriteLine($"=== LOADING DETAILS FOR CONTRACT ID: {currentContract.ContractID} ===");
+                
+                // Set initial loading state immediately
+                this.StatusText = "Status: Loading contract details...";
+                this.StatusColor = "Gray";
+                this.OnPropertyChanged(nameof(this.StatusText));
+                this.OnPropertyChanged(nameof(this.StatusColor));
 
                 // Get contract details
-                var contract = await this.contractService.GetContractByIdAsync(this.SelectedContract.ContractID);
+                var contract = await this.contractService.GetContractByIdAsync(currentContract.ContractID);
+                
+                // Check if the selected contract changed while we were loading
+                if (this.SelectedContract?.ContractID != currentContract.ContractID)
+                {
+                    Debug.WriteLine($"Contract selection changed during loading, aborting load for {currentContract.ContractID}");
+                    return;
+                }
 
                 // Get the order ID for this contract
                 int orderId = contract.OrderID;
@@ -903,28 +919,56 @@ namespace MarketMinds.ViewModels
                     this.StatusColor = "Red";
                     Debug.WriteLine("Contract has already been renewed");
                 }
+                else if (contract.ContractStatus.Equals("EXPIRED", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.IsRenewalAllowed = true;
+                    this.StatusText = "Status: Expired - Available for renewal";
+                    this.StatusColor = "Orange";
+                    Debug.WriteLine("Contract is expired but available for renewal");
+
+                    // Set renewal dates
+                    this.NewStartDate = this.EndDate ?? DateTime.Now;
+                    this.NewEndDate = (this.EndDate ?? DateTime.Now).AddYears(1);
+                }
                 else
                 {
                     this.IsRenewalAllowed = false;
-                    this.StatusText = "Status: Not available for renewal";
+                    this.StatusText = $"Status: {contract.ContractStatus} - Not available for renewal";
                     this.StatusColor = "Red";
-                    Debug.WriteLine("Contract is not eligible for renewal");
+                    Debug.WriteLine($"Contract status '{contract.ContractStatus}' is not eligible for renewal");
                 }
 
-                Debug.WriteLine($"Contract details loaded successfully. Status: {this.StatusText}, IsRenewalAllowed: {this.IsRenewalAllowed}");
+                // Notify UI that all properties have been updated
+                this.OnPropertyChanged(nameof(this.StartDate));
+                this.OnPropertyChanged(nameof(this.EndDate));
+                this.OnPropertyChanged(nameof(this.Price));
+                this.OnPropertyChanged(nameof(this.ProductName));
+                this.OnPropertyChanged(nameof(this.IsRenewalAllowed));
+                this.OnPropertyChanged(nameof(this.StatusText));
+                this.OnPropertyChanged(nameof(this.StatusColor));
+                this.OnPropertyChanged(nameof(this.NewStartDate));
+                this.OnPropertyChanged(nameof(this.NewEndDate));
+
+                Debug.WriteLine($"=== CONTRACT DETAILS LOADED SUCCESSFULLY ===");
+                Debug.WriteLine($"Status: {this.StatusText}, IsRenewalAllowed: {this.IsRenewalAllowed}");
+                Debug.WriteLine($"Start Date: {this.StartDate}, End Date: {this.EndDate}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error in LoadContractDetailsAsync: {ex.Message}");
+                Debug.WriteLine($"=== ERROR LOADING CONTRACT DETAILS ===");
+                Debug.WriteLine($"Error: {ex.Message}");
                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                
+                // Set clear error state
+                this.StartDate = null;
+                this.EndDate = null;
+                this.Price = 0;
+                this.ProductName = "Error loading product details";
+                this.IsRenewalAllowed = false;
+                this.StatusText = "Status: Error loading contract details";
+                this.StatusColor = "Red";
+                
                 this.ShowErrorMessage($"Error loading contract details: {ex.Message}");
-
-                // Set fallback values to ensure UI displays something useful
-                this.ResetContractDetails();
-            }
-            finally
-            {
-                this.IsLoading = false;
             }
         }
 
@@ -1042,8 +1086,8 @@ namespace MarketMinds.ViewModels
             this.Price = 0;
             this.ProductName = string.Empty;
             this.IsRenewalAllowed = false;
-            this.StatusText = string.Empty;
-            this.StatusColor = string.Empty;
+            this.StatusText = "Status: Loading...";
+            this.StatusColor = "Gray";
         }
 
         private void ShowErrorMessage(string message)

@@ -58,25 +58,131 @@
                             Foreground="{ThemeResource SystemAccentColor}"
                             Margin="0,0,0,20" />
 
-                        <!-- Contract Selection ComboBox -->
+                        <!-- Contract Selection List -->
                         <StackPanel Grid.Row="1" Margin="0,0,0,20">
-                            <TextBlock 
-                                Text="Select a contract:"
-                                FontSize="16"
-                                FontWeight="SemiBold"
-                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                Margin="0,0,0,10" />
-                            <ComboBox 
-                                x:Name="ContractComboBox"
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBlock 
+                                    Grid.Column="0"
+                                    Text="Select a contract:"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                    VerticalAlignment="Center" />
+                                
+                                <Button 
+                                    Grid.Column="1"
+                                    x:Name="RefreshButton"
+                                    Background="{ThemeResource SystemAccentColor}"
+                                    Foreground="White"
+                                    FontSize="12"
+                                    CornerRadius="6"
+                                    Padding="10,5"
+                                    Click="RefreshButton_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <FontIcon Glyph="&#xE72C;" FontSize="12" />
+                                        <TextBlock Text="Refresh" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                            
+                            <!-- Search Box -->
+                            <TextBox 
+                                x:Name="SearchBox"
+                                PlaceholderText="Search contracts..."
                                 Width="400"
                                 HorizontalAlignment="Left"
-                                DisplayMemberPath="DisplayName"
-                                SelectedValuePath="ContractID"
-                                PlaceholderText="-- Select a contract --"
+                                BorderBrush="{ThemeResource SystemAccentColor}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Margin="0,0,0,10"
+                                TextChanged="SearchBox_TextChanged" />
+                            
+                            <!-- Contract List -->
+                            <Border 
                                 BorderBrush="{ThemeResource SystemAccentColor}"
                                 BorderThickness="2"
                                 CornerRadius="8"
-                                SelectionChanged="ContractComboBox_SelectionChanged" />
+                                Height="300"
+                                Width="400"
+                                HorizontalAlignment="Left">
+                                <ListView 
+                                    x:Name="ContractListView"
+                                    SelectionMode="Single"
+                                    SelectionChanged="ContractListView_SelectionChanged"
+                                    Background="Transparent">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border 
+                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                CornerRadius="6"
+                                                Margin="5"
+                                                Padding="12">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    
+                                                    <!-- Contract ID and Status -->
+                                                    <Grid Grid.Row="0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <TextBlock 
+                                                            Grid.Column="0"
+                                                            FontWeight="SemiBold"
+                                                            FontSize="14"
+                                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+                                                            <Run Text="Contract #"/>
+                                                            <Run Text="{Binding ContractID}"/>
+                                                        </TextBlock>
+                                                        
+                                                        <Border 
+                                                            Grid.Column="1"
+                                                            Background="{ThemeResource SystemAccentColor}"
+                                                            CornerRadius="10"
+                                                            Padding="6,2">
+                                                            <TextBlock 
+                                                                Text="{Binding ContractStatus}"
+                                                                FontSize="10"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="White" />
+                                                        </Border>
+                                                    </Grid>
+                                                    
+                                                    <!-- Order ID -->
+                                                    <TextBlock 
+                                                        Grid.Row="1"
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Margin="0,2,0,0">
+                                                        <Run Text="Order: "/>
+                                                        <Run Text="{Binding OrderID}"/>
+                                                    </TextBlock>
+                                                    
+                                                    <!-- Renewal Count -->
+                                                    <TextBlock 
+                                                        Grid.Row="2"
+                                                        FontSize="11"
+                                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                        Margin="0,2,0,0">
+                                                        <Run Text="Renewals: "/>
+                                                        <Run Text="{Binding RenewalCount}"/>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Border>
                         </StackPanel>
 
                         <!-- Contract Details Panel -->

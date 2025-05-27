@@ -382,5 +382,51 @@ namespace Server.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while downloading PDF for contract ID {contractId}: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Asynchronously updates the PDF ID for a contract.
+        /// </summary>
+        /// <param name="contractId">The ID of the contract.</param>
+        /// <param name="pdfId">The new PDF ID.</param>
+        /// <returns>A success response.</returns>
+        [HttpPut("{contractId}/pdf/{pdfId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> UpdateContractPdfId(long contractId, int pdfId)
+        {
+            try
+            {
+                await this.contractRepository.UpdateContractPdfIdAsync(contractId, pdfId);
+                return this.Ok();
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while updating PDF ID for contract ID {contractId}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously updates the status of a contract.
+        /// </summary>
+        /// <param name="contractId">The ID of the contract.</param>
+        /// <param name="status">The new status for the contract.</param>
+        /// <returns>A success response.</returns>
+        [HttpPut("{contractId}/status/{status}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> UpdateContractStatus(long contractId, string status)
+        {
+            try
+            {
+                await this.contractRepository.UpdateContractStatusAsync(contractId, status);
+                return this.Ok();
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while updating status for contract ID {contractId}: {ex.Message}");
+            }
+        }
     }
 }

@@ -212,6 +212,13 @@
             await this.ThrowOnError(nameof(UpdateContractPdfIdAsync), response);
         }
 
+        /// <inheritdoc />
+        public async Task UpdateContractStatusAsync(long contractId, string status)
+        {
+            var response = await this.httpClient.PutAsync($"{ApiBaseRoute}/{contractId}/status/{status}", null);
+            await this.ThrowOnError(nameof(UpdateContractStatusAsync), response);
+        }
+
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)
