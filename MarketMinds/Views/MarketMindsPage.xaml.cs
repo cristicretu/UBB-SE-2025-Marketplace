@@ -19,6 +19,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
+using MarketMinds.Shared.Services.ProductCategoryService;
+using MarketMinds.Shared.Services.ProductConditionService;
 
 namespace MarketMinds.Views
 {
@@ -44,11 +46,15 @@ namespace MarketMinds.Views
         public BorrowProductsViewModel BorrowProductsViewModel { get; set; }
         public BuyerWishlistItemViewModel BuyerWishlistItemViewModel { get; set; }
         public ShoppingCartViewModel ShoppingCartViewModel { get; set; }
+        public ProductCategoryViewModel ProductCategoryViewModel { get; set; }
+        public ProductConditionViewModel ProductConditionViewModel { get; set; }
 
         // observable collections
         public ObservableCollection<BuyProduct> BuyProductsCollection { get; private set; }
         public ObservableCollection<AuctionProduct> AuctionProductsCollection { get; private set; }
         public ObservableCollection<BorrowProduct> BorrowProductsCollection { get; private set; }
+        public ObservableCollection<Category> Categories { get; private set; }
+        public ObservableCollection<Condition> Conditions { get; private set; }
 
         // User role properties
         public bool IsCurrentUserBuyer => App.CurrentUser?.UserType == 2;
@@ -244,6 +250,28 @@ namespace MarketMinds.Views
             }
         }
 
+        // Filter properties
+        private string searchTerm = string.Empty;
+        public string SearchTerm
+        {
+            get => searchTerm;
+            set => SetProperty(ref searchTerm, value);
+        }
+
+        private double maxPrice = 100101;
+        public double MaxPrice
+        {
+            get => maxPrice;
+            set => SetProperty(ref maxPrice, value);
+        }
+
+        private List<int> selectedCategoryIds = new List<int>();
+        private List<int> selectedConditionIds = new List<int>();
+
+        // Debouncing timers for filters
+        private DispatcherTimer priceFilterTimer;
+        private DispatcherTimer searchFilterTimer;
+
         public MarketMindsPage()
         {
             this.InitializeComponent();
@@ -254,19 +282,301 @@ namespace MarketMinds.Views
             this.BorrowProductsViewModel = App.BorrowProductsViewModel ?? throw new InvalidOperationException("BorrowProductsViewModel not initialized");
             this.BuyerWishlistItemViewModel = App.BuyerWishlistItemViewModel ?? throw new InvalidOperationException("BuyerWishlistItemViewModel not initialized");
             this.ShoppingCartViewModel = App.ShoppingCartViewModel ?? throw new InvalidOperationException("ShoppingCartViewModel not initialized");
+            this.ProductCategoryViewModel = App.ProductCategoryViewModel ?? throw new InvalidOperationException("ProductCategoryViewModel not initialized");
+            this.ProductConditionViewModel = App.ProductConditionViewModel ?? throw new InvalidOperationException("ProductConditionViewModel not initialized");
 
             this.ShoppingCartViewModel.BuyerId = App.CurrentUser.Id;
 
             this.BuyProductsCollection = new ObservableCollection<BuyProduct>();
             this.AuctionProductsCollection = new ObservableCollection<AuctionProduct>();
             this.BorrowProductsCollection = new ObservableCollection<BorrowProduct>();
+            this.Categories = new ObservableCollection<Category>();
+            this.Conditions = new ObservableCollection<Condition>();
 
+            // Load categories and conditions
+            LoadCategoriesAndConditions();
+            
+            // Initialize debouncing timers
+            InitializeFilterTimers();
+            
+            // Set up the page loaded event to initialize UI elements
+            this.Loaded += MarketMindsPage_Loaded;
+            
             // Set Buy Products as the default selection - this will trigger ProductsPivot_SelectionChanged
             ProductsPivot.SelectedIndex = 0;
         }
 
         /// <summary>
-        /// Loads data asynchronously
+        /// Initializes the debouncing timers for filters
+        /// </summary>
+        private void InitializeFilterTimers()
+        {
+            // Initialize price filter timer
+            priceFilterTimer = new DispatcherTimer();
+            priceFilterTimer.Interval = TimeSpan.FromMilliseconds(500);
+            priceFilterTimer.Tick += PriceFilterTimer_Tick;
+
+            // Initialize search filter timer
+            searchFilterTimer = new DispatcherTimer();
+            searchFilterTimer.Interval = TimeSpan.FromMilliseconds(500);
+            searchFilterTimer.Tick += SearchFilterTimer_Tick;
+        }
+
+        /// <summary>
+        /// Handles the page loaded event to initialize UI elements
+        /// </summary>
+        private void MarketMindsPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Initialize the price text display now that the UI is loaded
+            if (SelectedPriceText != null)
+            {
+                SelectedPriceText.Text = $"${MaxPrice:F0}";
+            }
+        }
+
+        /// <summary>
+        /// Loads categories and conditions from the services
+        /// </summary>
+        private void LoadCategoriesAndConditions()
+        {
+            try
+            {
+                // Load categories
+                var categories = this.ProductCategoryViewModel.GetAllProductCategories();
+                Categories.Clear();
+                foreach (var category in categories)
+                {
+                    Categories.Add(category);
+                }
+
+                // Load conditions
+                var conditions = this.ProductConditionViewModel.GetAllProductConditions();
+                Conditions.Clear();
+                foreach (var condition in conditions)
+                {
+                    Conditions.Add(condition);
+                }
+
+                Debug.WriteLine($"Loaded {Categories.Count} categories and {Conditions.Count} conditions");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading categories and conditions: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles search box query submission
+        /// </summary>
+        private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            SearchTerm = args.QueryText;
+            ApplyFilters();
+        }
+
+        /// <summary>
+        /// Handles search box text changes with debouncing
+        /// </summary>
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            // Only apply filters if user is typing (not if the text was programmatically changed)
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                SearchTerm = sender.Text;
+                
+                // Reset the timer - this creates a debouncing effect
+                searchFilterTimer.Stop();
+                searchFilterTimer.Start();
+            }
+        }
+
+        /// <summary>
+        /// Handles price slider value changes with debouncing
+        /// </summary>
+        private void PriceRangeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            MaxPrice = e.NewValue;
+            
+            // Update the price text display only if the control is initialized
+            if (SelectedPriceText != null)
+            {
+                SelectedPriceText.Text = $"${MaxPrice:F0}";
+            }
+            
+            // Reset the timer - this creates a debouncing effect
+            if (priceFilterTimer != null)
+            {
+                priceFilterTimer.Stop();
+                priceFilterTimer.Start();
+            }
+        }
+
+        /// <summary>
+        /// Handles the price filter timer tick event
+        /// </summary>
+        private void PriceFilterTimer_Tick(object sender, object e)
+        {
+            priceFilterTimer.Stop();
+            ApplyFilters();
+        }
+
+        /// <summary>
+        /// Handles the search filter timer tick event
+        /// </summary>
+        private void SearchFilterTimer_Tick(object sender, object e)
+        {
+            searchFilterTimer.Stop();
+            ApplyFilters();
+        }
+
+        /// <summary>
+        /// Handles category checkbox changes
+        /// </summary>
+        private void CategoryCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox)
+            {
+                int categoryId = (int)checkBox.Tag;
+                
+                if (checkBox.IsChecked == true)
+                {
+                    if (!selectedCategoryIds.Contains(categoryId))
+                    {
+                        selectedCategoryIds.Add(categoryId);
+                    }
+                }
+                else
+                {
+                    selectedCategoryIds.Remove(categoryId);
+                }
+                
+                ApplyFilters();
+            }
+        }
+
+        /// <summary>
+        /// Handles condition checkbox changes
+        /// </summary>
+        private void ConditionCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox)
+            {
+                int conditionId = (int)checkBox.Tag;
+                
+                if (checkBox.IsChecked == true)
+                {
+                    if (!selectedConditionIds.Contains(conditionId))
+                    {
+                        selectedConditionIds.Add(conditionId);
+                    }
+                }
+                else
+                {
+                    selectedConditionIds.Remove(conditionId);
+                }
+                
+                ApplyFilters();
+            }
+        }
+
+        /// <summary>
+        /// Applies all filters and reloads data
+        /// </summary>
+        private void ApplyFilters()
+        {
+            CurrentPageIndex = 0; // Reset to first page when filters change
+            
+            // Reload data for the current tab with the applied filters
+            switch (ActiveTabIndex)
+            {
+                case 0: // Buy Products
+                    LoadBuyDataAsync();
+                    break;
+                case 1: // Auction Products
+                    LoadAuctionDataAsync();
+                    break;
+                case 2: // Borrow Products
+                    LoadBorrowDataAsync();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Clear Filters button click
+        /// </summary>
+        private void ClearFilters_Click(object sender, RoutedEventArgs e)
+        {
+            // Reset filter values
+            SearchBox.Text = string.Empty;
+            SearchTerm = string.Empty;
+            PriceRangeSlider.Value = PriceRangeSlider.Maximum;
+            MaxPrice = PriceRangeSlider.Maximum;
+            SelectedPriceText.Text = $"${MaxPrice}";
+            
+            // Clear selected categories and conditions
+            selectedCategoryIds.Clear();
+            selectedConditionIds.Clear();
+            
+            // Uncheck all category checkboxes by iterating through the data source
+            ClearCategoryCheckboxes();
+            ClearConditionCheckboxes();
+
+            // Reset pagination to first page and reload data for the active tab
+            ApplyFilters();
+        }
+
+        /// <summary>
+        /// Helper method to clear category checkboxes
+        /// </summary>
+        private void ClearCategoryCheckboxes()
+        {
+            // Find all CheckBox elements in the categories repeater
+            var categoryContainer = CategoriesRepeater.Parent as ScrollViewer;
+            if (categoryContainer != null)
+            {
+                ClearCheckboxesInContainer(categoryContainer);
+            }
+        }
+
+        /// <summary>
+        /// Helper method to clear condition checkboxes
+        /// </summary>
+        private void ClearConditionCheckboxes()
+        {
+            // Find all CheckBox elements in the conditions repeater
+            var conditionContainer = ConditionsRepeater.Parent as ScrollViewer;
+            if (conditionContainer != null)
+            {
+                ClearCheckboxesInContainer(conditionContainer);
+            }
+        }
+
+        /// <summary>
+        /// Recursively finds and unchecks all checkboxes in a container
+        /// </summary>
+        private void ClearCheckboxesInContainer(DependencyObject container)
+        {
+            if (container == null) return;
+
+            int childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(container);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(container, i);
+                
+                if (child is CheckBox checkBox)
+                {
+                    checkBox.IsChecked = false;
+                }
+                else
+                {
+                    // Recursively search in child elements
+                    ClearCheckboxesInContainer(child);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Loads data asynchronously with filters applied
         /// </summary>
         private async void LoadBuyDataAsync()
         {
@@ -305,8 +615,15 @@ namespace MarketMinds.Views
                 // Calculate offset for current page
                 int offset = CurrentPageIndex * ItemsPerPage;
 
-                // Get total count first
-                var totalCount = await Task.Run(() => this.BuyProductsViewModel.GetProductCount());
+                // Get total count with filters applied
+                var totalCount = await Task.Run(() => 
+                    this.BuyProductsViewModel.GetFilteredProductCount(
+                        selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                        selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                        MaxPrice < 100101 ? MaxPrice : null,
+                        !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                    )
+                );
 
                 // Calculate total pages
                 TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
@@ -318,8 +635,17 @@ namespace MarketMinds.Views
                     offset = CurrentPageIndex * ItemsPerPage;
                 }
 
-                // Get products for current page
-                var products = await Task.Run(() => this.BuyProductsViewModel.GetProducts(offset, ItemsPerPage));
+                // Get filtered products for current page
+                var products = await Task.Run(() => 
+                    this.BuyProductsViewModel.GetFilteredProducts(
+                        offset, 
+                        ItemsPerPage,
+                        selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                        selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                        MaxPrice < 100101 ? MaxPrice : null,
+                        !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                    )
+                );
 
                 // Update UI on the UI thread
                 BuyProductsCollection.Clear();
@@ -335,12 +661,12 @@ namespace MarketMinds.Views
                 ShowEmptyState = BuyProductsCollection.Count == 0 && totalCount == 0;
 
                 Debug.WriteLine($"BuyProductsCollection: {BuyProductsCollection.Count}, Total: {totalCount}, Page: {CurrentPageIndex + 1}/{TotalPages}");
+                Debug.WriteLine($"Applied Filters - Categories: {string.Join(", ", selectedCategoryIds)}, Conditions: {string.Join(", ", selectedConditionIds)}, MaxPrice: {MaxPrice}, SearchTerm: {SearchTerm}");
             }
             catch (Exception ex)
             {
-                // TODO: Add proper error handling
-                // Could show an error message to the user
-                System.Diagnostics.Debug.WriteLine($"Error loading products: {ex.Message}");
+                Debug.WriteLine($"Error loading products: {ex.Message}");
+                ShowEmptyState = true;
             }
             finally
             {
@@ -374,7 +700,7 @@ namespace MarketMinds.Views
         }
 
         /// <summary>
-        /// Loads auction data asynchronously
+        /// Loads auction data asynchronously with filters applied
         /// </summary>
         private async void LoadAuctionDataAsync()
         {
@@ -385,8 +711,13 @@ namespace MarketMinds.Views
                 // Calculate offset for current page
                 int offset = CurrentPageIndex * ItemsPerPage;
 
-                // Get total count first
-                var totalCount = await this.AuctionProductsViewModel.GetProductCountAsync();
+                // Get total count with filters applied
+                var totalCount = await this.AuctionProductsViewModel.GetFilteredProductCountAsync(
+                    selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                    selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                    MaxPrice < 100101 ? MaxPrice : null,
+                    !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                );
 
                 // Calculate total pages
                 TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
@@ -398,8 +729,15 @@ namespace MarketMinds.Views
                     offset = CurrentPageIndex * ItemsPerPage;
                 }
 
-                // Get auction products for current page using proper async method
-                var auctionProducts = await this.AuctionProductsViewModel.GetProductsAsync(offset, ItemsPerPage);
+                // Get auction products for current page with filters
+                var auctionProducts = await this.AuctionProductsViewModel.GetFilteredProductsAsync(
+                    offset, 
+                    ItemsPerPage,
+                    selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                    selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                    MaxPrice < 100101 ? MaxPrice : null,
+                    !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                );
 
                 // Update UI on the UI thread
                 AuctionProductsCollection.Clear();
@@ -417,9 +755,7 @@ namespace MarketMinds.Views
             }
             catch (Exception ex)
             {
-                // TODO: Add proper error handling
-                // Could show an error message to the user
-                System.Diagnostics.Debug.WriteLine($"Error loading auction products: {ex.Message}");
+                Debug.WriteLine($"Error loading auction products: {ex.Message}");
                 ShowAuctionEmptyState = true;
             }
             finally
@@ -429,7 +765,7 @@ namespace MarketMinds.Views
         }
 
         /// <summary>
-        /// Loads borrow data asynchronously
+        /// Loads borrow data asynchronously with filters applied
         /// </summary>
         private async void LoadBorrowDataAsync()
         {
@@ -440,8 +776,13 @@ namespace MarketMinds.Views
                 // Calculate offset for current page
                 int offset = CurrentPageIndex * ItemsPerPage;
 
-                // Get total count first
-                var totalCount = await this.BorrowProductsViewModel.GetProductCountAsync();
+                // Get total count with filters applied
+                var totalCount = await this.BorrowProductsViewModel.GetFilteredProductCountAsync(
+                    selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                    selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                    MaxPrice < 100101 ? MaxPrice : null,
+                    !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                );
 
                 // Calculate total pages
                 TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
@@ -453,8 +794,15 @@ namespace MarketMinds.Views
                     offset = CurrentPageIndex * ItemsPerPage;
                 }
 
-                // Get borrow products for current page using proper async method
-                var borrowProducts = await this.BorrowProductsViewModel.GetProductsAsync(offset, ItemsPerPage);
+                // Get borrow products for current page with filters
+                var borrowProducts = await this.BorrowProductsViewModel.GetFilteredProductsAsync(
+                    offset, 
+                    ItemsPerPage,
+                    selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                    selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                    MaxPrice < 100101 ? MaxPrice : null,
+                    !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                );
 
                 // Update UI on the UI thread
                 BorrowProductsCollection.Clear();
@@ -472,9 +820,7 @@ namespace MarketMinds.Views
             }
             catch (Exception ex)
             {
-                // TODO: Add proper error handling
-                // Could show an error message to the user
-                System.Diagnostics.Debug.WriteLine($"Error loading borrow products: {ex.Message}");
+                Debug.WriteLine($"Error loading borrow products: {ex.Message}");
                 ShowBorrowEmptyState = true;
             }
             finally
@@ -519,32 +865,6 @@ namespace MarketMinds.Views
 
             // Always load data when switching tabs to ensure fresh data with current pagination settings
             switch (ProductsPivot.SelectedIndex)
-            {
-                case 0: // Buy Products
-                    LoadBuyDataAsync();
-                    break;
-                case 1: // Auction Products
-                    LoadAuctionDataAsync();
-                    break;
-                case 2: // Borrow Products
-                    LoadBorrowDataAsync();
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Handles the Clear Filters button click
-        /// </summary>
-        private void ClearFilters_Click(object sender, RoutedEventArgs e)
-        {
-            // Reset filter values here
-            PriceRangeSlider.Value = PriceRangeSlider.Maximum;
-
-            // Reset pagination to first page - this will trigger data loading for the active tab
-            CurrentPageIndex = 0;
-
-            // Reload data for the current active tab with cleared filters
-            switch (ActiveTabIndex)
             {
                 case 0: // Buy Products
                     LoadBuyDataAsync();

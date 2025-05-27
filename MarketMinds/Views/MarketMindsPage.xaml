@@ -447,14 +447,20 @@
             </StackPanel>
             
             <!-- Search Box -->
-            <AutoSuggestBox Grid.Row="1" Margin="0,0,0,16" PlaceholderText="Search products..."
-                           QueryIcon="Find" HorizontalAlignment="Stretch"/>
+            <AutoSuggestBox Grid.Row="1" x:Name="SearchBox" 
+                           Margin="0,0,0,16" 
+                           PlaceholderText="Search products..."
+                           QueryIcon="Find" 
+                           HorizontalAlignment="Stretch"
+                           QuerySubmitted="SearchBox_QuerySubmitted"
+                           TextChanged="SearchBox_TextChanged"/>
             
             <!-- Price Range -->
             <StackPanel Grid.Row="2" Margin="0,0,0,16">
                 <TextBlock Text="Price Range" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
                 <Slider x:Name="PriceRangeSlider" Minimum="1" Maximum="100101" Value="100101"
                        ThumbToolTipValueConverter="{x:Null}"
+                       ValueChanged="PriceRangeSlider_ValueChanged"
                        Foreground="{ThemeResource SystemAccentColor}"/>
                 <Grid Margin="0,4,0,0">
                     <Grid.ColumnDefinitions>
@@ -463,8 +469,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="$1" Grid.Column="0" Style="{StaticResource CaptionTextBlockStyle}"/>
-                    <!-- TODO: here should be the selected price in the slider -->
-                    <TextBlock Text="$100101" Grid.Column="1" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock x:Name="SelectedPriceText" Text="$100101" Grid.Column="1" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"/>
                     <TextBlock Text="$100101" Grid.Column="2" Style="{StaticResource CaptionTextBlockStyle}"/>
                 </Grid>
             </StackPanel>
@@ -472,30 +477,46 @@
             <!-- Categories -->
             <StackPanel Grid.Row="3" Margin="0,0,0,16">
                 <TextBlock Text="Categories" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
-                <StackPanel Orientation="Horizontal">
-                    <Border Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" 
-                            CornerRadius="15" Padding="10,5">
-                        <TextBlock Text="lmao" Style="{StaticResource CaptionTextBlockStyle}"/>
-                    </Border>
-                </StackPanel>
+                <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollMode="Auto" MaxHeight="120">
+                    <ItemsRepeater x:Name="CategoriesRepeater" ItemsSource="{x:Bind Categories, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Vertical" Spacing="4"/>
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:Category">
+                                <CheckBox Content="{x:Bind Name}" 
+                                          Tag="{x:Bind Id}" 
+                                          Checked="CategoryCheckBox_CheckedChanged"
+                                          Unchecked="CategoryCheckBox_CheckedChanged"/>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
             </StackPanel>
 
             <!-- Condition -->
             <StackPanel Grid.Row="4" Margin="0,0,0,16">
                 <TextBlock Text="Condition" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
-                <StackPanel Orientation="Horizontal">
-                    <!-- will be filled programmatically - mock data for now -->
-                    <Border Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" 
-                            CornerRadius="15" Padding="10,5">
-                        <TextBlock Text="lmao" Style="{StaticResource CaptionTextBlockStyle}"/>
-                    </Border>
-                </StackPanel>
+                <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollMode="Auto" MaxHeight="120">
+                    <ItemsRepeater x:Name="ConditionsRepeater" ItemsSource="{x:Bind Conditions, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Vertical" Spacing="4"/>
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:Condition">
+                                <CheckBox Content="{x:Bind Name}" 
+                                          Tag="{x:Bind Id}" 
+                                          Checked="ConditionCheckBox_CheckedChanged"
+                                          Unchecked="ConditionCheckBox_CheckedChanged"/>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
             </StackPanel>
 
             <!-- Clear Filters Button -->
             <Button Grid.Row="5" HorizontalAlignment="Stretch" Padding="0,8" Background="Transparent" BorderThickness="1"
                     BorderBrush="{ThemeResource SystemControlBackgroundBaseLowBrush}" Click="ClearFilters_Click">
-                <!-- will be filled programmatically - mock data for now -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <FontIcon Glyph="&#xE711;" FontSize="12" Margin="0,0,8,0"/>
                     <TextBlock Text="Clear Filters" Style="{StaticResource CaptionTextBlockStyle}"/>
