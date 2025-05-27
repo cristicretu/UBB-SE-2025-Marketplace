@@ -19,7 +19,6 @@ namespace MarketMinds.Views
     [ExcludeFromCodeCoverage]
     public sealed partial class OrderHistoryView : Page
     {
-
         /// <summary>
         /// The order history view page;
         /// </summary>

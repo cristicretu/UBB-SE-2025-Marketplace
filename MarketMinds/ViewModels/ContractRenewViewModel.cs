@@ -640,7 +640,7 @@ namespace MarketMinds.ViewModels
                 //     string downloadsPath = this.fileSystem.GetDownloadsPath();
                 //     long idForFileName = this.SelectedContract.ContractID; // Use original contract ID for filename
 
-                //     string fileName = $"RenewedContract_{idForFileName}_to_{this.NewEndDate:yyyyMMdd}.pdf";
+                // string fileName = $"RenewedContract_{idForFileName}_to_{this.NewEndDate:yyyyMMdd}.pdf";
                 //     string filePath = Path.Combine(downloadsPath, fileName);
                 //     await File.WriteAllBytesAsync(filePath, pdfBytes);
                 // }
@@ -724,12 +724,12 @@ namespace MarketMinds.ViewModels
         //     {
         //         Debug.WriteLine("Getting current buyer ID...");
 
-        //         // Check if App.CurrentUser is available
+        // // Check if App.CurrentUser is available
         //         if (App.CurrentUser != null)
         //         {
         //             Debug.WriteLine($"Using App.CurrentUser.Id: {App.CurrentUser.Id}");
 
-        //             // Check if token exists
+        // // Check if token exists
         //             if (!string.IsNullOrEmpty(App.CurrentUser.Token))
         //             {
         //                 Debug.WriteLine("Authentication token is present");
@@ -739,10 +739,10 @@ namespace MarketMinds.ViewModels
         //                 Debug.WriteLine("WARNING: Authentication token is missing");
         //             }
 
-        //             return App.CurrentUser.Id;
+        // return App.CurrentUser.Id;
         //         }
 
-        //         // If not available directly, try to get it from the user service
+        // // If not available directly, try to get it from the user service
         //         try
         //         {
         //             var currentUser = await this.userService.GetUserByIdAsync(App.CurrentUser?.Id ?? 0);
@@ -757,7 +757,7 @@ namespace MarketMinds.ViewModels
         //             Debug.WriteLine($"Error retrieving user from service: {ex.Message}");
         //         }
 
-        //         // Fallback to ID 5 for now as that seems to be the ID of the buyer in your database
+        // // Fallback to ID 5 for now as that seems to be the ID of the buyer in your database
         //         Debug.WriteLine("Falling back to buyer ID 5");
         //         return 5;
         //     }
@@ -768,7 +768,6 @@ namespace MarketMinds.ViewModels
         //         return 5;
         //     }
         // }
-
         private async Task LoadContractDetailsAsync()
         {
             var currentContract = this.SelectedContract; // Capture current value to avoid race conditions
