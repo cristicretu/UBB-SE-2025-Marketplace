@@ -32,7 +32,7 @@ namespace MarketMinds.Shared.Models
     {
         [JsonPropertyName("contractID")]
         public int ContractID { get; set; }
-        
+
         [JsonPropertyName("isAccepted")]
         public bool IsAccepted { get; set; }
 
@@ -111,10 +111,10 @@ namespace MarketMinds.Shared.Models
     {
         [JsonPropertyName("orderID")]
         public int OrderID { get; set; }
-        
+
         [JsonPropertyName("shippingState")]
         public string ShippingState { get; set; }
-        
+
         [JsonPropertyName("deliveryDate")]
         public DateTime DeliveryDate { get; set; }
 
@@ -144,7 +144,7 @@ namespace MarketMinds.Shared.Models
     {
         [JsonPropertyName("productID")]
         public int ProductID { get; set; }
-        
+
         [JsonPropertyName("orderID")]
         public int OrderID { get; set; }
 
@@ -247,7 +247,7 @@ namespace MarketMinds.Shared.Models
     {
         [JsonPropertyName("contractID")]
         public int ContractID { get; set; }
-        
+
         [JsonPropertyName("expirationDate")]
         public DateTime ExpirationDate { get; set; }
 

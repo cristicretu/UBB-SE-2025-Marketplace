@@ -300,4 +300,4 @@ namespace MarketMinds.Shared.Services
             }
         }
     }
-} 
+}

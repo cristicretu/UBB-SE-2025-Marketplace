@@ -12,7 +12,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using MarketMinds.Shared.Models.DTOs;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Proxy repository for managing tracked order operations via a REST API.
@@ -147,14 +147,14 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             // Fix: use the correct API endpoint that matches the server's routing
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/byorder/{orderId}");
-            
+
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 throw new Exception($"No TrackedOrder with order id: {orderId}");
             }
 
             await this.ThrowOnError(nameof(GetTrackedOrderByOrderIdAsync), response);
-            
+
             var trackedOrder = await response.Content.ReadFromJsonAsync<TrackedOrder>();
             return trackedOrder;
         }

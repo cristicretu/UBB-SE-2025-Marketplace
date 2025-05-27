@@ -652,7 +652,7 @@ namespace MarketMinds.ViewModels
                     // Ensure timestamp is in local timezone for display
                     foreach (var checkpoint in loadedCheckpoints)
                     {
-                         checkpoint.Timestamp = checkpoint.Timestamp.ToLocalTime();
+                        checkpoint.Timestamp = checkpoint.Timestamp.ToLocalTime();
                     }
 
                     // Sort checkpoints by timestamp in descending order (newest first)

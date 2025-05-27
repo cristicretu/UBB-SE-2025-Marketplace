@@ -442,10 +442,10 @@ namespace MarketMinds.Shared.ProxyRepository
                     queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
                 }
 
-                string url = queryParams.Any() 
+                string url = queryParams.Any()
                     ? $"borrowproducts/filtered/count?{string.Join("&", queryParams)}"
                     : "borrowproducts/filtered/count";
-                
+
                 var response = httpClient.GetAsync(url).Result;
                 response.EnsureSuccessStatusCode();
                 var countString = response.Content.ReadAsStringAsync().Result;

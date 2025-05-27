@@ -127,7 +127,7 @@ namespace Server.Repository
             Console.WriteLine($"REPOSITORY: Buyer ID: {buyerEntity.Id}");
             Console.WriteLine($"REPOSITORY: FirstName: '{buyerEntity.FirstName}', LastName: '{buyerEntity.LastName}'");
             Console.WriteLine($"REPOSITORY: PhoneNumber: '{buyerEntity.User?.PhoneNumber}', UseSameAddress: {buyerEntity.UseSameAddress}");
-            
+
             if (buyerEntity.BillingAddress != null)
             {
                 Console.WriteLine($"REPOSITORY: Input Billing Address - Street: '{buyerEntity.BillingAddress.StreetLine}', City: '{buyerEntity.BillingAddress.City}', Country: '{buyerEntity.BillingAddress.Country}', PostalCode: '{buyerEntity.BillingAddress.PostalCode}', Id: {buyerEntity.BillingAddress.Id}");
@@ -141,7 +141,7 @@ namespace Server.Repository
 
             Console.WriteLine("REPOSITORY: Checking if buyer exists...");
             var buyerExists = await dbContext.Buyers.AnyAsync(b => b.Id == buyerId);
-            
+
             if (!buyerExists)
             {
                 Console.WriteLine("REPOSITORY: Buyer does not exist, creating new buyer");
@@ -150,23 +150,23 @@ namespace Server.Repository
             else
             {
                 Console.WriteLine("REPOSITORY: Buyer exists, proceeding with save");
-                
+
                 Console.WriteLine("REPOSITORY: Starting address handling...");
-                
+
                 // Handle addresses properly based on UseSameAddress flag
                 if (buyerEntity.UseSameAddress)
                 {
                     Console.WriteLine("REPOSITORY: UseSameAddress is true, making addresses the same");
-                    
+
                     // When using same address, both should point to the same address record
                     if (buyerEntity.BillingAddress != null)
                     {
                         var billingAddress = buyerEntity.BillingAddress;
-                        
+
                         // Update or create the billing address
                         var trackedBilling = dbContext.ChangeTracker.Entries<Address>()
                             .FirstOrDefault(e => e.Entity.Id == billingAddress.Id)?.Entity;
-                            
+
                         if (trackedBilling != null)
                         {
                             Console.WriteLine($"REPOSITORY: Found tracked billing address, updating values");
@@ -182,7 +182,7 @@ namespace Server.Repository
                             dbContext.Update(billingAddress);
                             Console.WriteLine($"REPOSITORY: Called dbContext.Update() for billing address with ID: {billingAddress.Id}");
                         }
-                        
+
                         // Make shipping address point to the same record
                         buyerEntity.ShippingAddress = buyerEntity.BillingAddress;
                         Console.WriteLine($"REPOSITORY: Set shipping address to same as billing address (ID: {buyerEntity.BillingAddress.Id})");
@@ -191,16 +191,16 @@ namespace Server.Repository
                 else
                 {
                     Console.WriteLine("REPOSITORY: UseSameAddress is false, handling separate addresses");
-                    
+
                     // Handle billing address
                     if (buyerEntity.BillingAddress != null)
                     {
                         Console.WriteLine("REPOSITORY: Handling billing address...");
                         var billingAddress = buyerEntity.BillingAddress;
-                        
+
                         var trackedBilling = dbContext.ChangeTracker.Entries<Address>()
                             .FirstOrDefault(e => e.Entity.Id == billingAddress.Id)?.Entity;
-                            
+
                         if (trackedBilling != null)
                         {
                             Console.WriteLine($"REPOSITORY: Found tracked billing address, updating values");
@@ -219,20 +219,20 @@ namespace Server.Repository
                             Console.WriteLine($"REPOSITORY: Called dbContext.Update() for billing address with ID: {billingAddress.Id}");
                         }
                     }
-                    
+
                     // Handle shipping address - CREATE NEW if it's different from billing
                     if (buyerEntity.ShippingAddress != null)
                     {
                         Console.WriteLine("REPOSITORY: Handling shipping address...");
                         var shippingAddress = buyerEntity.ShippingAddress;
-                        
+
                         // Check if shipping and billing addresses are actually different
                         bool addressesAreDifferent = buyerEntity.BillingAddress == null ||
                             shippingAddress.StreetLine != buyerEntity.BillingAddress.StreetLine ||
                             shippingAddress.City != buyerEntity.BillingAddress.City ||
                             shippingAddress.Country != buyerEntity.BillingAddress.Country ||
                             shippingAddress.PostalCode != buyerEntity.BillingAddress.PostalCode;
-                            
+
                         if (addressesAreDifferent)
                         {
                             Console.WriteLine("REPOSITORY: Shipping address is different from billing, creating new address record");
@@ -244,7 +244,7 @@ namespace Server.Repository
                                 Country = shippingAddress.Country,
                                 PostalCode = shippingAddress.PostalCode
                             };
-                            
+
                             dbContext.Addresses.Add(newShippingAddress);
                             buyerEntity.ShippingAddress = newShippingAddress;
                             Console.WriteLine($"REPOSITORY: Created new shipping address - Street: '{newShippingAddress.StreetLine}', City: '{newShippingAddress.City}', Country: '{newShippingAddress.Country}', PostalCode: '{newShippingAddress.PostalCode}'");
@@ -358,9 +358,9 @@ namespace Server.Repository
 
             // edit to make it more nicer
             return await this.dbContext.Buyers
-                .Where(buyer => 
+                .Where(buyer =>
                     (buyer.ShippingAddress.Country == shippingAddress.Country &&
-                    buyer.ShippingAddress.City == shippingAddress.City) 
+                    buyer.ShippingAddress.City == shippingAddress.City)
                     || buyer.ShippingAddress.PostalCode == shippingAddress.PostalCode)
                 .ToListAsync();
         }
@@ -444,7 +444,7 @@ namespace Server.Repository
         {
             // Check if the buyer is already being tracked
             var existingBuyer = this.dbContext.Buyers.Local.FirstOrDefault(b => b.Id == buyerEntity.Id);
-            
+
             if (existingBuyer != null)
             {
                 // Buyer is already tracked - update the tracked entity's properties

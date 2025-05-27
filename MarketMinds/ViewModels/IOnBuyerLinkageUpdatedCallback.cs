@@ -11,10 +11,10 @@ namespace MarketMinds.ViewModels
     /// </summary>
     public interface IOnBuyerLinkageUpdatedCallback
     {
-    /// <summary>
-    /// Called when a buyer linkage has been updated.
-    /// </summary>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    Task OnBuyerLinkageUpdated();
+        /// <summary>
+        /// Called when a buyer linkage has been updated.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task OnBuyerLinkageUpdated();
     }
 }

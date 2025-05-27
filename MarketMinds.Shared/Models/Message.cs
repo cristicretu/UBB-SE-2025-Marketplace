@@ -20,7 +20,7 @@ namespace MarketMinds.Shared.Models
         [ForeignKey("UserId")]
         public User User { get; set; }
     }
-    
+
     public class MessageDto
     {
         public int Id { get; set; }
@@ -28,7 +28,7 @@ namespace MarketMinds.Shared.Models
         public int UserId { get; set; }
         public string Content { get; set; }
     }
-    
+
     public class CreateMessageDto
     {
         [Required]
@@ -38,4 +38,4 @@ namespace MarketMinds.Shared.Models
         [Required]
         public string Content { get; set; }
     }
-} 
+}

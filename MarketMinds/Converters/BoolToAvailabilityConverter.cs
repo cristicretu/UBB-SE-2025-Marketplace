@@ -11,7 +11,7 @@ namespace MarketMinds.Converters
             {
                 return isBorrowed ? "Not Available" : "Available";
             }
-            
+
             return "Unknown";
         }
 
@@ -20,4 +20,4 @@ namespace MarketMinds.Converters
             throw new NotImplementedException();
         }
     }
-} 
+}

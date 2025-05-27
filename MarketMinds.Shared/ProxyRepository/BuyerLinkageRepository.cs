@@ -59,7 +59,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public async Task<BuyerLinkage> CreateLinkageRequestAsync(int requestingBuyerId, int receivingBuyerId)
         {
             var response = await _httpClient.PostAsync(
-                $"buyerlinkage/sendrequest?currentBuyerId={requestingBuyerId}&targetBuyerId={receivingBuyerId}", 
+                $"buyerlinkage/sendrequest?currentBuyerId={requestingBuyerId}&targetBuyerId={receivingBuyerId}",
                 null);
 
             if (response.IsSuccessStatusCode)
@@ -80,7 +80,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public async Task<bool> ApproveLinkageRequestAsync(int requestingBuyerId, int receivingBuyerId)
         {
             var response = await _httpClient.PostAsync(
-                $"buyerlinkage/acceptrequest?currentBuyerId={receivingBuyerId}&requestingBuyerId={requestingBuyerId}", 
+                $"buyerlinkage/acceptrequest?currentBuyerId={receivingBuyerId}&requestingBuyerId={requestingBuyerId}",
                 null);
 
             if (response.IsSuccessStatusCode)
@@ -134,7 +134,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public async Task<bool> RemoveLinkageAsync(int buyerId1, int buyerId2)
         {
             var response = await _httpClient.PostAsync(
-                $"buyerlinkage/removelink?currentBuyerId={buyerId1}&targetBuyerId={buyerId2}", 
+                $"buyerlinkage/removelink?currentBuyerId={buyerId1}&targetBuyerId={buyerId2}",
                 null);
 
             if (response.IsSuccessStatusCode)
@@ -200,4 +200,4 @@ namespace MarketMinds.Shared.ProxyRepository
             return new List<int>();
         }
     }
-} 
+}

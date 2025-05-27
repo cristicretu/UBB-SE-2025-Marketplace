@@ -39,9 +39,9 @@ namespace WebMarketplace.Models
         /// <summary>
         /// Gets or sets the start date (availability date)
         /// </summary>
-        public DateTimeOffset? StartDate 
-        { 
-            get => _startDate.HasValue ? new DateTimeOffset(_startDate.Value, TimeSpan.Zero) : null; 
+        public DateTimeOffset? StartDate
+        {
+            get => _startDate.HasValue ? new DateTimeOffset(_startDate.Value, TimeSpan.Zero) : null;
             set
             {
                 if (value.HasValue)
@@ -50,7 +50,7 @@ namespace WebMarketplace.Models
                     {
                         // Use UTC to avoid issues with offsets
                         _startDate = value.Value.UtcDateTime;
-                }
+                    }
                     catch
                     {
                         // Fallback to a safe default if conversion fails
@@ -68,9 +68,9 @@ namespace WebMarketplace.Models
         /// <summary>
         /// Gets or sets the end date (unavailable until)
         /// </summary>
-        public DateTimeOffset? EndDate 
-        { 
-            get => _endDate.HasValue ? new DateTimeOffset(_endDate.Value, TimeSpan.Zero) : null; 
+        public DateTimeOffset? EndDate
+        {
+            get => _endDate.HasValue ? new DateTimeOffset(_endDate.Value, TimeSpan.Zero) : null;
             set
             {
                 if (value.HasValue)
@@ -81,7 +81,7 @@ namespace WebMarketplace.Models
                         _endDate = value.Value.UtcDateTime;
                     }
                     catch
-                {
+                    {
                         // Fallback to a safe default if conversion fails
                         _endDate = DateTime.UtcNow.AddDays(30); // Default to 30 days from now
                     }
@@ -130,19 +130,19 @@ namespace WebMarketplace.Models
                     {
                         return $"Available after: {_startDate.Value:yyyy-MM-dd}";
                     }
-                    }
+                }
                 else
                 {
                     if (_endDate.HasValue)
                     {
                         return $"Unavailable until: {_endDate.Value:yyyy-MM-dd}";
-                }
-                else
-                {
+                    }
+                    else
+                    {
                         return "Availability status unknown";
                     }
                 }
             }
         }
     }
-} 
+}

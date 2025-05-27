@@ -392,7 +392,7 @@ namespace Server.Repository
                 Console.WriteLine($"ContractRepository: PDF file not found or empty for PDFID: {contract.PDFID}. Throwing exception.");
                 throw new Exception($"GetPdfByContractIdAsync: PDF file not found for PDF ID: {contract.PDFID}");
             }
-            
+
             Console.WriteLine($"ContractRepository: Retrieved PDF file. Length: {pdfFile.Length} bytes for PDFID: {contract.PDFID}");
             return pdfFile;
         }
@@ -418,7 +418,7 @@ namespace Server.Repository
         public async Task UpdateContractPdfIdAsync(long contractId, int pdfId)
         {
             var contract = await this.dbContext.Contracts
-                .FirstOrDefaultAsync(c => c.ContractID == contractId) 
+                .FirstOrDefaultAsync(c => c.ContractID == contractId)
                 ?? throw new Exception($"UpdateContractPdfIdAsync: Contract not found for contract ID: {contractId}");
 
             contract.PDFID = pdfId;
@@ -428,7 +428,7 @@ namespace Server.Repository
         public async Task UpdateContractStatusAsync(long contractId, string status)
         {
             var contract = await this.dbContext.Contracts
-                .FirstOrDefaultAsync(c => c.ContractID == contractId) 
+                .FirstOrDefaultAsync(c => c.ContractID == contractId)
                 ?? throw new Exception($"UpdateContractStatusAsync: Contract not found for contract ID: {contractId}");
 
             contract.ContractStatus = status;

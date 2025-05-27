@@ -12,7 +12,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using MarketMinds.Shared.Models.DTOs;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Proxy repository class for managing order operations via REST API.
@@ -246,7 +246,7 @@ namespace MarketMinds.Shared.ProxyRepository
             {
                 return null;
             }
-            
+
             await this.ThrowOnError(nameof(GetOrderByIdAsync), response);
             var order = await response.Content.ReadFromJsonAsync<Order>();
             return order;

@@ -336,7 +336,7 @@ namespace Server.Controllers // Assuming the controller is in the Server project
             }
             catch (Exception ex)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, 
+                return this.StatusCode(StatusCodes.Status500InternalServerError,
                     $"An error occurred retrieving tracked order for Order ID {orderId}: {ex.Message}");
             }
         }

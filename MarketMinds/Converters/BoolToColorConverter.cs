@@ -11,11 +11,11 @@ namespace MarketMinds.Converters
             if (value is bool isBorrowed)
             {
                 // If borrowed (not available) = red, if not borrowed (available) = green
-                return isBorrowed 
+                return isBorrowed
                     ? new SolidColorBrush(Microsoft.UI.Colors.Red)
                     : new SolidColorBrush(Microsoft.UI.Colors.Green);
             }
-            
+
             return new SolidColorBrush(Microsoft.UI.Colors.Gray);
         }
 
@@ -24,4 +24,4 @@ namespace MarketMinds.Converters
             throw new NotImplementedException();
         }
     }
-} 
+}

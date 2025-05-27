@@ -10,17 +10,17 @@ namespace MarketMinds.Tests.Services.ChatBotServiceTest
         private Node _rootNode;
         private int _loadCount;
 
-//        public ChatBotRepositoryMock()
-//        {
-//            _loadCount = 0;
-//            InitializeTestNodes();
-//        }
+        //        public ChatBotRepositoryMock()
+        //        {
+        //            _loadCount = 0;
+        //            InitializeTestNodes();
+        //        }
 
-//        public Node LoadChatTree()
-//        {
-//            _loadCount++;
-//            return _rootNode;
-//        }
+        //        public Node LoadChatTree()
+        //        {
+        //            _loadCount++;
+        //            return _rootNode;
+        //        }
 
         public int GetLoadCount() => _loadCount;
 

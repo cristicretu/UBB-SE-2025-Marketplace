@@ -420,7 +420,7 @@ namespace Server.Controllers
         public async Task<ActionResult> SaveInfo([FromBody] Buyer buyerEntity)
         {
             Console.WriteLine("=== SERVER API: SaveInfo called ===");
-            
+
             if (buyerEntity == null || buyerEntity.Id <= 0)
             {
                 Console.WriteLine("SERVER API: Invalid buyer entity - buyerEntity is null or ID <= 0");
@@ -434,7 +434,7 @@ namespace Server.Controllers
                 Console.WriteLine($"SERVER API: Buyer ID: {buyerEntity.Id}");
                 Console.WriteLine($"SERVER API: FirstName: '{buyerEntity.FirstName}', LastName: '{buyerEntity.LastName}'");
                 Console.WriteLine($"SERVER API: PhoneNumber: '{buyerEntity.User?.PhoneNumber}', UseSameAddress: {buyerEntity.UseSameAddress}");
-                
+
                 if (buyerEntity.BillingAddress != null)
                 {
                     Console.WriteLine($"SERVER API: Billing Address - Street: '{buyerEntity.BillingAddress.StreetLine}', City: '{buyerEntity.BillingAddress.City}', Country: '{buyerEntity.BillingAddress.Country}', PostalCode: '{buyerEntity.BillingAddress.PostalCode}', Id: {buyerEntity.BillingAddress.Id}");
@@ -443,7 +443,7 @@ namespace Server.Controllers
                 {
                     Console.WriteLine("SERVER API: Billing Address is NULL");
                 }
-                
+
                 if (buyerEntity.ShippingAddress != null)
                 {
                     Console.WriteLine($"SERVER API: Shipping Address - Street: '{buyerEntity.ShippingAddress.StreetLine}', City: '{buyerEntity.ShippingAddress.City}', Country: '{buyerEntity.ShippingAddress.Country}', PostalCode: '{buyerEntity.ShippingAddress.PostalCode}', Id: {buyerEntity.ShippingAddress.Id}");
@@ -452,11 +452,11 @@ namespace Server.Controllers
                 {
                     Console.WriteLine("SERVER API: Shipping Address is NULL");
                 }
-                
+
                 Console.WriteLine("SERVER API: Calling buyerRepository.SaveInfo()...");
                 await this.buyerRepository.SaveInfo(buyerEntity);
                 Console.WriteLine("SERVER API: buyerRepository.SaveInfo() completed successfully");
-                
+
                 Console.WriteLine("=== SERVER API: SaveInfo completed successfully ===");
                 return this.NoContent();
             }

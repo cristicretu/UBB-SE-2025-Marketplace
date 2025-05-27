@@ -10,12 +10,12 @@ namespace Server.Controllers
     public class ConversationController : ControllerBase
     {
         private readonly IConversationRepository conversationRepository;
-        
+
         public ConversationController(IConversationRepository conversationRepository)
         {
             this.conversationRepository = conversationRepository;
         }
-        
+
         [HttpPost]
         [ProducesResponseType(typeof(ConversationDto), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -27,20 +27,20 @@ namespace Server.Controllers
                 {
                     return BadRequest("Request body cannot be null");
                 }
-                
+
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
-                
+
                 var conversation = new Conversation
                 {
                     UserId = createConversationDto.UserId
                 };
-                
+
                 var createdConversation = await conversationRepository.CreateConversationAsync(conversation);
                 var conversationDto = MapToConversationDto(createdConversation);
-                
+
                 return CreatedAtAction(nameof(GetConversation), new { id = conversationDto.Id }, conversationDto);
             }
             catch (Exception exception)
@@ -56,14 +56,14 @@ namespace Server.Controllers
             try
             {
                 var conversation = await conversationRepository.GetConversationByIdAsync(id);
-                
+
                 if (conversation == null)
                 {
                     return NotFound($"Conversation with id {id} not found.");
                 }
-                
+
                 var conversationDto = MapToConversationDto(conversation);
-                
+
                 return Ok(conversationDto);
             }
             catch (Exception exception)
@@ -71,7 +71,7 @@ namespace Server.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError, exception.Message);
             }
         }
-        
+
         [HttpGet("user/{userId}")]
         [ProducesResponseType(typeof(List<ConversationDto>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetUserConversations(int userId)
@@ -79,9 +79,9 @@ namespace Server.Controllers
             try
             {
                 var conversations = await conversationRepository.GetConversationsByUserIdAsync(userId);
-                
+
                 var conversationDtos = conversations.Select(MapToConversationDto).ToList();
-                
+
                 return Ok(conversationDtos);
             }
             catch (Exception exception)
@@ -89,7 +89,7 @@ namespace Server.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError, exception.Message);
             }
         }
-        
+
         private ConversationDto MapToConversationDto(Conversation conversation)
         {
             return new ConversationDto

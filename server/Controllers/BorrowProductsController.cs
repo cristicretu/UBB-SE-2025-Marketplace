@@ -68,7 +68,7 @@ namespace Server.Controllers
         [ProducesResponseType(typeof(List<BorrowProduct>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetFilteredBorrowProducts(
-            [FromQuery] int offset = 0, 
+            [FromQuery] int offset = 0,
             [FromQuery] int count = 0,
             [FromQuery] List<int>? conditionIds = null,
             [FromQuery] List<int>? categoryIds = null,

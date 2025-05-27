@@ -9,7 +9,9 @@ namespace MarketMinds.Converters
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             if (value == null)
+            {
                 return string.Empty;
+            }
 
             if (value is DateTime dateTime)
             {
@@ -28,4 +30,4 @@ namespace MarketMinds.Converters
             throw new NotImplementedException();
         }
     }
-} 
+}

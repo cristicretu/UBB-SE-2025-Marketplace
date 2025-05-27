@@ -57,14 +57,14 @@ namespace MarketMinds.Shared.Models
         {
             var user = new MarketMinds.Shared.Models.User(
                 id: Id,
-                username: Username, 
-                email: Email, 
-                phoneNumber: PhoneNumber, 
-                userType: UserType, 
-                balance: Balance, 
-                bannedUntil: BannedUntil, 
-                isBanned: IsBanned, 
-                failedLogins: FailedLogIns, 
+                username: Username,
+                email: Email,
+                phoneNumber: PhoneNumber,
+                userType: UserType,
+                balance: Balance,
+                bannedUntil: BannedUntil,
+                isBanned: IsBanned,
+                failedLogins: FailedLogIns,
                 passwordHash: PasswordHash)
             {
                 Rating = Rating

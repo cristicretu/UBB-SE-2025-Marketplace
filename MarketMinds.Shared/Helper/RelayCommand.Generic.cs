@@ -90,4 +90,4 @@ namespace MarketMinds.Shared.Helper
             this.CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
-} 
+}

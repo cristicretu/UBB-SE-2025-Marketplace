@@ -1,0 +1,1398 @@
+Team Contribution Report (Since 2024-05-12)
+===========================================
+
+-------------------------------------------
+Author: ANRazvan
+Number of Git Commits: 9
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/crizti/retouches
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 1118
+Lines Removed: 611
+Total Lines Changed: 1729
+Diagrams Created: 1
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Afloarei Codrin
+Number of Git Commits: 3
+Branches Used:
+  - origin/alex-desktop-redesign
+  - 
+Lines Added: 2072
+Lines Removed: 2057
+Total Lines Changed: 4129
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Alexandra-Georgiana
+Number of Git Commits: 1
+Branches Used:
+  - all_tests
+  - merge-main-all-tests
+  - origin/DenisTests
+  - origin/all_tests
+  - origin/irina-test
+  - origin/marius-tests-from-all-tests
+  - origin/merge-main-all-tests
+  - 
+Lines Added: 959
+Lines Removed: 188
+Total Lines Changed: 1147
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Andrada Barbos
+Number of Git Commits: 19
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - first-merge-alex
+  - first-merge-andrada
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - merge-web-andrada-cristi
+  - nicusor-presedinte
+  - web-merge-andrada
+  - web-merge-cristi
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 40034
+Lines Removed: 5086
+Total Lines Changed: 45120
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Apăvăloaiei Alexandru
+Number of Git Commits: 10
+Branches Used:
+  - Ovi-tests
+  - SellerProfile
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/SellerProfile
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/codrut-borrow-products
+  - origin/crizti/retouches
+  - origin/dan-admin
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-buyer
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/save-mihai
+  - origin/vasile-mihai
+  - origin/vasile-mihai-mihai
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - origin/vasile/cumparareProdusReparatie
+  - 
+Lines Added: 14355
+Lines Removed: 1132
+Total Lines Changed: 15487
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Balog27
+Number of Git Commits: 3
+Branches Used:
+  - balog-tests
+  - origin/balog-tests
+  - 
+Lines Added: 1625
+Lines Removed: 279
+Total Lines Changed: 1904
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Bardan Irina
+Number of Git Commits: 1
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/PdfBun
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/irina-test
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 1311
+Lines Removed: 733
+Total Lines Changed: 2044
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Bălă Bogdan
+Number of Git Commits: 1
+Branches Used:
+  - Ovi-tests
+  - SellerProfile
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/SellerProfile
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/codrut-borrow-products
+  - origin/crizti/retouches
+  - origin/dan-admin
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-buyer
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/save-mihai
+  - origin/vasile-mihai
+  - origin/vasile-mihai-mihai
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - origin/vasile/cumparareProdusReparatie
+  - 
+Lines Added: 170
+Lines Removed: 15
+Total Lines Changed: 185
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Cristian Cretu
+Number of Git Commits: 27
+Branches Used:
+  - Ovi-tests
+  - SellerProfile
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - first-merge-alex
+  - first-merge-andrada
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - merge-web-andrada-cristi
+  - nicusor-presedinte
+  - web-merge-andrada
+  - web-merge-cristi
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/SellerProfile
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/codrut-borrow-products
+  - origin/crizti/retouches
+  - origin/dan-admin
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-buyer
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/save-mihai
+  - origin/vasile-mihai
+  - origin/vasile-mihai-mihai
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - origin/vasile/cumparareProdusReparatie
+  - 
+Lines Added: 66498
+Lines Removed: 1099
+Total Lines Changed: 67597
+Diagrams Created: 7
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Cristian Crețu
+Number of Git Commits: 25
+Branches Used:
+  - Ovi-tests
+  - SellerProfile
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - nicusor-presedinte
+  - web-merge-andrada
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/SellerProfile
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/codrut-borrow-products
+  - origin/crizti/retouches
+  - origin/dan-admin
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-buyer
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/save-mihai
+  - origin/vasile-mihai
+  - origin/vasile-mihai-mihai
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - origin/vasile/cumparareProdusReparatie
+  - 
+Lines Added: 114686
+Lines Removed: 10358
+Total Lines Changed: 125044
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: DanciuAlexTeodor
+Number of Git Commits: 1
+Branches Used:
+  - origin/AlexD/tests
+  - 
+Lines Added: 274
+Lines Removed: 0
+Total Lines Changed: 274
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: DenisCraciunoiu
+Number of Git Commits: 1
+Branches Used:
+  - origin/DenisTests
+  - 
+Lines Added: 427
+Lines Removed: 69
+Total Lines Changed: 496
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Grancea Alexandru
+Number of Git Commits: 1
+Branches Used:
+  - final-main-with-correct-tests
+  - main
+  - origin
+  - origin/alex-desktop-redesign
+  - origin/endre-fixes
+  - origin/fix-seller-pagination
+  - origin/main
+  - 
+Lines Added: 965
+Lines Removed: 43
+Total Lines Changed: 1008
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Irinabar0
+Number of Git Commits: 4
+Branches Used:
+  - Ovi-tests
+  - SellerProfile
+  - all_tests
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/PdfBun
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/SellerProfile
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/irina-test
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 3135
+Lines Removed: 1515
+Total Lines Changed: 4650
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Maria-Ioana Albu
+Number of Git Commits: 2
+Branches Used:
+  - Ovi-tests
+  - SellerProfile
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/SellerProfile
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/crizti/retouches
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 517
+Lines Removed: 222
+Total Lines Changed: 739
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Marius203
+Number of Git Commits: 3
+Branches Used:
+  - all_tests
+  - marius-testing
+  - merge-main-all-tests
+  - origin/DenisTests
+  - origin/all_tests
+  - origin/irina-test
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/merge-main-all-tests
+  - 
+Lines Added: 3012
+Lines Removed: 2572
+Total Lines Changed: 5584
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Matei Drumea
+Number of Git Commits: 2
+Branches Used:
+  - all_tests
+  - matei/tests
+  - merge-main-all-tests
+  - origin/DenisTests
+  - origin/all_tests
+  - origin/irina-test
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - 
+Lines Added: 1462
+Lines Removed: 2
+Total Lines Changed: 1464
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Mihai-Cristian Farcaș
+Number of Git Commits: 17
+Branches Used:
+  - final-main-with-correct-tests
+  - main
+  - origin
+  - origin/alex-desktop-redesign
+  - origin/endre-fixes
+  - origin/fix-seller-pagination
+  - origin/main
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/save-mihai
+  - origin/vasile-mihai-mihai
+  - 
+Lines Added: 6145
+Lines Removed: 1356
+Total Lines Changed: 7501
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Mike
+Number of Git Commits: 31
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/crizti/retouches
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 932
+Lines Removed: 422
+Total Lines Changed: 1354
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Nanu25
+Number of Git Commits: 14
+Branches Used:
+  - final-main-with-correct-tests
+  - main
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin
+  - origin/alex-desktop-redesign
+  - origin/endre-fixes
+  - origin/fix-seller-pagination
+  - origin/main
+  - origin/mihai/notificaciones
+  - 
+Lines Added: 2086
+Lines Removed: 257
+Total Lines Changed: 2343
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Nicolae-Razvan Alexe
+Number of Git Commits: 5
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/crizti/retouches
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 814
+Lines Removed: 398
+Total Lines Changed: 1212
+Diagrams Created: 1
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Vasile Draguta
+Number of Git Commits: 15
+Branches Used:
+  - origin/vasile-mihai
+  - origin/vasile-mihai-mihai
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - origin/vasile/cumparareProdusReparatie
+  - 
+Lines Added: 6717
+Lines Removed: 1149
+Total Lines Changed: 7866
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Vasile Draguța
+Number of Git Commits: 5
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile-mihai
+  - origin/vasile-mihai-mihai
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 3239
+Lines Removed: 1787
+Total Lines Changed: 5026
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: Victor
+Number of Git Commits: 1
+Branches Used:
+  - origin/friends-wishlist
+  - 
+Lines Added: 554
+Lines Removed: 109
+Total Lines Changed: 663
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: albumaria
+Number of Git Commits: 8
+Branches Used:
+  - Ovi-tests
+  - SellerProfile
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/SellerProfile
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/crizti/retouches
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 2302
+Lines Removed: 234
+Total Lines Changed: 2536
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: alexapvl
+Number of Git Commits: 67
+Branches Used:
+  - Ovi-tests
+  - SellerProfile
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - first-merge-alex
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - merge-web-andrada-cristi
+  - nicusor-presedinte
+  - web-merge-andrada
+  - web-merge-cristi
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/SellerProfile
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/codrut-borrow-products
+  - origin/crizti/retouches
+  - origin/dan-admin
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-buyer
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/save-mihai
+  - origin/vasile-mihai
+  - origin/vasile-mihai-mihai
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - origin/vasile/cumparareProdusReparatie
+  - 
+Lines Added: 22524
+Lines Removed: 6087
+Total Lines Changed: 28611
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: brain4ctivity
+Number of Git Commits: 6
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/crizti/retouches
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 2617
+Lines Removed: 991
+Total Lines Changed: 3608
+Diagrams Created: 7
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: car-men01
+Number of Git Commits: 4
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/crizti/retouches
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 4595
+Lines Removed: 1442
+Total Lines Changed: 6037
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: cretu-luca
+Number of Git Commits: 7
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/irina-test
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 13207
+Lines Removed: 1421
+Total Lines Changed: 14628
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: imgbot[bot]
+Number of Git Commits: 0
+Branches Used:
+  (No branches detected)
+Lines Added: 
+Lines Removed: 
+Total Lines Changed: 0
+Diagrams Created: 0
+Non-Negligible Work: NO
+
+-------------------------------------------
+Author: luca
+Number of Git Commits: 17
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/dan-tracked-order
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 16545
+Lines Removed: 2622
+Total Lines Changed: 19167
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: ovi_daescu
+Number of Git Commits: 6
+Branches Used:
+  - Ovi-tests
+  - all_tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/DenisTests
+  - origin/Ovi-tests
+  - origin/all_tests
+  - origin/irina-test
+  - origin/marius-tests-from-all-tests
+  - origin/merge-main-all-tests
+  - 
+Lines Added: 1170
+Lines Removed: 26
+Total Lines Changed: 1196
+Diagrams Created: 0
+Non-Negligible Work: YES
+
+-------------------------------------------
+Author: rilden
+Number of Git Commits: 9
+Branches Used:
+  - Ovi-tests
+  - SellerProfile
+  - all_tests
+  - andrada-fix-main
+  - balog-tests
+  - borrow-product-andrada
+  - final-main-with-correct-tests
+  - main
+  - marius-testing
+  - matei/tests
+  - merge-main-all-tests
+  - merge-ovi-main-all-tests
+  - origin/Alex/Pdf
+  - origin/Alex/PdfBun
+  - origin/Alex/Poza
+  - origin/Alex/Reviews
+  - origin/AlexD/tests
+  - origin/DenisTests
+  - origin
+  - origin/Ovi-tests
+  - origin/SellerProfile
+  - origin/alex-desktop-redesign
+  - origin/all_tests
+  - origin/andrada-fix-main
+  - origin/balog-tests
+  - origin/borrow-product-andrada
+  - origin/carmen-shopping-cart
+  - origin/crizti/retouches
+  - origin/dan-family-async
+  - origin/dan-tracked-order
+  - origin/endre-buyer
+  - origin/endre-fixes
+  - origin/family-async-razvan
+  - origin/fix-seller-pagination
+  - origin/friends-wishlist
+  - origin/generate_pdf_contract-Mike
+  - origin/irina-test
+  - origin/luca/fix-auction
+  - origin/luca/fix-seller-buyer
+  - origin/main
+  - origin/maria-AuctionProduct
+  - origin/maria-CreateBorrowProduct
+  - origin/marius-testing
+  - origin/marius-tests-from-all-tests
+  - origin/matei/tests
+  - origin/merge-main-all-tests
+  - origin/mihai/notificaciones
+  - origin/mihai/notifications-fix
+  - origin/mihai/orderhistorynotif
+  - origin/order-history
+  - origin/vasile/TagsFix
+  - origin/vasile/borrowProduct
+  - 
+Lines Added: 707
+Lines Removed: 173
+Total Lines Changed: 880
+Diagrams Created: 0
+Non-Negligible Work: YES
+

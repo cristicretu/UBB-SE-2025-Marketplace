@@ -36,14 +36,14 @@ namespace Server.MarketMinds.Repositories.UserRepository
             try
             {
                 var user = new User(
-                    username: username, 
-                    email: email, 
-                    phoneNumber: phoneNumber, 
-                    userType: userType, 
-                    balance: BaseBalance, 
-                    bannedUntil: bannedUntil, 
-                    isBanned: isBanned, 
-                    failedLogins: failedLogins, 
+                    username: username,
+                    email: email,
+                    phoneNumber: phoneNumber,
+                    userType: userType,
+                    balance: BaseBalance,
+                    bannedUntil: bannedUntil,
+                    isBanned: isBanned,
+                    failedLogins: failedLogins,
                     passwordHash: passwordHash)
                 {
                     Rating = BaseRating,
@@ -267,4 +267,4 @@ namespace Server.MarketMinds.Repositories.UserRepository
             return RegisterUserAsync(username, email, passwordHash, phoneNumber, userType, bannedUntil ?? DateTime.MinValue, isBanned, failedLogins);
         }
     }
-} 
+}

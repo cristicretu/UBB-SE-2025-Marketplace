@@ -192,7 +192,7 @@ namespace Microsoft.UI
         {
             public Orientation Orientation { get; set; }
             public Microsoft.UI.Xaml.Thickness Margin { get; set; }
-           // public System.Collections.Generic.IList<UIElement> Children { get; } = new System.Collections.Generic.List<UIElement>();
+            // public System.Collections.Generic.IList<UIElement> Children { get; } = new System.Collections.Generic.List<UIElement>();
         }
 
         public class TextBlock : UIElement

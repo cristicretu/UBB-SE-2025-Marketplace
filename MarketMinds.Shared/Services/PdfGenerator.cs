@@ -28,4 +28,4 @@ namespace MarketMinds.Shared.Services
             return document.GeneratePdf();
         }
     }
-} 
+}

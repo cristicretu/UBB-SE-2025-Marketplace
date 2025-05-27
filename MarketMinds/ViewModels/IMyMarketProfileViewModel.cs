@@ -9,7 +9,7 @@ namespace MarketMinds.ViewModels
     using System.Windows.Input;
     using MarketMinds.Shared.Models;
 
-/// <summary>
+    /// <summary>
     /// Interface for MyMarketProfileViewModel.
     /// </summary>
     public interface IMyMarketProfileViewModel : INotifyPropertyChanged

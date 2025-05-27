@@ -18,8 +18,7 @@ namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class OrderHistoryView : Page
-    {        
-
+    {
         /// <summary>
         /// The order history view page;
         /// </summary>
@@ -29,8 +28,8 @@ namespace MarketMinds.Views
         private OrderHistoryViewModel orderHistoryViewModel;
         private ITrackedOrderViewModel trackedOrderViewModel;
         private Dictionary<int, string> orderProductCategoryTypes = new Dictionary<int, string>();
-        private int currentTrackingOrderId;        
-        
+        private int currentTrackingOrderId;
+
         /// <summary>
         /// Initializes a new instance of the OrderHistoryUI page.
         /// </summary>
@@ -117,7 +116,7 @@ namespace MarketMinds.Views
                         OrdersListView.ItemsSource = groupedOrders;
                         OrdersListView.Visibility = Visibility.Visible;
                         NoResultsText.Visibility = Visibility.Collapsed;
-                    }                    
+                    }
                     else
                     {
                         // Clear the ListView when no results
@@ -135,7 +134,7 @@ namespace MarketMinds.Views
                         }
                     }
                 });
-            }            
+            }
             catch (Exception exception)
             {
                 DispatcherQueue.TryEnqueue(async () =>
@@ -312,7 +311,10 @@ namespace MarketMinds.Views
         /// <param name="e">Event data.</param>
         private async void GenerateContractButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentOrderSummary == null) return;
+            if (currentOrderSummary == null)
+            {
+                return;
+            }
 
             try
             {
@@ -339,12 +341,14 @@ namespace MarketMinds.Views
                 ContractErrorMessage.Text = $"✗ Failed to generate contract: {ex.Message}";
                 ContractErrorMessage.Visibility = Visibility.Visible;
             }
-        }        /// <summary>
-        /// Handles the click event for generating and displaying a contract.
-        /// Similar to BuyerProfile implementation - generates PDF and opens it directly.
-        /// </summary>
-        /// <param name="orderSummary">The order summary object containing contract details.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
+        }
+
+        /// <summary>
+                 /// Handles the click event for generating and displaying a contract.
+                 /// Similar to BuyerProfile implementation - generates PDF and opens it directly.
+                 /// </summary>
+                 /// <param name="orderSummary">The order summary object containing contract details.</param>
+                 /// <returns>A task representing the asynchronous operation.</returns>
         private async Task HandleGenerateAndDisplayContractClick(OrderSummary orderSummary)
         {
             // Create a new contract
@@ -366,7 +370,7 @@ namespace MarketMinds.Views
 
             // Generate and display the contract using the same approach as BuyerProfile
             await contractViewModel.GenerateAndSaveContractAsync(newContract.ContractID);
-            
+
             // Success feedback is now handled in the UI directly, no separate dialog needed
         }
 
@@ -507,7 +511,8 @@ namespace MarketMinds.Views
             stackPanel.Children.Add(new TextBlock { Text = label, FontWeight = FontWeights.SemiBold, Width = 150 });
             stackPanel.Children.Add(new TextBlock { Text = value });
             OrderDetailsContent.Children.Add(stackPanel);
-        }        
+        }
+
         /// <summary>
         /// Event handler for the Track Order button click.
         /// Shows the track order dialog with the specific OrderID.
@@ -550,7 +555,7 @@ namespace MarketMinds.Views
 
                 // Set XamlRoot and show dialog
                 TrackOrderDialog.XamlRoot = Content.XamlRoot;
-                
+
                 // Show loading state
                 TrackingProgressRing.IsActive = true;
                 TrackingProgressRing.Visibility = Visibility.Visible;
@@ -583,12 +588,12 @@ namespace MarketMinds.Views
             {
                 // Get tracked order by order ID using our helper method
                 var trackedOrder = await GetTrackedOrderByOrderIdAsync(orderID);
-                
+
                 if (trackedOrder == null)
                 {
                     // Create tracking information if it doesn't exist
                     trackedOrder = await CreateTrackingForOrderAsync(orderID);
-                    
+
                     if (trackedOrder == null)
                     {
                         ShowTrackingError("Unable to create or retrieve tracking information for this order.");
@@ -655,12 +660,12 @@ namespace MarketMinds.Views
             try
             {
                 var checkpoints = await trackedOrderViewModel.GetAllOrderCheckpointsAsync(trackedOrderID);
-                
+
                 if (checkpoints != null && checkpoints.Count > 0)
                 {
                     // Sort checkpoints by timestamp (most recent first)
                     var sortedCheckpoints = checkpoints.OrderByDescending(c => c.Timestamp).ToList();
-                    
+
                     TrackingTimelineListView.ItemsSource = sortedCheckpoints;
                     TrackingTimelineContainer.Visibility = Visibility.Visible;
                 }
@@ -717,7 +722,7 @@ namespace MarketMinds.Views
                 ResetTrackingDialogState();
                 TrackingProgressRing.IsActive = true;
                 TrackingProgressRing.Visibility = Visibility.Visible;
-                
+
                 await LoadTrackingData(currentTrackingOrderId);
             }
         }
@@ -770,8 +775,7 @@ namespace MarketMinds.Views
                     DateOnly.FromDateTime(DateTime.Now.AddDays(7)), // Default 7 days delivery
                     deliveryAddress,
                     OrderStatus.PROCESSING,
-                    "Order received and is being processed"
-                );
+                    "Order received and is being processed");
 
                 // Retrieve the newly created tracked order
                 return await GetTrackedOrderByOrderIdAsync(orderID);
@@ -783,7 +787,7 @@ namespace MarketMinds.Views
             }
         }
     }
-    
+
     /// <summary>
     /// Converter to convert boolean IsExpanded property to expand/collapse icon
     /// </summary>
@@ -810,7 +814,7 @@ namespace MarketMinds.Views
 
         public string Name { get; set; }
         public List<dynamic> Items { get; set; }
-        
+
         public bool IsExpanded
         {
             get => _isExpanded;

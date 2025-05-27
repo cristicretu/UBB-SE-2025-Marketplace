@@ -17,9 +17,9 @@ namespace MarketMinds.Shared.Services
 
         // Add constructor injection for the repository
         public ContractService(
-            IContractRepository contractRepository, 
-            IOrderSummaryService orderSummaryService, 
-            IOrderService orderService, 
+            IContractRepository contractRepository,
+            IOrderSummaryService orderSummaryService,
+            IOrderService orderService,
             ISellerService sellerService,
             IPDFService pdfService) // Modified constructor
         {
@@ -152,7 +152,7 @@ Expected Delivery Date: {{DeliveryDate}}
                     string contractTitle = "Contract Document";
                     string currentOrderID = contractEntity.OrderID.ToString();
                     string agreementDate = DateTime.Now.ToString("MM/dd/yyyy");
-                    
+
                     // Get order and summary details
                     OrderSummary orderSummary = null;
                     MarketMinds.Shared.Models.Order order = null;
@@ -164,7 +164,7 @@ Expected Delivery Date: {{DeliveryDate}}
                         {
                             orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(contractEntity.OrderID);
                             order = await _orderService.GetOrderByIdAsync(contractEntity.OrderID);
-                            
+
                             if (order != null && order.SellerId > 0)
                             {
                                 var seller = await _sellerService.GetSellerByIdAsync(order.SellerId);
@@ -276,7 +276,7 @@ Generated on: {generatedOnDate}";
                     // Step C: Create contract with the valid PDF ID
                     contractEntity.PDFID = newPdfId;
                     contractEntity.ContractContent = contractContent;
-                    
+
                     // Add the contract with the valid PDF ID
                     return await contractRpository.AddContractAsync(contractEntity, generatedPdfBytes);
                 }
@@ -288,10 +288,10 @@ Generated on: {generatedOnDate}";
                     {
                         throw new Exception("Failed to save provided PDF file using PDFService.");
                     }
-                    
+
                     // Set the PDF ID on the contract
                     contractEntity.PDFID = linkedPdfId;
-                    
+
                     // Add the contract with the valid PDF ID
                     return await contractRpository.AddContractAsync(contractEntity, pdfFile);
                 }

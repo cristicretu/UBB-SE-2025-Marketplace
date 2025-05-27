@@ -25,7 +25,7 @@ namespace MarketMinds.Test.Services.ProductConditionService
         private const int EXPECTED_TWO_ITEMS = 2;
         private const int EXPECTED_ZERO_ITEMS = 0;
 
-        private  Mock<IProductConditionRepository> _mockRepository;
+        private Mock<IProductConditionRepository> _mockRepository;
         private IProductConditionService _service;
 
         [SetUp]

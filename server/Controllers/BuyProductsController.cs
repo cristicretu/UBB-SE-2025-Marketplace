@@ -75,7 +75,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType(typeof(List<BuyProductDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetFilteredBuyProducts(
-            [FromQuery] int offset = 0, 
+            [FromQuery] int offset = 0,
             [FromQuery] int count = 0,
             [FromQuery] List<int>? conditionIds = null,
             [FromQuery] List<int>? categoryIds = null,

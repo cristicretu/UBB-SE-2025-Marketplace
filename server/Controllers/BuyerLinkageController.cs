@@ -44,7 +44,7 @@ namespace Server.Controllers
         {
             try
             {
-                _logger.LogInformation("API: Sending linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                _logger.LogInformation("API: Sending linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
 
                 // Validate input
@@ -75,14 +75,14 @@ namespace Server.Controllers
                 // Create the linkage request
                 await _buyerLinkageRepository.CreateLinkageRequestAsync(currentBuyerId, targetBuyerId);
 
-                _logger.LogInformation("Successfully sent linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                _logger.LogInformation("Successfully sent linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
 
                 return Ok(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error sending linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                _logger.LogError(ex, "API: Error sending linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to send linkage request: {ex.Message}");
             }
@@ -99,7 +99,7 @@ namespace Server.Controllers
         {
             try
             {
-                _logger.LogInformation("API: Buyer {CurrentBuyerId} accepting linkage request from buyer {RequestingBuyerId}", 
+                _logger.LogInformation("API: Buyer {CurrentBuyerId} accepting linkage request from buyer {RequestingBuyerId}",
                     currentBuyerId, requestingBuyerId);
 
                 // Validate input
@@ -117,7 +117,7 @@ namespace Server.Controllers
 
                 if (result)
                 {
-                    _logger.LogInformation("Successfully accepted linkage request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                    _logger.LogInformation("Successfully accepted linkage request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}",
                         requestingBuyerId, currentBuyerId);
                 }
 
@@ -125,7 +125,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error accepting linkage request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                _logger.LogError(ex, "API: Error accepting linkage request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}",
                     requestingBuyerId, currentBuyerId);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to accept linkage request: {ex.Message}");
             }
@@ -142,7 +142,7 @@ namespace Server.Controllers
         {
             try
             {
-                _logger.LogInformation("API: Removing link/request between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
+                _logger.LogInformation("API: Removing link/request between buyer {CurrentBuyerId} and buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
 
                 // Validate input
@@ -160,7 +160,7 @@ namespace Server.Controllers
 
                 if (result)
                 {
-                    _logger.LogInformation("Successfully removed link/request between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
+                    _logger.LogInformation("Successfully removed link/request between buyer {CurrentBuyerId} and buyer {TargetBuyerId}",
                         currentBuyerId, targetBuyerId);
                 }
 
@@ -168,7 +168,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error removing link/request between buyers {CurrentBuyerId} and {TargetBuyerId}", 
+                _logger.LogError(ex, "API: Error removing link/request between buyers {CurrentBuyerId} and {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to remove link/request: {ex.Message}");
             }
@@ -221,7 +221,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error checking if buyers {BuyerId1} and {BuyerId2} are linked", 
+                _logger.LogError(ex, "API: Error checking if buyers {BuyerId1} and {BuyerId2} are linked",
                     buyerId1, buyerId2);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to check buyer linkage: {ex.Message}");
             }
@@ -248,7 +248,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error getting linkage status between buyers {CurrentBuyerId} and {TargetBuyerId}", 
+                _logger.LogError(ex, "API: Error getting linkage status between buyers {CurrentBuyerId} and {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to get linkage status: {ex.Message}");
             }
@@ -315,4 +315,4 @@ namespace Server.Controllers
             }
         }
     }
-} 
+}

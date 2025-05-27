@@ -64,7 +64,7 @@ namespace MarketMinds
         public static BuyProductsProxyRepository BuyProductsRepository;
         public static IBuyerLinkageRepository BuyerLinkageRepository;
         public static ShoppingCartProxyRepository ShoppingCartRepository;
-        public static OrderHistoryProxyRepository OrderHistoryRepository;        public static OrderProxyRepository OrderRepository;
+        public static OrderHistoryProxyRepository OrderHistoryRepository; public static OrderProxyRepository OrderRepository;
         public static BuyProductsProxyRepository BuyProductsProxyRepository;
         public static ContractProxyRepository ContractProxyRepository;
         public static TrackedOrderProxyRepository TrackedOrderRepository;
@@ -97,7 +97,7 @@ namespace MarketMinds
         public static IShoppingCartService ShoppingCartService;
         public static IOrderHistoryService OrderHistoryService;
         public static IOrderService OrderService;
-        public static IOrderSummaryService OrderSummaryService;        public static IDummyWalletService DummyWalletService;
+        public static IOrderSummaryService OrderSummaryService; public static IDummyWalletService DummyWalletService;
         public static IProductService ProductService;
         public static ITrackedOrderService TrackedOrderService;
         public static int LastProcessedOrderId { get; set; }

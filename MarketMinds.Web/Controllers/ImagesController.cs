@@ -25,7 +25,7 @@ namespace MarketMinds.Web.Controllers
         public async Task<IActionResult> Upload(IFormFile image)
         {
             _logger.LogInformation("Received image upload request");
-            
+
             if (image == null || image.Length == 0)
             {
                 _logger.LogWarning("No image file provided");
@@ -34,19 +34,19 @@ namespace MarketMinds.Web.Controllers
 
             try
             {
-                _logger.LogInformation("Processing image: {FileName}, Size: {Size} bytes", 
+                _logger.LogInformation("Processing image: {FileName}, Size: {Size} bytes",
                     image.FileName, image.Length);
 
                 using (var stream = image.OpenReadStream())
                 {
                     var url = await _imageUploadService.UploadImage(stream, image.FileName);
-                    
+
                     if (string.IsNullOrEmpty(url))
                     {
                         _logger.LogError("Image upload failed - no URL returned");
                         return StatusCode(500, new { message = "Failed to upload image - no URL returned" });
                     }
-                    
+
                     _logger.LogInformation("Image uploaded successfully: {Url}", url);
                     return Ok(new { url = url });
                 }
@@ -58,4 +58,4 @@ namespace MarketMinds.Web.Controllers
             }
         }
     }
-} 
+}

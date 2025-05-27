@@ -28,7 +28,7 @@ namespace MarketMinds.Shared.Services
         }
 
         /// <inheritdoc/>
-        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, 
+        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories,
             List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
         {
             // Implementation would depend on repository methods
@@ -69,7 +69,7 @@ namespace MarketMinds.Shared.Services
         {
             // Use the repository to fetch borrowable products from the database
             var borrowProducts = await _productRepository.GetBorrowableProductsAsync();
-            
+
             // Convert to List<Product> - BorrowProduct should inherit from Product
             return borrowProducts.Cast<Product>().ToList();
         }

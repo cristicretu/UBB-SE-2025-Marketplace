@@ -10,4 +10,4 @@ namespace MarketMinds.Shared.IRepository
         Task<Message> SendMessageAsync(int conversationId, int userId, string content);
         Task<List<Message>> GetMessagesAsync(int conversationId);
     }
-} 
+}

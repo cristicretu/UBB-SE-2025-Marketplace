@@ -34,7 +34,7 @@ namespace MarketMinds.Shared.Services.Interfaces
         /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
         /// <returns>The total number of auction products matching the filters.</returns>
         Task<int> GetFilteredAuctionProductCountAsync(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
-        
+
         // Business logic methods
         void ValidateBid(AuctionProduct auction, int bidderId, double bidAmount);
         void ExtendAuctionTimeIfNeeded(AuctionProduct auction);
@@ -43,4 +43,4 @@ namespace MarketMinds.Shared.Services.Interfaces
         void ProcessRefundForPreviousBidder(AuctionProduct product, double newBidAmount);
         bool IsAuctionEnded(AuctionProduct auction);
     }
-} 
+}

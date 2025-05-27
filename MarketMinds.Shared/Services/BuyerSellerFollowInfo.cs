@@ -20,4 +20,4 @@ namespace MarketMinds.Shared.Services
         /// </summary>
         public DateTime? FollowedDate { get; set; }
     }
-} 
+}

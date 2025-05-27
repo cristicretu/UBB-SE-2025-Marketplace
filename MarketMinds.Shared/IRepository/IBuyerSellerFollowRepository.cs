@@ -67,4 +67,4 @@ namespace MarketMinds.Shared.Repositories
         /// <returns>List of buyer IDs that are following the seller</returns>
         Task<IEnumerable<int>> GetFollowerBuyerIdsAsync(int sellerId);
     }
-} 
+}

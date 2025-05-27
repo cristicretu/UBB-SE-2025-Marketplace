@@ -22,4 +22,4 @@ namespace MarketMinds.Shared.IRepository
         /// <exception cref="Exception">Thrown when the wallet is not found for the specified user.</exception>
         Task UpdateWalletBalance(int userId, double newBalance);
     }
-} 
+}

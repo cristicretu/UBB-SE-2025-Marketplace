@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Helper;
 
 namespace MarketMinds.Tests.Services.ChatBotServiceTest
 {
@@ -17,7 +19,7 @@ namespace MarketMinds.Tests.Services.ChatBotServiceTest
         public void Setup()
         {
             _chatBotRepositoryMock = new ChatBotRepositoryMock();
-            _chatBotService = new ChatbotService(_chatBotRepositoryMock);
+            _chatBotService = new ChatbotService(_chatBotRepositoryMock, AppConfig.Configuration);
         }
 
         [Test]

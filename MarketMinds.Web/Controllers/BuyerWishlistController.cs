@@ -299,7 +299,7 @@ namespace WebMarketplace.Controllers
                     {
                         _logger.LogWarning(ex, "Failed to load wishlist for linked buyer {BuyerId}", linkedBuyer.Id);
                         debugInfo.AppendLine($"Error loading wishlist for linked buyer {linkedBuyer.Id}: {ex.Message}");
-                        
+
                         // Even if there's an error, add an empty group so we can see the buyer
                         var emptyGroup = new BuyerWishlistGroup
                         {
@@ -315,7 +315,7 @@ namespace WebMarketplace.Controllers
 
                 viewModel.GroupedWishlistItems = groupedWishlists;
                 debugInfo.AppendLine($"Final result: {groupedWishlists.Count} wishlist groups with total {groupedWishlists.Sum(g => g.ItemCount)} items");
-                
+
                 // Log each group for debugging
                 for (int i = 0; i < groupedWishlists.Count; i++)
                 {
@@ -387,14 +387,14 @@ namespace WebMarketplace.Controllers
                             else
                             {
                                 debugInfo.AppendLine($"    Product {wishlistItem.ProductId} not found");
-                                _logger.LogWarning("Product not found for wishlist item ID {ProductId} (buyer {BuyerId})", 
+                                _logger.LogWarning("Product not found for wishlist item ID {ProductId} (buyer {BuyerId})",
                                     wishlistItem.ProductId, buyer.Id);
                             }
                         }
                         catch (Exception ex)
                         {
                             debugInfo.AppendLine($"    Error getting product {wishlistItem.ProductId}: {ex.Message}");
-                            _logger.LogError(ex, "Error getting product {ProductId} for buyer {BuyerId}", 
+                            _logger.LogError(ex, "Error getting product {ProductId} for buyer {BuyerId}",
                                 wishlistItem.ProductId, buyer.Id);
                         }
                     }

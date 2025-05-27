@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Shared.ProxyRepository
-{    
+{
     public class ChatbotProxyRepository : IChatbotRepository
     {
         private readonly HttpClient httpClient;
@@ -28,9 +28,9 @@ namespace MarketMinds.Shared.ProxyRepository
 
                 var jsonContent = JsonConvert.SerializeObject(requestData);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-                
+
                 var fullUrl = $"{apiBaseUrl}/api/Chatbot";
-        
+
                 var response = await httpClient.PostAsync(fullUrl, content);
 
                 if (response.IsSuccessStatusCode)
@@ -56,7 +56,7 @@ namespace MarketMinds.Shared.ProxyRepository
             try
             {
                 var fullUrl = $"{apiBaseUrl}/api/Chatbot/UserContext/{userId}";
-                
+
                 var response = await httpClient.GetAsync(fullUrl);
 
                 if (response.IsSuccessStatusCode)

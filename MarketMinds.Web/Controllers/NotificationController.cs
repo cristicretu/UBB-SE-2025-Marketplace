@@ -30,7 +30,7 @@ namespace WebMarketplace.Controllers
 
             int userId = UserSession.CurrentUserId.Value;
             var notifications = await _notificationService.GetNotificationsForUser(userId);
-            
+
             return PartialView("_Notifications", notifications);
         }
 
@@ -72,7 +72,7 @@ namespace WebMarketplace.Controllers
                 }
 
                 int userId = UserSession.CurrentUserId.Value;
-                
+
                 // Call the service with the correct parameter (userId)
                 await _notificationService.MarkAllAsRead(userId);
 
@@ -104,7 +104,7 @@ namespace WebMarketplace.Controllers
 
                 int userId = UserSession.CurrentUserId.Value;
                 await _notificationService.ClearAllNotifications(userId);
-                
+
                 return RedirectToReferrer();
             }
             catch (Exception ex)
@@ -128,7 +128,7 @@ namespace WebMarketplace.Controllers
 
             int userId = UserSession.CurrentUserId.Value;
             var notifications = await _notificationService.GetNotificationsForUser(userId);
-            
+
             return View(notifications);
         }
 

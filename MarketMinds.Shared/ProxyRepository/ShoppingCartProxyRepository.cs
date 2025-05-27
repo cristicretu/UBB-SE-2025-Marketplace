@@ -71,7 +71,7 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             var requestUri = $"{ApiBaseRoute}/{buyerId}/items?productId={productId}&quantity={quantity}";
             var response = await this.httpClient.PostAsync(requestUri, null);
-            
+
             await this.ThrowOnError(nameof(AddProductToCartAsync), response);
         }
 

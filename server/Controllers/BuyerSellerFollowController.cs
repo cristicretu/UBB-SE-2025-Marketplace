@@ -44,7 +44,7 @@ namespace Server.Controllers
         {
             try
             {
-                _logger.LogInformation("API: Buyer {BuyerId} attempting to follow seller {SellerId}", 
+                _logger.LogInformation("API: Buyer {BuyerId} attempting to follow seller {SellerId}",
                     buyerId, sellerId);
 
                 // Validate input
@@ -69,7 +69,7 @@ namespace Server.Controllers
                 var alreadyFollowing = await _followRepository.IsFollowingAsync(buyerId, sellerId);
                 if (alreadyFollowing)
                 {
-                    _logger.LogInformation("Buyer {BuyerId} is already following seller {SellerId}", 
+                    _logger.LogInformation("Buyer {BuyerId} is already following seller {SellerId}",
                         buyerId, sellerId);
                     return Ok(true); // Already following is considered success
                 }
@@ -77,14 +77,14 @@ namespace Server.Controllers
                 // Create the follow relationship
                 await _followRepository.CreateFollowAsync(buyerId, sellerId);
 
-                _logger.LogInformation("Successfully created follow: Buyer {BuyerId} -> Seller {SellerId}", 
+                _logger.LogInformation("Successfully created follow: Buyer {BuyerId} -> Seller {SellerId}",
                     buyerId, sellerId);
 
                 return Ok(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error creating follow: Buyer {BuyerId} -> Seller {SellerId}", 
+                _logger.LogError(ex, "API: Error creating follow: Buyer {BuyerId} -> Seller {SellerId}",
                     buyerId, sellerId);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to follow seller: {ex.Message}");
             }
@@ -101,7 +101,7 @@ namespace Server.Controllers
         {
             try
             {
-                _logger.LogInformation("API: Buyer {BuyerId} attempting to unfollow seller {SellerId}", 
+                _logger.LogInformation("API: Buyer {BuyerId} attempting to unfollow seller {SellerId}",
                     buyerId, sellerId);
 
                 // Validate input
@@ -114,12 +114,12 @@ namespace Server.Controllers
 
                 if (result)
                 {
-                    _logger.LogInformation("Successfully removed follow: Buyer {BuyerId} -> Seller {SellerId}", 
+                    _logger.LogInformation("Successfully removed follow: Buyer {BuyerId} -> Seller {SellerId}",
                         buyerId, sellerId);
                 }
                 else
                 {
-                    _logger.LogInformation("No follow relationship found: Buyer {BuyerId} -> Seller {SellerId}", 
+                    _logger.LogInformation("No follow relationship found: Buyer {BuyerId} -> Seller {SellerId}",
                         buyerId, sellerId);
                 }
 
@@ -127,7 +127,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error removing follow: Buyer {BuyerId} -> Seller {SellerId}", 
+                _logger.LogError(ex, "API: Error removing follow: Buyer {BuyerId} -> Seller {SellerId}",
                     buyerId, sellerId);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to unfollow seller: {ex.Message}");
             }
@@ -154,7 +154,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error checking follow status: Buyer {BuyerId} -> Seller {SellerId}", 
+                _logger.LogError(ex, "API: Error checking follow status: Buyer {BuyerId} -> Seller {SellerId}",
                     buyerId, sellerId);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to check follow status: {ex.Message}");
             }
@@ -194,7 +194,7 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "API: Error getting follow status: Buyer {BuyerId} -> Seller {SellerId}", 
+                _logger.LogError(ex, "API: Error getting follow status: Buyer {BuyerId} -> Seller {SellerId}",
                     buyerId, sellerId);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to get follow status: {ex.Message}");
             }
@@ -294,4 +294,4 @@ namespace Server.Controllers
             }
         }
     }
-} 
+}

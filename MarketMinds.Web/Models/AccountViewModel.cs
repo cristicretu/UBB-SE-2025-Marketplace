@@ -7,4 +7,4 @@ namespace MarketMinds.Web.Models
         public UserDto User { get; set; }
         public List<UserOrder> Orders { get; set; }
     }
-} 
+}

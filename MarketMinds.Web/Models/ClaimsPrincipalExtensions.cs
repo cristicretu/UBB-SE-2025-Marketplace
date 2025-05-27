@@ -26,4 +26,4 @@ namespace MarketMinds.Web.Models
             return defaultId;
         }
     }
-} 
+}

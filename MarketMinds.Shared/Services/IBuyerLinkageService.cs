@@ -157,4 +157,4 @@ namespace MarketMinds.Shared.Services
         /// </summary>
         public string SecondaryButtonCssClass => "bg-red-600 hover:bg-red-700";
     }
-} 
+}

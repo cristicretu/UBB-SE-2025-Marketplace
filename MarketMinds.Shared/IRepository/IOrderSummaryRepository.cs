@@ -27,7 +27,7 @@ namespace MarketMinds.Shared.IRepository
         Task UpdateOrderSummaryAsync(int id, double subtotal, double warrantyTax, double deliveryFee, double finalTotal,
                                      string fullName, string email, string phoneNumber, string address,
                                      string postalCode, string additionalInfo, string contractDetails);
-        
+
         /// <summary>
         /// Retrieves an order summary by its ID.
         /// </summary>
@@ -38,4 +38,4 @@ namespace MarketMinds.Shared.IRepository
         Task<int> AddOrderSummaryAsync(OrderSummary orderSummary);
 
     }
-} 
+}

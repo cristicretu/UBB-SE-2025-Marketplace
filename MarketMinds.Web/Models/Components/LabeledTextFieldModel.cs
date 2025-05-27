@@ -50,4 +50,4 @@ namespace WebMarketplace.Models.Components
         /// </summary>
         public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
     }
-} 
+}

@@ -59,7 +59,7 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/buyer");
             await this.ThrowOnError(nameof(GetContractBuyerAsync), response);
-            
+
             // Create a temporary class to deserialize the tuple properly
             var buyerInfo = await response.Content.ReadFromJsonAsync<BuyerInfo>();
             return buyerInfo != null ? (buyerInfo.BuyerId, buyerInfo.BuyerName) : (0, string.Empty);
@@ -88,8 +88,9 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/buyer/{buyerId}");
             await this.ThrowOnError(nameof(GetContractsByBuyerAsync), response);
-            
-            try {
+
+            try
+            {
                 var contracts = await response.Content.ReadFromJsonAsync<List<Contract>>();
                 return contracts?.ConvertAll(c => (IContract)c) ?? new List<IContract>();
             }
@@ -104,7 +105,7 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/seller");
             await this.ThrowOnError(nameof(GetContractSellerAsync), response);
-            
+
             var sellerInfo = await response.Content.ReadFromJsonAsync<SellerInfo>();
 
             return sellerInfo != null ? (sellerInfo.SellerId, sellerInfo.SellerName) : (0, string.Empty);
@@ -131,7 +132,7 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/order-details");
             await this.ThrowOnError(nameof(GetOrderDetailsAsync), response);
-            
+
             var orderDetails = await response.Content.ReadFromJsonAsync<OrderDetails>();
             return orderDetails != null ? (orderDetails.PaymentMethod, orderDetails.OrderDate) : (string.Empty, DateTime.Now);
         }
@@ -141,18 +142,19 @@
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/{contractId}/order-summary");
             await this.ThrowOnError(nameof(GetOrderSummaryInformationAsync), response);
-            
-            try {
+
+            try
+            {
                 var orderSummary = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>();
                 if (orderSummary == null) return new Dictionary<string, object>();
-                
+
                 // convert JsonElement values to appropriate .NET types
                 var result = new Dictionary<string, object>();
                 foreach (var item in orderSummary)
                 {
                     result[item.Key] = ConvertJsonElement(item.Value);
                 }
-                
+
                 return result;
             }
             catch (JsonException ex)
@@ -196,7 +198,7 @@
             {
                 var productDetails = await response.Content.ReadFromJsonAsync<ProductDetails>();
                 if (productDetails == null) return null;
-                
+
                 return (productDetails.StartDate, productDetails.EndDate, productDetails.Price, productDetails.Name);
             }
             catch (JsonException ex)

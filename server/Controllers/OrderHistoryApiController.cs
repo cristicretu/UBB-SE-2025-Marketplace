@@ -32,7 +32,7 @@ namespace Server.Controllers
         /// <param name="orderRepository">The order repository dependency.</param>
         /// <param name="trackedOrderRepository">The tracked order repository dependency.</param>
         public OrderHistoryApiController(
-            IOrderHistoryRepository orderHistoryRepository, 
+            IOrderHistoryRepository orderHistoryRepository,
             IOrderRepository orderRepository,
             ITrackedOrderRepository trackedOrderRepository)
         {
@@ -56,11 +56,11 @@ namespace Server.Controllers
             {
                 return this.BadRequest("A valid buyer ID is required.");
             }
-            
+
             try
             {
                 var orderHistoryId = await this.orderHistoryRepository.CreateOrderHistoryAsync(request.BuyerId);
-                
+
                 // Return the ID of the newly created order history with a 201 Created status.
                 return this.StatusCode(StatusCodes.Status201Created, orderHistoryId);
             }
@@ -110,7 +110,7 @@ namespace Server.Controllers
             {
                 // Retrieve all order histories for this buyer
                 var orderHistories = await this.orderHistoryRepository.GetOrderHistoriesByBuyerAsync(buyerId);
-                
+
                 // Return the list of order histories with a 200 OK status
                 return this.Ok(orderHistories);
             }
@@ -136,12 +136,12 @@ namespace Server.Controllers
             {
                 // Retrieve the order history by ID
                 var orderHistory = await this.orderHistoryRepository.GetOrderHistoryByIdAsync(orderHistoryId);
-                
+
                 if (orderHistory == null)
                 {
                     return this.NotFound($"Order history with ID {orderHistoryId} not found.");
                 }
-                
+
                 // Return the order history with a 200 OK status
                 return this.Ok(orderHistory);
             }
@@ -166,23 +166,23 @@ namespace Server.Controllers
             {
                 // Get the orders for this order history
                 var orders = await this.orderRepository.GetOrdersFromOrderHistoryAsync(orderHistoryId);
-                
+
                 var result = new List<OrderWithTrackingDTO>();
-                
+
                 // Get tracking info for each order
                 foreach (var order in orders)
                 {
                     var trackedOrder = await this.trackedOrderRepository.GetTrackedOrderByOrderIdAsync(order.Id);
-                    
+
                     var orderWithTracking = new OrderWithTrackingDTO
                     {
                         Order = order,
                         TrackedOrder = trackedOrder
                     };
-                    
+
                     result.Add(orderWithTracking);
                 }
-                
+
                 return this.Ok(result);
             }
             catch (Exception ex)
@@ -208,24 +208,24 @@ namespace Server.Controllers
             {
                 return this.BadRequest("Update data is required.");
             }
-            
+
             try
             {
                 // Check if the order history exists
                 var existing = await this.orderHistoryRepository.GetOrderHistoryByIdAsync(orderHistoryId);
-                
+
                 if (existing == null)
                 {
                     return this.NotFound($"Order history with ID {orderHistoryId} not found.");
                 }
-                
+
                 // Update the order history
                 await this.orderHistoryRepository.UpdateOrderHistoryAsync(
                     orderHistoryId,
                     updateRequest.Note,
                     updateRequest.ShippingAddress,
                     updateRequest.PaymentMethod);
-                
+
                 return this.NoContent();
             }
             catch (Exception ex)
@@ -248,37 +248,37 @@ namespace Server.Controllers
             {
                 // Get all order histories for this buyer
                 var orderHistories = await this.orderHistoryRepository.GetOrderHistoriesByBuyerAsync(buyerId);
-                
+
                 var result = new List<OrderHistoryDisplayDTO>();
-                
+
                 foreach (var history in orderHistories)
                 {
                     // Get all orders for this history
                     var orders = await this.orderRepository.GetOrdersFromOrderHistoryAsync(history.OrderID);
-                    
+
                     if (orders.Count == 0)
                     {
                         continue; // Skip empty order histories
                     }
-                    
+
                     // Get tracked orders to get statuses
                     var statuses = new List<OrderStatus>();
                     var productNames = new List<string>();
                     double totalCost = 0;
-                    
+
                     foreach (var order in orders)
                     {
                         var trackedOrder = await this.trackedOrderRepository.GetTrackedOrderByOrderIdAsync(order.Id);
-                        
+
                         if (trackedOrder != null)
                         {
                             statuses.Add(trackedOrder.CurrentStatus);
                         }
-                        
+
                         productNames.Add(order.Name);
                         totalCost += order.Cost;
                     }
-                    
+
                     // Create display DTO
                     var displayDto = new OrderHistoryDisplayDTO
                     {
@@ -291,13 +291,13 @@ namespace Server.Controllers
                         ShippingAddress = history.ShippingAddress ?? string.Empty,
                         PaymentMethod = history.PaymentMethod ?? string.Empty
                     };
-                    
+
                     result.Add(displayDto);
                 }
-                
+
                 // Sort by date descending (most recent first)
                 result.Sort((a, b) => DateTime.Parse(b.OrderDate).CompareTo(DateTime.Parse(a.OrderDate)));
-                
+
                 return this.Ok(result);
             }
             catch (Exception ex)
@@ -327,12 +327,12 @@ namespace Server.Controllers
         /// Gets or sets the note.
         /// </summary>
         public string? Note { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the shipping address.
         /// </summary>
         public string? ShippingAddress { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the payment method.
         /// </summary>
@@ -348,7 +348,7 @@ namespace Server.Controllers
         /// Gets or sets the order.
         /// </summary>
         public Order Order { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the tracked order.
         /// </summary>

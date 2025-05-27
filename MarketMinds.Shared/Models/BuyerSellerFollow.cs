@@ -71,4 +71,4 @@ namespace MarketMinds.Shared.Models
             return SellerId == sellerId;
         }
     }
-} 
+}

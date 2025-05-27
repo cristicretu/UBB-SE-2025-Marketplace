@@ -777,7 +777,7 @@ namespace MarketMinds.Web.Controllers
                                         productId: productId,
                                         isRead: false
                                     );
-                                    
+
                                     // Add the notification
                                     await _notificationService.AddNotification(notification);
                                 }

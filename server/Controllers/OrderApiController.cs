@@ -50,7 +50,7 @@ namespace Server.Controllers
                 {
                     return this.NotFound($"Order with ID {orderId} not found.");
                 }
-                
+
                 return this.Ok(order);
             }
             catch (Exception ex)
@@ -332,7 +332,7 @@ namespace Server.Controllers
             try
             {
                 List<OrderDisplayInfo> orderInfos;
-                
+
                 // If offset and count are provided, use pagination
                 if (offset.HasValue && count.HasValue)
                 {
@@ -343,7 +343,7 @@ namespace Server.Controllers
                     // Use the original method without pagination
                     orderInfos = await this.orderRepository.GetOrdersWithProductInfoAsync(userId, searchText, timePeriod);
                 }
-                
+
                 return this.Ok(orderInfos);
             }
             catch (Exception ex)

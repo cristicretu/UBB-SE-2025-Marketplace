@@ -117,7 +117,7 @@ namespace MarketMinds.ViewModels
                     this.selectedContract = value;
                     this.OnPropertyChanged(nameof(this.SelectedContract));
                     this.IsContractSelected = value != null;
-                    
+
                     // Use Task.Run to properly handle the async operation
                     _ = Task.Run(async () =>
                     {
@@ -479,7 +479,7 @@ namespace MarketMinds.ViewModels
                 Debug.WriteLine($"ERROR in RefreshContractsAsync: {ex.Message}");
                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 this.ShowErrorMessage($"Error loading contracts: {ex.Message}");
-                
+
                 // Ensure contracts collection is cleared on error
                 this.Contracts.Clear();
             }
@@ -621,7 +621,7 @@ namespace MarketMinds.ViewModels
                 {
                     // Add the renewed contract to the database
                     await renewalService.AddRenewedContractAsync(updatedContract);
-                    
+
                     // Update the original contract status to "RENEWED"
                     await this.contractService.UpdateContractStatusAsync(this.SelectedContract.ContractID, "RENEWED");
                     Debug.WriteLine($"Updated original contract {this.SelectedContract.ContractID} status to RENEWED");
@@ -640,7 +640,7 @@ namespace MarketMinds.ViewModels
                 //     string downloadsPath = this.fileSystem.GetDownloadsPath();
                 //     long idForFileName = this.SelectedContract.ContractID; // Use original contract ID for filename
 
-                //     string fileName = $"RenewedContract_{idForFileName}_to_{this.NewEndDate:yyyyMMdd}.pdf";
+                // string fileName = $"RenewedContract_{idForFileName}_to_{this.NewEndDate:yyyyMMdd}.pdf";
                 //     string filePath = Path.Combine(downloadsPath, fileName);
                 //     await File.WriteAllBytesAsync(filePath, pdfBytes);
                 // }
@@ -655,13 +655,13 @@ namespace MarketMinds.ViewModels
                 this.ShowSuccessMessage("Contract renewed successfully! The contract list will be refreshed automatically.");
 
                 Debug.WriteLine($"=== RENEWAL SUCCESSFUL - REFRESHING CONTRACTS ===");
-                
+
                 // Clear current selection first
                 this.SelectedContract = null;
-                
+
                 // Force refresh the contracts list to show the new renewed contract
                 await this.RefreshContractsAsync();
-                
+
                 Debug.WriteLine($"=== CONTRACTS REFRESHED AFTER RENEWAL ===");
             }
             catch (Exception ex)
@@ -724,12 +724,12 @@ namespace MarketMinds.ViewModels
         //     {
         //         Debug.WriteLine("Getting current buyer ID...");
 
-        //         // Check if App.CurrentUser is available
+        // // Check if App.CurrentUser is available
         //         if (App.CurrentUser != null)
         //         {
         //             Debug.WriteLine($"Using App.CurrentUser.Id: {App.CurrentUser.Id}");
 
-        //             // Check if token exists
+        // // Check if token exists
         //             if (!string.IsNullOrEmpty(App.CurrentUser.Token))
         //             {
         //                 Debug.WriteLine("Authentication token is present");
@@ -739,10 +739,10 @@ namespace MarketMinds.ViewModels
         //                 Debug.WriteLine("WARNING: Authentication token is missing");
         //             }
 
-        //             return App.CurrentUser.Id;
+        // return App.CurrentUser.Id;
         //         }
 
-        //         // If not available directly, try to get it from the user service
+        // // If not available directly, try to get it from the user service
         //         try
         //         {
         //             var currentUser = await this.userService.GetUserByIdAsync(App.CurrentUser?.Id ?? 0);
@@ -757,7 +757,7 @@ namespace MarketMinds.ViewModels
         //             Debug.WriteLine($"Error retrieving user from service: {ex.Message}");
         //         }
 
-        //         // Fallback to ID 5 for now as that seems to be the ID of the buyer in your database
+        // // Fallback to ID 5 for now as that seems to be the ID of the buyer in your database
         //         Debug.WriteLine("Falling back to buyer ID 5");
         //         return 5;
         //     }
@@ -768,11 +768,10 @@ namespace MarketMinds.ViewModels
         //         return 5;
         //     }
         // }
-
         private async Task LoadContractDetailsAsync()
         {
             var currentContract = this.SelectedContract; // Capture current value to avoid race conditions
-            
+
             if (currentContract == null)
             {
                 this.ResetContractDetails();
@@ -782,7 +781,7 @@ namespace MarketMinds.ViewModels
             try
             {
                 Debug.WriteLine($"=== LOADING DETAILS FOR CONTRACT ID: {currentContract.ContractID} ===");
-                
+
                 // Set initial loading state immediately
                 this.StatusText = "Status: Loading contract details...";
                 this.StatusColor = "Gray";
@@ -791,7 +790,7 @@ namespace MarketMinds.ViewModels
 
                 // Get contract details
                 var contract = await this.contractService.GetContractByIdAsync(currentContract.ContractID);
-                
+
                 // Check if the selected contract changed while we were loading
                 if (this.SelectedContract?.ContractID != currentContract.ContractID)
                 {
@@ -958,7 +957,7 @@ namespace MarketMinds.ViewModels
                 Debug.WriteLine($"=== ERROR LOADING CONTRACT DETAILS ===");
                 Debug.WriteLine($"Error: {ex.Message}");
                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                
+
                 // Set clear error state
                 this.StartDate = null;
                 this.EndDate = null;
@@ -967,7 +966,7 @@ namespace MarketMinds.ViewModels
                 this.IsRenewalAllowed = false;
                 this.StatusText = "Status: Error loading contract details";
                 this.StatusColor = "Red";
-                
+
                 this.ShowErrorMessage($"Error loading contract details: {ex.Message}");
             }
         }

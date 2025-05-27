@@ -24,4 +24,4 @@ namespace MarketMinds.Converters
             return false;
         }
     }
-} 
+}

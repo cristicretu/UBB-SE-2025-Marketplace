@@ -11,9 +11,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="NUnit" Version="4.3.2" />
-		<PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
 		<PackageReference Include="Moq" Version="4.20.70" />
+		<PackageReference Include="NUnit" Version="4.3.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Services\NotificationContentService\" />
+	  <Folder Include="Services\ProductService\" />
+	  <Folder Include="Services\ProductTagServiceTest\" />
+	  <Folder Include="Services\ReviewCalculationServiceTest\" />
+	  <Folder Include="Services\ReviewCreationServiceTest\" />
+	  <Folder Include="Services\ReviewCreationService\" />
+	  <Folder Include="Services\ReviewService\" />
 	</ItemGroup>
 </Project>

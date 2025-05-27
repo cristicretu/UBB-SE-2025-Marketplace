@@ -5,9 +5,9 @@ namespace MarketMinds.Shared.IRepository
     public interface IChatbotRepository
     {
         Task<string> GetBotResponseAsync(string userMessage, int? userId = null);
-        
+
         Task<string> GetUserContextAsync(int userId);
-        
+
         Task<User> GetUserAsync(int userId);
         Task<Basket> GetUserBasketAsync(int userId);
         Task<List<BasketItem>> GetBasketItemsAsync(int basketId);
@@ -23,4 +23,4 @@ namespace MarketMinds.Shared.IRepository
         Task<List<AuctionProduct>> GetUserAuctionProductsAsync(int userId);
         Task<List<Bid>> GetUserBidsAsync(int userId);
     }
-} 
+}

@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace MarketMinds.Utils
 {
-     [ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     public class StringToPaymentMethodConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)

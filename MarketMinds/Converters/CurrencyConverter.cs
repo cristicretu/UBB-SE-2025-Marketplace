@@ -22,13 +22,13 @@ namespace MarketMinds.Converters
             {
                 return $"{amount:0.00} €";
             }
-            
+
             // Try to parse if it's a string representation of a double
             if (value is string stringValue && double.TryParse(stringValue, out double parsedValue))
             {
                 return $"{parsedValue:0.00} €";
             }
-            
+
             return "0.00 €";
         }
 
@@ -45,4 +45,4 @@ namespace MarketMinds.Converters
             throw new NotImplementedException();
         }
     }
-} 
+}

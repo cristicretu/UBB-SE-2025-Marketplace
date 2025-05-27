@@ -13,7 +13,7 @@ namespace WebMarketplace.Models
     public class BillingInfoViewModel
     {
         // Removed service fields: _orderHistoryService, _orderService, _orderSummaryService, _productService, _dummyWalletService, _shoppingCartService
-        
+
         public int OrderHistoryID { get; set; }
 
         public bool IsWalletEnabled { get; set; } = true; // Default to true, controller can override
@@ -101,7 +101,7 @@ namespace WebMarketplace.Models
                 }
                 else if (product is BorrowProduct borrowProduct)
                 {
-                    subtotalProducts += borrowProduct.Price; 
+                    subtotalProducts += borrowProduct.Price;
                 }
                 else
                 {
@@ -116,9 +116,9 @@ namespace WebMarketplace.Models
             // The current ApplyBorrowedTax modifies WarrantyTax directly.
 
             bool hasSpecialType = ProductList.Any(p =>
-                (p is BorrowProduct) || 
-                (p.GetType().Name.Contains("Refill")) || 
-                (p.GetType().Name.Contains("Auction"))); 
+                (p is BorrowProduct) ||
+                (p.GetType().Name.Contains("Refill")) ||
+                (p.GetType().Name.Contains("Auction")));
 
             if (Subtotal >= 200 || hasSpecialType)
             {

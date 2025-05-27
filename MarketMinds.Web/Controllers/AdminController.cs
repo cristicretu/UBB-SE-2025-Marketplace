@@ -42,10 +42,10 @@ namespace MarketMinds.Web.Controllers
         {
             var categories = _categoryService.GetAllProductCategories();
             var conditions = _conditionService.GetAllProductConditions();
-            
+
             ViewBag.Categories = categories;
             ViewBag.Conditions = conditions;
-            
+
             return View();
         }
 
@@ -105,4 +105,4 @@ namespace MarketMinds.Web.Controllers
             return RedirectToAction("Index");
         }
     }
-} 
+}

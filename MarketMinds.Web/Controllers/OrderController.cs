@@ -16,9 +16,9 @@ namespace WebMarketplace.Controllers
         private readonly IConfiguration _configuration;
 
         public OrderController(
-            ITrackedOrderService trackedOrderService, 
-            IOrderService orderService, 
-            ILogger<OrderController> logger, 
+            ITrackedOrderService trackedOrderService,
+            IOrderService orderService,
+            ILogger<OrderController> logger,
             IOrderSummaryService orderSummaryService,
             IContractService contractService,
             IConfiguration configuration)
@@ -44,7 +44,7 @@ namespace WebMarketplace.Controllers
             try
             {
                 _logger.LogInformation($"OrderHistory action called with userId: {userId}, offset: {offset}, count: {count}, search: {search}, timePeriod: {timePeriod}");
-                
+
                 // Get the current user's ID from claims if userId is not provided
                 if (userId <= 0)
                 {
@@ -55,23 +55,23 @@ namespace WebMarketplace.Controllers
                         return View(Array.Empty<OrderDisplayInfo>());
                     }
                 }
-                
+
                 // Get paginated orders and total count
                 var orders = await _orderService.GetOrdersWithProductInfoAsync(userId, offset, count, search, timePeriod);
                 var totalCount = await _orderService.GetOrdersCountAsync(userId, search, timePeriod);
-                
+
                 _logger.LogInformation($"Retrieved {orders?.Count ?? 0} orders out of {totalCount} total for userId: {userId}");
-                
+
                 // Calculate pagination metadata
                 int currentPage = (offset / count) + 1;
                 int totalPages = (int)Math.Ceiling((double)totalCount / count);
                 bool hasNextPage = offset + count < totalCount;
                 bool hasPreviousPage = offset > 0;
-                
+
                 // Calculate page range for pagination controls (show current page ± 2 pages)
                 int startPage = Math.Max(1, currentPage - 2);
                 int endPage = Math.Min(totalPages, currentPage + 2);
-                
+
                 // Build pagination URLs
                 var pageUrls = new Dictionary<int, string>();
                 for (int i = startPage; i <= endPage; i++)
@@ -79,7 +79,7 @@ namespace WebMarketplace.Controllers
                     int pageOffset = (i - 1) * count;
                     pageUrls[i] = BuildPaginationUrl(pageOffset, count, search, timePeriod);
                 }
-                
+
                 // Set ViewBag properties for pagination
                 ViewBag.CurrentOffset = offset;
                 ViewBag.CurrentCount = count;
@@ -93,20 +93,20 @@ namespace WebMarketplace.Controllers
                 ViewBag.StartPage = startPage;
                 ViewBag.EndPage = endPage;
                 ViewBag.PageUrls = pageUrls;
-                
+
                 // Build navigation URLs
                 ViewBag.PrevPageUrl = hasPreviousPage ? BuildPaginationUrl(offset - count, count, search, timePeriod) : null;
                 ViewBag.NextPageUrl = hasNextPage ? BuildPaginationUrl(offset + count, count, search, timePeriod) : null;
                 ViewBag.FirstPageUrl = BuildPaginationUrl(0, count, search, timePeriod);
-                
+
                 int lastPageOffset = (totalPages - 1) * count;
                 ViewBag.LastPageUrl = BuildPaginationUrl(lastPageOffset, count, search, timePeriod);
                 ViewBag.LastPageNumber = totalPages;
-                
+
                 // Ellipsis logic
                 ViewBag.ShowFirstPageEllipsis = startPage > 2;
                 ViewBag.ShowLastPageEllipsis = endPage < totalPages - 1;
-                
+
                 // Pass seller status to view
                 ViewBag.IsSeller = IsUserSeller();
                 return View(orders);
@@ -125,13 +125,14 @@ namespace WebMarketplace.Controllers
             try
             {
                 _logger.LogInformation($"GetFilteredOrders called with searchText: {searchText}, timePeriod: {timePeriod}");
-                
+
                 // Redirect to OrderHistory with search parameters
-                return RedirectToAction("OrderHistory", new { 
-                    offset = 0, 
-                    count = 4, 
-                    search = searchText, 
-                    timePeriod = timePeriod 
+                return RedirectToAction("OrderHistory", new
+                {
+                    offset = 0,
+                    count = 4,
+                    search = searchText,
+                    timePeriod = timePeriod
                 });
             }
             catch (Exception ex)
@@ -153,9 +154,9 @@ namespace WebMarketplace.Controllers
         public async Task<IActionResult> TrackOrder(int orderId, bool hasControl = false)
         {
             _logger.LogInformation($"TrackOrder action called with orderId: {orderId}");
-            
+
             hasControl &= IsUserSeller();
-            
+
             var trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(orderId);
             if (trackedOrder == null)
             {
@@ -166,18 +167,18 @@ namespace WebMarketplace.Controllers
                     {
                         return ReturnErrorView("Order not found. Please check the order ID and try again.");
                     }
-                    
+
                     var orderSummary = await _orderSummaryService.GetOrderSummaryByIdAsync(order.OrderSummaryID);
                     string deliveryAddress = orderSummary?.Address ?? "No delivery address provided";
-                    
+
                     await _trackedOrderService.CreateTrackedOrderForOrderAsync(
-                        orderId, 
+                        orderId,
                         DateOnly.FromDateTime(DateTime.Now.AddDays(7)),
                         deliveryAddress,
                         OrderStatus.PROCESSING,
                         "Order received"
                     );
-                    
+
                     trackedOrder = await _trackedOrderService.GetTrackedOrderByOrderIdAsync(orderId);
                     if (trackedOrder == null)
                     {
@@ -300,9 +301,11 @@ namespace WebMarketplace.Controllers
                 {
                     return Json(new { success = false, message = "Order summary not found" });
                 }
-                return Json(new {
+                return Json(new
+                {
                     success = true,
-                    summary = new {
+                    summary = new
+                    {
                         id = summary.ID,
                         subtotal = summary.Subtotal,
                         warrantyTax = summary.WarrantyTax,
@@ -387,20 +390,20 @@ namespace WebMarketplace.Controllers
         {
             int userId = 0;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            
+
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out userId))
             {
                 _logger.LogInformation($"Got userId from claims: {userId}");
                 return userId;
             }
-            
+
             var customIdClaim = User.FindFirst("UserId");
             if (customIdClaim != null && int.TryParse(customIdClaim.Value, out userId))
             {
                 _logger.LogInformation($"Got userId from custom claim: {userId}");
                 return userId;
             }
-            
+
             return 0;
         }
 
@@ -425,4 +428,4 @@ namespace WebMarketplace.Controllers
             return $"/Order/OrderHistory?{string.Join("&", queryParams)}";
         }
     }
-} 
+}
