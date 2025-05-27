@@ -5,7 +5,7 @@ namespace MarketMinds.Services
     /// <summary>
     /// Interface for ProductViewNavigationService to manage navigation to product-related views.
     /// </summary>
-    public interface IProductViewNavigationService
+    public interface IProductViewNavigationHelper
     {
         /// <summary>
         /// Creates a detail view for a specific product.

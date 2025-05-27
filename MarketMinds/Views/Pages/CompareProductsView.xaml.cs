@@ -19,7 +19,7 @@ namespace MarketMinds.Views.Pages
     {
         public CompareProductsViewModel ViewModel;
         private Window parentWindow;
-        private readonly IProductViewNavigationService navigationService;
+        private readonly IProductViewNavigationHelper navigationService;
 
         private const int RightImageHeight = 250; // magic numbers removal
         private const int LeftImageHeight = 200;
@@ -28,7 +28,7 @@ namespace MarketMinds.Views.Pages
         {
             ViewModel = viewModel;
             this.InitializeComponent();
-            navigationService = new ProductViewNavigationService();
+            navigationService = new ProductViewNavigationHelper();
             LoadImages();
         }
 
