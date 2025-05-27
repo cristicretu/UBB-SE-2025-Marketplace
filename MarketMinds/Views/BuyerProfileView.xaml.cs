@@ -205,8 +205,7 @@ namespace MarketMinds.Views
         {
             try
             {
-                var renewContractWindow = new RenewContractView();
-                renewContractWindow.Activate();
+                this.Frame.Navigate(typeof(RenewContractView));
             }
             catch (Exception ex)
             {

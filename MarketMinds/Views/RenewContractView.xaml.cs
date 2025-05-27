@@ -9,6 +9,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 
 namespace MarketMinds.Views
@@ -17,7 +18,7 @@ namespace MarketMinds.Views
     /// Interaction logic for the Renew Contract page.
     /// Handles UI logic for selecting and renewing a contract.
     /// </summary>
-    public sealed partial class RenewContractView : Window
+    public sealed partial class RenewContractView : Page
     {
         private readonly IContractRenewViewModel viewModel;
         private ObservableCollection<IContract> filteredContracts;
@@ -32,9 +33,6 @@ namespace MarketMinds.Views
             // Initialize filtered contracts collection
             this.filteredContracts = new ObservableCollection<IContract>();
 
-            // Set window size
-            // this.AppWindow.Resize(new Windows.Graphics.SizeInt32(1000, 700));
-
             // Get the view model from App like ChatBotPage does
             this.viewModel = App.ContractRenewViewModel;
             this.viewModel.BuyerId = App.CurrentUser.Id;
@@ -47,8 +45,13 @@ namespace MarketMinds.Views
 
             // Initialize UI state
             this.SetupInitialUIState();
+        }
 
-            // Add a timeout for the API call to prevent infinite loading
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            
+            // Load contracts when navigating to this page
             _ = LoadContractsWithTimeoutAsync();
         }
 
@@ -116,7 +119,7 @@ namespace MarketMinds.Views
                 Title = title,
                 Content = message,
                 CloseButtonText = "OK",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = this.XamlRoot
             };
 
             await dialog.ShowAsync();
@@ -555,7 +558,7 @@ namespace MarketMinds.Views
                 Title = title,
                 Content = message,
                 CloseButtonText = "OK",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = this.XamlRoot
             };
 
             await dialog.ShowAsync();
@@ -571,7 +574,7 @@ namespace MarketMinds.Views
                 Title = title,
                 Content = message,
                 CloseButtonText = "OK",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = this.XamlRoot
             };
 
             await dialog.ShowAsync();
