@@ -1,0 +1,147 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+      {
+          "label": "build-arm64",
+          "command": "dotnet",
+          "type": "process",
+          "args": [
+              "build",
+              "${workspaceFolder}/MarketMinds/MarketMinds.csproj",
+              "-c",
+              "Debug",
+              "-r",
+              "win-arm64",
+              "/property:GenerateFullPaths=true",
+              "/consoleloggerparameters:NoSummary",
+              "-verbosity:diag"
+          ],
+          "problemMatcher": "$msCompile",
+          "group": {
+              "kind": "build",
+              "isDefault": true
+          }
+      },
+      {
+          "label": "build-without-analysis",
+          "command": "dotnet",
+          "type": "process",
+          "args": [
+              "build",
+              "${workspaceFolder}/MarketMinds/MarketMinds.csproj",
+              "-c",
+              "Debug",
+              "-r",
+              "win-arm64",
+              "/property:GenerateFullPaths=true",
+              "/consoleloggerparameters:NoSummary",
+              "/p:RunAnalyzersDuringBuild=false",
+              "/p:RunAnalyzers=false",
+              "/p:AnalysisLevel=none",
+              "-verbosity:diag"
+          ],
+          "problemMatcher": "$msCompile",
+          "group": "build"
+      },
+      {
+          "label": "clean",
+          "command": "dotnet",
+          "type": "process",
+          "args": [
+              "clean",
+              "${workspaceFolder}/MarketMinds/MarketMinds.csproj"
+          ],
+          "problemMatcher": "$msCompile",
+          "options": {
+              "cwd": "${workspaceFolder}/MarketMinds"
+          }
+      },
+      {
+          "label": "clean-build",
+          "dependsOrder": "sequence",
+          "dependsOn": ["clean", "build-without-analysis"],
+          "group": "build",
+          "problemMatcher": "$msCompile"
+      },
+      {
+          "label": "test",
+          "command": "dotnet",
+          "type": "process",
+          "args": [
+              "test",
+              "${workspaceFolder}/MarketMinds.Test/MarketMinds.Test.csproj",
+              "--no-build"
+          ],
+          "problemMatcher": "$msCompile",
+          "group": {
+              "kind": "test",
+              "isDefault": true
+          },
+          "presentation": {
+              "reveal": "always",
+              "panel": "new"
+          }
+      },
+      {
+          "label": "build-api",
+          "command": "dotnet",
+          "type": "process",
+          "args": [
+              "build",
+              "${workspaceFolder}/server/server.csproj",
+              "-c",
+              "Debug",
+              "/property:GenerateFullPaths=true",
+              "/consoleloggerparameters:NoSummary"
+          ],
+          "problemMatcher": "$msCompile",
+          "group": "build"
+      },
+      {
+          "label": "run-api",
+          "command": "dotnet",
+          "type": "process",
+          "args": [
+              "run",
+              "--project",
+              "${workspaceFolder}/server/server.csproj",
+              "--urls",
+              "http://0.0.0.0:5000"
+          ],
+          "problemMatcher": {
+              "owner": "dotnet",
+              "pattern": {
+                  "regexp": "^.*$",
+                  "file": 1,
+                  "location": 2,
+                  "message": 3
+              },
+              "background": {
+                  "activeOnStart": true,
+                  "beginsPattern": "^.*[Bb]uild (succeeded|completed).*$",
+                  "endsPattern": "^.*[Nn]ow listening on:.*$"
+              }
+          },
+          "isBackground": true,
+          "presentation": {
+              "reveal": "silent",
+              "panel": "dedicated",
+              "showReuseMessage": false
+          },
+          "options": {
+              "cwd": "${workspaceFolder}/server"
+          }
+      },
+      {
+          "label": "start-api-background",
+          "dependsOrder": "sequence",
+          "dependsOn": ["build-api", "run-api"],
+          "group": "none",
+          "problemMatcher": [],
+          "presentation": {
+              "reveal": "never",
+              "panel": "dedicated"
+          }
+      }
+  ]
+} 

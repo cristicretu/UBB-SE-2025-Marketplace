@@ -391,7 +391,7 @@ namespace MarketMinds
             var trackedOrderService = new TrackedOrderService(new TrackedOrderProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/"));
             var notificationService = new MarketMinds.Shared.Services.NotificationService();
             TrackedOrderViewModel = new TrackedOrderViewModel(trackedOrderService, new OrderViewModel(), notificationService);
-            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+            // QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
             // Show login window first instead of main window
             LoginWindow = new LoginWindow();
             LoginWindow.Activate();
