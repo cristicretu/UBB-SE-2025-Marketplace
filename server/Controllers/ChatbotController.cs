@@ -23,15 +23,15 @@ namespace Server.Controllers
             {
                 return BadRequest("Request cannot be null");
             }
-            
+
             try
-            {                
+            {
                 if (string.IsNullOrEmpty(request.Message))
                 {
                     return BadRequest("Message cannot be empty");
                 }
 
-                string botResponse = await chatbotRepository.GetBotResponseAsync(request.Message, request.UserId);           
+                string botResponse = await chatbotRepository.GetBotResponseAsync(request.Message, request.UserId);
                 return Ok(new ChatbotResponse
                 {
                     Message = botResponse,
@@ -40,7 +40,7 @@ namespace Server.Controllers
             }
             catch (Exception exception)
             {
-                return Ok(new ChatbotResponse 
+                return Ok(new ChatbotResponse
                 {
                     Message = "I'm sorry, I encountered an unexpected error. Please try again later.",
                     Success = true
@@ -259,7 +259,7 @@ namespace Server.Controllers
         public string Message { get; set; }
         public int? UserId { get; set; }
     }
-    
+
     public class ChatbotResponse
     {
         public string Message { get; set; }

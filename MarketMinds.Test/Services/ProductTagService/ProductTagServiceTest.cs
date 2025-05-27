@@ -1,4 +1,5 @@
-﻿using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.ProductTagService;
 using Microsoft.Extensions.Configuration;
@@ -43,7 +44,7 @@ namespace MarketMinds.Test.Services.ProductTagService
                               .Returns(mockConigurationSection.Object);
 
             _mockRepository = new Mock<ProductTagProxyRepository>(_mockConfiguration.Object);
-            _service = new MarketMinds.Shared.Services.ProductTagService.ProductTagService(_mockRepository.Object);
+            _service = new MarketMinds.Shared.Services.ProductTagService.ProductTagService(AppConfig.Configuration);
 
             _testJsonOptions = new JsonSerializerOptions
             {
@@ -301,7 +302,7 @@ namespace MarketMinds.Test.Services.ProductTagService
                            .Returns(SerializeTag(createdTag1));
             _mockRepository.Setup(repo => repo.CreateProductTagRaw(CLOTHING_TAG_TITLE))
                            .Returns(SerializeTag(createdTag2));
-            
+
             // Act
             _service.CreateProductTag(ELECTRONICS_TAG_TITLE);
             var tag2 = _service.CreateProductTag(CLOTHING_TAG_TITLE);

@@ -379,13 +379,13 @@ namespace MarketMinds.Shared.Services
 
                 // Create a new buyer with the ID and load the info including User data
                 var buyer = new Buyer { Id = buyerId };
-                
+
                 // First get the user associated with this buyer
                 buyer.User = await this.userRepo.GetUserById(buyerId);
-                
+
                 // Load buyer info and user data
                 await this.LoadBuyer(buyer, BuyerDataSegments.BasicInfo | BuyerDataSegments.User);
-                
+
                 return buyer;
             }
             catch (Exception)

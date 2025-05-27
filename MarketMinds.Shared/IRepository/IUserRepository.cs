@@ -9,7 +9,7 @@ namespace MarketMinds.Shared.IRepository
         Task<User> RegisterUserAsync(string username, string email, string passwordHash, string phoneNumber, int userType, DateTime? bannedUntil, bool isBanned, int failedLogins);
         //Task<User> RegisterUserAsync(string username, string email, string passwordHash);
         Task<User> FindUserByUsernameAsync(string username);
-        
+
         // merge-nicusor
         /// <summary>
         /// Connects to the database and adds a new user.
@@ -122,4 +122,4 @@ namespace MarketMinds.Shared.IRepository
 
         Task<string> AuthorizationLogin();
     }
-} 
+}

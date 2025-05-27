@@ -516,20 +516,20 @@ namespace MarketMinds.Shared.ProxyRepository
 
                 string url = $"auctionproducts/filtered?{string.Join("&", queryParams)}";
                 var response = await httpClient.GetAsync(url);
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
                 }
-                
+
                 var json = await response.Content.ReadAsStringAsync();
-                
+
                 if (string.IsNullOrWhiteSpace(json))
                 {
                     return new List<AuctionProduct>();
                 }
-                
+
                 try
                 {
                     var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
@@ -587,18 +587,18 @@ namespace MarketMinds.Shared.ProxyRepository
                     queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
                 }
 
-                string url = queryParams.Any() 
+                string url = queryParams.Any()
                     ? $"auctionproducts/filtered/count?{string.Join("&", queryParams)}"
                     : "auctionproducts/filtered/count";
-                
+
                 var response = await httpClient.GetAsync(url);
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
                 }
-                
+
                 var countString = await response.Content.ReadAsStringAsync();
                 return int.Parse(countString);
             }

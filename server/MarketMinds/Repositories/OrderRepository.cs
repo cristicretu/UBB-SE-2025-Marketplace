@@ -22,7 +22,7 @@ namespace Server.Repository
         // private readonly string connectionString;
         // private readonly IDatabaseProvider databaseProvider;
         private readonly ApplicationDbContext dbContext;
-    private readonly INotificationRepository notificationRepository;
+        private readonly INotificationRepository notificationRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderRepository"/> class.
@@ -128,7 +128,7 @@ namespace Server.Repository
                     productId: productId,
                     orderId: order.Id,
                     isRead: false);
-                
+
                 await this.notificationRepository.AddNotification(notification);
             }
             catch (Exception ex)
@@ -325,10 +325,10 @@ namespace Server.Repository
         {
             // Check if the user is a seller by looking in the Sellers table
             bool isUserSeller = await this.dbContext.Sellers.AnyAsync(s => s.Id == userId);
-            
+
             // Debug logging
             Console.WriteLine($"[DEBUG] GetOrdersWithProductInfoAsync - UserId: {userId}, IsUserSeller: {isUserSeller}");
-            
+
             List<Order> ordersDb;
             if (isUserSeller)
             {
@@ -356,24 +356,24 @@ namespace Server.Repository
 
                 Condition condition = await this.dbContext.ProductConditions.FindAsync(product.ConditionId)
                                         ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Condition with ID {product.ConditionId} not found");
-                
+
                 Category category = await this.dbContext.ProductCategories.FindAsync(product.CategoryId)
                                         ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Category with ID {product.CategoryId} not found");
 
                 // This boolean is used to check if the search text has common words with order information
                 bool shouldIncludeProductBySearchText = searchText == null;
-                
+
                 if (searchText != null)
                 {
                     // Create a single searchable string with all order information
                     string orderSearchString = $"{product.Title} {order.Id} {condition.Name} {category.Name} {order.PaymentMethod}";
-                    
+
                     // Split search text into words and check for common words
                     var searchWords = searchText.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var orderWords = orderSearchString.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                    
-                    shouldIncludeProductBySearchText = searchWords.Any(searchWord => 
-                        orderWords.Any(orderWord => 
+
+                    shouldIncludeProductBySearchText = searchWords.Any(searchWord =>
+                        orderWords.Any(orderWord =>
                             orderWord.IndexOf(searchWord, StringComparison.OrdinalIgnoreCase) >= 0));
                 }
 
@@ -430,10 +430,10 @@ namespace Server.Repository
         {
             // Check if the user is a seller by looking in the Sellers table
             bool isUserSeller = await this.dbContext.Sellers.AnyAsync(s => s.Id == userId);
-            
+
             // Debug logging
             Console.WriteLine($"[DEBUG] GetOrdersWithProductInfoAsync (Paginated) - UserId: {userId}, IsUserSeller: {isUserSeller}, Offset: {offset}, Count: {count}");
-            
+
             List<Order> ordersDb;
             if (isUserSeller)
             {
@@ -459,7 +459,7 @@ namespace Server.Repository
             foreach (Order order in ordersDb)
             {
                 Product? product = null;
-                
+
                 // Try to find the product in different tables based on product type
                 if (order.ProductType == "new" || order.ProductType == "used")
                 {
@@ -469,13 +469,13 @@ namespace Server.Repository
                 {
                     product = await this.dbContext.BorrowProducts.FindAsync(order.ProductID);
                 }
-                
+
                 if (product == null)
                 {
                     // Try auction products as fallback
                     product = await this.dbContext.AuctionProducts.FindAsync(order.ProductID);
                 }
-                
+
                 if (product == null)
                 {
                     Console.WriteLine($"[WARNING] Product with ID {order.ProductID} not found for order {order.Id}");
@@ -484,31 +484,31 @@ namespace Server.Repository
 
                 Condition condition = await this.dbContext.ProductConditions.FindAsync(product.ConditionId)
                                         ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Condition with ID {product.ConditionId} not found");
-                
+
                 Category category = await this.dbContext.ProductCategories.FindAsync(product.CategoryId)
                                         ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Category with ID {product.CategoryId} not found");
 
                 // This boolean is used to check if the product name corresponds to the search text, if the search text is present.
-                                bool shouldIncludeProductBySearchText = searchText == null;
-                
+                bool shouldIncludeProductBySearchText = searchText == null;
+
                 if (searchText != null)
                 {
                     // Create a single searchable string with all order information
                     string orderSearchString = $"{product.Title} {order.Id} {condition.Name} {category.Name} {order.PaymentMethod}";
-                    
+
                     // Split search text into words and check for common words
                     var searchWords = searchText.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var orderWords = orderSearchString.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                    
-                    shouldIncludeProductBySearchText = searchWords.Any(searchWord => 
-                        orderWords.Any(orderWord => 
+
+                    shouldIncludeProductBySearchText = searchWords.Any(searchWord =>
+                        orderWords.Any(orderWord =>
                             orderWord.IndexOf(searchWord, StringComparison.OrdinalIgnoreCase) >= 0));
                 }
 
                 if (shouldIncludeProductBySearchText) // if searching by text corresponds, then we can check the time period
                 {
                     bool shouldIncludeByTimePeriod = false;
-                    
+
                     switch (timePeriod)
                     {
                         case null:
@@ -528,7 +528,7 @@ namespace Server.Repository
                         default:
                             throw new ArgumentException($"GetOrdersWithProductInfoAsync: Invalid time period: {timePeriod}");
                     }
-                    
+
                     if (shouldIncludeByTimePeriod)
                     {
                         allOrderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product, condition, category));
@@ -557,7 +557,7 @@ namespace Server.Repository
         {
             // Check if the user is a seller by looking in the Sellers table
             bool isUserSeller = await this.dbContext.Sellers.AnyAsync(s => s.Id == userId);
-            
+
             List<Order> ordersDb;
             if (isUserSeller)
             {
@@ -579,7 +579,7 @@ namespace Server.Repository
             foreach (Order order in ordersDb)
             {
                 Product? product = null;
-                
+
                 // Try to find the product in different tables based on product type
                 if (order.ProductType == "new" || order.ProductType == "used")
                 {
@@ -589,13 +589,13 @@ namespace Server.Repository
                 {
                     product = await this.dbContext.BorrowProducts.FindAsync(order.ProductID);
                 }
-                
+
                 if (product == null)
                 {
                     // Try auction products as fallback
                     product = await this.dbContext.AuctionProducts.FindAsync(order.ProductID);
                 }
-                
+
                 if (product == null)
                 {
                     continue; // Skip this order if product not found
@@ -607,7 +607,7 @@ namespace Server.Repository
                 if (shouldIncludeProductBySearchText) // if searching by text corresponds, then we can check the time period
                 {
                     bool shouldIncludeByTimePeriod = false;
-                    
+
                     switch (timePeriod)
                     {
                         case null:
@@ -626,7 +626,7 @@ namespace Server.Repository
                         default:
                             throw new ArgumentException($"GetOrdersCountAsync: Invalid time period: {timePeriod}");
                     }
-                    
+
                     if (shouldIncludeByTimePeriod)
                     {
                         count++;
@@ -648,7 +648,7 @@ namespace Server.Repository
 
             // Check if the user is a seller by looking in the Sellers table
             bool isUserSeller = await this.dbContext.Sellers.AnyAsync(s => s.Id == userId);
-            
+
             List<Order> ordersDb;
             if (isUserSeller)
             {

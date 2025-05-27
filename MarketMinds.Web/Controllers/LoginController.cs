@@ -53,7 +53,7 @@ namespace WebMarketplace.Controllers
                 TempData["ErrorMessage"] = "Invalid email format.";
                 return RedirectToAction("Index");
             }
-            
+
             var user = await _userService.GetUserByEmail(model.Email);
             if (user == null)
             {
@@ -80,15 +80,15 @@ namespace WebMarketplace.Controllers
 
             await _userService.ResetFailedLogins(model.Email);
             UserSession.CurrentUserId = user.Id;
-            
+
             // Store the numeric user type in UserSession.CurrentUserRole
             UserSession.CurrentUserRole = user.UserType.ToString();
-            
-            if((int)user.UserType == 2)
+
+            if ((int)user.UserType == 2)
             {
                 return RedirectToAction("Index", "BuyerProfile");
             }
-            
+
             return RedirectToAction("Index", "SellerProfile");
         }
 

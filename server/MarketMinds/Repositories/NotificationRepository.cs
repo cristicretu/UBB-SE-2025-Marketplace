@@ -78,7 +78,7 @@ namespace Server.Repository
             var notification = await dbContext.OrderNotifications.FindAsync(notificationId);
             if (notification == null)
                 throw new ArgumentException($"MarkNotificationAsRead: Notification with ID {notificationId} not found");
-            
+
             // Mark it as read
             notification.IsRead = true;
             await dbContext.SaveChangesAsync();

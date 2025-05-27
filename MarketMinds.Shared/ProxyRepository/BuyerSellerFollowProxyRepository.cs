@@ -35,7 +35,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public async Task<BuyerSellerFollow> CreateFollowAsync(int buyerId, int sellerId)
         {
             var response = await _httpClient.PostAsync(
-                $"buyers/{buyerId}/follow/{sellerId}", 
+                $"buyers/{buyerId}/follow/{sellerId}",
                 null);
 
             if (response.IsSuccessStatusCode)
@@ -153,4 +153,4 @@ namespace MarketMinds.Shared.ProxyRepository
             return new List<int>();
         }
     }
-} 
+}

@@ -22,7 +22,7 @@ namespace MarketMinds.Shared.Services.Interfaces
         /// <param name="sellerId">The seller ID</param>
         /// <returns>The seller name</returns>
         Task<string> GetSellerNameAsync(int? sellerId);
-        
+
         /// <summary>
         /// Get products with sorting and filtering
         /// </summary>

@@ -203,7 +203,7 @@ namespace MarketMinds.Shared.Services
                 // Create a User object with the seller ID and get seller info
                 var user = new User { Id = sellerId };
                 var seller = await this.sellerRepository.GetSellerInfo(user);
-                
+
                 Debug.WriteLine($"Retrieved seller: ID={seller?.Id ?? -1}, StoreName='{seller?.StoreName}'");
                 return seller;
             }

@@ -26,7 +26,7 @@ namespace MarketMinds.ViewModels
             get => imageService.FormatImagesString(Images);
             set => Images = imageService.ParseImagesString(value);
         }
-            public abstract void CreateListing(Product product);
+        public abstract void CreateListing(Product product);
     }
 }
 

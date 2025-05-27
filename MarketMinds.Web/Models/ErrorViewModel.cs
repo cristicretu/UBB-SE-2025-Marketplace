@@ -8,4 +8,4 @@ namespace MarketMinds.Web.Models
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
         public bool ShowErrorMessage => !string.IsNullOrEmpty(ErrorMessage);
     }
-} 
+}

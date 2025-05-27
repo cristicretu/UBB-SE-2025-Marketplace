@@ -17,4 +17,4 @@ namespace MarketMinds.Shared.Models
         public string SelectedPaymentMethod { get; set; }
         // ProductList will be passed as a separate parameter to the service method
     }
-} 
+}

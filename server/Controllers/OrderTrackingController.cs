@@ -56,12 +56,12 @@ namespace Server.Controllers
             try
             {
                 var trackedOrder = await this.trackedOrderRepository.GetTrackedOrderByOrderIdAsync(orderId);
-                
+
                 if (trackedOrder == null)
                 {
                     return this.NotFound($"No tracking information found for order ID: {orderId}");
                 }
-                
+
                 return this.Ok(trackedOrder);
             }
             catch (Exception ex)
@@ -83,10 +83,10 @@ namespace Server.Controllers
             try
             {
                 var checkpoints = await this.trackedOrderRepository.GetAllOrderCheckpointsAsync(trackedOrderId);
-                
+
                 // Sort checkpoints by timestamp (newest first)
                 checkpoints.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
-                
+
                 return this.Ok(checkpoints);
             }
             catch (Exception ex)
@@ -109,32 +109,32 @@ namespace Server.Controllers
             {
                 // Get all orders for this buyer
                 var displayInfo = await this.orderRepository.GetOrdersWithProductInfoAsync(buyerId);
-                
+
                 if (displayInfo == null || displayInfo.Count == 0)
                 {
                     return this.Ok(new List<OrderTrackingInfoDTO>()); // Return empty list
                 }
-                
+
                 var result = new List<OrderTrackingInfoDTO>();
-                
+
                 foreach (var order in displayInfo)
                 {
                     // Get tracking information
                     var trackedOrder = await this.trackedOrderRepository.GetTrackedOrderByOrderIdAsync(order.OrderID);
-                    
+
                     if (trackedOrder == null)
                     {
                         continue; // Skip orders without tracking
                     }
-                    
+
                     // Get the latest checkpoint
                     var checkpoints = await this.trackedOrderRepository.GetAllOrderCheckpointsAsync(trackedOrder.TrackedOrderID);
-                    
+
                     // Sort checkpoints by timestamp (newest first)
                     checkpoints.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
-                    
+
                     var latestCheckpoint = checkpoints.Count > 0 ? checkpoints[0] : null;
-                    
+
                     // Create tracking info DTO
                     var trackingInfo = new OrderTrackingInfoDTO
                     {
@@ -147,13 +147,13 @@ namespace Server.Controllers
                         CurrentLocation = latestCheckpoint?.Location ?? "Processing Center",
                         LastUpdated = latestCheckpoint?.Timestamp.ToString("yyyy-MM-dd HH:mm") ?? "N/A"
                     };
-                    
+
                     result.Add(trackingInfo);
                 }
-                
+
                 // Sort by order date (newest first)
                 result.Sort((a, b) => DateTime.Parse(b.OrderDate).CompareTo(DateTime.Parse(a.OrderDate)));
-                
+
                 return this.Ok(result);
             }
             catch (Exception ex)
@@ -172,40 +172,40 @@ namespace Server.Controllers
         /// Gets or sets the order ID.
         /// </summary>
         public int Id { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the product name.
         /// </summary>
         public string ProductName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the order date.
         /// </summary>
         public string OrderDate { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the current status of the order.
         /// </summary>
         public OrderStatus CurrentStatus { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the estimated delivery date.
         /// </summary>
         public string EstimatedDeliveryDate { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the delivery address.
         /// </summary>
         public string DeliveryAddress { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the current location of the order.
         /// </summary>
         public string CurrentLocation { get; set; }
-        
+
         /// <summary>
         /// Gets or sets when the order status was last updated.
         /// </summary>
         public string LastUpdated { get; set; }
     }
-} 
+}

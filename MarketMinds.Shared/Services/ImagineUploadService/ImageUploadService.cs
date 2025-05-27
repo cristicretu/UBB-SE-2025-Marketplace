@@ -14,7 +14,7 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
         private const int MAXIMUM_NUMBER_OF_RETRIES = 3;
         private const int RETRY_DELAY = 2;
         private const string IMGUR_API_URL = "https://api.imgur.com/3/image";
-        private const string IMGUR_CLIENT_ID_PLACEHOLDER = "YOUR_IMGUR_CLIENT_ID"; 
+        private const string IMGUR_CLIENT_ID_PLACEHOLDER = "YOUR_IMGUR_CLIENT_ID";
         private const string IMAGE_CONTENT_TYPE = "image/png";
         private const int IMGUR_CLIENT_ID_LENGTH = 20;
         private const int BASE_RETRY = 0;
@@ -76,7 +76,7 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
                             using (var content = new MultipartFormDataContent())
                             {
                                 var imageContent = new ByteArrayContent(buffer);
-                                imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse(IMAGE_CONTENT_TYPE); 
+                                imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse(IMAGE_CONTENT_TYPE);
                                 content.Add(imageContent, "image", fileName ?? "image.png");
 
                                 using (var request = new HttpRequestMessage(HttpMethod.Post, IMGUR_API_URL))
@@ -138,15 +138,17 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
                     if (currentDir != null && Directory.Exists(Path.Combine(currentDir, targetDirName)))
                     {
                         appSettingsPath = Path.Combine(currentDir, targetDirName, "appsettings.json");
-                    } else {
+                    }
+                    else
+                    {
                         string mainProjectDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
                         if (Directory.Exists(Path.Combine(mainProjectDir, targetDirName)))
                         {
-                             appSettingsPath = Path.Combine(mainProjectDir, targetDirName, "appsettings.json");
+                            appSettingsPath = Path.Combine(mainProjectDir, targetDirName, "appsettings.json");
                         }
                     }
                 }
-                
+
                 if (File.Exists(appSettingsPath))
                 {
                     string json = File.ReadAllText(appSettingsPath);
@@ -212,9 +214,9 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
                 var existingImages = ParseImagesString(currentImagesString).Select(image => image.Url).ToList();
                 if (!existingImages.Contains(imgurLink))
                 {
-                     return string.IsNullOrEmpty(currentImagesString)
-                        ? imgurLink
-                        : currentImagesString + "\n" + imgurLink;
+                    return string.IsNullOrEmpty(currentImagesString)
+                       ? imgurLink
+                       : currentImagesString + "\n" + imgurLink;
                 }
             }
             return currentImagesString;

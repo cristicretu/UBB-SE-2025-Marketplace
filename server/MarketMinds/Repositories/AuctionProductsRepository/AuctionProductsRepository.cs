@@ -283,7 +283,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             try
             {
                 Console.WriteLine($"DEBUG: AuctionProductsRepository.GetFilteredProducts - Starting to fetch filtered products (offset: {offset}, count: {count}, conditions: {string.Join(",", conditionIds ?? new List<int>())}, categories: {string.Join(",", categoryIds ?? new List<int>())}, maxPrice: {maxPrice}, searchTerm: {searchTerm})");
-                
+
                 var query = context.AuctionProducts
                     .Include(product => product.Condition)
                     .Include(product => product.Category)
@@ -313,7 +313,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     var lowerSearchTerm = searchTerm.ToLower();
-                    query = query.Where(p => 
+                    query = query.Where(p =>
                         p.Title.ToLower().Contains(lowerSearchTerm) ||
                         p.Description.ToLower().Contains(lowerSearchTerm));
                 }
@@ -322,7 +322,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 query = query.OrderBy(p => p.Id);
 
                 List<AuctionProduct> products;
-                
+
                 if (count > 0)
                 {
                     // Apply pagination
@@ -333,9 +333,9 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     // Return all filtered products if count is 0
                     products = query.ToList();
                 }
-                
+
                 Console.WriteLine($"DEBUG: AuctionProductsRepository.GetFilteredProducts - Fetched {products.Count} filtered products");
-                
+
                 // Load the bidder information for each product's bids
                 foreach (var product in products)
                 {
@@ -350,7 +350,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     {
                         Console.WriteLine($"DEBUG: AuctionProductsRepository.GetFilteredProducts - Could not find seller with ID {product.SellerId} for product {product.Id}");
                     }
-                    
+
                     foreach (var bid in product.Bids)
                     {
                         var bidderUser = context.Users.FirstOrDefault(u => u.Id == bid.BidderId);
@@ -402,7 +402,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     var lowerSearchTerm = searchTerm.ToLower();
-                    query = query.Where(p => 
+                    query = query.Where(p =>
                         p.Title.ToLower().Contains(lowerSearchTerm) ||
                         p.Description.ToLower().Contains(lowerSearchTerm));
                 }

@@ -22,7 +22,7 @@ namespace MarketMinds.Converters
             {
                 return !boolValue;
             }
-            
+
             return true; // Default to true if value is not a boolean
         }
 
@@ -40,8 +40,8 @@ namespace MarketMinds.Converters
             {
                 return !boolValue;
             }
-            
+
             return true; // Default to true if value is not a boolean
         }
     }
-} 
+}

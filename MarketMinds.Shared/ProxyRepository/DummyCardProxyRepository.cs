@@ -9,7 +9,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using System.Net.Http.Json;
     using System.Threading.Tasks;
     using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Proxy repository class for managing dummy card operations via REST API.
@@ -27,7 +27,7 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             this.httpClient = new HttpClient();
             this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            
+
         }
 
         /// <inheritdoc />

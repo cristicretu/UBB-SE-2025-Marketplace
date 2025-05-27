@@ -212,7 +212,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     var lowerSearchTerm = searchTerm.ToLower();
-                    query = query.Where(p => 
+                    query = query.Where(p =>
                         p.Title.ToLower().Contains(lowerSearchTerm) ||
                         p.Description.ToLower().Contains(lowerSearchTerm));
                 }
@@ -224,7 +224,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 query = query.OrderBy(p => p.Id);
 
                 List<BuyProduct> products;
-                
+
                 if (count > 0)
                 {
                     // Apply pagination
@@ -287,7 +287,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     var lowerSearchTerm = searchTerm.ToLower();
-                    query = query.Where(p => 
+                    query = query.Where(p =>
                         p.Title.ToLower().Contains(lowerSearchTerm) ||
                         p.Description.ToLower().Contains(lowerSearchTerm));
                 }

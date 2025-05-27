@@ -47,8 +47,8 @@ namespace Server.Controllers
                 }
 
                 var user = await _userRepository.RegisterUserAsync(
-                    request.Username, 
-                    request.Email, 
+                    request.Username,
+                    request.Email,
                     HashPassword(request.Password),
                     request.PhoneNumber,
                     request.UserType,
@@ -171,6 +171,6 @@ namespace Server.Controllers
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string Password { get; set; }
-        public int UserType { get; set; }    
+        public int UserType { get; set; }
     }
 }

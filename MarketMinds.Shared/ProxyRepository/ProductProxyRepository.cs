@@ -11,7 +11,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using MarketMinds.Shared.Models.DTOs;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Proxy repository class for managing dummy product operations via REST API.
@@ -29,7 +29,7 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             this.httpClient = new HttpClient();
             this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            
+
         }
 
         /// <inheritdoc />

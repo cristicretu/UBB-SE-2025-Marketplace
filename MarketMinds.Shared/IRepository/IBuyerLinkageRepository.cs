@@ -70,4 +70,4 @@ namespace MarketMinds.Shared.Repositories
         /// <returns>List of buyer IDs that are linked to the specified buyer</returns>
         Task<IEnumerable<int>> GetLinkedBuyerIdsAsync(int buyerId);
     }
-} 
+}

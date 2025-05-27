@@ -188,7 +188,7 @@ builder.Services.AddTransient<IBuyerLinkageService>(sp =>
     var repository = sp.GetRequiredService<BuyerLinkageProxyRepository>();
     var buyerService = sp.GetRequiredService<IBuyerService>();
     var logger = sp.GetRequiredService<ILogger<BuyerLinkageService>>();
-    
+
     // Create the actual service implementation
     return new BuyerLinkageService(repository, buyerService, logger);
 });
@@ -200,7 +200,7 @@ builder.Services.AddTransient<IBuyerSellerFollowService>(sp =>
     var buyerService = sp.GetRequiredService<IBuyerService>();
     var sellerService = sp.GetRequiredService<ISellerService>();
     var logger = sp.GetRequiredService<ILogger<BuyerSellerFollowService>>();
-    
+
     // Create the actual service implementation
     return new BuyerSellerFollowService(repository, buyerService, sellerService, logger);
 });

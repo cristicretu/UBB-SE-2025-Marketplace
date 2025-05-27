@@ -20,14 +20,14 @@ namespace MarketMinds.Shared.Services.ConversationService
                 {
                     throw new ArgumentException("User ID must be greater than zero");
                 }
-                
+
                 var conversationModel = new Conversation
                 {
                     UserId = userId
                 };
 
                 var result = await conversationRepository.CreateConversationAsync(conversationModel);
-                
+
                 if (result == null || result.Id <= 0)
                 {
                     throw new InvalidOperationException("Failed to create conversation");
@@ -49,14 +49,14 @@ namespace MarketMinds.Shared.Services.ConversationService
                 {
                     throw new ArgumentException("Conversation ID must be greater than zero");
                 }
-                
+
                 var result = await conversationRepository.GetConversationByIdAsync(conversationId);
-                
+
                 if (result == null)
                 {
                     throw new KeyNotFoundException($"Conversation with id {conversationId} not found.");
                 }
-                
+
                 return result;
             }
             catch (Exception exception)
@@ -73,9 +73,9 @@ namespace MarketMinds.Shared.Services.ConversationService
                 {
                     throw new ArgumentException("User ID must be greater than zero");
                 }
-                
+
                 var results = await conversationRepository.GetConversationsByUserIdAsync(userId);
-                
+
                 return results ?? new List<Conversation>();
             }
             catch (Exception exception)

@@ -20,7 +20,7 @@ namespace MarketMinds.Views
         public SignUpPage()
         {
             this.InitializeComponent();
-            
+
             // Set default phone number prefix
             this.PhoneNumberTextBox.Text = "+40";
         }
@@ -83,7 +83,7 @@ namespace MarketMinds.Views
             {
                 var digitsOnly = newText.Substring(3);
                 var filteredDigits = string.Empty;
-                
+
                 foreach (char c in digitsOnly)
                 {
                     if (char.IsDigit(c))
@@ -109,7 +109,7 @@ namespace MarketMinds.Views
         private void PhoneNumberTextBox_GotFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var textBox = sender as TextBox;
-            
+
             // If text is empty or just "+40", position cursor at the end
             if (string.IsNullOrEmpty(textBox.Text) || textBox.Text == "+40")
             {

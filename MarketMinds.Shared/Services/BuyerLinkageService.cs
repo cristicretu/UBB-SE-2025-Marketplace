@@ -40,7 +40,7 @@ namespace MarketMinds.Server.Services
         {
             try
             {
-                _logger.LogInformation("Creating linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                _logger.LogInformation("Creating linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
 
                 if (currentBuyerId == targetBuyerId)
@@ -69,7 +69,7 @@ namespace MarketMinds.Server.Services
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
                 if (currentStatus != BuyerLinkageStatus.None)
                 {
-                    _logger.LogInformation("Linkage already exists between buyers {CurrentBuyerId} and {TargetBuyerId} with status {Status}", 
+                    _logger.LogInformation("Linkage already exists between buyers {CurrentBuyerId} and {TargetBuyerId} with status {Status}",
                         currentBuyerId, targetBuyerId, currentStatus);
                     return currentStatus == BuyerLinkageStatus.Linked; // Return true if already linked
                 }
@@ -77,14 +77,14 @@ namespace MarketMinds.Server.Services
                 // Create the pending linkage request
                 await _buyerLinkageRepository.CreateLinkageRequestAsync(currentBuyerId, targetBuyerId);
 
-                _logger.LogInformation("Successfully created linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                _logger.LogInformation("Successfully created linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                _logger.LogError(ex, "Error creating linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
                 return false;
             }
@@ -100,7 +100,7 @@ namespace MarketMinds.Server.Services
         {
             try
             {
-                _logger.LogInformation("Buyer {CurrentBuyerId} accepting linkage request from buyer {RequestingBuyerId}", 
+                _logger.LogInformation("Buyer {CurrentBuyerId} accepting linkage request from buyer {RequestingBuyerId}",
                     currentBuyerId, requestingBuyerId);
 
                 if (currentBuyerId == requestingBuyerId)
@@ -113,7 +113,7 @@ namespace MarketMinds.Server.Services
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, requestingBuyerId);
                 if (currentStatus != BuyerLinkageStatus.PendingReceived)
                 {
-                    _logger.LogWarning("No pending request found from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}. Current status: {Status}", 
+                    _logger.LogWarning("No pending request found from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}. Current status: {Status}",
                         requestingBuyerId, currentBuyerId, currentStatus);
                     return false;
                 }
@@ -123,7 +123,7 @@ namespace MarketMinds.Server.Services
 
                 if (result)
                 {
-                    _logger.LogInformation("Successfully accepted linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}", 
+                    _logger.LogInformation("Successfully accepted linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}",
                         requestingBuyerId, currentBuyerId);
                 }
 
@@ -131,7 +131,7 @@ namespace MarketMinds.Server.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error accepting linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}", 
+                _logger.LogError(ex, "Error accepting linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}",
                     requestingBuyerId, currentBuyerId);
                 return false;
             }
@@ -147,7 +147,7 @@ namespace MarketMinds.Server.Services
         {
             try
             {
-                _logger.LogInformation("Buyer {CurrentBuyerId} rejecting linkage request from buyer {RequestingBuyerId}", 
+                _logger.LogInformation("Buyer {CurrentBuyerId} rejecting linkage request from buyer {RequestingBuyerId}",
                     currentBuyerId, requestingBuyerId);
 
                 if (currentBuyerId == requestingBuyerId)
@@ -160,7 +160,7 @@ namespace MarketMinds.Server.Services
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, requestingBuyerId);
                 if (currentStatus != BuyerLinkageStatus.PendingReceived)
                 {
-                    _logger.LogWarning("No pending request found from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}. Current status: {Status}", 
+                    _logger.LogWarning("No pending request found from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}. Current status: {Status}",
                         requestingBuyerId, currentBuyerId, currentStatus);
                     return false;
                 }
@@ -170,7 +170,7 @@ namespace MarketMinds.Server.Services
 
                 if (result)
                 {
-                    _logger.LogInformation("Successfully rejected linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}", 
+                    _logger.LogInformation("Successfully rejected linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}",
                         requestingBuyerId, currentBuyerId);
                 }
 
@@ -178,7 +178,7 @@ namespace MarketMinds.Server.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error rejecting linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}", 
+                _logger.LogError(ex, "Error rejecting linkage request from buyer {RequestingBuyerId} to buyer {CurrentBuyerId}",
                     requestingBuyerId, currentBuyerId);
                 return false;
             }
@@ -194,7 +194,7 @@ namespace MarketMinds.Server.Services
         {
             try
             {
-                _logger.LogInformation("Buyer {CurrentBuyerId} cancelling linkage request to buyer {TargetBuyerId}", 
+                _logger.LogInformation("Buyer {CurrentBuyerId} cancelling linkage request to buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
 
                 if (currentBuyerId == targetBuyerId)
@@ -207,7 +207,7 @@ namespace MarketMinds.Server.Services
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
                 if (currentStatus != BuyerLinkageStatus.PendingSent)
                 {
-                    _logger.LogWarning("No pending request found from buyer {CurrentBuyerId} to buyer {TargetBuyerId}. Current status: {Status}", 
+                    _logger.LogWarning("No pending request found from buyer {CurrentBuyerId} to buyer {TargetBuyerId}. Current status: {Status}",
                         currentBuyerId, targetBuyerId, currentStatus);
                     return false;
                 }
@@ -217,7 +217,7 @@ namespace MarketMinds.Server.Services
 
                 if (result)
                 {
-                    _logger.LogInformation("Successfully cancelled linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                    _logger.LogInformation("Successfully cancelled linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                         currentBuyerId, targetBuyerId);
                 }
 
@@ -225,7 +225,7 @@ namespace MarketMinds.Server.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error cancelling linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                _logger.LogError(ex, "Error cancelling linkage request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
                 return false;
             }
@@ -241,7 +241,7 @@ namespace MarketMinds.Server.Services
         {
             try
             {
-                _logger.LogInformation("Attempting to unlink buyer {CurrentBuyerId} from buyer {TargetBuyerId}", 
+                _logger.LogInformation("Attempting to unlink buyer {CurrentBuyerId} from buyer {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
 
                 if (currentBuyerId == targetBuyerId)
@@ -254,7 +254,7 @@ namespace MarketMinds.Server.Services
                 var currentStatus = await _buyerLinkageRepository.GetLinkageStatusAsync(currentBuyerId, targetBuyerId);
                 if (currentStatus != BuyerLinkageStatus.Linked)
                 {
-                    _logger.LogWarning("Buyers {CurrentBuyerId} and {TargetBuyerId} are not linked. Current status: {Status}", 
+                    _logger.LogWarning("Buyers {CurrentBuyerId} and {TargetBuyerId} are not linked. Current status: {Status}",
                         currentBuyerId, targetBuyerId, currentStatus);
                     return false;
                 }
@@ -263,12 +263,12 @@ namespace MarketMinds.Server.Services
 
                 if (result)
                 {
-                    _logger.LogInformation("Successfully unlinked buyer {CurrentBuyerId} from buyer {TargetBuyerId}", 
+                    _logger.LogInformation("Successfully unlinked buyer {CurrentBuyerId} from buyer {TargetBuyerId}",
                         currentBuyerId, targetBuyerId);
                 }
                 else
                 {
-                    _logger.LogInformation("No linkage found between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
+                    _logger.LogInformation("No linkage found between buyer {CurrentBuyerId} and buyer {TargetBuyerId}",
                         currentBuyerId, targetBuyerId);
                 }
 
@@ -276,7 +276,7 @@ namespace MarketMinds.Server.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error unlinking buyers {CurrentBuyerId} and {TargetBuyerId}", 
+                _logger.LogError(ex, "Error unlinking buyers {CurrentBuyerId} and {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
                 return false;
             }
@@ -296,7 +296,7 @@ namespace MarketMinds.Server.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error checking if buyers {BuyerId1} and {BuyerId2} are linked", 
+                _logger.LogError(ex, "Error checking if buyers {BuyerId1} and {BuyerId2} are linked",
                     buyerId1, buyerId2);
                 return false;
             }
@@ -339,7 +339,7 @@ namespace MarketMinds.Server.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting linkage status between buyers {CurrentBuyerId} and {TargetBuyerId}", 
+                _logger.LogError(ex, "Error getting linkage status between buyers {CurrentBuyerId} and {TargetBuyerId}",
                     currentBuyerId, targetBuyerId);
 
                 return new BuyerLinkageInfo
@@ -399,4 +399,4 @@ namespace MarketMinds.Server.Services
             }
         }
     }
-} 
+}

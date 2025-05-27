@@ -46,11 +46,11 @@ namespace MarketMinds.Views
 
             // Configure UI based on user type
             ConfigureUIForUserType();
-            
+
             // Close notification popup when window is deactivated
             this.Activated += HomePageView_Activated;
         }
-        
+
         private void HomePageView_Activated(object sender, WindowActivatedEventArgs e)
         {
             if (e.WindowActivationState == WindowActivationState.Deactivated)
@@ -264,22 +264,22 @@ namespace MarketMinds.Views
                 NotificationsPopup.IsOpen = false;
                 return;
             }
-            
+
             // Position the popup near the notification button
             if (NotificationsButton != null)
             {
                 // Get the position of the notifications button
                 GeneralTransform transform = NotificationsButton.TransformToVisual(null);
                 Point point = transform.TransformPoint(new Point(0, 0));
-                
+
                 // Position the popup below the button
                 NotificationsPopup.HorizontalOffset = point.X - 400; // Offset to center it
                 NotificationsPopup.VerticalOffset = point.Y + NotificationsButton.ActualHeight;
             }
-            
+
             // Navigate to the MainNotificationWindow in the notifications frame
             NotificationsFrame.Navigate(typeof(MainNotificationWindow));
-            
+
             // Show the popup
             NotificationsPopup.IsOpen = true;
         }

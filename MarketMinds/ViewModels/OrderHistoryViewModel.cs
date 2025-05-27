@@ -20,7 +20,7 @@ namespace MarketMinds.ViewModels
         private readonly ITrackedOrderService trackedOrderService;
         private readonly IOrderService orderService;
         private readonly IOrderSummaryService orderSummaryService;
-        private readonly IOrderViewModel orderViewModel;        public OrderHistoryViewModel()
+        private readonly IOrderViewModel orderViewModel; public OrderHistoryViewModel()
         {
             trackedOrderService = App.TrackedOrderService;
             orderService = App.OrderService;
@@ -44,29 +44,28 @@ namespace MarketMinds.ViewModels
             {
                 // First, check if there's a tracked order for this OrderID
                 var trackedOrder = await trackedOrderService.GetTrackedOrderByOrderIdAsync(orderID);
-                
+
                 if (trackedOrder == null)
                 {
                     // Create a tracked order if it doesn't exist
                     var order = await orderService.GetOrderByIdAsync(orderID);
-                    
+
                     if (order == null)
                     {
                         return false;
                     }
 
                     var orderSummary = await orderSummaryService.GetOrderSummaryByIdAsync(order.OrderSummaryID);
-                    
+
                     string deliveryAddress = orderSummary?.Address ?? "No delivery address provided";
-                    
+
                     await trackedOrderService.CreateTrackedOrderForOrderAsync(
-                        orderID, 
+                        orderID,
                         DateOnly.FromDateTime(DateTime.Now.AddDays(7)),
                         deliveryAddress,
                         MarketMinds.Shared.Models.OrderStatus.PROCESSING,
-                        "Order received"
-                    );
-                    
+                        "Order received");
+
                     trackedOrder = await trackedOrderService.GetTrackedOrderByOrderIdAsync(orderID);
                     if (trackedOrder == null)
                     {
@@ -76,9 +75,9 @@ namespace MarketMinds.ViewModels
 
                 // Open the TrackedOrderWindow
                 var trackedOrderWindow = new TrackedOrderWindow();
-                
+
                 // Determine if the user has control access based on their role
-                bool hasControlAccess = App.CurrentUser.UserType == (int)MarketMinds.Shared.Models.UserRole.Seller || 
+                bool hasControlAccess = App.CurrentUser.UserType == (int)MarketMinds.Shared.Models.UserRole.Seller ||
                                       App.CurrentUser.UserType == (int)MarketMinds.Shared.Models.UserRole.Admin;
 
                 if (hasControlAccess)

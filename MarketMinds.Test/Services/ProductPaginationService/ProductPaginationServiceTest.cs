@@ -13,10 +13,10 @@ public class TestProduct
     public string Category { get; set; }
 
     public TestProduct(
-        int id, 
-        string name, 
-        decimal price, 
-        string description, 
+        int id,
+        string name,
+        decimal price,
+        string description,
         string category)
     {
         Id = id;
@@ -77,7 +77,7 @@ namespace MarketMinds.Test.Services.ProductPaginationService
         {
             // Arrange
             var products = new List<TestProduct>();
-            
+
             // Act
             var result = _productPaginationService.GetPaginatedProducts(products, 1);
 
@@ -102,7 +102,7 @@ namespace MarketMinds.Test.Services.ProductPaginationService
 
             // Act
             var result = _productPaginationService.GetPaginatedProducts(products, 1);
-            
+
             // Assert
             Assert.That(result.CurrentPage.Count, Is.EqualTo(products.Count));
         }
@@ -147,7 +147,7 @@ namespace MarketMinds.Test.Services.ProductPaginationService
 
             // Act
             var result = _productPaginationService.GetPaginatedProducts(products, 1);
-            
+
             // Assert
             Assert.That(result.CurrentPage.Count, Is.EqualTo(CUSTOM_ITEMS_PER_PAGE));
         }
@@ -193,7 +193,7 @@ namespace MarketMinds.Test.Services.ProductPaginationService
             // Arrange
             List<TestProduct> products = null;
             Func<TestProduct, bool> filter = p => p.Category == "Category 1";
-            
+
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => _productPaginationService.ApplyFilters(products, filter));
         }

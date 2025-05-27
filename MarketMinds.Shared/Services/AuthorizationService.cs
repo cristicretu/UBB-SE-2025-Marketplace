@@ -15,14 +15,14 @@ namespace MarketMinds.Shared.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             string jwtKey = AppConfig.GetJwtTokenKey();
             string jwtIssuer = AppConfig.GetJwtTokenIssuer();
-            
+
             Debug.WriteLine("JWT Key found: " + jwtKey);
-            
+
             if (jwtKey == "NOT FOUND")
             {
                 throw new InvalidOperationException("JWT Key not found in configuration");
             }
-            
+
             var key = Encoding.UTF8.GetBytes(jwtKey);
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -30,7 +30,7 @@ namespace MarketMinds.Shared.Services
                 Expires = DateTime.UtcNow.AddHours(1),
                 Issuer = jwtIssuer,
                 SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key), 
+                    new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)
             };
 

@@ -67,4 +67,4 @@ namespace MarketMinds.Shared.Services
         /// <returns>Follow information object</returns>
         Task<BuyerSellerFollowInfo?> GetFollowStatusAsync(int buyerId, int sellerId);
     }
-} 
+}

@@ -22,13 +22,13 @@ namespace MarketMinds.Converters
             {
                 return stockValue > 0 ? "Add to Cart" : "Out of Stock";
             }
-            
+
             // Try to parse if it's a string representation of an integer
             if (value is string stringValue && int.TryParse(stringValue, out int parsedValue))
             {
                 return parsedValue > 0 ? "Add to Cart" : "Out of Stock";
             }
-            
+
             return "Out of Stock";
         }
 
@@ -45,4 +45,4 @@ namespace MarketMinds.Converters
             throw new NotImplementedException();
         }
     }
-} 
+}

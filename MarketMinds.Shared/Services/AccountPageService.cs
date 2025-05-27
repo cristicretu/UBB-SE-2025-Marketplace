@@ -147,14 +147,14 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
 
             // Get user data from API
             User apiUser = await GetUserAsync(currentUserId);
-            
+
             // If API call fails, return a copy of the provided currentUser as fallback
             if (apiUser == null && currentUser != null)
             {
                 Debug.WriteLine("Using provided currentUser as fallback");
                 return CreateUserCopy(currentUser);
             }
-            
+
             return apiUser;
         }
 
@@ -259,17 +259,17 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
             }
 
             var copy = new User(
-                id: source.Id, 
-                username: source.Username, 
-                email: source.Email, 
-                phoneNumber: source.PhoneNumber, 
-                userType: source.UserType, 
+                id: source.Id,
+                username: source.Username,
+                email: source.Email,
+                phoneNumber: source.PhoneNumber,
+                userType: source.UserType,
                 balance: 0.0, // Use 0.0 as default balance
-                bannedUntil: null, 
-                isBanned: false, 
-                failedLogins: 0, 
+                bannedUntil: null,
+                isBanned: false,
+                failedLogins: 0,
                 passwordHash: string.Empty);
-            
+
             copy.Balance = source.Balance;
             copy.Token = source.Token;
             if (source.GetType().GetProperty("Rating") != null)

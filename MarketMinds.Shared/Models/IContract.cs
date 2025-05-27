@@ -12,8 +12,10 @@
         int RenewalCount { get; set; }
         long? RenewedFromContractID { get; set; }
 
-        Contract ToContract() {
-            return new Contract {
+        Contract ToContract()
+        {
+            return new Contract
+            {
                 ContractID = this.ContractID,
                 OrderID = this.OrderID,
                 ContractStatus = this.ContractStatus,

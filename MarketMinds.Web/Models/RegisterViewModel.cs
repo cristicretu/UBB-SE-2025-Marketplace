@@ -45,6 +45,6 @@ namespace WebMarketplace.Models
         /// Gets or sets the role of the user.
         /// </summary>
         [Required(ErrorMessage = "Please select a role")]
-        public string Role { get; set; }  
+        public string Role { get; set; }
     }
 }

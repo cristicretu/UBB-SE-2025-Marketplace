@@ -8,4 +8,4 @@ namespace MarketMinds.Web.Models
         public int UserId { get; set; }
         public string Content { get; set; }
     }
-} 
+}

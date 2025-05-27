@@ -195,4 +195,4 @@ namespace Server.MarketMinds.Repositories
                 .ToListAsync();
         }
     }
-} 
+}

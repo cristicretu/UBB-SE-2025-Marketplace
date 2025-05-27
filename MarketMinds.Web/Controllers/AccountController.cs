@@ -66,7 +66,7 @@ namespace MarketMinds.Web.Controllers
                 ViewBag.ReturnUrl = returnUrl;
                 return View(model);
             }
-            
+
             var user = await _userService.GetUserByEmail(model.Email);
             if (user == null)
             {
@@ -96,20 +96,20 @@ namespace MarketMinds.Web.Controllers
 
             await this._userService.AuthorizationLogin();
             await _userService.ResetFailedLogins(model.Email);
-            
+
             // Set UserSession for backward compatibility
             UserSession.CurrentUserId = user.Id;
             UserSession.CurrentUserRole = (int)user.UserType == 2 ? "Buyer" : "Seller";
 
             await SignInUserAsync(user);
-            
+
             _logger.LogInformation($"User {user.Username} (ID: {user.Id}) logged in successfully with role {UserSession.CurrentUserRole}");
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
             }
-            
+
             return RedirectToAction("Index", "Home");
         }
 
@@ -190,8 +190,8 @@ namespace MarketMinds.Web.Controllers
                 }
 
                 // Validate phone number (should be +40 followed by exactly 9 digits)
-                if (string.IsNullOrWhiteSpace(model.Telephone) || 
-                    !model.Telephone.StartsWith("+40") || 
+                if (string.IsNullOrWhiteSpace(model.Telephone) ||
+                    !model.Telephone.StartsWith("+40") ||
                     model.Telephone.Length != 12 ||
                     !model.Telephone.Substring(3).All(char.IsDigit))
                 {
@@ -214,8 +214,8 @@ namespace MarketMinds.Web.Controllers
                 }
 
                 // Save the user in the database
-                _logger.LogInformation($"Registering user: {model.Username}, Email: {model.Email}, Role: {model.Role}");    
-                
+                _logger.LogInformation($"Registering user: {model.Username}, Email: {model.Email}, Role: {model.Role}");
+
                 bool createdUser;
                 try
                 {
@@ -247,15 +247,15 @@ namespace MarketMinds.Web.Controllers
                         // Set UserSession for backward compatibility
                         UserSession.CurrentUserId = user.Id;
                         UserSession.CurrentUserRole = model.Role;
-                        
+
                         // Set up authentication cookie
                         await SignInUserAsync(user);
-                        
+
                         TempData["SuccessMessage"] = "Registration successful! Welcome to our marketplace!";
                         return RedirectToAction("Index", "Home");
                     }
                 }
-                
+
                 TempData["ErrorMessage"] = "An error occurred while creating your account. Please try again.";
                 SetRolesAndReturnView();
                 return View(model);
@@ -305,25 +305,25 @@ namespace MarketMinds.Web.Controllers
         {
             if (string.IsNullOrWhiteSpace(password))
                 return "Password is required.";
-            
+
             if (password.Length < 8)
                 return "Password must be at least 8 characters long.";
 
             var issues = new List<string>();
-            
+
             if (!password.Any(char.IsUpper))
                 issues.Add("at least one uppercase letter");
-            
+
             if (!password.Any(char.IsLower))
                 issues.Add("at least one lowercase letter");
-            
+
             if (!password.Any(char.IsDigit))
                 issues.Add("at least one number");
 
             // Check for invalid characters
             var allowedSpecialChars = "!@#$%^&*()_+=[]{}|;:,.<>?";
             var invalidChars = password.Where(c => !char.IsLetterOrDigit(c) && !allowedSpecialChars.Contains(c)).Distinct();
-            
+
             if (invalidChars.Any())
             {
                 issues.Add($"only letters, numbers, and these special characters: {allowedSpecialChars}");
@@ -362,7 +362,7 @@ namespace MarketMinds.Web.Controllers
             // Clear UserSession for backward compatibility
             UserSession.CurrentUserId = null;
             UserSession.CurrentUserRole = null;
-            
+
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             _logger.LogInformation("User logged out");
             return RedirectToAction("Index", "Home");
@@ -379,10 +379,10 @@ namespace MarketMinds.Web.Controllers
         public async Task<IActionResult> Index()
         {
             // Get current user ID from claims
-            int userId = User.Identity.IsAuthenticated 
-                ? int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) 
+            int userId = User.Identity.IsAuthenticated
+                ? int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))
                 : UserSession.CurrentUserId ?? 0;
-            
+
             // If not authenticated, redirect to login
             if (userId == 0)
             {
@@ -393,14 +393,14 @@ namespace MarketMinds.Web.Controllers
             {
                 // Fetch user data
                 var user = await _accountRepository.GetUserByIdAsync(userId);
-                
+
                 // Fetch orders 
                 var orders = await _accountRepository.GetUserOrdersAsync(userId);
-                
+
                 // Create view model with null checks
                 var model = new AccountViewModel
                 {
-                    User = user != null ? new MarketMinds.Shared.Models.UserDto(user) : new MarketMinds.Shared.Models.UserDto 
+                    User = user != null ? new MarketMinds.Shared.Models.UserDto(user) : new MarketMinds.Shared.Models.UserDto
                     {
                         Id = userId,
                         Username = User.Identity?.Name ?? "Unknown",
@@ -409,13 +409,13 @@ namespace MarketMinds.Web.Controllers
                     },
                     Orders = orders ?? new List<MarketMinds.Shared.Models.UserOrder>()
                 };
-                
+
                 return View("~/Views/Home/Account.cshtml", model);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving account data for user {UserId}", userId);
-                
+
                 // Create fallback model with data from claims
                 var fallbackModel = new AccountViewModel
                 {
@@ -428,7 +428,7 @@ namespace MarketMinds.Web.Controllers
                     },
                     Orders = new List<MarketMinds.Shared.Models.UserOrder>()
                 };
-                
+
                 return View("~/Views/Home/Account.cshtml", fallbackModel);
             }
         }
@@ -465,7 +465,7 @@ namespace MarketMinds.Web.Controllers
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email)
             };
-            
+
             // Add role claim based on user type
             string role = (int)user.UserType == 2 ? "Buyer" : "Seller";
             claims.Add(new Claim(ClaimTypes.Role, role));
@@ -485,4 +485,4 @@ namespace MarketMinds.Web.Controllers
             _logger.LogInformation($"Authentication cookie created for user {user.Username}");
         }
     }
-} 
+}

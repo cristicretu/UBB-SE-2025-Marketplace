@@ -64,7 +64,7 @@ namespace WebMarketplace.Controllers
             { role = 1; }
 
             // Save the user in the database
-            _logger.LogInformation($"Registering user: {model.Username}, Email: {model.Email}, Role: {model.Role}");    
+            _logger.LogInformation($"Registering user: {model.Username}, Email: {model.Email}, Role: {model.Role}");
             var createdUser = await _userService.RegisterUser(model.Username, model.Password, model.Email, model.Telephone, role);
 
             // Check if the user was successfully created
@@ -75,10 +75,10 @@ namespace WebMarketplace.Controllers
                 // Automatically log the user in
                 var user = await _userService.GetUserByEmail(model.Email);
                 UserSession.CurrentUserId = user.Id;
-                
+
                 // Store numeric user type
                 UserSession.CurrentUserRole = role.ToString();
-                
+
                 TempData["SuccessMessage"] = "Registration successful! Welcome!";
                 return RedirectToAction("Index", "Home"); // Redirect to Home after successful login
             }

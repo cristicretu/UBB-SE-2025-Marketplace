@@ -14,11 +14,11 @@ namespace MarketMinds.Views
         public WishlistView()
         {
             this.InitializeComponent();
-            
+
             // Set the ViewModel from the App (reusing BuyerProfileViewModel for wishlist and family sync)
             this.ViewModel = App.BuyerProfileViewModel;
             this.ViewModel.User = App.CurrentUser;
-            
+
             // Load the buyer profile data in background
             _ = this.ViewModel.LoadBuyerProfile();
         }
@@ -34,4 +34,4 @@ namespace MarketMinds.Views
             }
         }
     }
-} 
+}

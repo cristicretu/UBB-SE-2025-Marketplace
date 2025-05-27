@@ -250,7 +250,7 @@ namespace WebMarketplace.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Toggles following status for a seller.
         /// </summary>

@@ -20,7 +20,7 @@ namespace MarketMinds.Views
             // load in background, will essentially load the ui after the profile page appears
             _ = this.ViewModel.LoadBuyerProfile();
 
-             this.InitializeComponent();
+            this.InitializeComponent();
         }
 
         public IBuyerProfileViewModel? ViewModel { get; set; }

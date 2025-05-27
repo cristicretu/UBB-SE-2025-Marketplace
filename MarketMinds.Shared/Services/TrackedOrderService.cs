@@ -62,8 +62,8 @@ namespace MarketMinds.Shared.Services
         {
             try
             {
-            return await trackedOrderRepository.GetTrackedOrderByIdAsync(trackedOrderID);
-        }
+                return await trackedOrderRepository.GetTrackedOrderByIdAsync(trackedOrderID);
+            }
             catch (Exception) // Repository throws if not found
             {
                 return null; // Service layer can choose to return null or re-throw
@@ -171,9 +171,9 @@ namespace MarketMinds.Shared.Services
         /// <param name="location">Optional location for the checkpoint.</param>
         /// <returns>The ID of the created checkpoint.</returns>
         public async Task<int> UpdateOrderStatusWithCheckpointAsync(
-            int trackedOrderID, 
-            OrderStatus newStatus, 
-            string description = "Status updated", 
+            int trackedOrderID,
+            OrderStatus newStatus,
+            string description = "Status updated",
             string? location = null)
         {
             if (trackedOrderID <= 0)
@@ -263,20 +263,20 @@ namespace MarketMinds.Shared.Services
 
             // This would be more efficient if the repository had a direct method,
             // but we can implement it using existing methods
-            
+
             // We need to retrieve all orders for the buyer, then find tracked orders for each one
             List<TrackedOrder> buyerTrackedOrders = new List<TrackedOrder>();
-            
+
             // For this implementation to work, we need the OrderService to get orders by buyer ID
             // For now, we'll retrieve all tracked orders and filter them
             // In a real implementation, we would add a repository method to do this more efficiently
-            
+
             List<TrackedOrder> allTrackedOrders = await GetAllTrackedOrdersAsync();
-            
+
             // Here we would filter by buyer's orders
             // This is a placeholder for the actual implementation
             // In a real implementation, we would need to join with Order data
-            
+
             return buyerTrackedOrders;
         }
 

@@ -15,15 +15,15 @@ namespace MarketMinds.Web.Controllers
         private readonly IConversationService _conversationService;
         private readonly IMessageService _messageService;
         private readonly IChatbotService _chatbotService;
-        
+
         // User ID constants
         private const int DefaultUserId = 1;
         private const int BotUserId = 0; // System bot user ID
-        
+
         // Message constants
         private const string WelcomeMessage = "Hello! I'm your shopping assistant. How can I help you today?";
         private const string ErrorResponseMessage = "I'm sorry, I'm having trouble understanding right now. Please try again later.";
-        
+
         // Index constants
         private const int FirstConversationIndex = 0;
 
@@ -70,7 +70,7 @@ namespace MarketMinds.Web.Controllers
                     _logger.LogInformation("Getting conversations for user ID: {UserId}", userId);
                     viewModel.Conversations = await _conversationService.GetUserConversationsAsync(userId);
                     _logger.LogInformation("Retrieved {Count} conversations", viewModel.Conversations.Count);
-                    
+
                     // If no conversations exist, create one automatically
                     if (viewModel.Conversations.Count == NoConversation)
                     {
@@ -92,15 +92,15 @@ namespace MarketMinds.Web.Controllers
                         // Get the specific conversation
                         _logger.LogInformation("Getting conversation ID: {ConversationId}", conversationId.Value);
                         viewModel.CurrentConversation = await _conversationService.GetConversationByIdAsync(conversationId.Value);
-                        
+
                         // Get messages for this conversation
                         viewModel.Messages = await _messageService.GetMessagesLegacyAsync(conversationId.Value);
-                        _logger.LogInformation("Retrieved {Count} messages for conversation {ConversationId}", 
+                        _logger.LogInformation("Retrieved {Count} messages for conversation {ConversationId}",
                             viewModel.Messages?.Count ?? 0, conversationId.Value);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error getting conversation {ConversationId}: {Message}", 
+                        _logger.LogError(ex, "Error getting conversation {ConversationId}: {Message}",
                             conversationId.Value, ex.Message);
                     }
                 }
@@ -113,12 +113,12 @@ namespace MarketMinds.Web.Controllers
 
                         _logger.LogInformation("Getting messages for conversation {ConversationId}", viewModel.CurrentConversation.Id);
                         viewModel.Messages = await _messageService.GetMessagesLegacyAsync(viewModel.CurrentConversation.Id);
-                        _logger.LogInformation("Retrieved {Count} messages for conversation {ConversationId}", 
+                        _logger.LogInformation("Retrieved {Count} messages for conversation {ConversationId}",
                             viewModel.Messages?.Count ?? 0, viewModel.CurrentConversation.Id);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error getting messages for conversation {ConversationId}: {Message}", 
+                        _logger.LogError(ex, "Error getting messages for conversation {ConversationId}: {Message}",
                             viewModel.CurrentConversation.Id, ex.Message);
                         viewModel.Messages = new List<Message>();
                     }
@@ -249,7 +249,7 @@ namespace MarketMinds.Web.Controllers
             {
                 _logger.LogError(ex, "Error sending message: {Message}", ex.Message);
             }
-            
+
             return RedirectToAction("Index", new { conversationId });
         }
     }

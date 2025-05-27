@@ -27,7 +27,7 @@ namespace MarketMinds.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            
+
             if (e.Parameter is Notification notification)
             {
                 this.SelectedNotification = notification;
@@ -53,14 +53,14 @@ namespace MarketMinds.Views
         {
             // Get the current frame
             Frame currentFrame = null;
-            
+
             // Find the parent frame
             DependencyObject parent = this;
             while (parent != null && !(parent is Frame))
             {
                 parent = VisualTreeHelper.GetParent(parent);
             }
-            
+
             if (parent is Frame frame)
             {
                 currentFrame = frame;
@@ -69,7 +69,7 @@ namespace MarketMinds.Views
             {
                 currentFrame = this.Frame;
             }
-            
+
             // Navigate back to the main notification page
             if (currentFrame != null && currentFrame.CanGoBack)
             {

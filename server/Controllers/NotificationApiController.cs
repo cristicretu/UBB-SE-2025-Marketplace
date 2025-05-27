@@ -79,7 +79,7 @@ namespace Server.Controllers
             try
             {
                 var notifications = await this.notificationRepository.GetNotificationsForUser(recipientId);
-                
+
                 // Return the notifications directly instead of creating anonymous objects
                 // This ensures proper JSON serialization/deserialization with the NotificationConverter
                 return this.Ok(notifications);

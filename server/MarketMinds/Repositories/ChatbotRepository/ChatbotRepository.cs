@@ -69,7 +69,7 @@ namespace MarketMinds.Repositories.ChatbotRepository
                             product.CategoryId,
                             product.Price
                         );
-                        
+
                         productWithQuantity.Id = product.Id;
                         productWithQuantity.Stock = cartItem.Quantity;
                         products.Add(productWithQuantity);
@@ -142,7 +142,7 @@ namespace MarketMinds.Repositories.ChatbotRepository
                 {
                     var trackedOrder = await databaseContext.TrackedOrders
                         .FirstOrDefaultAsync(to => to.OrderID == order.Id);
-                    
+
                     if (trackedOrder != null)
                     {
                         trackedOrders.Add(trackedOrder);

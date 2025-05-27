@@ -40,7 +40,7 @@ namespace WebMarketplace.Controllers
             _buyerLinkageService = buyerLinkageService ?? throw new ArgumentNullException(nameof(buyerLinkageService));
             _buyerSellerFollowService = buyerSellerFollowService ?? throw new ArgumentNullException(nameof(buyerSellerFollowService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            
+
             _logger.LogInformation("CONSTRUCTOR: BuyerProfileController initialized");
         }
 
@@ -81,7 +81,7 @@ namespace WebMarketplace.Controllers
         private int GetCurrentUserId()
         {
             _logger.LogInformation("DEBUG: GetCurrentUserId() called");
-            
+
             // Get the user ID from claims (proper authentication approach)
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
@@ -123,19 +123,19 @@ namespace WebMarketplace.Controllers
 
                 // Get linked buyers directly from the service
                 var linkedBuyers = await _buyerLinkageService.GetLinkedBuyersAsync(buyerId);
-                
+
                 var linkedBuyerInfoList = new List<LinkedBuyerInfo>();
 
                 foreach (var linkedBuyer in linkedBuyers)
                 {
                     try
                     {
-                        _logger.LogInformation("Processing linked buyer ID: {LinkedBuyerId}, User is null: {UserIsNull}", 
+                        _logger.LogInformation("Processing linked buyer ID: {LinkedBuyerId}, User is null: {UserIsNull}",
                             linkedBuyer.Id, linkedBuyer.User == null);
-                        
+
                         string username = string.Empty;
                         string email = string.Empty;
-                        
+
                         // If User object is not loaded, try to get it separately
                         if (linkedBuyer.User == null)
                         {
@@ -145,7 +145,7 @@ namespace WebMarketplace.Controllers
                             {
                                 username = user.Username ?? string.Empty;
                                 email = user.Email ?? string.Empty;
-                                _logger.LogInformation("Retrieved user data for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'", 
+                                _logger.LogInformation("Retrieved user data for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'",
                                     linkedBuyer.Id, username, email);
                             }
                             else
@@ -157,7 +157,7 @@ namespace WebMarketplace.Controllers
                         {
                             username = linkedBuyer.User.Username ?? string.Empty;
                             email = linkedBuyer.User.Email ?? string.Empty;
-                            _logger.LogInformation("User object available for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'", 
+                            _logger.LogInformation("User object available for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'",
                                 linkedBuyer.Id, username, email);
                         }
 
@@ -171,10 +171,10 @@ namespace WebMarketplace.Controllers
                             Badge = linkedBuyer.Badge.ToString() ?? "None",
                             LinkedDate = DateTime.UtcNow // Default for now since we don't have this in the old system
                         };
-                        
-                        _logger.LogInformation("Created LinkedBuyerInfo for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'", 
+
+                        _logger.LogInformation("Created LinkedBuyerInfo for buyer {LinkedBuyerId}: Username='{Username}', Email='{Email}'",
                             linkedBuyer.Id, linkedBuyerInfo.Username, linkedBuyerInfo.Email);
-                        
+
                         linkedBuyerInfoList.Add(linkedBuyerInfo);
                     }
                     catch (Exception ex)
@@ -207,7 +207,7 @@ namespace WebMarketplace.Controllers
 
                 // Get followed sellers directly from the service
                 var followedSellers = await _buyerSellerFollowService.GetFollowedSellersAsync(buyerId);
-                
+
                 var followedSellerInfoList = new List<FollowedSellerInfo>();
 
                 foreach (var seller in followedSellers)
@@ -273,11 +273,11 @@ namespace WebMarketplace.Controllers
             _logger.LogInformation("DEBUG: ================================");
             _logger.LogInformation("DEBUG: Update() method called - START");
             _logger.LogInformation("DEBUG: ================================");
-            
+
             try
             {
                 _logger.LogInformation("UPDATE: Starting profile update process");
-                
+
                 // Check if model is null
                 if (model == null)
                 {
@@ -363,13 +363,13 @@ namespace WebMarketplace.Controllers
                 // If there are validation errors, return to the form
                 if (validationErrors.Any())
                 {
-                    _logger.LogWarning("UPDATE: Validation failed with {Count} errors: {Errors}", 
+                    _logger.LogWarning("UPDATE: Validation failed with {Count} errors: {Errors}",
                         validationErrors.Count, string.Join("; ", validationErrors));
-                    
+
                     TempData["ErrorMessage"] = "All fields are required. Please fill in all the information before updating your profile.";
                     return View("Index", model);
                 }
-                
+
                 // Log all received model data in detail
                 _logger.LogInformation("DEBUG: Update() - Received model data:");
                 _logger.LogInformation("DEBUG: Update() - BuyerId: {BuyerId}", model.BuyerId);
@@ -388,7 +388,7 @@ namespace WebMarketplace.Controllers
                 _logger.LogInformation("DEBUG: Update() -   City: '{City}'", model.ShippingCity);
                 _logger.LogInformation("DEBUG: Update() -   Country: '{Country}'", model.ShippingCountry);
                 _logger.LogInformation("DEBUG: Update() -   PostalCode: '{PostalCode}'", model.ShippingPostalCode);
-                
+
                 // Custom validation: Remove shipping address validation errors if UseSameAddress is true
                 if (model.UseSameAddress)
                 {
@@ -398,14 +398,14 @@ namespace WebMarketplace.Controllers
                     ModelState.Remove("ShippingCountry");
                     ModelState.Remove("ShippingPostalCode");
                 }
-                
+
                 _logger.LogInformation("DEBUG: Update() - Checking ModelState validity...");
                 if (!ModelState.IsValid)
                 {
                     _logger.LogWarning("UPDATE: ModelState is invalid");
                     foreach (var error in ModelState)
                     {
-                        _logger.LogWarning("UPDATE: ModelState error - Key: {Key}, Errors: {Errors}", 
+                        _logger.LogWarning("UPDATE: ModelState error - Key: {Key}, Errors: {Errors}",
                             error.Key, string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage)));
                     }
                     _logger.LogInformation("DEBUG: Update() - Returning view with model due to validation errors");
@@ -413,7 +413,7 @@ namespace WebMarketplace.Controllers
                 }
 
                 _logger.LogInformation("DEBUG: Update() - ModelState is valid, proceeding...");
-                
+
                 int userId = GetCurrentUserId();
                 _logger.LogInformation("UPDATE: Updating profile for user ID: {UserId}", userId);
 
@@ -424,20 +424,20 @@ namespace WebMarketplace.Controllers
                 }
 
                 // Log the incoming model data
-                _logger.LogInformation("UPDATE: Received data - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}", 
+                _logger.LogInformation("UPDATE: Received data - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}",
                     model.FirstName, model.LastName, model.PhoneNumber);
-                _logger.LogInformation("UPDATE: Billing Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}", 
+                _logger.LogInformation("UPDATE: Billing Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}",
                     model.BillingStreet, model.BillingCity, model.BillingCountry, model.BillingPostalCode);
-                _logger.LogInformation("UPDATE: Shipping Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, UseSameAddress: {UseSameAddress}", 
+                _logger.LogInformation("UPDATE: Shipping Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, UseSameAddress: {UseSameAddress}",
                     model.ShippingStreet, model.ShippingCity, model.ShippingCountry, model.ShippingPostalCode, model.UseSameAddress);
 
                 // Validate shipping address values when UseSameAddress is false
                 if (!model.UseSameAddress)
                 {
                     _logger.LogInformation("DEBUG: Update() - Validating separate shipping address fields...");
-                    if (string.IsNullOrWhiteSpace(model.ShippingStreet) || 
-                        string.IsNullOrWhiteSpace(model.ShippingCity) || 
-                        string.IsNullOrWhiteSpace(model.ShippingCountry) || 
+                    if (string.IsNullOrWhiteSpace(model.ShippingStreet) ||
+                        string.IsNullOrWhiteSpace(model.ShippingCity) ||
+                        string.IsNullOrWhiteSpace(model.ShippingCountry) ||
                         string.IsNullOrWhiteSpace(model.ShippingPostalCode))
                     {
                         _logger.LogWarning("UPDATE: Shipping address has empty fields when UseSameAddress is false");
@@ -471,22 +471,22 @@ namespace WebMarketplace.Controllers
                 _logger.LogInformation("UPDATE: Found buyer with ID: {BuyerId}", buyer.Id);
 
                 // Log the current buyer data before update
-                _logger.LogInformation("UPDATE: Current buyer data BEFORE update - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}", 
+                _logger.LogInformation("UPDATE: Current buyer data BEFORE update - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}",
                     buyer.FirstName, buyer.LastName, buyer.User?.PhoneNumber, buyer.UseSameAddress);
-                
+
                 if (buyer.BillingAddress != null)
                 {
-                    _logger.LogInformation("UPDATE: Current billing address BEFORE update - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, AddressId: {AddressId}", 
+                    _logger.LogInformation("UPDATE: Current billing address BEFORE update - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, AddressId: {AddressId}",
                         buyer.BillingAddress.StreetLine, buyer.BillingAddress.City, buyer.BillingAddress.Country, buyer.BillingAddress.PostalCode, buyer.BillingAddress.Id);
                 }
                 else
                 {
                     _logger.LogWarning("UPDATE: Billing address is NULL before update");
                 }
-                
+
                 if (buyer.ShippingAddress != null)
                 {
-                    _logger.LogInformation("UPDATE: Current shipping address BEFORE update - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, AddressId: {AddressId}", 
+                    _logger.LogInformation("UPDATE: Current shipping address BEFORE update - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}, AddressId: {AddressId}",
                         buyer.ShippingAddress.StreetLine, buyer.ShippingAddress.City, buyer.ShippingAddress.Country, buyer.ShippingAddress.PostalCode, buyer.ShippingAddress.Id);
                 }
                 else
@@ -498,7 +498,7 @@ namespace WebMarketplace.Controllers
                 _logger.LogInformation("UPDATE: Updating buyer information...");
                 buyer.FirstName = model.FirstName;
                 buyer.LastName = model.LastName;
-                
+
                 // Ensure User object exists before setting phone number
                 if (buyer.User == null)
                 {
@@ -508,7 +508,7 @@ namespace WebMarketplace.Controllers
                 buyer.User.PhoneNumber = model.PhoneNumber;
                 buyer.UseSameAddress = model.UseSameAddress;
 
-                _logger.LogInformation("UPDATE: Updated buyer info - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}", 
+                _logger.LogInformation("UPDATE: Updated buyer info - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}",
                     buyer.FirstName, buyer.LastName, buyer.User.PhoneNumber, buyer.UseSameAddress);
 
                 // Update billing address
@@ -524,52 +524,52 @@ namespace WebMarketplace.Controllers
                 var oldBillingCity = buyer.BillingAddress.City;
                 var oldBillingCountry = buyer.BillingAddress.Country;
                 var oldBillingPostal = buyer.BillingAddress.PostalCode;
-                
+
                 buyer.BillingAddress.StreetLine = model.BillingStreet;
                 buyer.BillingAddress.City = model.BillingCity;
                 buyer.BillingAddress.Country = model.BillingCountry;
                 buyer.BillingAddress.PostalCode = model.BillingPostalCode;
 
                 _logger.LogInformation("UPDATE: Billing address CHANGED from:");
-                _logger.LogInformation("UPDATE:   OLD - Street: '{OldStreet}', City: '{OldCity}', Country: '{OldCountry}', PostalCode: '{OldPostal}'", 
+                _logger.LogInformation("UPDATE:   OLD - Street: '{OldStreet}', City: '{OldCity}', Country: '{OldCountry}', PostalCode: '{OldPostal}'",
                     oldBillingStreet, oldBillingCity, oldBillingCountry, oldBillingPostal);
-                _logger.LogInformation("UPDATE:   NEW - Street: '{NewStreet}', City: '{NewCity}', Country: '{NewCountry}', PostalCode: '{NewPostal}', AddressId: {AddressId}", 
+                _logger.LogInformation("UPDATE:   NEW - Street: '{NewStreet}', City: '{NewCity}', Country: '{NewCountry}', PostalCode: '{NewPostal}', AddressId: {AddressId}",
                     buyer.BillingAddress.StreetLine, buyer.BillingAddress.City, buyer.BillingAddress.Country, buyer.BillingAddress.PostalCode, buyer.BillingAddress.Id);
 
                 // Update shipping address 
                 if (model.UseSameAddress)
                 {
                     _logger.LogInformation("UPDATE: Using same address - copying billing address values to shipping address");
-                    
+
                     // Ensure shipping address exists as a separate entity
                     if (buyer.ShippingAddress == null)
                     {
                         _logger.LogInformation("UPDATE: Creating new shipping address for same-as-billing");
                         buyer.ShippingAddress = new Address();
                     }
-                    
+
                     // Check if shipping address is the same object as billing address (this would be a problem)
                     if (ReferenceEquals(buyer.ShippingAddress, buyer.BillingAddress))
                     {
                         _logger.LogWarning("UPDATE: Shipping and billing addresses are the same object! Creating separate shipping address.");
                         buyer.ShippingAddress = new Address();
                     }
-                    
+
                     // Copy values from billing to shipping (don't make them the same object)
                     var oldShippingStreet = buyer.ShippingAddress.StreetLine;
                     var oldShippingCity = buyer.ShippingAddress.City;
                     var oldShippingCountry = buyer.ShippingAddress.Country;
                     var oldShippingPostal = buyer.ShippingAddress.PostalCode;
-                    
+
                     buyer.ShippingAddress.StreetLine = buyer.BillingAddress.StreetLine;
                     buyer.ShippingAddress.City = buyer.BillingAddress.City;
                     buyer.ShippingAddress.Country = buyer.BillingAddress.Country;
                     buyer.ShippingAddress.PostalCode = buyer.BillingAddress.PostalCode;
-                    
+
                     _logger.LogInformation("UPDATE: Shipping address CHANGED from (same as billing):");
-                    _logger.LogInformation("UPDATE:   OLD - Street: '{OldStreet}', City: '{OldCity}', Country: '{OldCountry}', PostalCode: '{OldPostal}'", 
+                    _logger.LogInformation("UPDATE:   OLD - Street: '{OldStreet}', City: '{OldCity}', Country: '{OldCountry}', PostalCode: '{OldPostal}'",
                         oldShippingStreet, oldShippingCity, oldShippingCountry, oldShippingPostal);
-                    _logger.LogInformation("UPDATE:   NEW - Street: '{NewStreet}', City: '{NewCity}', Country: '{NewCountry}', PostalCode: '{NewPostal}', AddressId: {AddressId}", 
+                    _logger.LogInformation("UPDATE:   NEW - Street: '{NewStreet}', City: '{NewCity}', Country: '{NewCountry}', PostalCode: '{NewPostal}', AddressId: {AddressId}",
                         buyer.ShippingAddress.StreetLine, buyer.ShippingAddress.City, buyer.ShippingAddress.Country, buyer.ShippingAddress.PostalCode, buyer.ShippingAddress.Id);
                 }
                 else
@@ -593,16 +593,16 @@ namespace WebMarketplace.Controllers
                     var oldShippingCity = buyer.ShippingAddress.City;
                     var oldShippingCountry = buyer.ShippingAddress.Country;
                     var oldShippingPostal = buyer.ShippingAddress.PostalCode;
-                    
+
                     buyer.ShippingAddress.StreetLine = model.ShippingStreet;
                     buyer.ShippingAddress.City = model.ShippingCity;
                     buyer.ShippingAddress.Country = model.ShippingCountry;
                     buyer.ShippingAddress.PostalCode = model.ShippingPostalCode;
 
                     _logger.LogInformation("UPDATE: Shipping address CHANGED from (separate):");
-                    _logger.LogInformation("UPDATE:   OLD - Street: '{OldStreet}', City: '{OldCity}', Country: '{OldCountry}', PostalCode: '{OldPostal}'", 
+                    _logger.LogInformation("UPDATE:   OLD - Street: '{OldStreet}', City: '{OldCity}', Country: '{OldCountry}', PostalCode: '{OldPostal}'",
                         oldShippingStreet, oldShippingCity, oldShippingCountry, oldShippingPostal);
-                    _logger.LogInformation("UPDATE:   NEW - Street: '{NewStreet}', City: '{NewCity}', Country: '{NewCountry}', PostalCode: '{NewPostal}', AddressId: {AddressId}", 
+                    _logger.LogInformation("UPDATE:   NEW - Street: '{NewStreet}', City: '{NewCity}', Country: '{NewCountry}', PostalCode: '{NewPostal}', AddressId: {AddressId}",
                         buyer.ShippingAddress.StreetLine, buyer.ShippingAddress.City, buyer.ShippingAddress.Country, buyer.ShippingAddress.PostalCode, buyer.ShippingAddress.Id);
                 }
 
@@ -612,11 +612,11 @@ namespace WebMarketplace.Controllers
                 _logger.LogInformation("UPDATE: Buyer ID: {BuyerId}", buyer.Id);
                 _logger.LogInformation("UPDATE: FirstName: '{FirstName}', LastName: '{LastName}'", buyer.FirstName, buyer.LastName);
                 _logger.LogInformation("UPDATE: PhoneNumber: '{PhoneNumber}', UseSameAddress: {UseSameAddress}", buyer.User?.PhoneNumber, buyer.UseSameAddress);
-                _logger.LogInformation("UPDATE: Billing Address - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}", 
+                _logger.LogInformation("UPDATE: Billing Address - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}",
                     buyer.BillingAddress?.StreetLine, buyer.BillingAddress?.City, buyer.BillingAddress?.Country, buyer.BillingAddress?.PostalCode, buyer.BillingAddress?.Id);
-                _logger.LogInformation("UPDATE: Shipping Address - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}", 
+                _logger.LogInformation("UPDATE: Shipping Address - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}",
                     buyer.ShippingAddress?.StreetLine, buyer.ShippingAddress?.City, buyer.ShippingAddress?.Country, buyer.ShippingAddress?.PostalCode, buyer.ShippingAddress?.Id);
-                
+
                 var saveTask = _buyerService.SaveInfo(buyer);
                 if (await Task.WhenAny(saveTask, Task.Delay(5000)) != saveTask)
                 {
@@ -632,23 +632,23 @@ namespace WebMarketplace.Controllers
                 _logger.LogInformation("UPDATE: ===== VERIFYING SAVED DATA =====");
                 var verifyUser = new User(userId);
                 var verifyBuyer = await _buyerService.GetBuyerByUser(verifyUser);
-                
-                _logger.LogInformation("UPDATE: VERIFICATION - Buyer data after save - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}", 
+
+                _logger.LogInformation("UPDATE: VERIFICATION - Buyer data after save - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}",
                     verifyBuyer.FirstName, verifyBuyer.LastName, verifyBuyer.User?.PhoneNumber, verifyBuyer.UseSameAddress);
-                
+
                 if (verifyBuyer.BillingAddress != null)
                 {
-                    _logger.LogInformation("UPDATE: VERIFICATION - Billing address after save - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}", 
+                    _logger.LogInformation("UPDATE: VERIFICATION - Billing address after save - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}",
                         verifyBuyer.BillingAddress.StreetLine, verifyBuyer.BillingAddress.City, verifyBuyer.BillingAddress.Country, verifyBuyer.BillingAddress.PostalCode, verifyBuyer.BillingAddress.Id);
                 }
                 else
                 {
                     _logger.LogWarning("UPDATE: VERIFICATION - Billing address is NULL after save");
                 }
-                
+
                 if (verifyBuyer.ShippingAddress != null)
                 {
-                    _logger.LogInformation("UPDATE: VERIFICATION - Shipping address after save - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}", 
+                    _logger.LogInformation("UPDATE: VERIFICATION - Shipping address after save - Street: '{Street}', City: '{City}', Country: '{Country}', PostalCode: '{PostalCode}', Id: {Id}",
                         verifyBuyer.ShippingAddress.StreetLine, verifyBuyer.ShippingAddress.City, verifyBuyer.ShippingAddress.Country, verifyBuyer.ShippingAddress.PostalCode, verifyBuyer.ShippingAddress.Id);
                 }
                 else
@@ -658,33 +658,33 @@ namespace WebMarketplace.Controllers
 
                 // Log what was actually saved to verify the update
                 _logger.LogInformation("UPDATE: FINAL SAVED VALUES - Buyer ID: {BuyerId}", buyer.Id);
-                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}", 
+                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - FirstName: {FirstName}, LastName: {LastName}, PhoneNumber: {PhoneNumber}, UseSameAddress: {UseSameAddress}",
                     buyer.FirstName, buyer.LastName, buyer.User?.PhoneNumber, buyer.UseSameAddress);
-                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - Billing Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}", 
+                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - Billing Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}",
                     buyer.BillingAddress?.StreetLine, buyer.BillingAddress?.City, buyer.BillingAddress?.Country, buyer.BillingAddress?.PostalCode);
-                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - Shipping Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}", 
+                _logger.LogInformation("UPDATE: FINAL SAVED VALUES - Shipping Address - Street: {Street}, City: {City}, Country: {Country}, PostalCode: {PostalCode}",
                     buyer.ShippingAddress?.StreetLine, buyer.ShippingAddress?.City, buyer.ShippingAddress?.Country, buyer.ShippingAddress?.PostalCode);
 
                 TempData["SuccessMessage"] = "Profile updated successfully!";
                 _logger.LogInformation("UPDATE: Profile update completed successfully for user ID: {UserId}, redirecting to Manage", userId);
-                
+
                 _logger.LogInformation("DEBUG: ================================");
                 _logger.LogInformation("DEBUG: Update() method called - END (SUCCESS)");
                 _logger.LogInformation("DEBUG: ================================");
-                
+
                 return RedirectToAction(nameof(Manage));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "UPDATE: Error updating buyer profile for user ID: {UserId}", GetCurrentUserId());
-                _logger.LogError("DEBUG: Exception details - Type: {ExceptionType}, Message: {Message}, StackTrace: {StackTrace}", 
+                _logger.LogError("DEBUG: Exception details - Type: {ExceptionType}, Message: {Message}, StackTrace: {StackTrace}",
                     ex.GetType().Name, ex.Message, ex.StackTrace);
                 TempData["ErrorMessage"] = $"Failed to update profile: {ex.Message}";
-                
+
                 _logger.LogInformation("DEBUG: ================================");
                 _logger.LogInformation("DEBUG: Update() method called - END (ERROR)");
                 _logger.LogInformation("DEBUG: ================================");
-                
+
                 return View("Index", model);
             }
         }
@@ -697,10 +697,10 @@ namespace WebMarketplace.Controllers
         public async Task<IActionResult> Manage()
         {
             _logger.LogInformation("Loading private editable Buyer Profile page");
-            
+
             int userId = GetCurrentUserId();
             _logger.LogInformation("Got user ID {UserId} from claims", userId);
-            
+
             if (userId == 0)
             {
                 _logger.LogWarning("User not authenticated, redirecting to login");
@@ -806,7 +806,7 @@ namespace WebMarketplace.Controllers
 
                 // Get current user ID for linkage checking
                 int currentUserId = GetCurrentUserId();
-                
+
                 // Get linkage information if user is authenticated AND is a buyer
                 BuyerLinkageInfo? linkageInfo = null;
                 if (currentUserId > 0 && currentUserId != id && IsCurrentUserBuyer())
@@ -818,10 +818,10 @@ namespace WebMarketplace.Controllers
                         var currentBuyer = await _buyerService.GetBuyerByUser(currentUser);
                         if (currentBuyer != null)
                         {
-                            _logger.LogInformation("Getting linkage status between current buyer {CurrentBuyerId} and target buyer {TargetBuyerId}", 
+                            _logger.LogInformation("Getting linkage status between current buyer {CurrentBuyerId} and target buyer {TargetBuyerId}",
                                 currentBuyer.Id, targetBuyer.Id);
                             linkageInfo = await _buyerLinkageService.GetLinkageStatusAsync(currentBuyer.Id, targetBuyer.Id);
-                            _logger.LogInformation("Linkage status: {Status}, CanManageLink: {CanManageLink}", 
+                            _logger.LogInformation("Linkage status: {Status}, CanManageLink: {CanManageLink}",
                                 linkageInfo?.Status, linkageInfo?.CanManageLink);
                         }
                         else
@@ -836,7 +836,7 @@ namespace WebMarketplace.Controllers
                 }
                 else
                 {
-                    _logger.LogInformation("Not showing linkage info - CurrentUserId: {CurrentUserId}, TargetUserId: {TargetUserId}, IsCurrentUserBuyer: {IsCurrentUserBuyer}", 
+                    _logger.LogInformation("Not showing linkage info - CurrentUserId: {CurrentUserId}, TargetUserId: {TargetUserId}, IsCurrentUserBuyer: {IsCurrentUserBuyer}",
                         currentUserId, id, IsCurrentUserBuyer());
                 }
 
@@ -962,13 +962,13 @@ namespace WebMarketplace.Controllers
 
                 if (success)
                 {
-                    _logger.LogInformation("Successfully sent link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                    _logger.LogInformation("Successfully sent link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                         currentBuyer.Id, targetBuyer.Id);
                     TempData["SuccessMessage"] = "Link request sent successfully!";
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to send link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                    _logger.LogWarning("Failed to send link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                         currentBuyer.Id, targetBuyer.Id);
                     TempData["ErrorMessage"] = "Failed to send link request. Please try again.";
                 }
@@ -977,7 +977,7 @@ namespace WebMarketplace.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending link request - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
+                _logger.LogError(ex, "Error sending link request - Current: {CurrentUserId}, Target: {TargetBuyerId}",
                     GetCurrentUserId(), targetBuyerId);
                 TempData["ErrorMessage"] = "An error occurred while sending the link request. Please try again.";
                 return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
@@ -1057,13 +1057,13 @@ namespace WebMarketplace.Controllers
 
                 if (success)
                 {
-                    _logger.LogInformation("Successfully accepted link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                    _logger.LogInformation("Successfully accepted link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}",
                         requestingBuyer.Id, currentBuyer.Id);
                     TempData["SuccessMessage"] = "Link request accepted! You are now linked with this buyer.";
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to accept link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                    _logger.LogWarning("Failed to accept link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}",
                         requestingBuyer.Id, currentBuyer.Id);
                     TempData["ErrorMessage"] = "Failed to accept link request. Please try again.";
                 }
@@ -1072,7 +1072,7 @@ namespace WebMarketplace.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error accepting link request - Current: {CurrentUserId}, Requesting: {RequestingBuyerId}", 
+                _logger.LogError(ex, "Error accepting link request - Current: {CurrentUserId}, Requesting: {RequestingBuyerId}",
                     GetCurrentUserId(), requestingBuyerId);
                 TempData["ErrorMessage"] = "An error occurred while accepting the link request. Please try again.";
                 return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
@@ -1152,13 +1152,13 @@ namespace WebMarketplace.Controllers
 
                 if (success)
                 {
-                    _logger.LogInformation("Successfully rejected link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                    _logger.LogInformation("Successfully rejected link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}",
                         requestingBuyer.Id, currentBuyer.Id);
                     TempData["SuccessMessage"] = "Link request rejected.";
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to reject link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}", 
+                    _logger.LogWarning("Failed to reject link request from buyer {RequestingBuyerId} by buyer {CurrentBuyerId}",
                         requestingBuyer.Id, currentBuyer.Id);
                     TempData["ErrorMessage"] = "Failed to reject link request. Please try again.";
                 }
@@ -1167,7 +1167,7 @@ namespace WebMarketplace.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error rejecting link request - Current: {CurrentUserId}, Requesting: {RequestingBuyerId}", 
+                _logger.LogError(ex, "Error rejecting link request - Current: {CurrentUserId}, Requesting: {RequestingBuyerId}",
                     GetCurrentUserId(), requestingBuyerId);
                 TempData["ErrorMessage"] = "An error occurred while rejecting the link request. Please try again.";
                 return RedirectToAction(nameof(PublicProfile), new { id = requestingBuyerId });
@@ -1247,13 +1247,13 @@ namespace WebMarketplace.Controllers
 
                 if (success)
                 {
-                    _logger.LogInformation("Successfully cancelled link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                    _logger.LogInformation("Successfully cancelled link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                         currentBuyer.Id, targetBuyer.Id);
                     TempData["SuccessMessage"] = "Link request cancelled.";
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to cancel link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}", 
+                    _logger.LogWarning("Failed to cancel link request from buyer {CurrentBuyerId} to buyer {TargetBuyerId}",
                         currentBuyer.Id, targetBuyer.Id);
                     TempData["ErrorMessage"] = "Failed to cancel link request. Please try again.";
                 }
@@ -1262,7 +1262,7 @@ namespace WebMarketplace.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error cancelling link request - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
+                _logger.LogError(ex, "Error cancelling link request - Current: {CurrentUserId}, Target: {TargetBuyerId}",
                     GetCurrentUserId(), targetBuyerId);
                 TempData["ErrorMessage"] = "An error occurred while cancelling the link request. Please try again.";
                 return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });
@@ -1342,13 +1342,13 @@ namespace WebMarketplace.Controllers
 
                 if (success)
                 {
-                    _logger.LogInformation("Successfully removed link between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
+                    _logger.LogInformation("Successfully removed link between buyer {CurrentBuyerId} and buyer {TargetBuyerId}",
                         currentBuyer.Id, targetBuyer.Id);
                     TempData["SuccessMessage"] = "Link removed successfully!";
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to remove link between buyer {CurrentBuyerId} and buyer {TargetBuyerId}", 
+                    _logger.LogWarning("Failed to remove link between buyer {CurrentBuyerId} and buyer {TargetBuyerId}",
                         currentBuyer.Id, targetBuyer.Id);
                     TempData["ErrorMessage"] = "Failed to remove link. Please try again.";
                 }
@@ -1357,7 +1357,7 @@ namespace WebMarketplace.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error removing link - Current: {CurrentUserId}, Target: {TargetBuyerId}", 
+                _logger.LogError(ex, "Error removing link - Current: {CurrentUserId}, Target: {TargetBuyerId}",
                     GetCurrentUserId(), targetBuyerId);
                 TempData["ErrorMessage"] = "An error occurred while removing the link. Please try again.";
                 return RedirectToAction(nameof(PublicProfile), new { id = targetBuyerId });

@@ -8,7 +8,7 @@
     using System.Threading.Tasks;
     using MarketMinds.Shared.Models;
     using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Proxy repository class for managing contract renewal operations via REST API.
@@ -26,7 +26,7 @@
         {
             this.httpClient = new HttpClient();
             this.httpClient.BaseAddress = new System.Uri(baseApiUrl);
-            
+
         }
 
         /// <inheritdoc />

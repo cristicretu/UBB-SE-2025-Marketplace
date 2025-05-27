@@ -9,7 +9,7 @@ namespace MarketMinds.Shared.ProxyRepository
     using System.Net.Http.Json;
     using System.Threading.Tasks;
     using MarketMinds.Shared.IRepository;
-    
+
 
     /// <summary>
     /// Proxy repository class for managing dummy wallet operations via REST API.

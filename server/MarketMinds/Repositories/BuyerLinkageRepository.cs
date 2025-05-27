@@ -237,9 +237,9 @@ namespace Server.MarketMinds.Repositories
 
             // Check both directions since we maintain the requesting/receiving order
             return await _context.BuyerLinkages
-                .FirstOrDefaultAsync(bl => 
+                .FirstOrDefaultAsync(bl =>
                     (bl.RequestingBuyerId == buyerId1 && bl.ReceivingBuyerId == buyerId2) ||
                     (bl.RequestingBuyerId == buyerId2 && bl.ReceivingBuyerId == buyerId1));
         }
     }
-} 
+}

@@ -5,6 +5,7 @@ using MarketMinds.Shared.Services.ImagineUploadService;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using MarketMinds.Shared.Helper;
 
 
 namespace MarketMinds.Test.Services.ReviewCreationService
@@ -20,8 +21,8 @@ namespace MarketMinds.Test.Services.ReviewCreationService
         public void Setup()
         {
             _reviewsService = new ReviewsService(null, null, null); // Directly initialize ReviewsService
-            _imageService = new ImageUploadService(); // Directly initialize ImageUploadService
-            _reviewCreationService = new MarketMinds.Shared.Services.ReviewCreationService.ReviewCreationService(_reviewsService);
+            _imageService = new ImageUploadService(AppConfig.Configuration); // Directly initialize ImageUploadService
+            _reviewCreationService = new MarketMinds.Shared.Services.ReviewCreationService.ReviewCreationService(_reviewsService, AppConfig.Configuration);
         }
 
         [Test]

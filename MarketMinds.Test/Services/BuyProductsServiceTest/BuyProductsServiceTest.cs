@@ -21,7 +21,7 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
 
         private BuyProductsService buyProductsService;
         private BuyProductsProxyRepositoryMock buyProductsRepositoryMock;
-        
+
         private User testSeller;
         private BuyProduct testBuyProduct;
         private AuctionProduct testInvalidProduct;

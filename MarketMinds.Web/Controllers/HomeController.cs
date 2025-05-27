@@ -62,7 +62,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int offset = 0, int count = 12, string tab = "buy", 
+        public async Task<IActionResult> Index(int offset = 0, int count = 12, string tab = "buy",
             List<int>? conditionIds = null, List<int>? categoryIds = null, string search = null, double? maxPrice = null)
         {
             try
@@ -168,7 +168,7 @@ namespace MarketMinds.Web.Controllers
                             totalBuyProducts = concreteService.GetProductCount();
                         }
                     }
-                    
+
                     if (conditionIds?.Any() == true || categoryIds?.Any() == true || !string.IsNullOrEmpty(search) || maxPrice.HasValue)
                     {
                         totalAuctionProducts = await _auctionProductService.GetFilteredAuctionProductCountAsync(conditionIds, categoryIds, maxPrice, search);
@@ -285,7 +285,7 @@ namespace MarketMinds.Web.Controllers
                 ViewBag.TotalBorrowProducts = totalBorrowProducts;
                 ViewBag.HasNextPage = hasNextPage;
                 ViewBag.HasPreviousPage = hasPreviousPage;
-                
+
                 // Add filter metadata
                 ViewBag.SelectedConditionIds = conditionIds ?? new List<int>();
                 ViewBag.SelectedCategoryIds = categoryIds ?? new List<int>();
@@ -295,19 +295,19 @@ namespace MarketMinds.Web.Controllers
                 // Build pagination URLs
                 int currentPage = count > 0 ? (offset / count) + 1 : 1;
                 int totalPages = count > 0 ? (int)Math.Ceiling((double)totalProducts / count) : 1;
-                
+
                 ViewBag.PrevPageUrl = currentPage > 1 ? BuildPaginationUrl(Math.Max(0, offset - count), count, tab, conditionIds, categoryIds, search, maxPrice) : null;
                 ViewBag.NextPageUrl = currentPage < totalPages ? BuildPaginationUrl(offset + count, count, tab, conditionIds, categoryIds, search, maxPrice) : null;
-                
+
                 // Dynamic pagination: show current page ± 2 pages (5 pages total)
                 var pageUrls = new Dictionary<int, string>();
                 int maxPagesToShow = 5;
                 int halfRange = maxPagesToShow / 2; // 2 pages on each side
-                
+
                 // Calculate the start and end page numbers
                 int startPage = Math.Max(1, currentPage - halfRange);
                 int endPage = Math.Min(totalPages, currentPage + halfRange);
-                
+
                 // Adjust if we're near the beginning or end
                 if (endPage - startPage + 1 < maxPagesToShow)
                 {
@@ -320,7 +320,7 @@ namespace MarketMinds.Web.Controllers
                         startPage = Math.Max(1, endPage - maxPagesToShow + 1);
                     }
                 }
-                
+
                 // Build URLs for the visible page range
                 for (int pageNum = startPage; pageNum <= endPage; pageNum++)
                 {
@@ -331,7 +331,7 @@ namespace MarketMinds.Web.Controllers
                 ViewBag.CurrentPage = currentPage;
                 ViewBag.StartPage = startPage;
                 ViewBag.EndPage = endPage;
-                
+
                 // Show "..." and last page if there are more pages beyond our range
                 if (endPage < totalPages)
                 {
@@ -340,14 +340,14 @@ namespace MarketMinds.Web.Controllers
                     ViewBag.LastPageNumber = totalPages;
                     ViewBag.ShowLastPageEllipsis = endPage < totalPages - 1; // Show "..." if there's a gap
                 }
-                
+
                 // Show first page if our range doesn't start at 1
                 if (startPage > 1)
                 {
                     ViewBag.FirstPageUrl = BuildPaginationUrl(0, count, tab, conditionIds, categoryIds, search, maxPrice);
                     ViewBag.ShowFirstPageEllipsis = startPage > 2; // Show "..." if there's a gap
                 }
- 
+
                 // Debug logging to verify price range calculation
                 _logger.LogInformation($"HOME: Calculated price range - Min: {ViewBag.MinPrice}, Max: {ViewBag.MaxPrice}");
                 _logger.LogInformation($"HOME: Pagination - Offset: {offset}, Count: {count}, Total: {totalProducts}");
@@ -379,9 +379,9 @@ namespace MarketMinds.Web.Controllers
                 List<BuyProduct> buyProducts = new List<BuyProduct>();
                 List<AuctionProduct> auctionProducts = new List<AuctionProduct>();
                 List<BorrowProduct> borrowProducts = new List<BorrowProduct>();
-                
+
                 int totalProducts = 0;
-                
+
                 // Apply filtering based on the active tab
                 switch (request.Tab.ToLower())
                 {
@@ -391,14 +391,14 @@ namespace MarketMinds.Web.Controllers
                         totalProducts = await _auctionProductService.GetFilteredAuctionProductCountAsync(
                             request.ConditionIds, request.CategoryIds);
                         break;
-                        
+
                     case "borrow":
                         borrowProducts = _borrowProductsService.GetFilteredProducts(
                             request.Offset, request.Count, request.ConditionIds, request.CategoryIds);
                         totalProducts = _borrowProductsService.GetFilteredProductCount(
                             request.ConditionIds, request.CategoryIds);
                         break;
-                        
+
                     default: // "buy"
                         if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService)
                         {
@@ -408,10 +408,10 @@ namespace MarketMinds.Web.Controllers
                         }
                         break;
                 }
-                
+
                 bool hasNextPage = request.Count > 0 && (request.Offset + request.Count) < totalProducts;
                 bool hasPreviousPage = request.Offset > 0;
-                
+
                 return Json(new
                 {
                     success = true,

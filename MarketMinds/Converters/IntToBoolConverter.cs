@@ -23,13 +23,13 @@ namespace MarketMinds.Converters
             {
                 return intValue > 0;
             }
-            
+
             // Try to parse if it's a string representation of an integer
             if (value is string stringValue && int.TryParse(stringValue, out int parsedValue))
             {
                 return parsedValue > 0;
             }
-            
+
             return false;
         }
 
@@ -47,8 +47,8 @@ namespace MarketMinds.Converters
             {
                 return boolValue ? 1 : 0;
             }
-            
+
             return 0;
         }
     }
-} 
+}

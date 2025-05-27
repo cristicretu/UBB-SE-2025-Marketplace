@@ -41,8 +41,8 @@ namespace WebMarketplace.Models
         /// <param name="auctionProductService">Service for auction products.</param>
         /// <param name="borrowProductsService">Service for borrow products.</param>
         /// <param name="buyProductsService">Service for buy products.</param>
-        public SellerProfileViewModel(User user, IUserService userService, ISellerService sellerService, 
-            IAuctionProductService auctionProductService, IBorrowProductsService borrowProductsService, 
+        public SellerProfileViewModel(User user, IUserService userService, ISellerService sellerService,
+            IAuctionProductService auctionProductService, IBorrowProductsService borrowProductsService,
             IBuyProductsService buyProductsService)
         {
             _user = user;
@@ -287,45 +287,45 @@ namespace WebMarketplace.Models
                     int sellerId = Seller.Id;
                     int userId = Seller.User?.Id ?? 0;
                     Console.WriteLine($"DEBUG: Loading products for Seller ID: {sellerId}, User ID: {userId} with pagination (offset: {offset}, count: {count}, search: '{search}')");
-                    
+
                     // Get ALL products first (before filtering) to calculate total count
                     var allBuyProducts = await _sellerService.GetAllProducts(sellerId);
                     var allAuctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
-                    var sellerAuctionProducts = allAuctionProducts.Where(auction => 
+                    var sellerAuctionProducts = allAuctionProducts.Where(auction =>
                         auction.SellerId == sellerId || auction.SellerId == userId).ToList();
                     var allBorrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync();
-                    var sellerBorrowProducts = allBorrowProducts.Where(borrow => 
+                    var sellerBorrowProducts = allBorrowProducts.Where(borrow =>
                         borrow.SellerId == sellerId || borrow.SellerId == userId).ToList();
-                    
+
                     // Calculate total count of ALL products (before any filtering)
                     AllProductsCount = allBuyProducts.Count + sellerAuctionProducts.Count + sellerBorrowProducts.Count;
-                    
+
                     // Now apply search filtering if needed
                     if (!string.IsNullOrEmpty(search))
                     {
-                        allBuyProducts = allBuyProducts.Where(p => 
+                        allBuyProducts = allBuyProducts.Where(p =>
                             p.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                             p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
-                        
-                        sellerAuctionProducts = sellerAuctionProducts.Where(p => 
+
+                        sellerAuctionProducts = sellerAuctionProducts.Where(p =>
                             p.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                             p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
-                        
-                        sellerBorrowProducts = sellerBorrowProducts.Where(p => 
+
+                        sellerBorrowProducts = sellerBorrowProducts.Where(p =>
                             p.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                             p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
                     }
-                    
+
                     // Set filtered count for pagination
                     TotalProductCount = allBuyProducts.Count + sellerAuctionProducts.Count + sellerBorrowProducts.Count;
                     Console.WriteLine($"DEBUG: Total products for seller {sellerId}: {TotalProductCount} filtered, {AllProductsCount} total ({allBuyProducts.Count} buy + {sellerAuctionProducts.Count} auction + {sellerBorrowProducts.Count} borrow)");
-                    
+
                     // Combine all products for sorting and pagination
                     var allSellerProducts = new List<Product>();
                     allSellerProducts.AddRange(allBuyProducts.Cast<Product>());
                     allSellerProducts.AddRange(sellerAuctionProducts.Cast<Product>());
                     allSellerProducts.AddRange(sellerBorrowProducts.Cast<Product>());
-                    
+
                     // Apply sorting if requested (before pagination)
                     if (sortAscending.HasValue)
                     {
@@ -340,7 +340,7 @@ namespace WebMarketplace.Models
                             Console.WriteLine($"DEBUG: Applied descending price sort to {allSellerProducts.Count} products");
                         }
                     }
-                    
+
                     // Apply pagination if count > 0
                     if (count > 0)
                     {
@@ -352,10 +352,10 @@ namespace WebMarketplace.Models
                         _filteredProducts = allSellerProducts;
                         Console.WriteLine($"DEBUG: No pagination - showing all {_filteredProducts.Count} products");
                     }
-                    
+
                     // Store all products for client-side operations (if needed)
                     _allProducts = allSellerProducts;
-                    
+
                     OnPropertyChanged(nameof(Products));
                 }
                 catch (Exception ex)

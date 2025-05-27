@@ -154,7 +154,7 @@ namespace WebMarketplace.Controllers
                     return NotFound("This user is not a seller.");
                 }
 
-                var viewModel = new SellerProfileViewModel(targetUser, _userService, _sellerService, 
+                var viewModel = new SellerProfileViewModel(targetUser, _userService, _sellerService,
                     _auctionProductService, _borrowProductsService, _buyProductsService);
                 await viewModel.InitializeAsync(offset, count, search, sortAscending);
 
@@ -173,7 +173,7 @@ namespace WebMarketplace.Controllers
                 // Set flag to indicate this is a public view (cannot edit)
                 // Even if the seller is viewing their own profile, it's read-only in public view
                 ViewBag.IsOwnProfile = false;
-                
+
                 // Add pagination metadata
                 ViewBag.CurrentOffset = offset;
                 ViewBag.CurrentCount = count;
@@ -181,23 +181,23 @@ namespace WebMarketplace.Controllers
                 ViewBag.HasNextPage = count > 0 && (offset + count) < viewModel.TotalProductCount;
                 ViewBag.HasPreviousPage = offset > 0;
                 ViewBag.SearchQuery = search ?? string.Empty;
-                
+
                 // Build pagination URLs
                 int currentPage = count > 0 ? (offset / count) + 1 : 1;
                 int totalPages = count > 0 ? (int)Math.Ceiling((double)viewModel.TotalProductCount / count) : 1;
-                
+
                 ViewBag.PrevPageUrl = currentPage > 1 ? BuildPaginationUrl(id, Math.Max(0, offset - count), count, search, sortAscending) : null;
                 ViewBag.NextPageUrl = currentPage < totalPages ? BuildPaginationUrl(id, offset + count, count, search, sortAscending) : null;
-                
+
                 // Dynamic pagination: show current page ± 2 pages (5 pages total)
                 var pageUrls = new Dictionary<int, string>();
                 int maxPagesToShow = 5;
                 int halfRange = maxPagesToShow / 2; // 2 pages on each side
-                
+
                 // Calculate the start and end page numbers
                 int startPage = Math.Max(1, currentPage - halfRange);
                 int endPage = Math.Min(totalPages, currentPage + halfRange);
-                
+
                 // Adjust if we're near the beginning or end
                 if (endPage - startPage + 1 < maxPagesToShow)
                 {
@@ -210,7 +210,7 @@ namespace WebMarketplace.Controllers
                         startPage = Math.Max(1, endPage - maxPagesToShow + 1);
                     }
                 }
-                
+
                 // Build URLs for the visible page range
                 for (int pageNum = startPage; pageNum <= endPage; pageNum++)
                 {
@@ -221,7 +221,7 @@ namespace WebMarketplace.Controllers
                 ViewBag.CurrentPage = currentPage;
                 ViewBag.StartPage = startPage;
                 ViewBag.EndPage = endPage;
-                
+
                 // Show "..." and last page if there are more pages beyond our range
                 if (endPage < totalPages)
                 {
@@ -230,7 +230,7 @@ namespace WebMarketplace.Controllers
                     ViewBag.LastPageNumber = totalPages;
                     ViewBag.ShowLastPageEllipsis = endPage < totalPages - 1; // Show "..." if there's a gap
                 }
-                
+
                 // Show first page if our range doesn't start at 1
                 if (startPage > 1)
                 {
@@ -283,7 +283,7 @@ namespace WebMarketplace.Controllers
         {
             try
             {
-                _logger.LogInformation("FilterProducts called with searchText: {SearchText}, sellerId: {SellerId}, isManageMode: {IsManageMode}", 
+                _logger.LogInformation("FilterProducts called with searchText: {SearchText}, sellerId: {SellerId}, isManageMode: {IsManageMode}",
                     searchText, sellerId, isManageMode);
 
                 // Redirect to the appropriate page with search parameter
@@ -318,12 +318,12 @@ namespace WebMarketplace.Controllers
         /// <param name="count">Current pagination count to preserve.</param>
         /// <returns>A redirect to the appropriate page with sort parameters.</returns>
         [HttpPost]
-        public IActionResult SortProducts(int? sellerId = null, bool isManageMode = false, bool? sortAscending = null, 
+        public IActionResult SortProducts(int? sellerId = null, bool isManageMode = false, bool? sortAscending = null,
             string search = null, int offset = 0, int count = 12)
         {
             try
             {
-                _logger.LogInformation("SortProducts called with sellerId: {SellerId}, isManageMode: {IsManageMode}, sortAscending: {SortAscending}", 
+                _logger.LogInformation("SortProducts called with sellerId: {SellerId}, isManageMode: {IsManageMode}, sortAscending: {SortAscending}",
                     sellerId, isManageMode, sortAscending);
 
                 // Determine sort direction: if sortAscending is null, start with ascending (true)
@@ -333,21 +333,23 @@ namespace WebMarketplace.Controllers
                 // Redirect to the appropriate page with sort parameter
                 if (isManageMode)
                 {
-                    return RedirectToAction("Manage", new { 
-                        search = search, 
-                        offset = offset, 
-                        count = count, 
-                        sortAscending = newSortAscending 
+                    return RedirectToAction("Manage", new
+                    {
+                        search = search,
+                        offset = offset,
+                        count = count,
+                        sortAscending = newSortAscending
                     });
                 }
                 else if (sellerId.HasValue)
                 {
-                    return RedirectToAction("PublicProfile", new { 
-                        id = sellerId.Value, 
-                        search = search, 
-                        offset = offset, 
-                        count = count, 
-                        sortAscending = newSortAscending 
+                    return RedirectToAction("PublicProfile", new
+                    {
+                        id = sellerId.Value,
+                        search = search,
+                        offset = offset,
+                        count = count,
+                        sortAscending = newSortAscending
                     });
                 }
                 else
@@ -374,7 +376,7 @@ namespace WebMarketplace.Controllers
                 _logger.LogInformation("Loading Update Profile page");
 
                 var user = await GetCurrentUser();
-                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService, 
+                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService,
                     _auctionProductService, _borrowProductsService, _buyProductsService);
                 await viewModel.InitializeAsync();
 
@@ -430,7 +432,7 @@ namespace WebMarketplace.Controllers
                 _logger.LogInformation("Loading private editable Seller Profile page");
 
                 int userId = GetCurrentUserId();
-                
+
                 // Check if user is authenticated
                 if (userId == 0)
                 {
@@ -447,7 +449,7 @@ namespace WebMarketplace.Controllers
                 //    return RedirectToAction("Index", "Home");
                 //}
 
-                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService, 
+                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService,
                     _auctionProductService, _borrowProductsService, _buyProductsService);
                 await viewModel.InitializeAsync(offset, count, search, sortAscending);
 
@@ -465,7 +467,7 @@ namespace WebMarketplace.Controllers
 
                 // Set flag to indicate this is the seller's own profile (can edit)
                 ViewBag.IsOwnProfile = true;
-                
+
                 // Add pagination metadata
                 ViewBag.CurrentOffset = offset;
                 ViewBag.CurrentCount = count;
@@ -473,23 +475,23 @@ namespace WebMarketplace.Controllers
                 ViewBag.HasNextPage = count > 0 && (offset + count) < viewModel.TotalProductCount;
                 ViewBag.HasPreviousPage = offset > 0;
                 ViewBag.SearchQuery = search ?? string.Empty;
-                
+
                 // Build pagination URLs for manage mode
                 int currentPage = count > 0 ? (offset / count) + 1 : 1;
                 int totalPages = count > 0 ? (int)Math.Ceiling((double)viewModel.TotalProductCount / count) : 1;
-                
+
                 ViewBag.PrevPageUrl = currentPage > 1 ? BuildManagePaginationUrl(Math.Max(0, offset - count), count, search, sortAscending) : null;
                 ViewBag.NextPageUrl = currentPage < totalPages ? BuildManagePaginationUrl(offset + count, count, search, sortAscending) : null;
-                
+
                 // Dynamic pagination: show current page ± 2 pages (5 pages total)
                 var pageUrls = new Dictionary<int, string>();
                 int maxPagesToShow = 5;
                 int halfRange = maxPagesToShow / 2; // 2 pages on each side
-                
+
                 // Calculate the start and end page numbers
                 int startPage = Math.Max(1, currentPage - halfRange);
                 int endPage = Math.Min(totalPages, currentPage + halfRange);
-                
+
                 // Adjust if we're near the beginning or end
                 if (endPage - startPage + 1 < maxPagesToShow)
                 {
@@ -502,7 +504,7 @@ namespace WebMarketplace.Controllers
                         startPage = Math.Max(1, endPage - maxPagesToShow + 1);
                     }
                 }
-                
+
                 // Build URLs for the visible page range
                 for (int pageNum = startPage; pageNum <= endPage; pageNum++)
                 {
@@ -513,7 +515,7 @@ namespace WebMarketplace.Controllers
                 ViewBag.CurrentPage = currentPage;
                 ViewBag.StartPage = startPage;
                 ViewBag.EndPage = endPage;
-                
+
                 // Show "..." and last page if there are more pages beyond our range
                 if (endPage < totalPages)
                 {
@@ -522,7 +524,7 @@ namespace WebMarketplace.Controllers
                     ViewBag.LastPageNumber = totalPages;
                     ViewBag.ShowLastPageEllipsis = endPage < totalPages - 1; // Show "..." if there's a gap
                 }
-                
+
                 // Show first page if our range doesn't start at 1
                 if (startPage > 1)
                 {

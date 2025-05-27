@@ -335,8 +335,9 @@ namespace Server.Controllers
                 var productDetails = await this.contractRepository.GetProductDetailsByContractIdAsync(contractId);
                 if (productDetails.HasValue)
                 {
-    
-                    return this.Ok(new { 
+
+                    return this.Ok(new
+                    {
                         StartDate = productDetails.Value.StartDate,
                         EndDate = productDetails.Value.EndDate,
                         Price = productDetails.Value.price,

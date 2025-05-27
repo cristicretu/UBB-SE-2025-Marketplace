@@ -2,8 +2,9 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services.DreamTeam.ChatService;
 using MarketMinds.Test.Services.ChatServiceTest;
+using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services;
 
 namespace MarketMinds.Tests.Services.ChatServiceTest
 {

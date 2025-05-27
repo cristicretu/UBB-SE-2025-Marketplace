@@ -12,46 +12,46 @@ namespace WebMarketplace.Models
         private readonly IBuyProductsService _productService;
 
         public int OrderHistoryID { get; set; }
-        
+
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
         public string Email { get; set; }
-        
+
         [Required(ErrorMessage = "Cardholder name is required")]
         [Display(Name = "Cardholder's Name")]
         public string CardHolderName { get; set; }
-        
+
         [Required(ErrorMessage = "Card number is required")]
         [Display(Name = "Card Number")]
         [RegularExpression(@"^\d{16}$", ErrorMessage = "Please enter a valid 16-digit card number")]
         public string CardNumber { get; set; }
-        
+
         [Required(ErrorMessage = "Expiry month is required")]
         [Display(Name = "Expiry Month")]
         [RegularExpression(@"^(0[1-9]|1[0-2])$", ErrorMessage = "Please enter a valid month (01-12)")]
         public string CardMonth { get; set; }
-        
+
         [Required(ErrorMessage = "Expiry year is required")]
         [Display(Name = "Expiry Year")]
         [RegularExpression(@"^\d{2}$", ErrorMessage = "Please enter a valid 2-digit year")]
         public string CardYear { get; set; }
-        
+
         [Required(ErrorMessage = "CVC is required")]
         [Display(Name = "CVC")]
         [RegularExpression(@"^\d{3}$", ErrorMessage = "Please enter a valid 3-digit CVC")]
         public string CardCVC { get; set; }
-        
+
         public double Subtotal { get; set; }
         public double DeliveryFee { get; set; }
         public double Total { get; set; }
-        
+
         public List<Product> ProductList { get; set; }
-        
+
         // Default parameterless constructor for model binding
         public CardInfoViewModel()
         {
             _orderHistoryService = new OrderHistoryService();
-            
+
             // Create a configuration object that works with BuyProductsProxyRepository
             var configValues = new Dictionary<string, string>
             {
@@ -60,19 +60,19 @@ namespace WebMarketplace.Models
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(configValues)
                 .Build();
-                
+
             var buyProductsRepo = new MarketMinds.Shared.ProxyRepository.BuyProductsProxyRepository(configuration);
             _productService = new BuyProductsService(buyProductsRepo);
 
             ProductList = new List<Product>();
         }
-        
+
         public CardInfoViewModel(int orderHistoryID) : this()
         {
             OrderHistoryID = orderHistoryID;
             InitializeViewModel(orderHistoryID);
         }
-        
+
         private async void InitializeViewModel(int orderHistoryID)
         {
             try
@@ -86,7 +86,7 @@ namespace WebMarketplace.Models
                 Console.WriteLine($"Error loading from order history: {ex.Message}");
             }
         }
-        
+
         public void CalculateOrderTotal()
         {
             if (ProductList == null || ProductList.Count == 0)
@@ -120,7 +120,7 @@ namespace WebMarketplace.Models
 
             // Determine product type for delivery fee calculation
             // Try to determine if any product is a special type
-            bool hasSpecialType = ProductList.Any(p => 
+            bool hasSpecialType = ProductList.Any(p =>
                 (p is BorrowProduct) || // For borrowed products
                 (p.GetType().Name.Contains("Refill")) || // For refill products
                 (p.GetType().Name.Contains("Auction"))); // For auction/bid products
@@ -137,4 +137,4 @@ namespace WebMarketplace.Models
             }
         }
     }
-} 
+}
