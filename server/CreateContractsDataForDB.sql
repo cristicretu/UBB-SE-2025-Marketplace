@@ -1,6 +1,10 @@
 ﻿GO
 
 SELECT * FROM Buyers
+SELECT * FROM Sellers
+
+INSERT INTO Sellers
+VALUES (1, 'mike2', 10, 'Razvan for sale', 'Premium quality razvans', 'everywhere', 10)
 
 -- set to your seller id
 DECLARE @sellerID int;
@@ -249,7 +253,7 @@ GO
 DECLARE @buyerID int;
 SET @buyerID = 9
 DECLARE @sellerID int;
-SET @sellerID = 10
+SET @sellerID = 1
 INSERT INTO BuyProducts (title, [description], price, stock, category_id, seller_id, condition_id)
 VALUES
     ('Abstract Painting', 'Contemporary abstract art', 350.00, 1, 1, @sellerID, 1),
@@ -287,3 +291,5 @@ VALUES (4, 'ACTIVE', 'This is a standard artwork purchase contract that outlines
 
 
 select * from BorrowProducts
+SELECT * FROM BuyerCartItems
+SELECT * FROM BuyerWishlistItems

@@ -9,7 +9,7 @@ using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.ReviewCreationService;
 using MarketMinds.Shared.Helper;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class ReviewCreateViewModel
     {

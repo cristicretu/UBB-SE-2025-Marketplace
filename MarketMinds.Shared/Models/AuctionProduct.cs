@@ -73,8 +73,11 @@ namespace MarketMinds.Shared.Models // Adjusted namespace to server.Models
             Title = title;
             Description = description;
             Seller = seller;
+            SellerId = seller.Id;
             Condition = condition;
+            ConditionId = condition.Id;
             Category = category;
+            CategoryId = category.Id;
             StartTime = startTime;
             EndTime = endTime;
             StartPrice = startPrice;

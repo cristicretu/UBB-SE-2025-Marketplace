@@ -16,6 +16,12 @@
             
             <!-- Converters -->
             <converters:StockToColorConverter x:Key="StockToColorConverter"/>
+            <converters:DateFormatConverter x:Key="DateFormatConverter"/>
+            <converters:DateTimeFormatConverter x:Key="DateTimeFormatConverter"/>
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <converters:LocationFormatConverter x:Key="LocationFormatConverter"/>
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+            <converters:DateToDateTimeConverter x:Key="DateToDateTimeConverter"/>
             
             <!-- Other app resources here -->
         </ResourceDictionary>

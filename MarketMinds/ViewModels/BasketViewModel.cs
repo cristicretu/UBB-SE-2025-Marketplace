@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BasketService;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class BasketViewModel
     {

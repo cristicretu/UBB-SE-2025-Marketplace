@@ -51,7 +51,20 @@ namespace MarketMinds.ViewModels
         /// Removes the item from the wishlist.
         /// </summary>
         void Remove();
+        
+        /// <summary>
+        /// Gets or sets the product associated with this wishlist item.
+        /// </summary>
         Product Product { get; set; }
+        
+        /// <summary>
+        /// Gets the command for adding the item to the cart.
+        /// </summary>
         ICommand AddToCartCommand { get; }
+        
+        /// <summary>
+        /// Gets the stock value from the Product, or 0 if Product is null.
+        /// </summary>
+        int Stock { get; }
     }
 }

@@ -80,18 +80,6 @@ namespace MarketMinds.ViewModels
         void ResetInfo();
 
         /// <summary>
-        /// Updates the profile after a purchase is made.
-        /// </summary>
-        void AfterPurchase();
-
-        /// <summary>
-        /// Adds a purchase to the buyer's profile.
-        /// </summary>
-        /// <param name="purchaseAmount">The amount of money for the purchase.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task AddPurchase(string purchaseAmount);
-
-        /// <summary>
         /// Loads the buyer profile data.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>

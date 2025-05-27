@@ -144,7 +144,7 @@ namespace MarketMinds.ViewModels
         // New methods for handling business logic from views
         Task LoadOrderDataAsync(int trackedOrderID);
         Task UpdateEstimatedDeliveryDateAsync(int trackedOrderID, DateTime newDate);
-        Task AddNewCheckpointAsync(int trackedOrderID, string description);
+        Task AddNewCheckpointAsync(int trackedOrderID, string description, OrderStatus status);
         Task UpdateLastCheckpointAsync(int trackedOrderID, string description);
         Task RevertLastCheckpointAsync(int trackedOrderID);
     }

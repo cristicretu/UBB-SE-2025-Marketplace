@@ -89,17 +89,65 @@ namespace MarketMinds.ViewModels
             }
         }
 
+        public BuyerProfileViewModel(IBuyerService buyerService, IBuyProductsService productService, IBuyerLinkageService buyerLinkageService)
+        {
+            this.BuyerService = buyerService;
+            this.ProductService = productService;
+            this.BuyerLinkageService = buyerLinkageService;
+            // the .User will be instantiated when the BuyerProfileView is loaded because only then we know for sure that we have a non null App.CurrentUser
+        }
+
         /// <inheritdoc/>
         public async void SaveInfo()
         {
             try
             {
+                // Sync the address data from ViewModels back to the Buyer object
+                if (this.BillingAddress?.Address != null && this.Buyer?.BillingAddress != null)
+                {
+                    Debug.WriteLine($"Syncing Billing Address - ViewModel: Street='{this.BillingAddress.Address.StreetLine}', City='{this.BillingAddress.Address.City}'");
+                    Debug.WriteLine($"Buyer.BillingAddress reference check: Same={object.ReferenceEquals(this.BillingAddress.Address, this.Buyer.BillingAddress)}");
+
+                    this.Buyer.BillingAddress.StreetLine = this.BillingAddress.Address.StreetLine;
+                    this.Buyer.BillingAddress.City = this.BillingAddress.Address.City;
+                    this.Buyer.BillingAddress.Country = this.BillingAddress.Address.Country;
+                    this.Buyer.BillingAddress.PostalCode = this.BillingAddress.Address.PostalCode;
+                }
+
+                if (!this.Buyer?.UseSameAddress == true && this.ShippingAddress?.Address != null && this.Buyer?.ShippingAddress != null)
+                {
+                    Debug.WriteLine($"Syncing Shipping Address - ViewModel: Street='{this.ShippingAddress.Address.StreetLine}', City='{this.ShippingAddress.Address.City}'");
+                    Debug.WriteLine($"Buyer.ShippingAddress reference check: Same={object.ReferenceEquals(this.ShippingAddress.Address, this.Buyer.ShippingAddress)}");
+
+                    this.Buyer.ShippingAddress.StreetLine = this.ShippingAddress.Address.StreetLine;
+                    this.Buyer.ShippingAddress.City = this.ShippingAddress.Address.City;
+                    this.Buyer.ShippingAddress.Country = this.ShippingAddress.Address.Country;
+                    this.Buyer.ShippingAddress.PostalCode = this.ShippingAddress.Address.PostalCode;
+                }
+
+                // Debug: Log all buyer values before saving
+                Debug.WriteLine("=== SAVING BUYER PROFILE ===");
+                Debug.WriteLine($"Personal Info - FirstName: '{this.Buyer?.FirstName}', LastName: '{this.Buyer?.LastName}', Email: '{this.Buyer?.Email}', Phone: '{this.Buyer?.PhoneNumber}'");
+                Debug.WriteLine($"Billing Address - Street: '{this.Buyer?.BillingAddress?.StreetLine}', City: '{this.Buyer?.BillingAddress?.City}', Country: '{this.Buyer?.BillingAddress?.Country}', PostalCode: '{this.Buyer?.BillingAddress?.PostalCode}'");
+                if (!this.Buyer?.UseSameAddress == true)
+                {
+                    Debug.WriteLine($"Shipping Address - Street: '{this.Buyer?.ShippingAddress?.StreetLine}', City: '{this.Buyer?.ShippingAddress?.City}', Country: '{this.Buyer?.ShippingAddress?.Country}', PostalCode: '{this.Buyer?.ShippingAddress?.PostalCode}'");
+                }
+
                 await this.BuyerService.SaveInfo(this.Buyer!);
-                await this.LoadBuyerProfile();
+                // Don't reload the profile after saving to maintain UI binding
+                // await this.LoadBuyerProfile();
                 await this.ShowDialog("Success", "Profile saved successfully");
+            }
+            catch (ArgumentException ex)
+            {
+                // More specific error handling for validation errors
+                Debug.WriteLine($"Validation error: {ex.Message}");
+                await this.ShowDialog("Validation Error", $"Please check your information: {ex.Message}");
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"General error: {ex.Message}");
                 await this.ShowDialog("Error", ex.Message);
             }
         }
@@ -125,42 +173,29 @@ namespace MarketMinds.ViewModels
         }
 
         /// <inheritdoc/>
-        public async Task AddPurchase(string purchaseAmount)
-        {
-            if (string.IsNullOrWhiteSpace(purchaseAmount))
-            {
-                return;
-            }
-
-            var decimalPurchaseAmount = 0m;
-            try
-            {
-                decimalPurchaseAmount = decimal.Parse(purchaseAmount, CultureInfo.InvariantCulture);
-            }
-            catch (Exception)
-            {
-                Debug.WriteLine("Non decimal PurchaseAmount");
-                return;
-            }
-
-            await this.BuyerService.UpdateAfterPurchase(this.Buyer!, decimalPurchaseAmount);
-            this.AfterPurchase();
-        }
-
-        /// <inheritdoc/>
-        public void AfterPurchase()
-        {
-            this.BuyerBadge?.Updated();
-            this.OnPropertyChanged(nameof(this.BuyerBadge));
-        }
-
-        /// <inheritdoc/>
         public async Task LoadBuyerProfile()
         {
             this.Buyer = await this.BuyerService.GetBuyerByUser(this.User);
+            Debug.WriteLine($"LoadBuyerProfile - Loaded Buyer: FirstName='{this.Buyer?.FirstName}', LastName='{this.Buyer?.LastName}', Email='{this.Buyer?.Email}', Phone='{this.Buyer?.PhoneNumber}'");
 
+            // Ensure addresses are not null
+            if (this.Buyer.BillingAddress == null)
+            {
+                this.Buyer.BillingAddress = new Address();
+            }
+            if (this.Buyer.ShippingAddress == null)
+            {
+                this.Buyer.ShippingAddress = new Address();
+            }
+
+            Debug.WriteLine($"LoadBuyerProfile - Creating BillingAddress ViewModel with Street: '{this.Buyer.BillingAddress?.StreetLine}'");
             this.BillingAddress = new BuyerAddressViewModel(this.Buyer.BillingAddress);
+            Debug.WriteLine($"LoadBuyerProfile - BillingAddress ViewModel created, Address.Street: '{this.BillingAddress.Address?.StreetLine}'");
+            Debug.WriteLine($"LoadBuyerProfile - Reference check: Same={object.ReferenceEquals(this.BillingAddress.Address, this.Buyer.BillingAddress)}");
+
+            Debug.WriteLine($"LoadBuyerProfile - Creating ShippingAddress ViewModel with Street: '{this.Buyer.ShippingAddress?.StreetLine}'");
             this.ShippingAddress = new BuyerAddressViewModel(this.Buyer.ShippingAddress);
+            Debug.WriteLine($"LoadBuyerProfile - ShippingAddress ViewModel created, Address.Street: '{this.ShippingAddress.Address?.StreetLine}'");
             this.FamilySync = new BuyerFamilySyncViewModel(this.BuyerService, this.Buyer, this, this.BuyerLinkageService);
             await this.FamilySync.LoadLinkages();
             this.Wishlist = new BuyerWishlistViewModel
@@ -203,7 +238,7 @@ namespace MarketMinds.ViewModels
                 Title = title,
                 Content = message,
                 CloseButtonText = "OK",
-                XamlRoot = App.BuyerProfileWindow?.Content.XamlRoot,
+                XamlRoot = App.HomePageWindow?.Content.XamlRoot,
             };
 
             await dialog.ShowAsync();

@@ -61,6 +61,7 @@ namespace MarketMinds.ViewModels
             {
                 notifications = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowEmptyState));
             }
         }
 
@@ -88,8 +89,14 @@ namespace MarketMinds.ViewModels
             {
                 isLoading = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowEmptyState));
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether to show the empty state (no notifications and not loading).
+        /// </summary>
+        public bool ShowEmptyState => !IsLoading && (Notifications == null || Notifications.Count == 0);
 
         /// <summary>
         /// Gets the command for marking a notification as read.
@@ -154,6 +161,7 @@ namespace MarketMinds.ViewModels
                     }
                     UnreadCount = Notifications.Count(n => !n.IsRead);
                     OnPropertyChanged(nameof(UnReadNotificationsCountText));
+                    OnPropertyChanged(nameof(ShowEmptyState));
                 });
             }
             catch (Exception ex)

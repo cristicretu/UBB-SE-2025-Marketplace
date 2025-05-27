@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.IO;
 using System;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using Windows.Storage.Pickers;
 using Windows.Storage;
 using MarketMinds.Shared.Models;

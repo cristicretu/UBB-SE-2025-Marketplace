@@ -7,8 +7,12 @@
     mc:Ignorable="d"
     Width="Auto" Height="Auto">
 
-    <Border BorderThickness="2" BorderBrush="#1976D2" Padding="10"
-            Margin="5" CornerRadius="8" Background="White"
+    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+            BorderThickness="1" 
+            Padding="15"
+            Margin="5" 
+            CornerRadius="8" 
             Height="Auto">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -17,69 +21,65 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock FontSize="16"
-                       FontWeight="Bold"
-                       Foreground="#0D47A1" Text="{x:Bind ViewModel.DisplayName, Mode=OneWay}" 
+                       FontWeight="SemiBold"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                       Text="{x:Bind ViewModel.DisplayName, Mode=OneWay}" 
                        VerticalAlignment="Center"/>
             
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                 <!-- Request Sync Button -->
-                <Button Width="50" Height="50" 
+                <Button Width="40" Height="40" 
                         ToolTipService.ToolTip="Request sync"
+                        Background="{ThemeResource AccentButtonBackground}"
+                        Foreground="{ThemeResource AccentButtonForeground}"
+                        CornerRadius="4"
                         Visibility="{x:Bind ViewModel.RequestSyncVsbl, Mode=OneWay}"
                         Click="{x:Bind ViewModel.Accept}">
-                    <Image Width="25" Height="25">
-                        <Image.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/link.svg" />
-                        </Image.Source>
-                    </Image>
+                    <FontIcon FontSize="16" Glyph="&#xE71B;"/>
                 </Button>
 
                 <!-- Cancel Button -->
-                <Button Width="50" Height="50"
+                <Button Width="40" Height="40"
                         ToolTipService.ToolTip="Cancel request"
+                        Background="{ThemeResource SystemFillColorCriticalBrush}"
+                        Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                        CornerRadius="4"
                         Visibility="{x:Bind ViewModel.CancelRequestVsbl, Mode=OneWay}"
                         Click="{x:Bind ViewModel.Cancel}">
-                    <Image Width="25" Height="25">
-                        <Image.Source>
-                            <BitmapImage UriSource="ms-appx:///Assets/BuyerIcons/unlink.png" />
-                        </Image.Source>
-                    </Image>
+                    <FontIcon FontSize="16" Glyph="&#xE711;"/>
                 </Button>
 
                 <!-- Accept Button -->
-                <Button Width="50" Height="50" 
+                <Button Width="40" Height="40" 
                         ToolTipService.ToolTip="Accept"
+                        Background="{ThemeResource SystemFillColorSuccessBrush}"
+                        Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                        CornerRadius="4"
                         Visibility="{x:Bind ViewModel.AcceptVsbl, Mode=OneWay}"
                         Click="{x:Bind ViewModel.Accept}">
-                    <Image Width="25" Height="25">
-                        <Image.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/check.svg" />
-                        </Image.Source>
-                    </Image>
+                    <FontIcon FontSize="16" Glyph="&#xE73E;"/>
                 </Button>
 
                 <!-- Decline Button -->
-                <Button Width="50" Height="50" 
+                <Button Width="40" Height="40" 
                         ToolTipService.ToolTip="Decline"
+                        Background="{ThemeResource SystemFillColorCriticalBrush}"
+                        Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                        CornerRadius="4"
                         Visibility="{x:Bind ViewModel.DeclineVsbl, Mode=OneWay}"
                         Click="{x:Bind ViewModel.Decline}">
-                    <Image Width="25" Height="25">
-                        <Image.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/cross.svg" />
-                        </Image.Source>
-                    </Image>
+                    <FontIcon FontSize="16" Glyph="&#xE711;"/>
                 </Button>
 
                 <!-- Unsync Button -->
-                <Button Width="50" Height="50" 
+                <Button Width="40" Height="40" 
                         ToolTipService.ToolTip="Unsync"
+                        Background="{ThemeResource SystemFillColorCautionBrush}"
+                        Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                        CornerRadius="4"
                         Visibility="{x:Bind ViewModel.UnsyncVsbl, Mode=OneWay}"
                         Click="{x:Bind ViewModel.Unsync}">
-                    <Image Width="25" Height="25">
-                        <Image.Source>
-                            <BitmapImage UriSource="ms-appx:///Assets/BuyerIcons/unlink.png" />
-                        </Image.Source>
-                    </Image>
+                    <FontIcon FontSize="16" Glyph="&#xE8BB;"/>
                 </Button>
             </StackPanel>
         </Grid>

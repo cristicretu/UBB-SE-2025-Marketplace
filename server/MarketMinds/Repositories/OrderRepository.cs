@@ -7,6 +7,7 @@ namespace Server.Repository
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Linq;
     using System.Threading.Tasks;
     using global::MarketMinds.Shared.IRepository;
     using global::MarketMinds.Shared.Models;
@@ -353,27 +354,59 @@ namespace Server.Repository
                 Product product = await this.dbContext.BuyProducts.FindAsync(order.ProductID)
                                         ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Product with ID {order.ProductID} not found");
 
-                // This boolean is used to check if the product name corresponds to the search text, if the search text is present.
-                bool shouldIncludeProductBySearchText = searchText == null || (searchText != null && product.Title.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0);
+                Condition condition = await this.dbContext.ProductConditions.FindAsync(product.ConditionId)
+                                        ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Condition with ID {product.ConditionId} not found");
+                
+                Category category = await this.dbContext.ProductCategories.FindAsync(product.CategoryId)
+                                        ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Category with ID {product.CategoryId} not found");
+
+                // This boolean is used to check if the search text has common words with order information
+                bool shouldIncludeProductBySearchText = searchText == null;
+                
+                if (searchText != null)
+                {
+                    // Create a single searchable string with all order information
+                    string orderSearchString = $"{product.Title} {order.Id} {condition.Name} {category.Name} {order.PaymentMethod}";
+                    
+                    // Split search text into words and check for common words
+                    var searchWords = searchText.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    var orderWords = orderSearchString.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    
+                    shouldIncludeProductBySearchText = searchWords.Any(searchWord => 
+                        orderWords.Any(orderWord => 
+                            orderWord.IndexOf(searchWord, StringComparison.OrdinalIgnoreCase) >= 0));
+                }
 
                 if (shouldIncludeProductBySearchText) // if searching by text corresponds, then we can check the time period
                 {
+                    bool shouldIncludeByTimePeriod = false;
+
                     switch (timePeriod)
                     {
                         case null:
-                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            shouldIncludeByTimePeriod = true;
                             break;
                         case "Last 3 Months" when order.OrderDate >= DateTime.Now.AddMonths(-3):
-                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            shouldIncludeByTimePeriod = true;
                             break;
                         case "Last 6 Months" when order.OrderDate >= DateTime.Now.AddMonths(-6):
-                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            shouldIncludeByTimePeriod = true;
                             break;
                         case "This Year" when order.OrderDate.Year == DateTime.Now.Year:
-                            orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                            shouldIncludeByTimePeriod = true;
+                            break;
+                        // Both cases are valid, the first one is used on web and the second one on desktop
+                        case "all":
+                        case "All Orders":
+                            shouldIncludeByTimePeriod = true;
                             break;
                         default:
                             throw new ArgumentException($"GetOrdersWithProductInfoAsync: Invalid time period: {timePeriod}");
+                    }
+
+                    if (shouldIncludeByTimePeriod)
+                    {
+                        orderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product, condition, category));
                     }
                 }
             }
@@ -449,8 +482,28 @@ namespace Server.Repository
                     continue; // Skip this order if product not found
                 }
 
+                Condition condition = await this.dbContext.ProductConditions.FindAsync(product.ConditionId)
+                                        ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Condition with ID {product.ConditionId} not found");
+                
+                Category category = await this.dbContext.ProductCategories.FindAsync(product.CategoryId)
+                                        ?? throw new KeyNotFoundException($"GetOrdersWithProductInfoAsync: Category with ID {product.CategoryId} not found");
+
                 // This boolean is used to check if the product name corresponds to the search text, if the search text is present.
-                bool shouldIncludeProductBySearchText = searchText == null || (searchText != null && product.Title.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0);
+                                bool shouldIncludeProductBySearchText = searchText == null;
+                
+                if (searchText != null)
+                {
+                    // Create a single searchable string with all order information
+                    string orderSearchString = $"{product.Title} {order.Id} {condition.Name} {category.Name} {order.PaymentMethod}";
+                    
+                    // Split search text into words and check for common words
+                    var searchWords = searchText.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    var orderWords = orderSearchString.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    
+                    shouldIncludeProductBySearchText = searchWords.Any(searchWord => 
+                        orderWords.Any(orderWord => 
+                            orderWord.IndexOf(searchWord, StringComparison.OrdinalIgnoreCase) >= 0));
+                }
 
                 if (shouldIncludeProductBySearchText) // if searching by text corresponds, then we can check the time period
                 {
@@ -460,6 +513,7 @@ namespace Server.Repository
                     {
                         case null:
                         case "all":
+                        case "All Orders":
                             shouldIncludeByTimePeriod = true;
                             break;
                         case "Last 3 Months":
@@ -477,7 +531,7 @@ namespace Server.Repository
                     
                     if (shouldIncludeByTimePeriod)
                     {
-                        allOrderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product));
+                        allOrderDisplayInfos.Add(CreateOrderDisplayInfoFromOrderAndProduct(order, product, condition, category));
                     }
                 }
             }
@@ -643,19 +697,17 @@ namespace Server.Repository
             return order;
         }
 
-        private static OrderDisplayInfo CreateOrderDisplayInfoFromOrderAndProduct(Order order, Product product)
+        private static OrderDisplayInfo CreateOrderDisplayInfoFromOrderAndProduct(Order order, Product product, Condition condition, Category category)
         {
-            string productCategory = (order.ProductType == "new" || order.ProductType == "used") ? "new" : "borrowed";
-
             return new OrderDisplayInfo
             {
                 OrderID = order.Id,
                 ProductName = product.Title,
-                ProductTypeName = "merge-nicusor",
+                ProductTypeName = condition.Name,
                 OrderDate = order.OrderDate.ToString("yyyy-MM-dd"),
                 PaymentMethod = order.PaymentMethod,
                 OrderSummaryID = order.OrderSummaryID,
-                ProductCategory = productCategory,
+                ProductCategory = category.Name,
             };
         }
     }

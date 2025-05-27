@@ -8,110 +8,233 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-   >
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
     <Page.Resources>
-        <Style TargetType="TextBox">
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="Background" Value="#cccaca"/>
-            
-        </Style>
-        <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="Black"/>
-        </Style>
-        <utils:SellerToVisibilityConverter x:Key="SellerToVisibilityConverter"/>
-        <utils:BorrowedToVisibilityConverter x:Key="BorrowedToVisibilityConverter"/>
-        <utils:StringToPaymentMethodConverter x:Key="StringToPaymentMethodConverter"/>
+        <ResourceDictionary>
+            <!-- Text styles -->
+            <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="20"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Margin" Value="0,0,0,15"/>
+            </Style>
+
+            <!-- Input field style with border -->
+            <Style x:Key="InputBoxStyle" TargetType="TextBox">
+                <Setter Property="Margin" Value="0,0,0,12"/>
+                <Setter Property="Padding" Value="12,8"/>
+                <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
+                <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="4"/>
+            </Style>
+
+            <!-- Radio button style -->
+            <Style x:Key="RadioButtonStyle" TargetType="RadioButton">
+                <Setter Property="Margin" Value="0,0,0,8"/>
+                <Setter Property="Padding" Value="12,6"/>
+            </Style>
+
+            <!-- Text area style with border -->
+            <Style x:Key="TextAreaStyle" TargetType="TextBox">
+                <Setter Property="Margin" Value="0,0,0,15"/>
+                <Setter Property="Padding" Value="12,8"/>
+                <Setter Property="Height" Value="100"/>
+                <Setter Property="AcceptsReturn" Value="True"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
+                <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="4"/>
+            </Style>
+
+            <!-- Button style -->
+            <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="#1a3c87"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Padding" Value="20,10"/>
+                <Setter Property="CornerRadius" Value="4"/>
+            </Style>
+
+            <!-- Product panel style -->
+            <Style x:Key="ProductPanelStyle" TargetType="StackPanel">
+                <Setter Property="Background" Value="{ThemeResource SystemChromeLowColor}"/>
+                <Setter Property="Padding" Value="12"/>
+                <Setter Property="Margin" Value="0,0,0,15"/>
+                <Setter Property="CornerRadius" Value="4"/>
+            </Style>
+
+            <!-- Utility converters -->
+            <utils:SellerToVisibilityConverter x:Key="SellerToVisibilityConverter"/>
+            <utils:BorrowedToVisibilityConverter x:Key="BorrowedToVisibilityConverter"/>
+            <utils:StringToPaymentMethodConverter x:Key="StringToPaymentMethodConverter"/>
+        </ResourceDictionary>
     </Page.Resources>
 
-
-
-    <Grid Padding="20,40,20,0" RowSpacing="5" ColumnSpacing="60" Background="White" HorizontalAlignment="Stretch">
+    <Grid Padding="40" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"></RowDefinition>
-            <RowDefinition Height="auto"></RowDefinition>
-            <RowDefinition Height="auto"></RowDefinition>
-            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <TextBlock x:Name="bInfoTitle"   FontSize="20" Grid.Row="0">Billing Information</TextBlock>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top"  Grid.Row="1">
-            <TextBox Text="{Binding FullName, Mode=TwoWay}" PlaceholderText="Full Name*" />
-            <TextBox Text="{Binding Email, Mode=TwoWay}" PlaceholderText="Email Address*" ></TextBox>
-            <TextBox Text="{Binding PhoneNumber, Mode=TwoWay}" PlaceholderText="Phone Number*" ></TextBox>
-            <TextBox Text="{Binding Address, Mode=TwoWay}" PlaceholderText="Address*" ></TextBox>
-            <TextBox Text="{Binding ZipCode, Mode=TwoWay}" PlaceholderText="Zipcode*" ></TextBox>
+
+        <!-- Left Column: Billing Info -->
+        <StackPanel Grid.Column="0" Margin="0,0,20,0">
+            <!-- Billing Information Section -->
+            <TextBlock Text="Billing Information" Style="{StaticResource SectionHeaderStyle}"/>
+            
+            <!-- Use saved information checkbox -->
+            <CheckBox x:Name="UseSavedInfoCheckBox" 
+                      Content="Use saved information" 
+                      IsChecked="{Binding UseSavedInformation, Mode=TwoWay}"
+                      Checked="OnUseSavedInfoChecked"
+                      Unchecked="OnUseSavedInfoUnchecked"
+                      Margin="0,0,0,15"/>
+            
+
+            <!-- Input fields with borders -->
+            <TextBox Text="{Binding FullName, Mode=TwoWay}" PlaceholderText="Full Name*" 
+                     Style="{StaticResource InputBoxStyle}"/>
+            <TextBox Text="{Binding Email, Mode=TwoWay}" PlaceholderText="Email Address*" 
+                     Style="{StaticResource InputBoxStyle}"/>
+            <TextBox Text="{Binding PhoneNumber, Mode=TwoWay}" PlaceholderText="Phone Number*" 
+                     Style="{StaticResource InputBoxStyle}"/>
+            <TextBox Text="{Binding Address, Mode=TwoWay}" PlaceholderText="Address*" 
+                     Style="{StaticResource InputBoxStyle}"/>
+            <TextBox Text="{Binding ZipCode, Mode=TwoWay}" PlaceholderText="Zipcode*" 
+                     Style="{StaticResource InputBoxStyle}"/>
+
+            <!-- Payment Information Section -->
+            <TextBlock Text="Payment Information" Style="{StaticResource SectionHeaderStyle}" Margin="0,20,0,15"/>
+
+            <RadioButton x:Name="CashButton" Content="Cash Payment"
+                         IsEnabled="{Binding IsCashEnabled}" 
+                         IsChecked="{Binding SelectedPaymentMethod, Mode=TwoWay, Converter={StaticResource StringToPaymentMethodConverter}, ConverterParameter=cash}"
+                         Style="{StaticResource RadioButtonStyle}"/>
+
+            <!-- removed card because user has no way as of now to create a card, plus the money was not going out of the card balance (Alex, I tested it) -->
+            <!-- <RadioButton x:Name="CardButton" Content="Card Payment"
+                         IsEnabled="{Binding IsCardEnabled}" 
+                         IsChecked="{Binding SelectedPaymentMethod, Mode=TwoWay, Converter={StaticResource StringToPaymentMethodConverter}, ConverterParameter=card}"
+                         Style="{StaticResource RadioButtonStyle}"/> -->
+
+            <RadioButton x:Name="WalletButton" Content="Wallet Payment"
+                         IsEnabled="{Binding IsWalletEnabled}" 
+                         IsChecked="{Binding SelectedPaymentMethod, Mode=TwoWay, Converter={StaticResource StringToPaymentMethodConverter}, ConverterParameter=wallet}"
+                         Style="{StaticResource RadioButtonStyle}"/>
+
+            <!-- Additional Delivery Information Section -->
+            <TextBlock Text="Additional Delivery Information" Style="{StaticResource SectionHeaderStyle}" Margin="0,20,0,15"/>
+
+            <TextBox Text="{Binding AdditionalInfo, Mode=TwoWay}" 
+                     PlaceholderText="Observations for your order (optional)..." 
+                     Style="{StaticResource TextAreaStyle}"/>
+
+            <!-- Finalize Purchase Button -->
+            <Button Content="Finalize Purchase" 
+                Click="OnFinalizeButtonClickedAsync"
+                Background="{ThemeResource SystemControlBackgroundAccentBrush}"
+                Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
+                HorizontalAlignment="Left"
+                Padding="20,10"
+                CornerRadius="4"
+                Margin="0,15,0,0"/>
         </StackPanel>
 
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="2">
-            <TextBlock x:Name="payInfo"  FontSize="20" >Payment Information</TextBlock>
-            <RadioButton x:Name="CashButton" IsEnabled="{Binding IsCashEnabled}" IsChecked="{Binding SelectedPaymentMethod, Mode=TwoWay, Converter={StaticResource StringToPaymentMethodConverter}, ConverterParameter=cash}" Background="#cccaca" Foreground="White" HorizontalAlignment="Stretch" >Cash Payment</RadioButton>
-            <RadioButton x:Name="CardButton" IsEnabled="{Binding IsCardEnabled}" IsChecked="{Binding SelectedPaymentMethod, Mode=TwoWay, Converter={StaticResource StringToPaymentMethodConverter}, ConverterParameter=card}" Background="#cccaca" Foreground="White" HorizontalAlignment="Stretch">Card Payment</RadioButton>
-            <RadioButton x:Name="WalletButton" IsEnabled="{Binding IsWalletEnabled}" IsChecked="{Binding SelectedPaymentMethod, Mode=TwoWay, Converter={StaticResource StringToPaymentMethodConverter}, ConverterParameter=wallet}" Background="#cccaca" Foreground="White" HorizontalAlignment="Stretch">Wallet Payment</RadioButton>
+        <!-- Right Column: Order Summary -->
+        <StackPanel Grid.Column="1" Margin="20,0,0,0">
+            <TextBlock Text="Order Summary" Style="{StaticResource SectionHeaderStyle}"/>
+
+            <!-- Products List with improved styling and scrolling -->
+            <ListView ItemsSource="{Binding CartItems}" Background="Transparent" 
+                      SelectionMode="None" Padding="0" MaxHeight="500" 
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{ThemeResource SystemChromeLowColor}" 
+                                CornerRadius="4" Margin="0,0,0,12" Padding="15">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Name: " FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding Title}"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Price: " FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                    <TextBlock>
+                                        <Run Text="{Binding Price}"/>
+                                        <Run Text=" €"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Quantity: " FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding Quantity}"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding SellerId, Converter={StaticResource SellerToVisibilityConverter}}" Margin="0,0,0,6">
+                                    <TextBlock Text="Seller ID: " FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding SellerId}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <!-- Order Totals -->
+            <Grid Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Subtotal:" FontWeight="SemiBold" Margin="0,4"/>
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4">
+                    <TextBlock Text="{Binding Subtotal, Mode=TwoWay}"/>
+                    <TextBlock Text=" €" Margin="2,0,0,0"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Warranty Tax:" FontWeight="SemiBold" Margin="0,4"/>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4">
+                    <TextBlock Text="{Binding WarrantyTax, Mode=TwoWay}"/>
+                    <TextBlock Text=" €" Margin="2,0,0,0"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Delivery fee:" FontWeight="SemiBold" Margin="0,4"/>
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4">
+                    <TextBlock Text="{Binding DeliveryFee, Mode=TwoWay}"/>
+                    <TextBlock Text=" €" Margin="2,0,0,0"/>
+                </StackPanel>
+
+                <!-- Line separator -->
+                <Rectangle Grid.Row="3" Grid.ColumnSpan="2" Height="1" Margin="0,8" 
+                           Fill="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"/>
+
+                <!-- Total row -->
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Total:" FontWeight="Bold" FontSize="16" Margin="0,4"/>
+                <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4">
+                    <TextBlock Text="{Binding Total, Mode=TwoWay}" FontWeight="Bold" FontSize="16"/>
+                    <TextBlock Text=" €" FontWeight="Bold" FontSize="16" Margin="2,0,0,0"/>
+                </StackPanel>
+            </Grid>
         </StackPanel>
-
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="3">
-            <TextBlock  Foreground="Black" FontSize="20">Additional Delivery Information</TextBlock>
-            <TextBox Text="{Binding AdditionalInfo, Mode=TwoWay}" Height="80" Background="#cccaca" PlaceholderText="Observations for your order (optional)..." ></TextBox>
-        </StackPanel>
-
-        <TextBlock x:Name="orderSummary" FontSize="20" Grid.Row="0" Grid.Column="1">Order Summary:</TextBlock>
-
-        <ListView ItemsSource="{Binding ProductList}" Grid.Row="1" Grid.Column="1" Background="#cccaca" Foreground="Black">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Vertical">
-                            <TextBlock  FontSize="16" Foreground="Black" >
-                            <Run Text="Product name: " FontWeight="Bold"/>
-                             <Run Text="{Binding Name}"/>
-                            </TextBlock>
-                            <TextBlock  FontSize="16" Foreground="Black" >
-                            <Run Text="Price: " FontWeight="Bold"/>
-                             <Run Text="{Binding Price}"/>
-                            </TextBlock>
-                        <TextBlock  FontSize="16" Foreground="Black" Visibility="{Binding SellerId, Converter={StaticResource  SellerToVisibilityConverter}}" >
-                              <Run Text="Seller ID: " FontWeight="Bold"/>
-                               <Run Text="{Binding SellerId}"/>
-                        </TextBlock>
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding ProductType, Converter={StaticResource BorrowedToVisibilityConverter}}">
-                            <TextBlock Foreground="Black" Text="Start Date: " FontWeight="Bold"/>
-                            <DatePicker Foreground="Black" SelectedDate="{Binding StartDate, Mode=TwoWay}" SelectedDateChanged="OnStartDateChanged" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding ProductType, Converter={StaticResource BorrowedToVisibilityConverter}}">
-                            <TextBlock Foreground="Black" Text="End Date: " FontWeight="Bold"/>
-                            <DatePicker  Foreground="Black" SelectedDate="{Binding EndDate, Mode=TwoWay}" SelectedDateChanged="OnEndDateChanged" />
-                        </StackPanel>
-                    </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="2" Grid.Column="1">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Subtotal: "/>
-                <TextBlock Text="{Binding Subtotal}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Warranty Tax: "/>
-                <TextBlock Text="{Binding WarrantyTax}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Delivery fee: "/>
-                <TextBlock Text="{Binding DeliveryFee}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Total: "/>
-                <TextBlock Text="{Binding Total}" />
-            </StackPanel>
-        </StackPanel>
-
-
-        <Button Content="Finalize Purchase" Click="OnFinalizeButtonClickedAsync"  Grid.Row="4" Grid.Column="1" Background="#cccaca" Foreground="Black" Width="200px" HorizontalAlignment="Center"/>
-
     </Grid>
-
 </Page>

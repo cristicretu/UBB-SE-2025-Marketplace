@@ -1,109 +1,220 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows.Data;
+using System.Globalization;
 using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
-using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
+using MarketMinds.ViewModels;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Views
 {
-    [ExcludeFromCodeCoverage]
     public sealed partial class BillingInfo : Page
     {
+        // Changed from concrete implementation to interface
+        public IBillingInfoViewModel ViewModel { get; private set; }
+        private bool initialLoadComplete = false;
+        private bool dataWasLoaded = false;
+
         /// <summary>
-        /// The view model for the BillingInfo page.
+        /// Initializes a new instance of the <see cref="BillingInfo"/> class.
         /// </summary>
-        private IBillingInfoViewModel viewModel;
-
-        public BillingInfo(int orderHistoryID)
+        public BillingInfo()
         {
+            Debug.WriteLine("Initializing BillingInfo page");
             this.InitializeComponent();
-            viewModel = new BillingInfoViewModel(orderHistoryID);
 
-            DataContext = viewModel;
+            // Create the view model without a hardcoded order history ID
+            // Still using App.BillingInfoViewModel but now casting to the interface
+            this.ViewModel = App.BillingInfoViewModel;
+            this.DataContext = this.ViewModel;
+
+            Debug.WriteLine("BillingInfo page initialized");
         }
 
         /// <summary>
-        /// Sets the cart items for checkout.
+        /// Called when the page is navigated to.
         /// </summary>
-        /// <param name="cartItems">The list of products and quantities.</param>
-        public void SetCartItems(List<Product> cartItems)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (this.DataContext is BillingInfoViewModel viewModel)
+            base.OnNavigatedTo(e);
+
+            if (!initialLoadComplete)
             {
-                viewModel.SetCartItems(cartItems);
+                try
+                {
+                    Debug.WriteLine("BillingInfo page navigated to");
+
+                    // Initialize the checkbox to unchecked by default
+                    if (UseSavedInfoCheckBox != null)
+                    {
+                        UseSavedInfoCheckBox.IsChecked = false; // do not autofill on navigation, only if user checks the checkbox
+                    }
+
+                    // If we have cart data, skip loading from order history
+                    if (dataWasLoaded)
+                    {
+                        Debug.WriteLine("Data was previously loaded, skipping initialization");
+                    }
+                    else if (ViewModel.ProductList == null || ViewModel.ProductList.Count == 0)
+                    {
+                        Debug.WriteLine("Loading data from order history");
+                        await ViewModel.InitializeViewModelAsync();
+                    }
+
+                    initialLoadComplete = true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error in OnNavigatedTo: {ex.Message}");
+                }
             }
         }
 
         /// <summary>
-        /// Sets the cart total for the order.
+        /// Sets the cart items to be displayed and used for order creation.
         /// </summary>
-        /// <param name="total">The total price of the cart.</param>
-        public void SetCartTotal(double total)
+        /// <param name="cartItems">The list of products from the cart.</param>
+        public void SetCartItems(List<Product> cartItems)
         {
-            if (this.DataContext is BillingInfoViewModel viewModel)
+            if (cartItems != null && cartItems.Count > 0)
             {
-                viewModel.SetCartTotal(total);
+                Debug.WriteLine($"Setting {cartItems.Count} cart items on BillingInfo page");
+                ViewModel.SetCartItems(cartItems);
+                dataWasLoaded = true;
+            }
+            else
+            {
+                Debug.WriteLine("No cart items provided to BillingInfo page");
+            }
+        }
+
+        /// <summary>
+        /// Sets the cart total to be used for the order.
+        /// </summary>
+        /// <param name="cartTotal">The total price of the cart.</param>
+        public void SetCartTotal(double cartTotal)
+        {
+            if (cartTotal > 0)
+            {
+                Debug.WriteLine($"Setting cart total: ${cartTotal}");
+                ViewModel.SetCartTotal(cartTotal);
+                dataWasLoaded = true;
+            }
+            else
+            {
+                Debug.WriteLine("Invalid cart total provided");
             }
         }
 
         /// <summary>
         /// Sets the buyer ID for the order.
         /// </summary>
-        /// <param name="buyerId">The ID of the buyer.</param>
+        /// <param name="buyerId">The buyer ID.</param>
         public void SetBuyerId(int buyerId)
         {
-            if (this.DataContext is BillingInfoViewModel viewModel)
+            if (buyerId > 0)
             {
-                viewModel.SetBuyerId(buyerId);
+                Debug.WriteLine($"Setting buyer ID: {buyerId}");
+                ViewModel.SetBuyerId(buyerId);
+            }
+            else
+            {
+                Debug.WriteLine($"Invalid buyer ID provided: {buyerId}");
             }
         }
 
         /// <summary>
-        /// Handles the click event for the finalize button.
+        /// Handler for the Finalize Purchase button click.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private async void OnFinalizeButtonClickedAsync(object sender, RoutedEventArgs e)
         {
-            if (DataContext is BillingInfoViewModel viewModel)
+            Debug.WriteLine("Finalize purchase button clicked");
+
+            try
             {
-                await viewModel.OnFinalizeButtonClickedAsync();
+                // Make sure the button is disabled during processing
+                Button button = sender as Button;
+                if (button != null)
+                {
+                    button.IsEnabled = false;
+                }
+
+                // Make a local copy of the total for debugging
+                double totalBeforeFinalize = ViewModel.Total;
+                Debug.WriteLine($"Total before finalizing purchase: ${totalBeforeFinalize}");
+
+                // Call the view model to process the order
+                await ViewModel.OnFinalizeButtonClickedAsync();
+                Debug.WriteLine($"Purchase finalized successfully. Total: ${totalBeforeFinalize}");
+                this.Frame.Navigate(typeof(FinalisePurchase));
+                // Process notifications on finalisation success
+                App.FinalizePurchaseViewModel.HandleFinish();
+                // Add the purchase amount to the buyer's total spending + badge update
+                await ViewModel.AddPurchase(totalBeforeFinalize);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error during purchase finalization: {ex.Message}");
+
+                // Show error dialog
+                ContentDialog errorDialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = $"There was a problem processing your order: {ex.Message}",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+
+                await errorDialog.ShowAsync();
+            }
+            finally
+            {
+                // Re-enable the button
+                Button button = sender as Button;
+                if (button != null)
+                {
+                    button.IsEnabled = true;
+                }
             }
         }
 
         /// <summary>
-        /// Handles the click event for the cancel button.
+        /// Handler for when the "Use saved information" checkbox is checked.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnStartDateChanged(DatePicker sender, DatePickerSelectedValueChangedEventArgs e)
+        private async void OnUseSavedInfoChecked(object sender, RoutedEventArgs e)
         {
-            viewModel.UpdateStartDate(sender.Date);
-        }
-
-        /// <summary>
-        /// Handles the click event for the end date.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void OnEndDateChanged(DatePicker sender, DatePickerSelectedValueChangedEventArgs e)
-        {
-            viewModel.UpdateEndDate(sender.Date);
-            await UpdateBorrowedProductTax(sender);
-        }
-
-        /// <summary>
-        /// Handles the click event for the tax date.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <returns></returns>
-        private async Task UpdateBorrowedProductTax(DatePicker sender)
-        {
-            if (DataContext is BillingInfoViewModel viewModel && sender.DataContext is BorrowProduct product)
+            try
             {
-                await viewModel.ApplyBorrowedTax(product);
+                Debug.WriteLine("Use saved information checkbox checked");
+                // Populate all user information when checkbox is checked
+                await ((BillingInfoViewModel)ViewModel).AutofillUserInformationAsync();
+                Debug.WriteLine("Auto-filled all user information");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in OnUseSavedInfoChecked: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handler for when the "Use saved information" checkbox is unchecked.
+        /// </summary>
+        private async void OnUseSavedInfoUnchecked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Debug.WriteLine("Use saved information checkbox unchecked");
+                // Clear all fields except email when checkbox is unchecked
+                await ((BillingInfoViewModel)ViewModel).ClearUserInformationExceptEmailAsync();
+                Debug.WriteLine("Cleared user information except email");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in OnUseSavedInfoUnchecked: {ex.Message}");
             }
         }
     }

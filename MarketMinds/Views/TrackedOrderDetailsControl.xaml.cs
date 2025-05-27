@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -13,7 +14,8 @@ namespace MarketMinds.Views
         /// </summary>
         public TrackedOrderDetailsControl()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+            DataContext = App.TrackedOrderViewModel;
         }
     }
 }

@@ -3,8 +3,10 @@ using System.Text.Json;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
+using MarketMinds.Shared.Services.Interfaces;
+using System.Diagnostics;
 
-namespace MarketMinds.Shared.Services.DreamTeam.ChatbotService
+namespace MarketMinds.Shared.Services
 {
 public class ChatbotService : IChatbotService
 {
@@ -13,26 +15,23 @@ public class ChatbotService : IChatbotService
     private readonly HttpClient httpClient;
     private Node currentNode;
     private bool isActive;
-    private static MarketMinds.Shared.Models.User currentUser;
+    private static User currentUser;
     private readonly string geminiEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
     private readonly static int MINIMUM_USER_ID = 0;
     private readonly static int FIRST = 0;
     private readonly static int BUYER_TYPE_VALUE = 1;
-    private string cachedGeminiApiKey = null;
+    private string cachedGeminiApiKey;
 
-    public ChatbotService(IChatbotRepository chatbotRepository, IConfiguration configuration = null, IHttpClientFactory httpClientFactory = null)
+    public ChatbotService(IChatbotRepository chatbotRepository, IConfiguration configuration)
     {
         this.chatbotRepository = chatbotRepository;
         this.configuration = configuration;
-        
-        if (httpClientFactory != null)
+        this.cachedGeminiApiKey = configuration["GeminiAPI:Key"];
+        if (string.IsNullOrEmpty(cachedGeminiApiKey))
         {
-            this.httpClient = httpClientFactory.CreateClient();
+            throw new Exception("ChatbotService: Gemini API Key not found");
         }
-        else
-        {
-            this.httpClient = new HttpClient();
-        }
+        this.httpClient = new HttpClient();
         
         isActive = false;
         currentNode = new Node
@@ -47,52 +46,20 @@ public class ChatbotService : IChatbotService
 
     private string GetGeminiApiKey()
     {
-        if (!string.IsNullOrEmpty(cachedGeminiApiKey))
-        {
-            return cachedGeminiApiKey;
-        }
-
-        if (configuration != null)
-        {
-            var key = configuration["GeminiAPI:Key"];
-            if (!string.IsNullOrEmpty(key))
-            {
-                cachedGeminiApiKey = key;
-                return key;
-            }
-        }
-
         try
         {
-            string[] possiblePaths = {
-                "appsettings.json",
-                Path.Combine(AppContext.BaseDirectory, "appsettings.json"),
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"),
-                Path.Combine(Environment.CurrentDirectory, "appsettings.json")
-            };
-
-            foreach (var path in possiblePaths)
+            if (cachedGeminiApiKey != null)
             {
-                if (File.Exists(path))
-                {
-                    var json = File.ReadAllText(path);
-                    using (JsonDocument document = JsonDocument.Parse(json))
-                    {
-                        if (document.RootElement.TryGetProperty("GeminiAPI", out var geminiSection) &&
-                            geminiSection.TryGetProperty("Key", out var keyProperty))
-                        {
-                            cachedGeminiApiKey = keyProperty.GetString();
-                            return cachedGeminiApiKey;
-                        }
-                    }
-                }
+                return cachedGeminiApiKey;
             }
-
-            return cachedGeminiApiKey;
+            else
+            {
+                throw new Exception("ChatbotService: Gemini API Key not found");
+            }
         }
         catch (Exception ex)
         {
-            return null;
+            throw new Exception("ChatbotService: Error getting Gemini API Key: " + ex.Message);
         }
     }
 
@@ -120,7 +87,7 @@ public class ChatbotService : IChatbotService
         return configuration;
     }
 
-    public void SetCurrentUser(MarketMinds.Shared.Models.User user)
+    public void SetCurrentUser(User user)
     {
         if (user == null)
         {

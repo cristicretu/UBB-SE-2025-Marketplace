@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
@@ -15,40 +17,31 @@ namespace MarketMinds.Views
     /// </summary>
     public sealed partial class TrackedOrderControlPage : Page
     {
-        private readonly ITrackedOrderViewModel viewModel;
         public int TrackedOrderID { get; set; }
+        public TrackedOrderViewModel ViewModel { get; }
 
-        internal TrackedOrderControlPage(ITrackedOrderViewModel viewModel, int trackedOrderID)
+        public TrackedOrderControlPage()
         {
-            InitializeComponent(); // Must be called first to initialize XAML controls
-            this.viewModel = viewModel;
+            InitializeComponent();
+            ViewModel = App.TrackedOrderViewModel;
+            DataContext = ViewModel;
+        }
+
+        public async void SetTrackedOrderID(int trackedOrderID)
+        {
             TrackedOrderID = trackedOrderID;
-            DataContext = this.viewModel;
+            await LoadOrderData();
+        }
 
-            // Initialize UI state
-            if (DateTimePickers != null)
+        private async Task LoadOrderData()
+        {
+            try
             {
-                DateTimePickers.Visibility = Visibility.Collapsed;
+                await ViewModel.LoadOrderDataAsync(TrackedOrderID);
             }
-
-            if (deliveryCalendarDatePicker != null)
+            catch (Exception ex)
             {
-                deliveryCalendarDatePicker.Visibility = Visibility.Collapsed;
-            }
-
-            if (confirmChangeEstimatedDeliveryDateButton != null)
-            {
-                confirmChangeEstimatedDeliveryDateButton.Visibility = Visibility.Collapsed;
-            }
-
-            if (AddDetails != null)
-            {
-                AddDetails.Visibility = Visibility.Collapsed;
-            }
-
-            if (UpdateDetails != null)
-            {
-                UpdateDetails.Visibility = Visibility.Collapsed;
+                await ShowErrorDialog($"Error loading order data: {ex.Message}");
             }
         }
 
@@ -86,23 +79,11 @@ namespace MarketMinds.Views
             await dialog.ShowAsync();
         }
 
-        private async void LoadOrderDataButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                await viewModel.LoadOrderDataAsync(TrackedOrderID);
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorDialog($"Error loading order data: {ex.Message}");
-            }
-        }
-
         private async void RevertLastCheckpointButton_Clicked(object sender, RoutedEventArgs e)
         {
             try
             {
-                await viewModel.RevertLastCheckpointAsync(TrackedOrderID);
+                await ViewModel.RevertLastCheckpointAsync(TrackedOrderID);
                 await ShowSuccessDialog("Successfully reverted to previous checkpoint");
             }
             catch (Exception ex)
@@ -111,16 +92,45 @@ namespace MarketMinds.Views
             }
         }
 
+        private void ShowDeliveryDateUpdateButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            deliveryDateUpdatePanel.Visibility = Visibility.Visible;
+            showDeliveryDateUpdateButton.Visibility = Visibility.Collapsed;
+        }
+
         private async void ConfirmChangeEstimatedDeliveryDateButton_Clicked(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (deliveryCalendarDatePicker?.Date.HasValue == true)
                 {
-                    await viewModel.UpdateEstimatedDeliveryDateAsync(TrackedOrderID, deliveryCalendarDatePicker.Date.Value.DateTime);
+                    var selectedDate = deliveryCalendarDatePicker.Date.Value.DateTime;
+
+                    // Get the tracked order to access the order ID
+                    var trackedOrder = ViewModel.CurrentOrder;
+                    if (trackedOrder == null)
+                    {
+                        await ShowErrorDialog("Order not found");
+                        return;
+                    }
+
+                    // Get the order date using the public method
+                    var orderDate = await ViewModel.GetOrderDateAsync(trackedOrder.OrderID);
+
+                    // Validate that the selected date is not before the order placement date
+                    if (selectedDate.Date < orderDate.Date)
+                    {
+                        await ShowErrorDialog("Delivery date cannot be before the order placement date");
+                        return;
+                    }
+
+                    await ViewModel.UpdateEstimatedDeliveryDateAsync(TrackedOrderID, selectedDate);
                     await ShowSuccessDialog("Successfully updated estimated delivery date");
-                    deliveryCalendarDatePicker.Visibility = Visibility.Collapsed;
-                    confirmChangeEstimatedDeliveryDateButton.Visibility = Visibility.Collapsed;
+
+                    // Reset the controls
+                    deliveryCalendarDatePicker.Date = null;
+                    deliveryDateUpdatePanel.Visibility = Visibility.Collapsed;
+                    showDeliveryDateUpdateButton.Visibility = Visibility.Visible;
                 }
             }
             catch (Exception ex)
@@ -135,10 +145,52 @@ namespace MarketMinds.Views
             {
                 if (!string.IsNullOrWhiteSpace(DescriptionTextBoxAdd?.Text))
                 {
-                    await viewModel.AddNewCheckpointAsync(TrackedOrderID, DescriptionTextBoxAdd.Text);
-                    await ShowSuccessDialog("Successfully added new checkpoint");
-                    DescriptionTextBoxAdd.Text = string.Empty;
-                    AddDetails.Visibility = Visibility.Collapsed;
+                    DateTime timestamp;
+                    if (ManualTimestampRadio.IsChecked == true)
+                    {
+                        if (!TimestampDatePicker.Date.HasValue)
+                        {
+                            await ShowErrorDialog("Please select a date for the checkpoint");
+                            return;
+                        }
+
+                        var selectedDate = TimestampDatePicker.Date.Value.DateTime;
+                        var selectedTime = TimestampTimePicker.Time;
+                        timestamp = selectedDate.Date + selectedTime;
+
+                        // Get the newest checkpoint timestamp
+                        var newestCheckpoint = ViewModel.Checkpoints.FirstOrDefault();
+                        if (newestCheckpoint != null && timestamp < newestCheckpoint.Timestamp)
+                        {
+                            await ShowErrorDialog($"New checkpoint timestamp must be newer than the newest checkpoint ({newestCheckpoint.Timestamp:dd/MM/yyyy HH:mm})");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        timestamp = DateTime.UtcNow;
+                    }
+
+                    // Get the selected status from the ComboBox
+                    if (StatusComboBoxAdd.SelectedItem is ComboBoxItem selectedStatusItem && selectedStatusItem.Content is string statusString)
+                    {
+                        if (Enum.TryParse(statusString, out MarketMinds.Shared.Models.OrderStatus selectedStatus))
+                        {
+                            await ViewModel.AddNewCheckpointAsync(TrackedOrderID, DescriptionTextBoxAdd.Text, timestamp, selectedStatus);
+                            await ShowSuccessDialog("Successfully added new checkpoint");
+                            DescriptionTextBoxAdd.Text = string.Empty;
+                            LocationTextBoxAdd.Text = string.Empty;
+                            StatusComboBoxAdd.SelectedIndex = -1;
+                        }
+                        else
+                        {
+                            await ShowErrorDialog("Invalid status selected.");
+                        }
+                    }
+                    else
+                    {
+                        await ShowErrorDialog("Please select a valid status for the new checkpoint");
+                    }
                 }
                 else
                 {
@@ -157,10 +209,43 @@ namespace MarketMinds.Views
             {
                 if (!string.IsNullOrWhiteSpace(DescriptionTextBoxUpdate?.Text))
                 {
-                    await viewModel.UpdateLastCheckpointAsync(TrackedOrderID, DescriptionTextBoxUpdate.Text);
+                    DateTime timestamp;
+                    if (ManualTimestampRadio.IsChecked == true)
+                    {
+                        if (!TimestampDatePicker.Date.HasValue)
+                        {
+                            await ShowErrorDialog("Please select a date for the checkpoint");
+                            return;
+                        }
+
+                        var selectedDate = TimestampDatePicker.Date.Value.DateTime;
+                        var selectedTime = TimestampTimePicker.Time;
+                        timestamp = selectedDate.Date + selectedTime;
+
+                        // Get the second newest checkpoint timestamp (since we're updating the newest one)
+                        var secondNewestCheckpoint = ViewModel.Checkpoints.Skip(1).FirstOrDefault();
+                        if (secondNewestCheckpoint != null && timestamp <= secondNewestCheckpoint.Timestamp)
+                        {
+                            await ShowErrorDialog($"Updated checkpoint timestamp must be after the previous checkpoint ({secondNewestCheckpoint.Timestamp:dd/MM/yyyy HH:mm})");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        timestamp = DateTime.UtcNow;
+                    }
+
+                    await ViewModel.UpdateLastCheckpointAsync(TrackedOrderID, DescriptionTextBoxUpdate.Text, timestamp);
                     await ShowSuccessDialog("Successfully updated checkpoint");
                     DescriptionTextBoxUpdate.Text = string.Empty;
-                    UpdateDetails.Visibility = Visibility.Collapsed;
+                    LocationTextBoxUpdate.Text = string.Empty;
+                    StatusComboBoxUpdate.SelectedIndex = -1;
+                    LocationTextBoxUpdate.Visibility = Visibility.Collapsed;
+                    DescriptionTextBoxUpdate.Visibility = Visibility.Collapsed;
+                    StatusComboBoxUpdate.Visibility = Visibility.Collapsed;
+                    TimestampRadioButtons.Visibility = Visibility.Collapsed;
+                    DateTimePickers.Visibility = Visibility.Collapsed;
+                    confirmUpdateCurrentCheckpointButton.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
@@ -173,44 +258,27 @@ namespace MarketMinds.Views
             }
         }
 
-        private void UpdateCurrentCheckpointButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            if (UpdateDetails != null)
-            {
-                UpdateDetails.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void ChangeEstimatedDeliveryDateButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            if (deliveryCalendarDatePicker != null)
-            {
-                deliveryCalendarDatePicker.Visibility = Visibility.Visible;
-            }
-            if (confirmChangeEstimatedDeliveryDateButton != null)
-            {
-                confirmChangeEstimatedDeliveryDateButton.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void AddNewCheckpointButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            if (AddDetails != null)
-            {
-                AddDetails.Visibility = Visibility.Visible;
-            }
-        }
-
         private void ManualTimestampRadio_Checked(object sender, RoutedEventArgs e)
         {
-            UpdateDetails.Visibility = Visibility.Visible;
+            if (TimestampRadioButtons != null)
+            {
+                TimestampRadioButtons.Visibility = Visibility.Visible;
+                if (DateTimePickers != null)
+                {
+                    DateTimePickers.Visibility = Visibility.Visible;
+                }
+            }
         }
 
         private void AutoTimestampRadio_Checked(object sender, RoutedEventArgs e)
         {
-            if (DateTimePickers != null)
+            if (TimestampRadioButtons != null)
             {
-                DateTimePickers.Visibility = Visibility.Collapsed;
+                TimestampRadioButtons.Visibility = Visibility.Visible;
+                if (DateTimePickers != null)
+                {
+                    DateTimePickers.Visibility = Visibility.Collapsed;
+                }
             }
         }
     }

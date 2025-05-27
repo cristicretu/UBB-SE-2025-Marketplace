@@ -52,7 +52,7 @@ namespace MarketMinds
         private void HandleCreateListingButton_Click(object sender, RoutedEventArgs e)
         {
             CreateListingViewWindow = new Window();
-            CreateListingViewWindow.Content = new CreateListingView(this);
+            CreateListingViewWindow.Content = new CreateListingView();
             CreateListingViewWindow.Activate();
         }
 

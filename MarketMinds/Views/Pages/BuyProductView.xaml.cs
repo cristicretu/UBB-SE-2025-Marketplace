@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using MarketMinds.Views.Pages;
 
 namespace MarketMinds

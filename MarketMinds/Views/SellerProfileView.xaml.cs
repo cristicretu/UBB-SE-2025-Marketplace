@@ -5,14 +5,15 @@
 // -----------------------------------------------------------------------
 namespace MarketMinds.Views
 {
-    using System.Diagnostics;
     using System;
+    using System.Diagnostics;
+    using System.Threading.Tasks;
     using MarketMinds.ViewModels;
+    using Microsoft.UI;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
-    using Microsoft.UI.Xaml.Navigation;
     using Microsoft.UI.Xaml.Media;
-    using Microsoft.UI;
+    using Microsoft.UI.Xaml.Navigation;
 
     /// <summary>
     /// Seller profile view page.
@@ -29,9 +30,12 @@ namespace MarketMinds.Views
         /// </summary>
         public SellerProfileView()
         {
-            this.InitializeComponent();
             Debug.WriteLine("SellerProfileView constructor called");
+            this.viewModel = App.SellerProfileViewModel;
+            this.viewModel.User = App.CurrentUser;
+            this.viewModel.LoadProfileAsync();
             this.Loaded += SellerProfileView_Loaded;
+            this.InitializeComponent();
         }
 
         /// <summary>
@@ -410,6 +414,70 @@ namespace MarketMinds.Views
                 this.viewModel = vm;
                 Debug.WriteLine("Successfully retrieved viewModel from DataContext");
             }
+        }
+
+        private async void OnManageOrderTrackingClick(object sender, RoutedEventArgs e)
+        {
+            if (this.viewModel == null)
+            {
+                await ShowErrorDialog("Unable to access order tracking at this time. Please try again later.");
+                return;
+            }
+
+            var contentDialog = new ContentDialog
+            {
+                Title = "Enter Tracked Order ID",
+                PrimaryButtonText = "Confirm",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            TextBox inputTextBox = new TextBox { PlaceholderText = "Enter Tracked Order ID" };
+            contentDialog.Content = inputTextBox;
+
+            var result = await contentDialog.ShowAsync();
+            bool parseSuccessful = int.TryParse(inputTextBox.Text, out int trackedOrderID);
+
+            if (result == ContentDialogResult.Primary && parseSuccessful)
+            {
+                try
+                {
+                    // Validate that the tracked order exists
+                    var trackedOrder = await App.TrackedOrderViewModel.GetTrackedOrderByIDAsync(trackedOrderID);
+                    if (trackedOrder == null)
+                    {
+                        await ShowErrorDialog($"No tracked order found with ID {trackedOrderID}. Please verify the order ID and try again.");
+                        return;
+                    }
+
+                    var trackedOrderWindow = new TrackedOrderWindow();
+                    var trackedOrderControlPage = new TrackedOrderControlPage();
+                    trackedOrderControlPage.SetTrackedOrderID(trackedOrderID);
+                    trackedOrderWindow.Content = trackedOrderControlPage;
+                    trackedOrderWindow.Activate();
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorDialog($"Error loading tracked order: {ex.Message}");
+                }
+            }
+            else if (result == ContentDialogResult.Primary && !parseSuccessful)
+            {
+                await ShowErrorDialog("Please enter a valid order ID number!");
+            }
+        }
+
+        private async Task ShowErrorDialog(string errorMessage)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Error",
+                Content = errorMessage,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+            await dialog.ShowAsync();
         }
 
         private bool IsValidEmail(string email)

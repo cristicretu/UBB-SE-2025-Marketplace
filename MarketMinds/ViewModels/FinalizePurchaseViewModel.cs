@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
@@ -8,7 +10,7 @@ using MarketMinds.Shared.Services;
 namespace MarketMinds.ViewModels
 {
     /// <summary>
-    /// Represents the view model for finalizing a purchase and updating order history and notifications.
+    /// Represents the view model for finalizing a purchase and displaying order confirmation.
     /// </summary>
     public class FinalizePurchaseViewModel : IFinalizePurchaseViewModel, INotifyPropertyChanged
     {
@@ -17,104 +19,179 @@ namespace MarketMinds.ViewModels
         private readonly IOrderService orderService;
         private readonly INotificationViewModel notificationViewModel;
 
-        private int orderHistoryID;
-
+        // Fields
+        private int lastOrderSummaryId;
         private double subtotal;
         private double deliveryFee;
+        private double warrantyTax;
         private double total;
-
         private string fullname;
         private string phone;
         private string email;
         private string paymentMethod;
         private string orderStatus;
-        public ObservableCollection<Product> ProductList { get; set; }
-        public List<Product> Products;
+
+        // Properties
+        public ObservableCollection<ProductViewModel> ProductList { get; set; }
         public List<Order> Orders;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinalizePurchaseViewModel"/> class and begins loading order details for finalization.
+        /// Initializes a new instance of the <see cref="FinalizePurchaseViewModel"/> class.
         /// </summary>
-        /// <param name="orderHistoryID">The unique identifier for the order history.</param>
-        public FinalizePurchaseViewModel(int orderHistoryID)
+        public FinalizePurchaseViewModel()
         {
-            orderHistoryService = new OrderHistoryService();
-            orderService = new OrderService();
-            orderSummaryService = new OrderSummaryService();
-            notificationViewModel = new NotificationViewModel(1);
+            orderHistoryService = App.OrderHistoryService;
+            orderService = App.OrderService;
+            orderSummaryService = App.OrderSummaryService;
+            notificationViewModel = App.NotificationViewModel ?? new NotificationViewModel(1);
 
-            this.orderHistoryID = orderHistoryID;
+            ProductList = new ObservableCollection<ProductViewModel>();
+            Orders = new List<Order>();
 
-            _ = InitializeViewModelAsync();
+            // Default values
+            OrderStatus = "Completed";
+
+            // Use the last processed order history ID from App state if available
+            lastOrderSummaryId = App.LastProcessedOrderId;
+
+            if (lastOrderSummaryId > 0)
+            {
+                // Use Task.Run to avoid blocking the UI thread during initialization
+                Task.Run(async () => await InitializeViewModelAsync()).ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        Debug.WriteLine($"Failed to initialize ViewModel: {t.Exception}");
+                    }
+                });
+            }
+            else
+            {
+                Debug.WriteLine("No order history ID available");
+            }
         }
 
         /// <summary>
-        /// Asynchronously initializes the view model by loading dummy products, order summary details, and setting order history information.
+        /// Asynchronously initializes the view model by loading products and order summary details.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task InitializeViewModelAsync()
         {
-            Products = await GetProductsFromOrderHistoryAsync(orderHistoryID);
-            ProductList = new ObservableCollection<Product>(Products);
+            Debug.WriteLine($"Loading data for order history ID: {lastOrderSummaryId}");
 
-            OnPropertyChanged(nameof(ProductList));
+            try
+            {
+                // Get products from order history
+                var products = await orderHistoryService.GetProductsFromOrderHistoryAsync(lastOrderSummaryId);
 
-            OrderSummary orderSummary = await orderSummaryService.GetOrderSummaryByIdAsync(orderHistoryID);
+                // Clear and populate product list
+                ProductList.Clear();
+                if (products != null)
+                {
+                    foreach (var product in products)
+                    {
+                        // Create ProductViewModels with quantities
+                        ProductList.Add(new ProductViewModel(product, 1));
+                    }
+                }
 
-            await SetOrderHistoryInfo(orderSummary);
+                Debug.WriteLine($"Retrieved {ProductList.Count} products");
+                OnPropertyChanged(nameof(ProductList));
+
+                // Get order summary info
+                var orderSummary = await orderSummaryService.GetOrderSummaryByIdAsync(lastOrderSummaryId);
+                if (orderSummary != null)
+                {
+                    await SetOrderHistoryInfo(orderSummary);
+                }
+                else
+                {
+                    Debug.WriteLine("Order summary is null");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error initializing view model: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Sets the order history information by updating order summary details and order status.
+        /// Sets the order history information from the order summary.
         /// </summary>
-        /// <param name="orderSummary">The order summary object containing order details.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <param name="orderSummary">The order summary object.</param>
         public async Task SetOrderHistoryInfo(OrderSummary orderSummary)
         {
-            Orders = await orderService.GetOrdersFromOrderHistoryAsync(orderHistoryID);
-            Subtotal = orderSummary.Subtotal;
-            DeliveryFee = orderSummary.DeliveryFee;
-            Total = orderSummary.FinalTotal;
+            try
+            {
+                Orders = await orderService.GetOrdersFromOrderHistoryAsync(lastOrderSummaryId);
 
-            FullName = orderSummary.FullName;
-            Email = orderSummary.Email;
-            PhoneNumber = orderSummary.PhoneNumber;
-            PaymentMethod = Orders[0].PaymentMethod;
-            OrderStatus = "Processing";
+                // Financial details
+                Subtotal = orderSummary.Subtotal;
+                DeliveryFee = orderSummary.DeliveryFee;
+                Total = orderSummary.FinalTotal;
+                WarrantyTax = orderSummary.WarrantyTax;
+
+                // Customer details
+                FullName = orderSummary.FullName;
+                Email = orderSummary.Email;
+                PhoneNumber = orderSummary.PhoneNumber;
+
+                // Get payment method from first order
+                if (Orders != null && Orders.Count > 0)
+                {
+                    PaymentMethod = Orders[0].PaymentMethod;
+                }
+
+                // Set order number for display
+                OrderNumber = lastOrderSummaryId;
+
+                Debug.WriteLine("Order history info set successfully");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error setting order history info: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Occurs when a property value changes.
+        /// Retrieves products from an order history.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Raises the <see cref="PropertyChanged"/> event for the specified property.
-        /// </summary>
-        /// <param name="propertyName">The name of the property that changed.</param>
-        protected void OnPropertyChanged(string propertyName)
+        /// <param name="lastOrderSummaryId">The order history ID.</param>
+        public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int lastOrderSummaryId)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            return await orderHistoryService.GetProductsFromOrderHistoryAsync(lastOrderSummaryId);
         }
 
         /// <summary>
-        /// Asynchronously retrieves dummy products associated with the specified order history.
-        /// </summary>
-        /// <param name="orderHistoryID">The unique identifier for the order history.</param>
-        /// <returns>A task that returns a list of <see cref="Product"/> objects.</returns>
-        public async Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryID)
-        {
-            return await orderHistoryService.GetProductsFromOrderHistoryAsync(orderHistoryID);
-        }
-
-        /// <summary>
-        /// Handles the finish process by sending payment confirmation notifications for each order.
+        /// Handles the finish process by sending notifications and navigating to the home page.
         /// </summary>
         public async void HandleFinish()
         {
-            foreach (var order in Orders)
+            try
             {
-                await notificationViewModel.AddNotificationAsync(new PaymentConfirmationNotification(1, System.DateTime.Now, order.ProductID, order.Id, false));
+                Debug.WriteLine("Handling finish action");
+
+                // Create payment confirmation notifications
+                if (Orders != null)
+                {
+                    foreach (var order in Orders)
+                    {
+                        await notificationViewModel.AddNotificationAsync(
+                            new PaymentConfirmationNotification(
+                                UserSession.CurrentUserId ?? 1,
+                                DateTime.Now,
+                                order.ProductID,
+                                order.Id,
+                                false));
+
+                        Debug.WriteLine($"Added notification for order {order.Id}, product {order.ProductID}");
+                    }
+                }
+
+                // Navigate to home page or marketplace (handled in the view)
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error handling finish: {ex.Message}");
             }
         }
 
@@ -125,8 +202,13 @@ namespace MarketMinds.ViewModels
             {
                 subtotal = value;
                 OnPropertyChanged(nameof(Subtotal));
+                // Format for display
+                SubtotalFormatted = $"{subtotal:N2} €";
+                OnPropertyChanged(nameof(SubtotalFormatted));
             }
         }
+
+        public string SubtotalFormatted { get; private set; }
 
         public double DeliveryFee
         {
@@ -135,8 +217,28 @@ namespace MarketMinds.ViewModels
             {
                 deliveryFee = value;
                 OnPropertyChanged(nameof(DeliveryFee));
+                // Format for display
+                DeliveryFeeFormatted = $"{deliveryFee:N2} €";
+                OnPropertyChanged(nameof(DeliveryFeeFormatted));
             }
         }
+
+        public double WarrantyTax
+        {
+            get => warrantyTax;
+            set
+            {
+                warrantyTax = value;
+                OnPropertyChanged(nameof(WarrantyTax));
+                // Format for display
+                WarrantytaxFormatted = $"{warrantyTax:N2} €";
+                OnPropertyChanged(nameof(WarrantytaxFormatted));
+            }
+        }
+
+        public string DeliveryFeeFormatted { get; private set; }
+
+        public string WarrantytaxFormatted { get; private set; }
 
         public double Total
         {
@@ -145,8 +247,13 @@ namespace MarketMinds.ViewModels
             {
                 total = value;
                 OnPropertyChanged(nameof(Total));
+                // Format for display
+                TotalFormatted = $"{total:N2} €";
+                OnPropertyChanged(nameof(TotalFormatted));
             }
         }
+
+        public string TotalFormatted { get; private set; }
 
         public string FullName
         {
@@ -196,6 +303,27 @@ namespace MarketMinds.ViewModels
                 orderStatus = value;
                 OnPropertyChanged(nameof(OrderStatus));
             }
+        }
+
+        public int OrderNumber { get; private set; }
+        public int OrderHistoryID // this is actually the order summary ID
+        {
+            get => lastOrderSummaryId;
+            set
+            {
+                if (lastOrderSummaryId != value)
+                {
+                    lastOrderSummaryId = value;
+                    OnPropertyChanged(nameof(lastOrderSummaryId));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

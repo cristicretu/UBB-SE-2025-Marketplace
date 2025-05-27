@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using MarketMinds.Shared.Models;
 using MarketMinds;
 using MarketMinds.Helpers;
@@ -48,7 +48,7 @@ namespace MarketMinds.Views
         private TextBlock imagesTextBlock;
         private TextBlock categoryTextBlock;
         private TextBlock conditionTextBlock;
-        private MainWindow window;
+        private HomePageView homePageWindow;
         private readonly string imgurClientId;
         private static readonly HttpClient HttpClient = new HttpClient();
         private const int NO_ITEMS = 0;
@@ -65,7 +65,7 @@ namespace MarketMinds.Views
         private readonly ImageUploadService imageUploadService;
         private readonly ListingFormValidationService validationService;
 
-        public CreateListingView(MainWindow mainWindow)
+        public CreateListingView()
         {
             this.InitializeComponent();
             imgurClientId = App.Configuration.GetSection("ImgurSettings:ClientId").Value;
@@ -110,7 +110,7 @@ namespace MarketMinds.Views
             tagsListView.IsItemClickEnabled = true;
 
             tagsListView.ItemsSource = tags;
-            window = mainWindow;
+            homePageWindow = App.HomePageWindow;
         }
 
         private void LoadCategories()
@@ -140,6 +140,7 @@ namespace MarketMinds.Views
             {
                 case "Buy":
                     viewModel = new CreateBuyListingViewModel { BuyProductsService = App.BuyProductsService };
+                    // clear common fields
                     AddBuyProductFields();
                     break;
                 case "Borrow":
@@ -226,8 +227,8 @@ namespace MarketMinds.Views
         {
             var picker = new FileOpenPicker();
 
-            // Get the current window handle (HWND)
-            var hwnd = WindowNative.GetWindowHandle(this.window); // Assuming 'this.window' is the correct MainWindow instance
+            // Get the current homePageWindow handle (HWND)
+            var hwnd = WindowNative.GetWindowHandle(this.homePageWindow); // Assuming 'this.homePageWindow' is the correct MainWindow instance
             InitializeWithWindow.Initialize(picker, hwnd);
 
             picker.ViewMode = PickerViewMode.Thumbnail;
@@ -267,7 +268,7 @@ namespace MarketMinds.Views
                 Title = title,
                 Content = message,
                 CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
+                XamlRoot = App.HomePageWindow?.Content.XamlRoot
             };
             await errorDialog.ShowAsync();
         }
@@ -279,7 +280,7 @@ namespace MarketMinds.Views
                 Title = "Success",
                 Content = message,
                 CloseButtonText = "Ok",
-                XamlRoot = this.XamlRoot
+                XamlRoot = App.HomePageWindow?.Content.XamlRoot
             };
             await successDialog.ShowAsync();
         }

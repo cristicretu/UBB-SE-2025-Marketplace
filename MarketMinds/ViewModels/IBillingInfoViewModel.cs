@@ -1,45 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.ViewModels
 {
-    /// <summary>
-    /// Defines the methods required for a billing information view model.
-    /// </summary>
     public interface IBillingInfoViewModel
     {
-        /// <summary>
-        /// Asynchronously retrieves dummy products associated with the specified order history.
-        /// </summary>
-        /// <param name="orderHistoryID">The unique identifier for the order history.</param>
-        /// <returns>A task representing the asynchronous operation that returns a list of <see cref="Product"/> objects.</returns>
-        Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryID);
+        string AdditionalInfo { get; set; }
+        string Address { get; set; }
+        double DeliveryFee { get; set; }
+        string Email { get; set; }
+        DateTimeOffset EndDate { get; set; }
+        string ErrorMessage { get; set; }
+        string FullName { get; set; }
+        bool IsCardEnabled { get; set; }
+        bool IsCashEnabled { get; set; }
+        bool IsProcessing { get; set; }
+        bool IsWalletEnabled { get; set; }
+        int OrderHistoryId { get; set; }
+        string PhoneNumber { get; set; }
+        ObservableCollection<Product> ProductList { get; set; }
+        string SelectedPaymentMethod { get; set; }
+        DateTimeOffset StartDate { get; set; }
+        double Subtotal { get; set; }
+        double Total { get; set; }
+        double WarrantyTax { get; set; }
+        string ZipCode { get; set; }
 
-        /// <summary>
-        /// Calculates the total order amount for the specified order history, including applicable fees.
-        /// </summary>
-        /// <param name="orderHistoryID">The unique identifier for the order history.</param>
+        event PropertyChangedEventHandler PropertyChanged;
+
+        Task ApplyBorrowedTax(BorrowProduct borrowProduct);
+        void CalculateOrderTotal();
         void CalculateOrderTotal(int orderHistoryID);
-
-        /// <summary>
-        /// Applies the borrowed tax calculation to the specified dummy product.
-        /// </summary>
-        /// <param name="product">The product on which to apply the borrowed tax.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task ApplyBorrowedTax(BorrowProduct product);
-
-        /// <summary>
-        /// Updates the start date for the product's rental period.
-        /// </summary>
-        /// <param name="date">The new start date as a <see cref="DateTimeOffset"/>.</param>
-        void UpdateStartDate(DateTimeOffset date);
-
-        /// <summary>
-        /// Updates the end date for the product's rental period.
-        /// </summary>
-        /// <param name="date">The new end date as a <see cref="DateTimeOffset"/>.</param>
+        Task<List<Product>> GetProductsFromOrderHistoryAsync(int orderHistoryID);
+        Task InitializeViewModelAsync();
+        Task OnFinalizeButtonClickedAsync();
+        Task OpenNextWindowAsync(string selectedPaymentMethod);
+        Task ProcessWalletRefillAsync();
+        void SetBuyerId(int buyerId);
+        void SetCartItems(List<Product> cartItems);
+        void SetCartTotal(double total);
         void UpdateEndDate(DateTimeOffset date);
+        void UpdateStartDate(DateTimeOffset date);
+        Task AddPurchase(double purchaseAmount);
     }
 }

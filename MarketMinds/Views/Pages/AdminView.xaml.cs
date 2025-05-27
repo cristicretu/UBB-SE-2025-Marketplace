@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Views

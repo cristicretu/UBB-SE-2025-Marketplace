@@ -5,13 +5,14 @@
     xmlns:local="using:MarketMinds.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid Margin="20">
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="0.20*"/> <!-- Conversation list - 20% of the screen width -->
+            <ColumnDefinition Width="0.80*"/> <!-- Chat area - 80% of the screen width -->
         </Grid.ColumnDefinitions>
 
         <!-- Left sidebar with conversation list -->
@@ -61,7 +62,7 @@
             <ScrollViewer Grid.Row="1" x:Name="MessagesScrollViewer" Margin="0,0,0,10" 
                           VerticalScrollBarVisibility="Auto">
                 <StackPanel x:Name="ChatMessagesPanel" Margin="15,10">
-                    <!-- Messages will be added here directly -->
+                    <!-- Messages will be added here directly as MarkdownTextBlock -->
                 </StackPanel>
             </ScrollViewer>
 
@@ -84,4 +85,4 @@
             </Grid>
         </Grid>
     </Grid>
-</Page> 
+</Page>

@@ -85,9 +85,17 @@
 
         <!-- Footer -->
         <Grid Grid.Row="2" Margin="0,10,0,0">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock FontSize="20" Text="Total Users: " Margin="0,0,10,0"/>
                 <TextBlock FontSize="20" Text="{Binding TotalUsersCount}"/>
+                </StackPanel>
+                <Button x:Name="TrackOrderButton" 
+                        Content="Track Order" 
+                        Click="TrackOrderButton_Click"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Margin="0,20,0,0"
+                        HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>
     </Grid>

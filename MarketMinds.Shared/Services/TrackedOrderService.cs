@@ -10,9 +10,9 @@ namespace MarketMinds.Shared.Services
         private readonly ITrackedOrderRepository trackedOrderRepository;
 
         // Constructor for dependency injection
-        public TrackedOrderService()
+        public TrackedOrderService(ITrackedOrderRepository trackedOrderRepository)
         {
-            this.trackedOrderRepository = new TrackedOrderProxyRepository(AppConfig.GetBaseApiUrl());
+            this.trackedOrderRepository = trackedOrderRepository ?? throw new ArgumentNullException(nameof(trackedOrderRepository));
         }
 
         public async Task<int> AddOrderCheckpointAsync(OrderCheckpoint checkpoint)
@@ -62,8 +62,8 @@ namespace MarketMinds.Shared.Services
         {
             try
             {
-                return await trackedOrderRepository.GetTrackedOrderByIdAsync(trackedOrderID);
-            }
+            return await trackedOrderRepository.GetTrackedOrderByIdAsync(trackedOrderID);
+        }
             catch (Exception) // Repository throws if not found
             {
                 return null; // Service layer can choose to return null or re-throw
@@ -224,10 +224,8 @@ namespace MarketMinds.Shared.Services
             {
                 throw new ArgumentException("Order ID must be positive", nameof(orderId));
             }
-
             TrackedOrder order = new TrackedOrder
             {
-                TrackedOrderID = 0, // This will be set by the repository
                 OrderID = orderId,
                 EstimatedDeliveryDate = estimatedDeliveryDate,
                 DeliveryAddress = deliveryAddress,

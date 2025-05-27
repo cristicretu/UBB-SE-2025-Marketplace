@@ -1,6 +1,6 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionProductsService;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 
 namespace MarketMinds.ViewModels
 {

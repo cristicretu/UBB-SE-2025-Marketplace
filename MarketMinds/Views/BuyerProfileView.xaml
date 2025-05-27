@@ -19,7 +19,6 @@
                 <RowDefinition Height="380" />
                 <RowDefinition Height="50" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
                 <!-- Main Content (e.g., Title and Profile) -->
@@ -109,42 +108,12 @@
 
             <!-- New Basic Action Buttons -->
             <StackPanel Grid.Row="3" Margin="0,10,0,10">
-                <TextBlock Text="Quick Actions" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" HorizontalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
-                    <Button x:Name="bidProductButton" Content="Bid Product" Click="BidProductButton_Clicked" Margin="5"/>
-                    <Button x:Name="walletrefillButton" Content="Refill Wallet" Click="WalletRefillButton_Clicked" Margin="5"/>
-                    <Button x:Name="borrowButton" Content="Borrow Product" Click="BorrowButton_Clicked" Margin="5"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5">
-                    <Button x:Name="notificationButton" Content="Notifications" Click="NotificationButton_Clicked" Margin="5"/>
-                    <Button x:Name="OrderHistoryButton" Content="Order History" Click="OrderHistoryButton_Clicked" Margin="5"/>
                     <Button x:Name="renewContractButton" Content="Renew Contract" Click="RenewContractButton_Clicked" Margin="5"/>
-                    <Button x:Name="trackOrderButton" Content="Track Order" Click="TrackOrderButton_Clicked" Margin="5"/>
-                </StackPanel>
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,5">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="Contract ID:" VerticalAlignment="Center"/>
-                        <TextBox x:Name="contractID" Width="30" InputScope="Number" Text="1" Margin="5" />
-                        <Button x:Name="generateContractButton" Content="Generate Contract" Click="GenerateContractButton_Clicked" Margin="5"/>
-                    </StackPanel>
-                    <!-- Bind TextBlock to the GenerateContractErrorMessage property -->
-                    <TextBlock Text="{x:Bind ContractViewModel.GenerateContractErrorMessage, Mode=OneWay}"
-                               Foreground="Red" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
             </StackPanel>
 
-            <Grid Grid.Row="4" Margin="0,30,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3.5*" />
-                    <ColumnDefinition Width="1.5*" />
-                </Grid.ColumnDefinitions>
-                <local:BuyerWishlistControl ViewModel="{x:Bind ViewModel.Wishlist, Mode=OneWay}" />
-                <StackPanel Grid.Column="1">
-                    <local:BuyerFamilySyncControl ViewModel="{x:Bind ViewModel.FamilySync, Mode=OneWay}" />
-                    <local:BuyerMockAddPurchase ViewModel="{x:Bind ViewModel, Mode=OneWay}" VerticalAlignment="Center"
-                                            Margin="20" />
-                </StackPanel>
-            </Grid>
+            <!-- Wishlist and Family Sync controls moved to dedicated WishlistView page -->
         </Grid>
     </ScrollViewer>
 </Page>

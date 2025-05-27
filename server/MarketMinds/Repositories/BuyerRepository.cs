@@ -356,12 +356,12 @@ namespace Server.Repository
                 return new List<Buyer>();
             }
 
+            // edit to make it more nicer
             return await this.dbContext.Buyers
                 .Where(buyer => 
-                    buyer.ShippingAddress.Country == shippingAddress.Country &&
-                    buyer.ShippingAddress.City == shippingAddress.City &&
-                    buyer.ShippingAddress.StreetLine == shippingAddress.StreetLine &&
-                    buyer.ShippingAddress.PostalCode == shippingAddress.PostalCode)
+                    (buyer.ShippingAddress.Country == shippingAddress.Country &&
+                    buyer.ShippingAddress.City == shippingAddress.City) 
+                    || buyer.ShippingAddress.PostalCode == shippingAddress.PostalCode)
                 .ToListAsync();
         }
 
@@ -442,7 +442,34 @@ namespace Server.Repository
         /// <inheritdoc/>
         public async Task UpdateAfterPurchase(Buyer buyerEntity)
         {
-            this.dbContext.Buyers.Update(buyerEntity);
+            // Check if the buyer is already being tracked
+            var existingBuyer = this.dbContext.Buyers.Local.FirstOrDefault(b => b.Id == buyerEntity.Id);
+            
+            if (existingBuyer != null)
+            {
+                // Buyer is already tracked - update the tracked entity's properties
+                existingBuyer.TotalSpending = buyerEntity.TotalSpending;
+                existingBuyer.NumberOfPurchases = buyerEntity.NumberOfPurchases;
+                existingBuyer.Badge = buyerEntity.Badge;
+                existingBuyer.Discount = buyerEntity.Discount;
+            }
+            else
+            {
+                // Buyer is not tracked - load it from database
+                existingBuyer = await this.dbContext.Buyers.FindAsync(buyerEntity.Id);
+                if (existingBuyer == null)
+                {
+                    throw new InvalidOperationException($"Buyer with ID {buyerEntity.Id} not found.");
+                }
+
+                // Update the loaded entity's properties
+                existingBuyer.TotalSpending = buyerEntity.TotalSpending;
+                existingBuyer.NumberOfPurchases = buyerEntity.NumberOfPurchases;
+                existingBuyer.Badge = buyerEntity.Badge;
+                existingBuyer.Discount = buyerEntity.Discount;
+            }
+
+            // Save changes - EF will only update the modified properties
             await this.dbContext.SaveChangesAsync();
         }
 

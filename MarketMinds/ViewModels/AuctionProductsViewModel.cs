@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Shared.Services.AuctionValidationService;
 
-namespace ViewModelLayer.ViewModel;
+namespace MarketMinds.ViewModels;
 
 public class AuctionProductsViewModel
 {
@@ -16,14 +17,35 @@ public class AuctionProductsViewModel
         this.auctionValidationService = new AuctionValidationService((IAuctionProductsService)auctionProductsService);
     }
 
+    public async Task<List<AuctionProduct>> GetAllProductsAsync()
+    {
+        return await ((AuctionProductsService)auctionProductsService).GetAllAuctionProductsAsync();
+    }
+
+    public async Task<List<AuctionProduct>> GetProductsAsync(int offset, int count)
+    {
+        return await ((AuctionProductsService)auctionProductsService).GetAllAuctionProductsAsync(offset, count);
+    }
+
+    public async Task<int> GetProductCountAsync()
+    {
+        return await ((AuctionProductsService)auctionProductsService).GetAuctionProductCountAsync();
+    }
+
+    // Keep the synchronous methods for backward compatibility, but they now use GetAwaiter().GetResult()
     public List<AuctionProduct> GetAllProducts()
     {
-        var auctionProducts = new List<AuctionProduct>();
-        foreach (var product in auctionProductsService.GetProducts())
-        {
-            auctionProducts.Add((AuctionProduct)product);
-        }
-        return auctionProducts;
+        return GetAllProductsAsync().GetAwaiter().GetResult();
+    }
+
+    public List<AuctionProduct> GetProducts(int offset, int count)
+    {
+        return GetProductsAsync(offset, count).GetAwaiter().GetResult();
+    }
+
+    public int GetProductCount()
+    {
+        return GetProductCountAsync().GetAwaiter().GetResult();
     }
 
     public void PlaceBid(AuctionProduct product, User bidder, string enteredBidText)

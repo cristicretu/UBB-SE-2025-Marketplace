@@ -5,7 +5,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Shared.Services.Interfaces;
 using BusinessLogicLayer.ViewModel;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 
 namespace MarketMinds.Helpers.ViewModelHelpers
 {

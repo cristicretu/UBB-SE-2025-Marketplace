@@ -138,7 +138,7 @@ namespace Server.Controllers
                     // Create tracking info DTO
                     var trackingInfo = new OrderTrackingInfoDTO
                     {
-                        OrderID = order.OrderID,
+                        Id = order.OrderID,
                         ProductName = order.ProductName ?? "Unknown Product",
                         OrderDate = order.OrderDate ?? DateTime.Now.ToString("yyyy-MM-dd"),
                         CurrentStatus = trackedOrder.CurrentStatus,
@@ -171,7 +171,7 @@ namespace Server.Controllers
         /// <summary>
         /// Gets or sets the order ID.
         /// </summary>
-        public int OrderID { get; set; }
+        public int Id { get; set; }
         
         /// <summary>
         /// Gets or sets the product name.

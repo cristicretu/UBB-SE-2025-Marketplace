@@ -1,6 +1,6 @@
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
-using System;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Converters
@@ -27,4 +27,4 @@ namespace MarketMinds.Converters
             throw new NotImplementedException();
         }
     }
-} 
+}

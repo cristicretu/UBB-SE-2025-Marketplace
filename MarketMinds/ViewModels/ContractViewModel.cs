@@ -47,10 +47,10 @@ namespace MarketMinds.ViewModels
         /// </summary>
         /// <param name="contractService" type="IContractService">The contract service instance</param>
         // Update the constructor to accept IContractService
-        public ContractViewModel()
+        public ContractViewModel(IContractService contractService)
         {
             // Assign the injected service instance
-            this.contractService = new ContractService();
+            this.contractService = contractService;
         }
 
         /// <summary>
@@ -437,9 +437,10 @@ namespace MarketMinds.ViewModels
                 StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
                 await Launcher.LaunchFileAsync(file);
             }
-            catch (Exception ex) // Catches exceptions from ContractProxyRepository (e.g., HttpRequestException) and other operations
+            catch (Exception ex)
             {
-                GenerateContractErrorMessage = $"Something went horribly wrong when trying to generate your contract with id {contractID}";
+                GenerateContractErrorMessage = $"The contract with id {contractID} does not exist.";
+                throw new Exception(GenerateContractErrorMessage);
             }
         }
     }

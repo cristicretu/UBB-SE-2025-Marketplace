@@ -25,8 +25,8 @@ namespace MarketMinds.ViewModels
     public class SellerProfileViewModel : ISellerProfileViewModel
     {
         private readonly ISellerService sellerService;
-        private readonly User user;
-        private Seller seller;
+        public User User { get; set; } = null!;
+        private Seller seller = null!;
         private ObservableCollection<Product> allProducts;
         private ObservableCollection<Product> filteredProducts;
         private bool isExpanderExpanded = false;
@@ -41,12 +41,9 @@ namespace MarketMinds.ViewModels
         public string DescriptionError { get; set; }
         public string DisplayName { get; set; }
         public Seller Seller => this.seller;
-        public SellerProfileViewModel(ISellerService sellerService, User user)
+        public SellerProfileViewModel(ISellerService sellerService)
         {
-            Debug.WriteLine($"SellerProfileViewModel constructor called with User ID: {user?.Id ?? -1}");
-
             this.sellerService = sellerService ?? throw new ArgumentNullException(nameof(sellerService));
-            this.user = user ?? throw new ArgumentNullException(nameof(user));
 
             this.StoreName = "Loading...";
             this.Username = string.Empty;
@@ -107,27 +104,6 @@ namespace MarketMinds.ViewModels
                 Debug.WriteLine("SellerProfileViewModel: Beginning initialization");
                 this.Notifications.Add("Debug: Loading seller data...");
 
-                this.seller = await this.sellerService.GetSellerByUser(this.user);
-
-                if (this.seller == null)
-                {
-                    Debug.WriteLine("ERROR: GetSellerByUser returned NULL");
-                    this.Notifications.Add("Error: Failed to load seller data");
-
-                    this.seller = new Seller(this.user);
-                    Debug.WriteLine("Created new Seller object with User");
-                }
-                else
-                {
-                    Debug.WriteLine($"Loaded seller with ID: {this.seller.Id}");
-                    this.Notifications.Add($"Debug: Loaded seller ID {this.seller.Id}");
-                }
-
-                await this.LoadSellerProfile();
-                await this.LoadNotifications();
-                await this.LoadProducts();
-
-                Debug.WriteLine("SellerProfileViewModel initialization complete");
                 this.Notifications.Add("Debug: Initialization complete");
             }
             catch (Exception ex)
@@ -138,12 +114,22 @@ namespace MarketMinds.ViewModels
             }
         }
 
+        /// <inheritdoc/>
+        public void LoadProfileAsync()
+        {
+            _ = this.LoadSellerProfile();
+            _ = this.LoadNotifications();
+            _ = this.LoadProducts();
+        }
+
         /// <summary>
         /// Loads seller information into ViewModel properties.
         /// </summary>
         private async Task LoadSellerProfile()
         {
             Debug.WriteLine("LoadSellerProfile called");
+
+            this.seller = await this.sellerService.GetSellerByUser(this.User);
 
             if (this.seller == null)
             {
@@ -192,7 +178,7 @@ namespace MarketMinds.ViewModels
         }
 
         /// <summary>
-        /// Updates seller and user profile data via service.
+        /// Updates seller and User profile data via service.
         /// </summary>
         public async void UpdateProfile()
         {
@@ -223,7 +209,7 @@ namespace MarketMinds.ViewModels
                 {
                     await this.sellerService.UpdateSeller(this.seller);
                     // Reload the seller data from the database to ensure we have the latest values
-                    this.seller = await this.sellerService.GetSellerByUser(this.user);
+                    this.seller = await this.sellerService.GetSellerByUser(this.User);
                     // Reload the profile data to update all UI bindings
                     await LoadSellerProfile();
                     await ShowDialog("Success", "Your profile has been updated successfully.");

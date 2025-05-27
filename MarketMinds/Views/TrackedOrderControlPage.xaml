@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- 
     TrackedOrderControlPage.xaml
     Purpose: Provides a comprehensive interface for viewing and managing tracked orders
@@ -27,115 +26,233 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <!-- Main layout: Two-column grid with details on left and controls on right -->
-    <Grid ColumnSpacing="10" Padding="20">
+    <Grid Padding="20" ColumnSpacing="20">
         <Grid.ColumnDefinitions>
-            <!-- Left column for order details -->
-            <ColumnDefinition Width="3*"/>
-            <!-- Right column for management controls -->
-            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Left Panel: Displays order details and checkpoint history -->
-        <!-- Uses TrackedOrderDetailsControl for consistent display of order information -->
-        <local:TrackedOrderDetailsControl Grid.Column="0"/>
+        <!-- Left Panel: Order Details and Timeline -->
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="20">
+                <!-- Order Details Card -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        CornerRadius="8"
+                        Padding="16"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Order Details" 
+                                   Style="{StaticResource SubtitleTextBlockStyle}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-        <!-- Right Panel: Admin controls for managing tracked orders and checkpoints -->
-        <StackPanel Grid.Column="1" Padding="20" Spacing="20">
-            <!-- Revert control: Returns order to previous checkpoint state -->
-            <Button Content="Revert to Last Checkpoint" Click="RevertLastCheckpointButton_Clicked"/>
+                            <TextBlock Text="Order ID:" Grid.Row="0" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,4"/>
+                            <TextBlock Text="{Binding OrderID}" Grid.Row="0" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
 
-            <!-- Delivery date modification controls -->
-            <StackPanel Orientation="Horizontal">
-                <!-- Initiates delivery date change process -->
-                <Button Content="Change Estimated Delivery Date" Click="ChangeEstimatedDeliveryDateButton_Clicked"/>
+                            <TextBlock Text="Current Status:" Grid.Row="1" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,4"/>
+                            <TextBlock Text="{Binding CurrentStatus}" Grid.Row="1" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
 
-                <!-- Date picker - hidden until change button is clicked -->
-                <!-- Format: DD.MM.YYYY -->
-                <CalendarDatePicker x:Name="deliveryCalendarDatePicker" Visibility="Collapsed" 
-                                   DateFormat = "{}{day.integer}.{month.integer}.{year.full}" />
+                            <TextBlock Text="Estimated Delivery:" Grid.Row="2" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,4"/>
+                            <TextBlock Text="{Binding EstimatedDeliveryDate, Converter={StaticResource DateFormatConverter}}" 
+                                     Grid.Row="2" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
 
-                <!-- Confirmation button - hidden until change button is clicked -->
-                <Button x:Name="confirmChangeEstimatedDeliveryDateButton" Content="Confirm" 
-                       Visibility="Collapsed" Click="ConfirmChangeEstimatedDeliveryDateButton_Clicked"/>
+                            <TextBlock Text="Delivery Address:" Grid.Row="3" Grid.Column="0" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,16,0"/>
+                            <TextBlock Text="{Binding DeliveryAddress}" Grid.Row="3" Grid.Column="1" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="Wrap" Margin="0,0,0,0"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Checkpoints Timeline Card -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        CornerRadius="8"
+                        Padding="16"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Tracking History" 
+                                   Style="{StaticResource SubtitleTextBlockStyle}"/>
+                        <ListView ItemsSource="{Binding Checkpoints}"
+                                  SelectionMode="None">
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsStackPanel>
+                                        <ItemsStackPanel.ItemsUpdatingScrollMode>KeepLastItemInView</ItemsStackPanel.ItemsUpdatingScrollMode>
+                                    </ItemsStackPanel>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Timeline marker and connecting line -->
+                                        <StackPanel Grid.Column="0" HorizontalAlignment="Center" Margin="0,0,16,0">
+                                            <Ellipse Width="12" Height="12" Fill="{ThemeResource SystemAccentColor}" VerticalAlignment="Center"/>
+                                            <Border Width="2" 
+                                                    Background="Gray"
+                                                    Height="40"
+                                                    Margin="0,4,0,0"/>
+                                        </StackPanel>
+
+                                        <!-- Checkpoint content -->
+                                        <Border Grid.Column="1" 
+                                                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                                                Padding="12"
+                                                CornerRadius="8"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1">
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="{Binding Status}" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                                <TextBlock Text="{Binding Description}" Style="{StaticResource BodyTextBlockStyle}"/>
+                                                <TextBlock Text="{Binding Timestamp, Converter={StaticResource DateTimeFormatConverter}}" 
+                                                         Style="{StaticResource CaptionTextBlockStyle}"/>
+                                                <TextBlock Text="{Binding Location, Converter={StaticResource LocationFormatConverter}}" 
+                                                         Style="{StaticResource CaptionTextBlockStyle}"
+                                                         Visibility="{Binding Location, Converter={StaticResource StringToVisibilityConverter}}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
             </StackPanel>
+        </ScrollViewer>
 
-            <!-- Add Checkpoint controls -->
-            <StackPanel Spacing="10">
-                <!-- Initiates add checkpoint process -->
-                <Button Content="Add New Checkpoint" Click="AddNewCheckpointButton_Clicked"/>
-
-                <!-- Checkpoint detail entry form - hidden until add button is clicked -->
-                <StackPanel Visibility="Collapsed" x:Name="AddDetails" Spacing="10">
-                    <!-- Optional location field -->
-                    <TextBox x:Name="LocationTextBoxAdd" PlaceholderText="Location(Optional)"/>
-
-                    <!-- Checkpoint description field -->
-                    <TextBox x:Name="DescriptionTextBoxAdd" PlaceholderText="Description"/>
-
-                    <!-- Status selection dropdown with standard order status options -->
-                    <ComboBox x:Name="StatusComboBoxAdd" PlaceholderText="Status">
-                        <ComboBoxItem Content="PROCESSING"/>
-                        <ComboBoxItem Content="SHIPPED"/>
-                        <ComboBoxItem Content="IN_WAREHOUSE"/>
-                        <ComboBoxItem Content="IN_TRANSIT"/>
-                        <ComboBoxItem Content="OUT_FOR_DELIVERY"/>
-                        <ComboBoxItem Content="DELIVERED"/>
-                    </ComboBox>
-
-                    <!-- Confirmation button to submit new checkpoint -->
-                    <Button x:Name="confirmAddNewCheckpointButton" Content="Confirm" 
-                           Click="ConfirmAddNewCheckpointButton_Clicked"/>
-                </StackPanel>
-            </StackPanel>
-
-            <!-- Update Checkpoint controls -->
-            <StackPanel Spacing="10">
-                <!-- Initiates update checkpoint process -->
-                <Button Content="Update Current Checkpoint" Click="UpdateCurrentCheckpointButton_Clicked"/>
-
-                <!-- Update detail entry form - hidden until update button is clicked -->
-                <StackPanel x:Name="UpdateDetails" Visibility="Collapsed" Spacing="10">
-                    <!-- Timestamp selection options -->
-                    <StackPanel Orientation="Horizontal" Spacing="15" x:Name="TimestampRadioButtons">
-                        <!-- Option to manually select time -->
-                        <RadioButton x:Name="ManualTimestampRadio" Content="Manually Select Timestamp" 
-                                    Checked="ManualTimestampRadio_Checked" IsChecked="True"/>
-
-                        <!-- Option to use current system time -->
-                        <RadioButton x:Name="AutoTimestampRadio" Content="Use Current Date and Time" 
-                                    Checked="AutoTimestampRadio_Checked"/>
+        <!-- Right Panel: Control Panel -->
+        <Border Grid.Column="1" 
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="16"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                Height="Auto"
+                MaxHeight="800">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Control Panel"
+                               Style="{StaticResource SubtitleTextBlockStyle}"/>
+                
+                    <!-- Revert to Last Checkpoint -->
+                    <StackPanel Spacing="8">
+                        <Button Content="Revert to Last Checkpoint"
+                                Click="RevertLastCheckpointButton_Clicked"
+                                Style="{StaticResource AccentButtonStyle}"
+                                HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
-                    <!-- Date and time picker controls for manual timestamp entry -->
-                    <StackPanel Spacing="10" x:Name="DateTimePickers">
-                        <!-- Date picker with DD.MM.YYYY format -->
-                        <CalendarDatePicker x:Name="TimestampDatePicker" 
-                                          DateFormat = "{}{day.integer}.{month.integer}.{year.full}"/>
-
-                        <!-- 24-hour format time picker -->
-                        <TimePicker x:Name="TimestampTimePicker" ClockIdentifier="24HourClock"/>
+                    <!-- Change Estimated Delivery Date -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Change Estimated Delivery Date"
+                                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <Button x:Name="showDeliveryDateUpdateButton"
+                                Content="Change Delivery Date"
+                                Click="ShowDeliveryDateUpdateButton_Clicked"
+                                Style="{StaticResource AccentButtonStyle}"
+                                HorizontalAlignment="Stretch"/>
+                        <StackPanel x:Name="deliveryDateUpdatePanel" Visibility="Collapsed">
+                            <CalendarDatePicker x:Name="deliveryCalendarDatePicker"
+                                              PlaceholderText="Select date"
+                                              Visibility="Visible"/>
+                            <Button x:Name="confirmChangeEstimatedDeliveryDateButton"
+                                    Content="Update Delivery Date"
+                                    Click="ConfirmChangeEstimatedDeliveryDateButton_Clicked"
+                                    Visibility="Visible"
+                                    HorizontalAlignment="Stretch"/>
+                        </StackPanel>
                     </StackPanel>
 
-                    <!-- Checkpoint detail fields -->
-                    <TextBox x:Name="LocationTextBoxUpdate" PlaceholderText="Location(Optional)"/>
-                    <TextBox x:Name="DescriptionTextBoxUpdate" PlaceholderText="Description"/>
+                    <!-- Add New Checkpoint -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Add New Checkpoint"
+                                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <TextBox x:Name="LocationTextBoxAdd"
+                                PlaceholderText="Location (Optional)"
+                                Visibility="Visible"/>
+                        <TextBox x:Name="DescriptionTextBoxAdd"
+                                PlaceholderText="Description"
+                                Visibility="Visible"/>
+                        <ComboBox x:Name="StatusComboBoxAdd"
+                                 PlaceholderText="Select Status"
+                                 Visibility="Visible">
+                            <ComboBoxItem Content="PROCESSING"/>
+                            <ComboBoxItem Content="SHIPPED"/>
+                            <ComboBoxItem Content="IN_WAREHOUSE"/>
+                            <ComboBoxItem Content="IN_TRANSIT"/>
+                            <ComboBoxItem Content="OUT_FOR_DELIVERY"/>
+                            <ComboBoxItem Content="DELIVERED"/>
+                        </ComboBox>
+                        <Button x:Name="confirmAddNewCheckpointButton"
+                                Content="Add Checkpoint"
+                                Click="ConfirmAddNewCheckpointButton_Clicked"
+                                Visibility="Visible"
+                                HorizontalAlignment="Stretch"/>
+                    </StackPanel>
 
-                    <!-- Status selection dropdown with standard order status options -->
-                    <ComboBox x:Name="StatusComboBoxUpdate" PlaceholderText="Status">
-                        <ComboBoxItem Content="PROCESSING"/>
-                        <ComboBoxItem Content="SHIPPED"/>
-                        <ComboBoxItem Content="IN_WAREHOUSE"/>
-                        <ComboBoxItem Content="IN_TRANSIT"/>
-                        <ComboBoxItem Content="OUT_FOR_DELIVERY"/>
-                        <ComboBoxItem Content="DELIVERED"/>
-                    </ComboBox>
-
-                    <!-- Confirmation button to submit checkpoint update -->
-                    <Button x:Name="confirmUpdateCurrentCheckpointButton" Content="Confirm" 
-                           Click="ConfirmUpdateCurrentCheckpointButton_Clicked"/>
+                    <!-- Update Current Checkpoint -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Update Current Checkpoint"
+                                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <StackPanel Orientation="Horizontal" 
+                                  Spacing="8"
+                                  Visibility="Visible"
+                                  x:Name="TimestampRadioButtons">
+                            <RadioButton x:Name="ManualTimestampRadio"
+                                       Content="Manual Timestamp"
+                                       Checked="ManualTimestampRadio_Checked"
+                                       IsChecked="True"/>
+                            <RadioButton x:Name="AutoTimestampRadio"
+                                       Content="Current Time"
+                                       Checked="AutoTimestampRadio_Checked"/>
+                        </StackPanel>
+                        <StackPanel x:Name="DateTimePickers"
+                                  Visibility="Visible"
+                                  Spacing="8">
+                            <CalendarDatePicker x:Name="TimestampDatePicker"
+                                              PlaceholderText="Select date"
+                                              Header="Select date"/>
+                            <TimePicker x:Name="TimestampTimePicker"
+                                      ClockIdentifier="24HourClock"
+                                      Header="Select time"/>
+                        </StackPanel>
+                        <TextBox x:Name="LocationTextBoxUpdate"
+                                PlaceholderText="Location (Optional)"
+                                Visibility="Collapsed"/>
+                        <TextBox x:Name="DescriptionTextBoxUpdate"
+                                PlaceholderText="Description"
+                                Visibility="Collapsed"/>
+                        <ComboBox x:Name="StatusComboBoxUpdate"
+                                 PlaceholderText="Select Status"
+                                 Visibility="Collapsed">
+                            <ComboBoxItem Content="PROCESSING"/>
+                            <ComboBoxItem Content="SHIPPED"/>
+                            <ComboBoxItem Content="IN_WAREHOUSE"/>
+                            <ComboBoxItem Content="IN_TRANSIT"/>
+                            <ComboBoxItem Content="OUT_FOR_DELIVERY"/>
+                            <ComboBoxItem Content="DELIVERED"/>
+                        </ComboBox>
+                        <Button x:Name="confirmUpdateCurrentCheckpointButton"
+                                Content="Update Checkpoint"
+                                Click="ConfirmUpdateCurrentCheckpointButton_Clicked"
+                                Visibility="Collapsed"
+                                HorizontalAlignment="Stretch"/>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </StackPanel>
+            </ScrollViewer>
+        </Border>
     </Grid>
 </Page>

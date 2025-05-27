@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
 using MarketMinds.Shared.Services.BorrowProductsService;
-using ViewModelLayer.ViewModel;
 
 namespace MarketMinds.Views
 {

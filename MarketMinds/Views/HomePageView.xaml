@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="MarketMinds.Views.HomePageView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="MarketMinds">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <Button Grid.Column="0"
+                    Click="MarketMinds_Title_Click" 
+                    Background="Transparent" 
+                    BorderThickness="0">
+                <TextBlock Text="MarketMinds" 
+                          Style="{StaticResource TitleTextBlockStyle}" 
+                          VerticalAlignment="Center"/>
+            </Button>
+
+            <!-- Create Listing Button (seller only)-->
+            <AppBarButton x:Name="CreateListingButton" Grid.ColumnSpan="3" Label="Create Listing" Tag="CreateListing" Click="AppNavBarButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE710;" />
+                    </AppBarButton.Icon>
+            </AppBarButton>
+            
+            <!-- Chat Support Button (buyer only)-->
+            <AppBarButton x:Name="ChatSupportButton"  Grid.ColumnSpan="3" Label="Chat Support" Tag="ChatSupport" Click="AppNavBarButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE8BD;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+
+            <CommandBar Grid.Column="2" DefaultLabelPosition="Right" Background="Transparent" IsOpen="False" HorizontalAlignment="Right">
+                <!-- Notifications Button (buyer only)-->
+                <AppBarButton x:Name="NotificationsButton" Tag="Notifications" Click="AppNavBarButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xEA8F;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <!-- Wishlist Button (buyer only)-->
+                <AppBarButton x:Name="WishlistButton" Tag="Wishlist" Click="AppNavBarButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xEB51;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <!-- Cart Button (buyer only)-->
+                <AppBarButton x:Name="CartButton" Tag="Cart" Click="AppNavBarButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE7BF;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                
+                <!-- Common button for all users -->
+                <AppBarButton x:Name="ProfileButton">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE77B;" />
+                    </AppBarButton.Icon>
+                    <AppBarButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <!-- My Account Button -->
+                            <MenuFlyoutItem Text="My Account" Tag="MyAccount" Click="ProfileMenuItem_Click">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE77B;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+
+                            <!-- Order History Button -->
+                            <MenuFlyoutItem x:Name="MyOrdersMenuItem" Text="Order History" Tag="OrderHistory" Click="ProfileMenuItem_Click">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE81C;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+
+                            <!-- My Reviews Button -->
+                            <MenuFlyoutItem Text="My Reviews" Tag="MyReviews" Click="ProfileMenuItem_Click">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xF0E7;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+
+                            <!-- Sign Out Button -->
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem Text="Sign Out" Tag="SignOut" Click="ProfileMenuItem_Click">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xF3B1;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+            </CommandBar>
+        </Grid>
+
+        <!-- Content Frame -->
+        <Frame x:Name="ContentFrame" Grid.Row="2"/>
+        
+        <!-- Notifications Popup -->
+        <Popup x:Name="NotificationsPopup" 
+               XamlRoot="{x:Bind Content.XamlRoot}" 
+               LightDismissOverlayMode="On">
+            <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                    BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Width="500"
+                    Height="600"
+                    Translation="0,0,16">
+                <Frame x:Name="NotificationsFrame" />
+            </Border>
+        </Popup>
+    </Grid>
+</Window>

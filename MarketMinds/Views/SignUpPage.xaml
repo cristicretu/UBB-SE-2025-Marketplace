@@ -11,113 +11,215 @@
 
 	<Grid HorizontalAlignment="Center" VerticalAlignment="Center">
 		<Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                Padding="50" 
+                Padding="40" 
                 CornerRadius="12" 
                 BorderBrush="{ThemeResource SystemAccentColorDark1}" 
-                BorderThickness="2" 
-                Width="550">
+                BorderThickness="1" 
+                Width="500">
 			<StackPanel Spacing="20">
 				<!-- Title -->
-				<TextBlock Text="Signup Page" 
-                           FontSize="42" 
-                           FontWeight="Bold" 
-                           TextAlignment="Center" 
-                           Foreground="{ThemeResource SystemAccentColorDark2}"/>
-				<TextBlock Text="Join MarketMinds today!" 
-                           FontSize="24" 
-                           TextAlignment="Center" 
-                           Margin="0,5"
-                           Foreground="{ThemeResource SystemAccentColor}"/>
+				<StackPanel Spacing="4" Margin="0,0,0,8">
+					<TextBlock Text="Create Your Account" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               TextAlignment="Center" 
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+					<TextBlock Text="Join our marketplace today." 
+                               FontSize="16" 
+                               TextAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+				</StackPanel>
+				
 				<TextBlock x:Name="ErrorMessage" 
                            Text="" 
-                           FontSize="18" 
+                           FontSize="14" 
                            Foreground="{ThemeResource SystemErrorTextColor}" 
                            TextAlignment="Center"/>
 
 				<!-- Username -->
-				<TextBox Text="{Binding Username, Mode=TwoWay}" 
-                         PlaceholderText="Enter your username"
-                         Width="Auto" 
-                         Height="45" 
-                         Padding="8" 
-                         BorderThickness="0" 
-                         CornerRadius="8"/>
-
-				<!-- Email -->
-				<TextBox Text="{Binding Email, Mode=TwoWay}" 
-                         PlaceholderText="Enter your email"
-                         Width="Auto" 
-                         Height="45" 
-                         Padding="8" 
-                         BorderThickness="0" 
-                         CornerRadius="8"/>
-
-				<!-- Phone Number -->
-				<TextBox Text="{Binding PhoneNumber, Mode=TwoWay}" 
-                         PlaceholderText="Enter your phone number"
-                         Width="Auto" 
-                         Height="45" 
-                         Padding="8" 
-                         BorderThickness="0" 
-                         CornerRadius="8"/>
-
-				<!-- Password -->
-				<PasswordBox Password="{Binding Password, Mode=TwoWay}" 
-                             PlaceholderText="Enter your password"
-                             Width="Auto" 
-                             Height="45" 
-                             Padding="8" 
-                             BorderThickness="0" 
-                             CornerRadius="8"/>
-
-				<!-- Confirm Password -->
-				<PasswordBox Password="{Binding ConfirmPassword, Mode=TwoWay}" 
-                             PlaceholderText="Confirm your password"
-                             Width="Auto" 
-                             Height="45" 
-                             Padding="8" 
-                             BorderThickness="0" 
-                             CornerRadius="8"/>
-
-				<!-- Account Type -->
-				<StackPanel>
-                    <ComboBox SelectedValue="{Binding Role, Mode=TwoWay}" 
-                              SelectedValuePath="Tag" 
-                              SelectedIndex="0" 
-                              Width="Auto" 
-                              Height="40" 
-                              Padding="8" 
-                              BorderBrush="{ThemeResource SystemAccentColor}" 
-                              BorderThickness="0" 
-                              CornerRadius="8"
-                              PlaceholderText="Select your account type">
-                        <ComboBoxItem Content="Admin" Tag="1"/>
-                        <ComboBoxItem Content="Buyer" Tag="2"/>
-                        <ComboBoxItem Content="Seller" Tag="3"/>
-                    </ComboBox>
+				<StackPanel Spacing="8">
+					<TextBlock Text="Username" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+					<Grid>
+						<TextBox Text="{Binding Username, Mode=TwoWay}" 
+                                 PlaceholderText="Enter your username"
+                                 Height="48" 
+                                 Padding="40,12,12,12" 
+                                 BorderThickness="1" 
+                                 CornerRadius="6"
+                                 FontSize="14"
+                                 Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+						<FontIcon Glyph="&#xE77B;" 
+                                  FontSize="16" 
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                  HorizontalAlignment="Left" 
+                                  VerticalAlignment="Center" 
+                                  Margin="12,0,0,0"/>
+					</Grid>
 				</StackPanel>
 
+				<!-- Email -->
+				<StackPanel Spacing="8">
+					<TextBlock Text="Email Address" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+					<Grid>
+						<TextBox Text="{Binding Email, Mode=TwoWay}" 
+                                 PlaceholderText="Enter your email address"
+                                 Height="48" 
+                                 Padding="40,12,12,12" 
+                                 BorderThickness="1" 
+                                 CornerRadius="6"
+                                 FontSize="14"
+                                 Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+						<FontIcon Glyph="&#xE910;" 
+                                  FontSize="16" 
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                  HorizontalAlignment="Left" 
+                                  VerticalAlignment="Center" 
+                                  Margin="12,0,0,0"/>
+					</Grid>
+				</StackPanel>
+
+				<!-- Phone Number -->
+				<StackPanel Spacing="8">
+					<TextBlock Text="Phone Number" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+					<Grid>
+						<TextBox x:Name="PhoneNumberTextBox"
+                                 Text="{Binding PhoneNumber, Mode=TwoWay}" 
+                                 PlaceholderText="+40  123456789"
+                                 Height="48" 
+                                 Padding="40,12,12,12" 
+                                 BorderThickness="1" 
+                                 CornerRadius="6"
+                                 FontSize="14"
+                                 Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                 TextChanging="PhoneNumberTextBox_TextChanging"
+                                 GotFocus="PhoneNumberTextBox_GotFocus"/>
+						<FontIcon Glyph="&#xE717;" 
+                                  FontSize="16" 
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                  HorizontalAlignment="Left" 
+                                  VerticalAlignment="Center" 
+                                  Margin="12,0,0,0"/>
+					</Grid>
+					<TextBlock Text="Enter 9 digits (Romanian phone number format)" 
+                               FontSize="12" 
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                               Margin="0,-4,0,0"/>
+				</StackPanel>
+
+				<!-- Account Type -->
+				<StackPanel Spacing="8">
+					<TextBlock Text="Account Type" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+					<Grid>
+						<ComboBox SelectedValue="{Binding Role, Mode=TwoWay}" 
+                                  SelectedValuePath="Tag" 
+                                  SelectedIndex="0" 
+                                  Height="48" 
+                                  Padding="40,12,12,12" 
+                                  BorderThickness="1" 
+                                  CornerRadius="6"
+                                  FontSize="14"
+                                  PlaceholderText="Select your role"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  HorizontalAlignment="Stretch">
+							<ComboBoxItem Content="Admin" Tag="1"/>
+							<ComboBoxItem Content="Buyer" Tag="2"/>
+							<ComboBoxItem Content="Seller" Tag="3"/>
+						</ComboBox>
+						<FontIcon Glyph="&#xF427;" 
+                                  FontSize="16" 
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                  HorizontalAlignment="Left" 
+                                  VerticalAlignment="Center" 
+                                  Margin="12,0,0,0"/>
+					</Grid>
+				</StackPanel>
+
+				<!-- Password -->
+				<StackPanel Spacing="8">
+					<TextBlock Text="Password" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+					<Grid>
+						<PasswordBox Password="{Binding Password, Mode=TwoWay}" 
+                                     PlaceholderText="Create a strong password"
+                                     Height="48" 
+                                     Padding="40,12,12,12" 
+                                     BorderThickness="1" 
+                                     CornerRadius="6"
+                                     FontSize="14"
+                                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+						<FontIcon Glyph="&#xE72E;" 
+                                  FontSize="16" 
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                  HorizontalAlignment="Left" 
+                                  VerticalAlignment="Center" 
+                                  Margin="12,0,0,0"/>
+					</Grid>
+					<TextBlock Text="Password must be at least 8 characters with uppercase, lowercase, numbers, and only common special characters (no dashes)." 
+                               FontSize="12" 
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,-4,0,0"/>
+				</StackPanel>
+
+				<!-- Confirm Password -->
+				<StackPanel Spacing="8">
+					<TextBlock Text="Confirm Password" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+					<Grid>
+						<PasswordBox Password="{Binding ConfirmPassword, Mode=TwoWay}" 
+                                     PlaceholderText="Confirm your password"
+                                     Height="48" 
+                                     Padding="40,12,12,12" 
+                                     BorderThickness="1" 
+                                     CornerRadius="6"
+                                     FontSize="14"
+                                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+						<FontIcon Glyph="&#xE930;" 
+                                  FontSize="16" 
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                  HorizontalAlignment="Left" 
+                                  VerticalAlignment="Center" 
+                                  Margin="12,0,0,0"/>
+					</Grid>
+				</StackPanel>
 
 				<!-- Signup Button -->
-				<Button Content="Sign Up"
+				<Button Content="Create Account"
                         Background="{ThemeResource AccentButtonBackground}"
                         Foreground="{ThemeResource AccentButtonForeground}"
-                        Width="200"
-                        Height="50"
-                        CornerRadius="8"
-                        FontSize="18"
-                        FontWeight="Bold"
+                        Width="Auto"
+                        Height="48"
+                        CornerRadius="6"
+                        FontSize="16"
+                        FontWeight="SemiBold"
                         Command="{Binding SignupCommand}"
-                        HorizontalAlignment="Center"/>
+                        HorizontalAlignment="Stretch"
+                        Margin="0,8,0,0"/>
                 
                 <!-- Login Link -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
-                    <TextBlock Text="Already have an account? " FontSize="14"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" Margin="0,8,0,0">
+                    <TextBlock Text="Already have an account?" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     <TextBlock x:Name="LoginButtonTextBlock" 
-                               Text="Login now" 
+                               Text="Sign in" 
                                Foreground="{ThemeResource SystemAccentColor}" 
                                FontSize="14" 
-                               FontWeight="Bold" 
+                               FontWeight="SemiBold" 
                                PointerPressed="LoginButtonTextBlock_PointerPressed" />
                 </StackPanel>
 			</StackPanel>

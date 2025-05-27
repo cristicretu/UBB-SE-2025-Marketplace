@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.UI.Windowing;
 
 namespace MarketMinds
 {
@@ -14,24 +15,88 @@ namespace MarketMinds
     }
     public sealed partial class LoginWindow : Window
     {
+        private DispatcherTimer resizeTimer;
+
         public LoginWindow()
         {
             this.InitializeComponent();
             this.Title = "MarketMinds";
+
+            // Initialize resize timer
+            resizeTimer = new DispatcherTimer();
+            resizeTimer.Interval = TimeSpan.FromMilliseconds(300); // Wait 300ms after resize stops
+            resizeTimer.Tick += ResizeTimer_Tick;
+
+            // Set initial window size to 2/3 of screen and handle minimum size constraints
+            SetInitialWindowSize();
+            this.SizeChanged += LoginWindow_SizeChanged;
+
             // Navigate to the login view first
             ContentFrame.Navigate(typeof(MarketMinds.Views.LoginView), App.LoginViewModel);
             // Subscribe to the navigation events
-            ContentFrame.Navigated += ContentFrame_Navigated;
+            // ContentFrame.Navigated += ContentFrame_Navigated;
         }
 
-        private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
+        private void SetInitialWindowSize()
         {
-            // Check if we've navigated back to LoginView with a successful login
-            // if (e.SourcePageType == typeof(MarketMinds.Views.LoginView) && App.CurrentUser != null)
-            // {
-            //    // User has successfully logged in, show main application
-            //    App.ShowMainWindow();
-            // }
+            // Get the display area of the primary monitor
+            var displayArea = DisplayArea.Primary;
+            var workArea = displayArea.WorkArea;
+
+            // Calculate 2/3 of screen size for initial window
+            int initialWidth = (int)(workArea.Width * 2.0 / 3.0);
+            int initialHeight = (int)(workArea.Height * 2.0 / 3.0);
+
+            // Set the window size
+            this.AppWindow.Resize(new Windows.Graphics.SizeInt32(initialWidth, initialHeight));
+
+            // Center the window on screen
+            int x = (workArea.Width - initialWidth) / 2;
+            int y = (workArea.Height - initialHeight) / 2;
+            this.AppWindow.Move(new Windows.Graphics.PointInt32(x, y));
+        }
+
+        private void LoginWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
+        {
+            // Reset the timer each time the window is resized
+            // This ensures we only check minimum size after resizing stops
+            resizeTimer.Stop();
+            resizeTimer.Start();
+        }
+
+        private void ResizeTimer_Tick(object sender, object e)
+        {
+            // Stop the timer
+            resizeTimer.Stop();
+
+            // Enforce minimum window size (1/3 of screen)
+            var displayArea = DisplayArea.Primary;
+            var workArea = displayArea.WorkArea;
+
+            int minWidth = (int)(workArea.Width / 3.0);
+            int minHeight = (int)(workArea.Height / 3.0);
+
+            var currentSize = this.AppWindow.Size;
+            bool needsResize = false;
+            int newWidth = currentSize.Width;
+            int newHeight = currentSize.Height;
+
+            if (currentSize.Width < minWidth)
+            {
+                newWidth = minWidth;
+                needsResize = true;
+            }
+
+            if (currentSize.Height < minHeight)
+            {
+                newHeight = minHeight;
+                needsResize = true;
+            }
+
+            if (needsResize)
+            {
+                this.AppWindow.Resize(new Windows.Graphics.SizeInt32(newWidth, newHeight));
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.Interfaces;
 using BusinessLogicLayer.ViewModel;
-using ViewModelLayer.ViewModel;
+using MarketMinds.ViewModels;
 using ProductCategory = MarketMinds.Shared.Models.Category;
 using ProductCondition = MarketMinds.Shared.Models.Condition;
 
