@@ -74,15 +74,14 @@ public class BorrowProductsViewModel
     }
 
     /// <summary>
-    /// Gets the count of filtered borrow products asynchronously
+    /// Gets the count of filtered borrow products asynchronously using dedicated count API
     /// </summary>
     public async Task<int> GetFilteredProductCountAsync(List<int> conditionIds = null, List<int> categoryIds = null, double? maxPrice = null, string searchTerm = null)
     {
         try
         {
-            // For efficiency, get with zero count to just get the total matching count
-            var products = await Task.Run(() => borrowProductsService.GetFilteredProducts(0, 0, conditionIds, categoryIds, maxPrice, searchTerm));
-            return products.Count;
+            // Use dedicated count API instead of fetching all products
+            return await Task.Run(() => borrowProductsService.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm));
         }
         catch (Exception ex)
         {

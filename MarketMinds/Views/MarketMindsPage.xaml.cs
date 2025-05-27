@@ -730,14 +730,26 @@ namespace MarketMinds.Views
                 int offset = CurrentPageIndex * ItemsPerPage;
 
                 // Get total count with filters applied
-                var totalCount = await this.AuctionProductsViewModel.GetFilteredProductCountAsync(
-                    selectedConditionIds.Count > 0 ? selectedConditionIds : null,
-                    selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
-                    MaxPrice < 100101 ? MaxPrice : null,
-                    !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                );
+                int totalCount;
+                try {
+                    totalCount = await this.AuctionProductsViewModel.GetFilteredProductCountAsync(
+                        selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                        selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                        MaxPrice < 100101 ? MaxPrice : null,
+                        !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                    );
+                    
+                    if (totalCount < 0) { // Sanity check
+                        Debug.WriteLine("Warning: Got negative auction count from API, defaulting to 0");
+                        totalCount = 0;
+                    }
+                }
+                catch (Exception countEx) {
+                    Debug.WriteLine($"Error getting auction product count: {countEx.Message}");
+                    totalCount = 0; // Default to zero if count fails
+                }
 
-                // Calculate total pages
+                // Calculate total pages (minimum 1 page)
                 TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
 
                 // Ensure current page is valid
@@ -748,14 +760,24 @@ namespace MarketMinds.Views
                 }
 
                 // Get auction products for current page with filters
-                var auctionProducts = await this.AuctionProductsViewModel.GetFilteredProductsAsync(
-                    offset, 
-                    ItemsPerPage,
-                    selectedConditionIds.Count > 0 ? selectedConditionIds : null,
-                    selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
-                    MaxPrice < 100101 ? MaxPrice : null,
-                    !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                );
+                List<AuctionProduct> auctionProducts = new List<AuctionProduct>();
+                try
+                {
+                    auctionProducts = await this.AuctionProductsViewModel.GetFilteredProductsAsync(
+                        offset, 
+                        ItemsPerPage, // Ensure we're only fetching the exact amount needed for the page
+                        selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                        selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                        MaxPrice < 100101 ? MaxPrice : null,
+                        !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                    );
+                    Debug.WriteLine($"Fetched {auctionProducts.Count} auction products for page {CurrentPageIndex + 1} with {ItemsPerPage} items per page");
+                }
+                catch (Exception fetchEx)
+                {
+                    Debug.WriteLine($"Error fetching auction products: {fetchEx.Message}");
+                    auctionProducts = new List<AuctionProduct>(); // Empty list on error
+                }
 
                 // Update UI on the UI thread
                 AuctionProductsCollection.Clear();
@@ -795,14 +817,26 @@ namespace MarketMinds.Views
                 int offset = CurrentPageIndex * ItemsPerPage;
 
                 // Get total count with filters applied
-                var totalCount = await this.BorrowProductsViewModel.GetFilteredProductCountAsync(
-                    selectedConditionIds.Count > 0 ? selectedConditionIds : null,
-                    selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
-                    MaxPrice < 100101 ? MaxPrice : null,
-                    !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                );
+                int totalCount;
+                try {
+                    totalCount = await this.BorrowProductsViewModel.GetFilteredProductCountAsync(
+                        selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                        selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                        MaxPrice < 100101 ? MaxPrice : null,
+                        !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                    );
+                    
+                    if (totalCount < 0) { // Sanity check
+                        Debug.WriteLine("Warning: Got negative borrow count from API, defaulting to 0");
+                        totalCount = 0;
+                    }
+                }
+                catch (Exception countEx) {
+                    Debug.WriteLine($"Error getting borrow product count: {countEx.Message}");
+                    totalCount = 0; // Default to zero if count fails
+                }
 
-                // Calculate total pages
+                // Calculate total pages (minimum 1 page)
                 TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
 
                 // Ensure current page is valid
@@ -813,14 +847,24 @@ namespace MarketMinds.Views
                 }
 
                 // Get borrow products for current page with filters
-                var borrowProducts = await this.BorrowProductsViewModel.GetFilteredProductsAsync(
-                    offset, 
-                    ItemsPerPage,
-                    selectedConditionIds.Count > 0 ? selectedConditionIds : null,
-                    selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
-                    MaxPrice < 100101 ? MaxPrice : null,
-                    !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                );
+                List<BorrowProduct> borrowProducts = new List<BorrowProduct>();
+                try
+                {
+                    borrowProducts = await this.BorrowProductsViewModel.GetFilteredProductsAsync(
+                        offset, 
+                        ItemsPerPage, // Ensure we're only fetching the exact amount needed for the page
+                        selectedConditionIds.Count > 0 ? selectedConditionIds : null,
+                        selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
+                        MaxPrice < 100101 ? MaxPrice : null,
+                        !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
+                    );
+                    Debug.WriteLine($"Fetched {borrowProducts.Count} borrow products for page {CurrentPageIndex + 1} with {ItemsPerPage} items per page");
+                }
+                catch (Exception fetchEx)
+                {
+                    Debug.WriteLine($"Error fetching borrow products: {fetchEx.Message}");
+                    borrowProducts = new List<BorrowProduct>(); // Empty list on error
+                }
 
                 // Update UI on the UI thread
                 BorrowProductsCollection.Clear();
