@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BorrowProductsService;
 
@@ -52,5 +54,40 @@ public class BorrowProductsViewModel
     {
         // The service already exposes an async method for this
         return await borrowProductsService.GetBorrowProductByIdAsync(id);
+    }
+
+    /// <summary>
+    /// Gets filtered borrow products asynchronously based on provided filters
+    /// </summary>
+    public async Task<List<BorrowProduct>> GetFilteredProductsAsync(int offset, int count, List<int> conditionIds = null, List<int> categoryIds = null, double? maxPrice = null, string searchTerm = null)
+    {
+        try
+        {
+            var products = await Task.Run(() => borrowProductsService.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm));
+            return products;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting filtered borrow products: {ex.Message}");
+            return new List<BorrowProduct>();
+        }
+    }
+
+    /// <summary>
+    /// Gets the count of filtered borrow products asynchronously
+    /// </summary>
+    public async Task<int> GetFilteredProductCountAsync(List<int> conditionIds = null, List<int> categoryIds = null, double? maxPrice = null, string searchTerm = null)
+    {
+        try
+        {
+            // For efficiency, get with zero count to just get the total matching count
+            var products = await Task.Run(() => borrowProductsService.GetFilteredProducts(0, 0, conditionIds, categoryIds, maxPrice, searchTerm));
+            return products.Count;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting filtered borrow product count: {ex.Message}");
+            return 0;
+        }
     }
 }
