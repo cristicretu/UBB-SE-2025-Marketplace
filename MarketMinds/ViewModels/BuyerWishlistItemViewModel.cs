@@ -35,9 +35,22 @@ namespace MarketMinds.ViewModels
         public BuyProduct Product { get; set; }
         Product IBuyerWishlistItemViewModel.Product { get => Product; set => throw new System.NotImplementedException(); }
 
+        /// <summary>
+        /// Gets the stock value from the Product, or 0 if Product is null.
+        /// </summary>
+        public int Stock => Product?.Stock ?? 0;
+
         private IBuyerService buyerService;
 
         private List<BuyerWishlistItem> wishlistProductIds;
+
+        private IShoppingCartService shoppingCartService;
+
+        public IShoppingCartService ShoppingCartService
+        {
+            get => shoppingCartService;
+            set => shoppingCartService = value;
+        }
 
         public bool IsInWishlist(int productId)
         {
@@ -54,9 +67,21 @@ namespace MarketMinds.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public BuyerWishlistItemViewModel()
+        /// <summary>
+        /// Parameterless constructor for XAML instantiation. Uses App.ShoppingCartService.
+        /// </summary>
+        public BuyerWishlistItemViewModel() : this(App.ShoppingCartService)
+        {
+        }
+
+        /// <summary>
+        /// Constructor with dependency injection for ShoppingCartService.
+        /// </summary>
+        /// <param name="shoppingCartService">The shopping cart service to use.</param>
+        public BuyerWishlistItemViewModel(IShoppingCartService shoppingCartService)
         {
             buyerService = App.BuyerService;
+            ShoppingCartService = shoppingCartService ?? throw new System.ArgumentNullException(nameof(shoppingCartService));
 
             // wishlistProductIds = buyerService.GetWishlistItems(UserSession.CurrentUserId ?? 1).Result;
             wishlistProductIds = new List<BuyerWishlistItem>();
@@ -66,12 +91,14 @@ namespace MarketMinds.ViewModels
                 if (product is Product typedProduct)
                 {
                     System.Diagnostics.Debug.WriteLine($"[AddToCart] Attempting to add product ID: {typedProduct.Id}, Title: {typedProduct.Title}");
-                    var shoppingCartViewModel = new ShoppingCartViewModel();
-                    await shoppingCartViewModel.AddToCartAsync(typedProduct, 1);
+                    if (App.CurrentUser.Id != 0)
+                    {
+                        await ShoppingCartService.IncrementProductQuantityAsync(App.CurrentUser.Id, typedProduct.Id);
+                    }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[AddToCart] Product is null or not of type Product");
+                    System.Diagnostics.Debug.WriteLine("BuyerWishListItemViewModel: User id is 0, cannot add to cart, from wishlist");
                 }
             });
         }

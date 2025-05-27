@@ -22,7 +22,7 @@
             </Grid.RowDefinitions>
             
             <!-- Header -->
-            <StackPanel Grid.Row="0">
+            <!-- <StackPanel Grid.Row="0">
                 <TextBlock Text="Wishlist &amp; Family Sync" 
                           FontSize="42" 
                           FontWeight="Bold" 
@@ -35,13 +35,13 @@
                           TextAlignment="Center" 
                           Foreground="#1976D2" 
                           FontFamily="Segoe UI Semibold" />
-            </StackPanel>
+            </StackPanel> -->
             
             <!-- Main Content -->
             <Grid Grid.Row="1" Margin="0,30,0,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3.5*" />
-                    <ColumnDefinition Width="1.5*" />
+                    <ColumnDefinition Width="4.0*" />
+                    <ColumnDefinition Width="1.0*" />
                 </Grid.ColumnDefinitions>
                 
                 <!-- Wishlist Control -->

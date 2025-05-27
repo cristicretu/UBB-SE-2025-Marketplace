@@ -356,7 +356,7 @@ namespace MarketMinds
             TrackedOrderService = new TrackedOrderService(TrackedOrderRepository);
 
             // Initialize non-user dependent view models
-            BuyerWishlistItemViewModel = new BuyerWishlistItemViewModel();
+            BuyerWishlistItemViewModel = new BuyerWishlistItemViewModel(ShoppingCartService);
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
             ProductCategoryViewModel = new ProductCategoryViewModel(CategoryService);

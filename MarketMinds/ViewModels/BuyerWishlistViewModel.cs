@@ -167,7 +167,7 @@ namespace MarketMinds.ViewModels
         {
             var product = this.ProductService.GetProductById(wishlistItem.ProductId);
             // merge-nicusor, fetch the product from the wishlistItem.productId
-            var item = new BuyerWishlistItemViewModel
+            var item = new BuyerWishlistItemViewModel(App.ShoppingCartService)
             {
                 ProductId = wishlistItem.ProductId,
                 OwnItem = canDelete,
@@ -209,7 +209,6 @@ namespace MarketMinds.ViewModels
                     {
                         var linkedBuyerItems = await this.BuyerService.GetWishlistItems(linkedBuyerId);
                         linkedItems.AddRange(await Task.WhenAll(linkedBuyerItems.Select(item => GetWishlistItemDetailsAsync(item))));
-
                     }
                 }
 
@@ -237,7 +236,7 @@ namespace MarketMinds.ViewModels
                 var product = await ProductService.GetProductByIdAsync(wishlistItem.ProductId) as BuyProduct;
                 if (product == null)
                 {
-                    return new BuyerWishlistItemViewModel
+                    return new BuyerWishlistItemViewModel(App.ShoppingCartService)
                     {
                         ProductId = wishlistItem.ProductId,
                         OwnItem = canDelete,
@@ -250,7 +249,7 @@ namespace MarketMinds.ViewModels
                 }
 
                 string imageUrl = product.Images?.FirstOrDefault()?.Url ?? "ms-appx:///Assets/Products/default-product.png";
-                return new BuyerWishlistItemViewModel
+                return new BuyerWishlistItemViewModel(App.ShoppingCartService)
                 {
                     ProductId = wishlistItem.ProductId,
                     OwnItem = canDelete,
@@ -265,7 +264,7 @@ namespace MarketMinds.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading wishlist item {wishlistItem.ProductId}: {ex.Message}");
-                return new BuyerWishlistItemViewModel
+                return new BuyerWishlistItemViewModel(App.ShoppingCartService)
                 {
                     ProductId = wishlistItem.ProductId,
                     OwnItem = canDelete,

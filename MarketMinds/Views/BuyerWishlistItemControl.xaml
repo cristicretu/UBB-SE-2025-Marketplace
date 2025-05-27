@@ -12,63 +12,185 @@
     <UserControl.Resources>
         <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter" />
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+        <converters:IntToBoolConverter x:Key="IntToBoolConverter" />
+        <converters:StockToTextConverter x:Key="StockToTextConverter" />
+        <converters:StockToGlyphConverter x:Key="StockToGlyphConverter" />
+        
+        <!-- Product Card Styles -->
+        <Style x:Key="WishlistProductCardBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Width" Value="280"/>
+            <Setter Property="Margin" Value="8"/>
+        </Style>
+        
+        <Style x:Key="WishlistProductImageBorderStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="8,8,0,0"/>
+            <Setter Property="Background" Value="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}"/>
+        </Style>
+        
+        <Style x:Key="WishlistProductTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MaxLines" Value="1"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+        </Style>
+        
+        <Style x:Key="WishlistProductMetadataStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </Style>
+        
+        <Style x:Key="WishlistProductPriceStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{ThemeResource SystemAccentColor}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        
+        <Style x:Key="WishlistProductActionButtonStyle" TargetType="Button">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="ContentPresenter"
+                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+                                        <VisualState.Setters>
+                                            <Setter Target="ButtonBorder.Background" Value="{ThemeResource AccentButtonBackground}"/>
+                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentButtonForeground}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="ButtonBorder.Background" Value="{ThemeResource ControlFillColorDisabledBrush}"/>
+                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="ButtonBorder.Background" Value="{ThemeResource AccentButtonBackgroundPointerOver}"/>
+                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundPointerOver}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="ButtonBorder.Background" Value="{ThemeResource AccentButtonBackgroundPressed}"/>
+                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
-    <Border BorderThickness="2" BorderBrush="#1976D2" Padding="10"
-            Margin="5" CornerRadius="8" Background="White"
-            Width="260" Height="260">
-        <StackPanel HorizontalAlignment="Center">
-            <!-- Mock Image -->
-            <Grid Width="80" Height="80" Margin="0,5,0,5">
-                <Image Source="{x:Bind ViewModel.ImageSource}" 
-                       Stretch="Uniform"
-                       ImageFailed="OnImageFailed"/>
-                <Image x:Name="FallbackImage" 
-                       Source="ms-appx:///Assets/Products/default-product.png"
-                       Stretch="Uniform"
-                       Visibility="Collapsed"/>
-                <ProgressRing IsActive="True" 
-                             Visibility="{x:Bind ViewModel.ImageSource, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}"/>
-            </Grid>
+    <Border Style="{StaticResource WishlistProductCardBorderStyle}"
+            MinHeight="300">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="180"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-            <!-- Item Name -->
-            <TextBlock Text="{x:Bind ViewModel.Title}" FontSize="16" FontWeight="Bold"
-                       Foreground="#0D47A1" TextAlignment="Center" />
+            <!-- Product Image -->
+            <Border Grid.Row="0" Style="{StaticResource WishlistProductImageBorderStyle}">
+                <Grid>
+                    <Image Source="{x:Bind ViewModel.ImageSource}" 
+                           Stretch="UniformToFill"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           ImageFailed="OnImageFailed"/>
+                    <Image x:Name="FallbackImage" 
+                           Source="ms-appx:///Assets/Products/default-product.png"
+                           Stretch="UniformToFill"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="Collapsed"/>
+                    <ProgressRing IsActive="True" 
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center"
+                                 Visibility="{x:Bind ViewModel.ImageSource, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}"/>
+                </Grid>
+            </Border>
 
-            <!-- Item Description -->
-            <TextBlock Text="{x:Bind ViewModel.Description}" FontSize="14" Foreground="Gray" TextWrapping="Wrap"
-                       Margin="0,5,0,0" />
+            <!-- Product Details -->
+            <StackPanel Grid.Row="1" 
+                        Padding="16"
+                        Spacing="8">
+                
+                <!-- Product Title -->
+                <TextBlock Text="{x:Bind ViewModel.Title}"
+                           Style="{StaticResource WishlistProductTitleStyle}"/>
+                
+                <!-- Product Description -->
+                <TextBlock Text="{x:Bind ViewModel.Description}" 
+                           Style="{StaticResource WishlistProductMetadataStyle}"
+                           TextWrapping="Wrap"
+                           MaxLines="1"
+                           TextTrimming="CharacterEllipsis"/>
+                
+                <!-- Price and Remove Row -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Price -->
+                    <TextBlock Grid.Column="0"
+                               Text="{x:Bind ViewModel.Price}"
+                               Style="{StaticResource WishlistProductPriceStyle}"/>
+                    
+                    <!-- Remove Button (Own items only) -->
+                    <Button Grid.Column="1"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="8"
+                            VerticalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.OwnItem, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"
+                            Click="{x:Bind ViewModel.Remove}"
+                            ToolTipService.ToolTip="Remove from wishlist">
+                        <FontIcon FontSize="20"
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                  Glyph="&#xE74D;"/>
+                    </Button>
+                </Grid>
+            </StackPanel>
 
-            <!-- Price -->
-            <TextBlock Text="{x:Bind ViewModel.Price}" FontSize="14" Foreground="Gray"
-                       TextAlignment="Center" Margin="0,3,0,0" />
-
-            <!-- Action Buttons -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
-                <!-- Remove Button -->
-                <Button Width="35" Height="35"
-                        ToolTipService.ToolTip="Remove" Padding="0"
-                        Click="{x:Bind ViewModel.Remove}"
-                        Visibility="{x:Bind ViewModel.OwnItem, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
-                    <Image Width="17" Height="17">
-                        <Image.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/trash.svg" />
-                        </Image.Source>
-                    </Image>
-                </Button>
-
+            <!-- Add to Cart button -->
+            <StackPanel Grid.Row="2" 
+                        Padding="16,0,16,16">
                 <!-- Add to Cart Button -->
-                <Button Width="35" Height="35"
-                        ToolTipService.ToolTip="Add To Cart" Padding="0"
+                <Button Style="{StaticResource WishlistProductActionButtonStyle}"
                         Command="{x:Bind ViewModel.AddToCartCommand}"
-                        CommandParameter="{x:Bind ViewModel.Product}">
-                    <Image Width="17" Height="17">
-                        <Image.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/BuyerIcons/cart-add.svg" />
-                        </Image.Source>
-                    </Image>
+                        CommandParameter="{x:Bind ViewModel.Product}"
+                        IsEnabled="{x:Bind ViewModel.Stock, Mode=OneWay, Converter={StaticResource IntToBoolConverter}}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="{x:Bind ViewModel.Stock, Mode=OneWay, Converter={StaticResource StockToGlyphConverter}}" />
+                        <TextBlock FontWeight="SemiBold"
+                                   Text="{x:Bind ViewModel.Stock, Mode=OneWay, Converter={StaticResource StockToTextConverter}}" />
+                    </StackPanel>
                 </Button>
             </StackPanel>
-        </StackPanel>
+        </Grid>
     </Border>
 </UserControl>

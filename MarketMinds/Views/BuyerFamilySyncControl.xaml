@@ -13,14 +13,23 @@
         <converters:BuyerLinkageStatusToVisibilityConverter x:Key="BuyerLinkageStatusToVisibilityConverter" />
     </UserControl.Resources>
     <StackPanel Margin="15,0,0,0">
-        <TextBlock Text="Manage Your Family Sync" Style="{StaticResource PrimaryLabel}"
-                   FontSize="24" />
+        <TextBlock Text="Manage Your Family Sync" 
+                   Style="{StaticResource SubtitleTextBlockStyle}"
+                   FontSize="24" 
+                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
         <TextBlock
             Text="Easily sync and unsync. Enable 'Family-Synced' mode to share with family members."
-            FontSize="14" Foreground="Gray" TextWrapping="Wrap" Margin="0,5,0,0" />
+            FontSize="14" 
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+            TextWrapping="Wrap" 
+            Margin="0,5,0,0" />
 
-        <Border Background="White" Padding="15" CornerRadius="10" BorderBrush="#1565C0"
-                BorderThickness="2" Margin="0,15,0,0">
+        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                Padding="15" 
+                CornerRadius="10" 
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1" 
+                Margin="0,15,0,0">
             <ScrollViewer Height="350" VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}">
                     <ItemsControl.ItemsPanel>
