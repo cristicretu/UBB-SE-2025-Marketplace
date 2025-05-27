@@ -64,10 +64,10 @@ namespace MarketMinds
         public static BuyProductsProxyRepository BuyProductsRepository;
         public static IBuyerLinkageRepository BuyerLinkageRepository;
         public static ShoppingCartProxyRepository ShoppingCartRepository;
-        public static OrderHistoryProxyRepository OrderHistoryRepository;
-        public static OrderProxyRepository OrderRepository;
+        public static OrderHistoryProxyRepository OrderHistoryRepository;        public static OrderProxyRepository OrderRepository;
         public static BuyProductsProxyRepository BuyProductsProxyRepository;
         public static ContractProxyRepository ContractProxyRepository;
+        public static TrackedOrderProxyRepository TrackedOrderRepository;
 
         // Service declarations
         public static IBuyerService BuyerService;
@@ -97,9 +97,9 @@ namespace MarketMinds
         public static IShoppingCartService ShoppingCartService;
         public static IOrderHistoryService OrderHistoryService;
         public static IOrderService OrderService;
-        public static IOrderSummaryService OrderSummaryService;
-        public static IDummyWalletService DummyWalletService;
+        public static IOrderSummaryService OrderSummaryService;        public static IDummyWalletService DummyWalletService;
         public static IProductService ProductService;
+        public static ITrackedOrderService TrackedOrderService;
         public static int LastProcessedOrderId { get; set; }
 
         // ViewModel declarations
@@ -319,6 +319,7 @@ namespace MarketMinds
             BuyerLinkageRepository = new BuyerLinkageProxyRepository(Configuration);
             ShoppingCartRepository = new ShoppingCartProxyRepository(Configuration);
             ContractProxyRepository = new ContractProxyRepository(Configuration);
+            TrackedOrderRepository = new TrackedOrderProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/");
 
             // Initialize services
             AdminService = new AdminService(UserRepository);
@@ -352,6 +353,7 @@ namespace MarketMinds
             ContractService = new ContractService(ContractProxyRepository, OrderSummaryService, OrderService, SellerService, PDFService);
             DummyWalletService = new DummyWalletService();
             ProductService = new ProductService(BuyProductsRepository);
+            TrackedOrderService = new TrackedOrderService(TrackedOrderRepository);
 
             // Initialize non-user dependent view models
             BuyerWishlistItemViewModel = new BuyerWishlistItemViewModel();
@@ -389,7 +391,7 @@ namespace MarketMinds
             var trackedOrderService = new TrackedOrderService(new TrackedOrderProxyRepository(Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/"));
             var notificationService = new MarketMinds.Shared.Services.NotificationService();
             TrackedOrderViewModel = new TrackedOrderViewModel(trackedOrderService, new OrderViewModel(), notificationService);
-
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
             // Show login window first instead of main window
             LoginWindow = new LoginWindow();
             LoginWindow.Activate();
