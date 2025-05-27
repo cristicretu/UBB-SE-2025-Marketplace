@@ -134,8 +134,6 @@
                 <local:BuyerWishlistControl ViewModel="{x:Bind ViewModel.Wishlist, Mode=OneWay}" />
                 <StackPanel Grid.Column="1">
                     <local:BuyerFamilySyncControl ViewModel="{x:Bind ViewModel.FamilySync, Mode=OneWay}" />
-                    <local:BuyerMockAddPurchase ViewModel="{x:Bind ViewModel, Mode=OneWay}" VerticalAlignment="Center"
-                                            Margin="20" />
                 </StackPanel>
             </Grid>
         </Grid>

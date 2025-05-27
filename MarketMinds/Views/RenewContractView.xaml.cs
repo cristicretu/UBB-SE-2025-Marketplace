@@ -50,7 +50,7 @@ namespace MarketMinds.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            
+
             // Load contracts when navigating to this page
             _ = LoadContractsWithTimeoutAsync();
         }
@@ -160,7 +160,7 @@ namespace MarketMinds.Views
             try
             {
                 Debug.WriteLine("=== STARTING CONTRACT LOAD ===");
-                
+
                 // Show loading indicator
                 if (LoadingOverlay != null)
                 {
@@ -214,7 +214,7 @@ namespace MarketMinds.Views
                 if (ContractListView != null && this.viewModel.Contracts != null)
                 {
                     Debug.WriteLine($"Updating UI with {this.viewModel.Contracts.Count} contracts from ViewModel");
-                    
+
                     // Clear and repopulate the filtered contracts
                     this.filteredContracts.Clear();
                     foreach (var contract in this.viewModel.Contracts)
@@ -225,7 +225,7 @@ namespace MarketMinds.Views
                     // Force update the ListView source
                     ContractListView.ItemsSource = null;
                     ContractListView.ItemsSource = this.filteredContracts;
-                    
+
                     Debug.WriteLine($"UI Updated: {this.filteredContracts.Count} contracts displayed in ListView");
                 }
                 else
@@ -293,13 +293,13 @@ namespace MarketMinds.Views
             try
             {
                 Debug.WriteLine("=== REFRESH BUTTON CLICKED ===");
-                
+
                 // Clear search box
                 if (SearchBox != null)
                 {
                     SearchBox.Text = string.Empty;
                 }
-                
+
                 // Reload contracts
                 await LoadContractsAsync();
             }
@@ -388,7 +388,7 @@ namespace MarketMinds.Views
             if (StatusTextBlock != null)
             {
                 StatusTextBlock.Text = this.viewModel.StatusText ?? "Status: Unknown";
-                
+
                 // Handle different status colors
                 var color = this.viewModel.StatusColor switch
                 {
@@ -397,7 +397,7 @@ namespace MarketMinds.Views
                     "Gray" => Microsoft.UI.Colors.Gray,
                     _ => Microsoft.UI.Colors.Red
                 };
-                
+
                 StatusTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(color);
                 Debug.WriteLine($"Set status: {StatusTextBlock.Text} with color: {this.viewModel.StatusColor}");
             }

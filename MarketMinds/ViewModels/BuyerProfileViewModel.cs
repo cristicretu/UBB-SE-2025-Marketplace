@@ -107,7 +107,7 @@ namespace MarketMinds.ViewModels
                 {
                     Debug.WriteLine($"Syncing Billing Address - ViewModel: Street='{this.BillingAddress.Address.StreetLine}', City='{this.BillingAddress.Address.City}'");
                     Debug.WriteLine($"Buyer.BillingAddress reference check: Same={object.ReferenceEquals(this.BillingAddress.Address, this.Buyer.BillingAddress)}");
-                    
+
                     this.Buyer.BillingAddress.StreetLine = this.BillingAddress.Address.StreetLine;
                     this.Buyer.BillingAddress.City = this.BillingAddress.Address.City;
                     this.Buyer.BillingAddress.Country = this.BillingAddress.Address.Country;
@@ -118,7 +118,7 @@ namespace MarketMinds.ViewModels
                 {
                     Debug.WriteLine($"Syncing Shipping Address - ViewModel: Street='{this.ShippingAddress.Address.StreetLine}', City='{this.ShippingAddress.Address.City}'");
                     Debug.WriteLine($"Buyer.ShippingAddress reference check: Same={object.ReferenceEquals(this.ShippingAddress.Address, this.Buyer.ShippingAddress)}");
-                    
+
                     this.Buyer.ShippingAddress.StreetLine = this.ShippingAddress.Address.StreetLine;
                     this.Buyer.ShippingAddress.City = this.ShippingAddress.Address.City;
                     this.Buyer.ShippingAddress.Country = this.ShippingAddress.Address.Country;
@@ -173,36 +173,6 @@ namespace MarketMinds.ViewModels
         }
 
         /// <inheritdoc/>
-        public async Task AddPurchase(string purchaseAmount)
-        {
-            if (string.IsNullOrWhiteSpace(purchaseAmount))
-            {
-                return;
-            }
-
-            var decimalPurchaseAmount = 0m;
-            try
-            {
-                decimalPurchaseAmount = decimal.Parse(purchaseAmount, CultureInfo.InvariantCulture);
-            }
-            catch (Exception)
-            {
-                Debug.WriteLine("Non decimal PurchaseAmount");
-                return;
-            }
-
-            await this.BuyerService.UpdateAfterPurchase(this.Buyer!, decimalPurchaseAmount);
-            this.AfterPurchase();
-        }
-
-        /// <inheritdoc/>
-        public void AfterPurchase()
-        {
-            this.BuyerBadge?.Updated();
-            this.OnPropertyChanged(nameof(this.BuyerBadge));
-        }
-
-        /// <inheritdoc/>
         public async Task LoadBuyerProfile()
         {
             this.Buyer = await this.BuyerService.GetBuyerByUser(this.User);
@@ -222,7 +192,7 @@ namespace MarketMinds.ViewModels
             this.BillingAddress = new BuyerAddressViewModel(this.Buyer.BillingAddress);
             Debug.WriteLine($"LoadBuyerProfile - BillingAddress ViewModel created, Address.Street: '{this.BillingAddress.Address?.StreetLine}'");
             Debug.WriteLine($"LoadBuyerProfile - Reference check: Same={object.ReferenceEquals(this.BillingAddress.Address, this.Buyer.BillingAddress)}");
-            
+
             Debug.WriteLine($"LoadBuyerProfile - Creating ShippingAddress ViewModel with Street: '{this.Buyer.ShippingAddress?.StreetLine}'");
             this.ShippingAddress = new BuyerAddressViewModel(this.Buyer.ShippingAddress);
             Debug.WriteLine($"LoadBuyerProfile - ShippingAddress ViewModel created, Address.Street: '{this.ShippingAddress.Address?.StreetLine}'");

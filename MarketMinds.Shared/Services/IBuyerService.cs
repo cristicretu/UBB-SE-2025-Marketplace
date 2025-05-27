@@ -122,7 +122,15 @@ namespace MarketMinds.Shared.Services
         /// <param name="buyer">The buyer to update.</param>
         /// <param name="purchaseAmount">The amount of the purchase.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task UpdateAfterPurchase(Buyer buyer, decimal purchaseAmount);
+        Task UpdateAfterPurchase(Buyer buyer, double purchaseAmount);
+
+        /// <summary>
+        /// Updates buyer information after a purchase using buyer ID to avoid tracking conflicts.
+        /// </summary>
+        /// <param name="buyerId">The ID of the buyer to update.</param>
+        /// <param name="purchaseAmount">The amount of the purchase.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task UpdateAfterPurchaseById(int buyerId, double purchaseAmount);
 
         /// <summary>
         /// Removes an item from a buyer's wishlist.

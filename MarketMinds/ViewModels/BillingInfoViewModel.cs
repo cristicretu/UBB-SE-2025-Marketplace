@@ -877,6 +877,15 @@ namespace MarketMinds.ViewModels
             Debug.WriteLine("Borrow product updated with new dates and price");
         }
 
+        public async Task AddPurchase(double purchaseAmount)
+        {
+            var currentUser = App.CurrentUser;
+            if (currentUser?.Id > 0)
+            {
+                await this.buyerService.UpdateAfterPurchaseById(currentUser.Id, purchaseAmount);
+            }
+        }
+
         /// <summary>
         /// Updates the start date for a borrowed product.
         /// </summary>

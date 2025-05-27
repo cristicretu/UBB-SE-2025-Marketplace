@@ -207,10 +207,10 @@ namespace MarketMinds.Shared.Services
         }
 
         /// <inheritdoc/>
-        public async Task UpdateAfterPurchase(Buyer buyer, decimal purchaseAmount)
+        public async Task UpdateAfterPurchase(Buyer buyer, double purchaseAmount)
         {
             // Update buyer stats
-            buyer.TotalSpending += purchaseAmount;
+            buyer.TotalSpending += (decimal)purchaseAmount;
             buyer.NumberOfPurchases++;
 
             // Update badge based on total spending
@@ -242,6 +242,22 @@ namespace MarketMinds.Shared.Services
 
             // Persist changes
             await this.buyerRepo.UpdateAfterPurchase(buyer);
+        }
+
+        /// <summary>
+        /// Updates buyer statistics after a purchase using buyer ID to avoid tracking conflicts.
+        /// </summary>
+        /// <param name="buyerId">The ID of the buyer to update.</param>
+        /// <param name="purchaseAmount">The amount of the purchase.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task UpdateAfterPurchaseById(int buyerId, double purchaseAmount)
+        {
+            // Get an untracked buyer object specifically for update
+            var buyer = await this.GetBuyerByIdAsync(buyerId);
+            if (buyer != null)
+            {
+                await this.UpdateAfterPurchase(buyer, purchaseAmount);
+            }
         }
 
         /// <inheritdoc/>

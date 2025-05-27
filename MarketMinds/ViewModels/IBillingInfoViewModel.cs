@@ -45,5 +45,6 @@ namespace MarketMinds.ViewModels
         void SetCartTotal(double total);
         void UpdateEndDate(DateTimeOffset date);
         void UpdateStartDate(DateTimeOffset date);
+        Task AddPurchase(double purchaseAmount);
     }
 }

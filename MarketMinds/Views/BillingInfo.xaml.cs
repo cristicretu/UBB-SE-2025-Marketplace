@@ -153,6 +153,8 @@ namespace MarketMinds.Views
                 this.Frame.Navigate(typeof(FinalisePurchase));
                 // Process notifications on finalisation success
                 App.FinalizePurchaseViewModel.HandleFinish();
+                // Add the purchase amount to the buyer's total spending + badge update
+                await ViewModel.AddPurchase(totalBeforeFinalize);
             }
             catch (Exception ex)
             {
