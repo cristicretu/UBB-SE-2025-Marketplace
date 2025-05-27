@@ -1,7 +1,7 @@
 using System;
+using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
-using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Converters
 {

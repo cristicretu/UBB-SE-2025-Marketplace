@@ -18,6 +18,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Services\NotificationContentService\" />
+	  <Folder Include="Services\ProductService\" />
+	  <Folder Include="Services\ProductTagServiceTest\" />
+	  <Folder Include="Services\ReviewCalculationServiceTest\" />
+	  <Folder Include="Services\ReviewCreationServiceTest\" />
 	  <Folder Include="Services\ReviewCreationService\" />
+	  <Folder Include="Services\ReviewService\" />
 	</ItemGroup>
 </Project>
