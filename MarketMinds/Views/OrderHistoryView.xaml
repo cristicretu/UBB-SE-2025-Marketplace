@@ -292,5 +292,146 @@
                 </StackPanel>
             </ScrollViewer>
         </ContentDialog>
+
+        <!-- Track Order Dialog -->
+        <ContentDialog x:Name="TrackOrderDialog"
+                      Title="Track Order"
+                      CloseButtonText="Close"
+                      DefaultButton="Close"
+                      RequestedTheme="Default">
+            <ScrollViewer VerticalScrollMode="Auto"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Disabled"
+                         MaxHeight="600"
+                         MinWidth="500">
+                <StackPanel Spacing="15" Padding="10">
+                    
+                    <!-- Loading Indicator -->
+                    <ProgressRing x:Name="TrackingProgressRing"
+                                 IsActive="False"
+                                 Visibility="Collapsed"
+                                 HorizontalAlignment="Center"/>
+                    
+                    <!-- Error Message -->
+                    <TextBlock x:Name="TrackingErrorMessage"
+                              Foreground="{ThemeResource SystemErrorTextColor}"
+                              Visibility="Collapsed"
+                              TextWrapping="Wrap"
+                              HorizontalAlignment="Center"/>
+                    
+                    <!-- Order Status Card -->
+                    <Grid x:Name="OrderStatusCard"
+                          Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                          BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                          BorderThickness="1"
+                          CornerRadius="8"
+                          Padding="15"
+                          Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Order Status" 
+                                     Style="{StaticResource SubtitleTextBlockStyle}"
+                                     Margin="0,0,0,10"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Left Column: Order Info -->
+                                <StackPanel Grid.Column="0" Spacing="8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Order ID:" 
+                                                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                        <TextBlock x:Name="TrackingOrderId" 
+                                                 Style="{StaticResource BodyTextBlockStyle}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Current Status:" 
+                                                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                        <TextBlock x:Name="TrackingCurrentStatus"
+                                                 Style="{StaticResource SubtitleTextBlockStyle}"
+                                                 Foreground="{ThemeResource SystemAccentColor}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Estimated Delivery:" 
+                                                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                        <TextBlock x:Name="TrackingEstimatedDelivery"
+                                                 Style="{StaticResource BodyTextBlockStyle}"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Right Column: Delivery Info -->
+                                <StackPanel Grid.Column="1" Spacing="8">
+                                    <TextBlock Text="Delivery Address:" 
+                                             Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                    <TextBlock x:Name="TrackingDeliveryAddress"
+                                             Style="{StaticResource BodyTextBlockStyle}"
+                                             TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                               x:Name="RefreshTrackingButton"
+                               Content="Refresh"
+                               Click="RefreshTracking_Click"
+                               Style="{StaticResource DefaultButtonStyle}"
+                               VerticalAlignment="Top"/>
+                    </Grid>
+
+                    <!-- Tracking Timeline -->
+                    <StackPanel x:Name="TrackingTimelineContainer" Visibility="Collapsed">
+                        <TextBlock Text="Tracking Timeline" 
+                                 Style="{StaticResource SubtitleTextBlockStyle}"
+                                 Margin="0,0,0,10"/>
+                        
+                        <ListView x:Name="TrackingTimelineListView"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 SelectionMode="None"
+                                 IsItemClickEnabled="False">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Ellipse Grid.Column="0"
+                                                Width="20" 
+                                                Height="20" 
+                                                Fill="{ThemeResource SystemAccentColor}"
+                                                Margin="0,5,15,0"/>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Status}"
+                                                      Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                            <TextBlock Text="{Binding Location}"
+                                                      Style="{StaticResource BodyTextBlockStyle}"
+                                                      Margin="0,5,0,0"/>
+                                            <TextBlock Text="{Binding Description}"
+                                                      Style="{StaticResource BodyTextBlockStyle}"
+                                                      Margin="0,5,0,0"/>
+                                            <TextBlock Text="{Binding Timestamp}"
+                                                      Style="{StaticResource CaptionTextBlockStyle}"
+                                                      Margin="0,5,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
     </Grid>
 </Page>

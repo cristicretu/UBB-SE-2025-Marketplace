@@ -27,7 +27,9 @@ namespace MarketMinds.Views
         private IOrderViewModel orderViewModel;
         private IContractViewModel contractViewModel;
         private OrderHistoryViewModel orderHistoryViewModel;
-        private Dictionary<int, string> orderProductCategoryTypes = new Dictionary<int, string>();        
+        private ITrackedOrderViewModel trackedOrderViewModel;
+        private Dictionary<int, string> orderProductCategoryTypes = new Dictionary<int, string>();
+        private int currentTrackingOrderId;        
         
         /// <summary>
         /// Initializes a new instance of the OrderHistoryUI page.
@@ -41,6 +43,7 @@ namespace MarketMinds.Views
             orderViewModel = new OrderViewModel();
             contractViewModel = App.ContractViewModel;
             orderHistoryViewModel = new OrderHistoryViewModel();
+            trackedOrderViewModel = App.TrackedOrderViewModel;
 
             this.Loaded += Page_Loaded;
         }
@@ -507,7 +510,7 @@ namespace MarketMinds.Views
         }        
         /// <summary>
         /// Event handler for the Track Order button click.
-        /// Opens the TrackedOrderWindow with the specific OrderID.
+        /// Shows the track order dialog with the specific OrderID.
         /// </summary>
         /// <param name="sender">The button that triggered the event</param>
         /// <param name="e">Event arguments</param>
@@ -517,18 +520,266 @@ namespace MarketMinds.Views
             {
                 try
                 {
-                    // Use the ViewModel to handle the complete track order workflow
-                    bool success = await orderHistoryViewModel.TrackOrderAsync(orderID);
-                    
-                    if (!success)
-                    {
-                        await ShowCustomMessageAsync("Error", "Failed to process order tracking. Please try again later.");
-                    }
+                    currentTrackingOrderId = orderID;
+                    await ShowTrackOrderDialog(orderID);
                 }
                 catch (Exception exception)
                 {
                     await ShowCustomMessageAsync("Error", $"Failed to open order tracking: {exception.Message}");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Shows the track order dialog and loads tracking data for the specified order ID.
+        /// </summary>
+        /// <param name="orderID">The ID of the order to track</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        private async Task ShowTrackOrderDialog(int orderID)
+        {
+            try
+            {
+                if (Content?.XamlRoot == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error: XamlRoot is null - cannot show track order dialog");
+                    return;
+                }
+
+                // Reset dialog state
+                ResetTrackingDialogState();
+
+                // Set XamlRoot and show dialog
+                TrackOrderDialog.XamlRoot = Content.XamlRoot;
+                
+                // Show loading state
+                TrackingProgressRing.IsActive = true;
+                TrackingProgressRing.Visibility = Visibility.Visible;
+
+                // Show the dialog (don't await here so we can load data while it's showing)
+                var dialogTask = TrackOrderDialog.ShowAsync();
+
+                // Load tracking data
+                await LoadTrackingData(orderID);
+
+                // Wait for dialog to complete
+                await dialogTask;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error showing track order dialog: {ex.Message}");
+                await ShowCustomMessageAsync("Error", $"Failed to show tracking dialog: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads tracking data for the specified order ID and populates the dialog.
+        /// Creates tracking information if it doesn't exist.
+        /// </summary>
+        /// <param name="orderID">The ID of the order to track</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        private async Task LoadTrackingData(int orderID)
+        {
+            try
+            {
+                // Get tracked order by order ID using our helper method
+                var trackedOrder = await GetTrackedOrderByOrderIdAsync(orderID);
+                
+                if (trackedOrder == null)
+                {
+                    // Create tracking information if it doesn't exist
+                    trackedOrder = await CreateTrackingForOrderAsync(orderID);
+                    
+                    if (trackedOrder == null)
+                    {
+                        ShowTrackingError("Unable to create or retrieve tracking information for this order.");
+                        return;
+                    }
+                }
+
+                // Load the full tracking data
+                await trackedOrderViewModel.LoadOrderDataAsync(trackedOrder.TrackedOrderID);
+
+                // Update UI with tracking information
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    PopulateTrackingDialog(trackedOrder);
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading tracking data: {ex.Message}");
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    ShowTrackingError($"Failed to load tracking data: {ex.Message}");
+                });
+            }
+        }
+
+        /// <summary>
+        /// Populates the tracking dialog with the provided tracked order data.
+        /// </summary>
+        /// <param name="trackedOrder">The tracked order data to display</param>
+        private void PopulateTrackingDialog(TrackedOrder trackedOrder)
+        {
+            try
+            {
+                // Hide loading indicator
+                TrackingProgressRing.IsActive = false;
+                TrackingProgressRing.Visibility = Visibility.Collapsed;
+
+                // Populate order information
+                TrackingOrderId.Text = trackedOrder.OrderID.ToString();
+                TrackingCurrentStatus.Text = trackedOrder.CurrentStatus.ToString();
+                TrackingEstimatedDelivery.Text = trackedOrder.EstimatedDeliveryDate.ToString("MMM dd, yyyy");
+                TrackingDeliveryAddress.Text = trackedOrder.DeliveryAddress ?? "Not specified";
+
+                // Show order status card
+                OrderStatusCard.Visibility = Visibility.Visible;
+
+                // Load and display checkpoints
+                LoadTrackingCheckpoints(trackedOrder.TrackedOrderID);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error populating tracking dialog: {ex.Message}");
+                ShowTrackingError($"Error displaying tracking information: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads and displays the tracking checkpoints for the specified tracked order.
+        /// </summary>
+        /// <param name="trackedOrderID">The ID of the tracked order</param>
+        private async void LoadTrackingCheckpoints(int trackedOrderID)
+        {
+            try
+            {
+                var checkpoints = await trackedOrderViewModel.GetAllOrderCheckpointsAsync(trackedOrderID);
+                
+                if (checkpoints != null && checkpoints.Count > 0)
+                {
+                    // Sort checkpoints by timestamp (most recent first)
+                    var sortedCheckpoints = checkpoints.OrderByDescending(c => c.Timestamp).ToList();
+                    
+                    TrackingTimelineListView.ItemsSource = sortedCheckpoints;
+                    TrackingTimelineContainer.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    TrackingTimelineContainer.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading checkpoints: {ex.Message}");
+                // Don't show error for checkpoints, just hide the timeline
+                TrackingTimelineContainer.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Resets the tracking dialog to its initial state.
+        /// </summary>
+        private void ResetTrackingDialogState()
+        {
+            TrackingProgressRing.IsActive = false;
+            TrackingProgressRing.Visibility = Visibility.Collapsed;
+            TrackingErrorMessage.Visibility = Visibility.Collapsed;
+            OrderStatusCard.Visibility = Visibility.Collapsed;
+            TrackingTimelineContainer.Visibility = Visibility.Collapsed;
+            TrackingTimelineListView.ItemsSource = null;
+        }
+
+        /// <summary>
+        /// Shows an error message in the tracking dialog.
+        /// </summary>
+        /// <param name="message">The error message to display</param>
+        private void ShowTrackingError(string message)
+        {
+            TrackingProgressRing.IsActive = false;
+            TrackingProgressRing.Visibility = Visibility.Collapsed;
+            TrackingErrorMessage.Text = message;
+            TrackingErrorMessage.Visibility = Visibility.Visible;
+            OrderStatusCard.Visibility = Visibility.Collapsed;
+            TrackingTimelineContainer.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Event handler for the refresh tracking button click.
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">Event data</param>
+        private async void RefreshTracking_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentTrackingOrderId > 0)
+            {
+                // Reset dialog state and reload data
+                ResetTrackingDialogState();
+                TrackingProgressRing.IsActive = true;
+                TrackingProgressRing.Visibility = Visibility.Visible;
+                
+                await LoadTrackingData(currentTrackingOrderId);
+            }
+        }
+
+        /// <summary>
+        /// Gets a tracked order by its order ID.
+        /// </summary>
+        /// <param name="orderID">The order ID to search for</param>
+        /// <returns>The tracked order if found, null otherwise</returns>
+        private async Task<TrackedOrder> GetTrackedOrderByOrderIdAsync(int orderID)
+        {
+            try
+            {
+                // Get all tracked orders and find the one with matching OrderID
+                var allTrackedOrders = await trackedOrderViewModel.GetAllTrackedOrdersAsync();
+                return allTrackedOrders?.FirstOrDefault(to => to.OrderID == orderID);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting tracked order by order ID: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Creates tracking information for an order that doesn't have tracking yet.
+        /// </summary>
+        /// <param name="orderID">The ID of the order to create tracking for</param>
+        /// <returns>The newly created tracked order, or null if creation failed</returns>
+        private async Task<TrackedOrder> CreateTrackingForOrderAsync(int orderID)
+        {
+            try
+            {
+                // Get the order information
+                var order = await orderViewModel.GetOrderByIdAsync(orderID);
+                if (order == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Order with ID {orderID} not found");
+                    return null;
+                }
+
+                // Get the order summary for delivery address
+                var orderSummary = await orderViewModel.GetOrderSummaryAsync(order.OrderSummaryID);
+                string deliveryAddress = orderSummary?.Address ?? "No delivery address provided";
+
+                // Create the tracked order using the service
+                var trackedOrderService = App.TrackedOrderService;
+                await trackedOrderService.CreateTrackedOrderForOrderAsync(
+                    orderID,
+                    DateOnly.FromDateTime(DateTime.Now.AddDays(7)), // Default 7 days delivery
+                    deliveryAddress,
+                    OrderStatus.PROCESSING,
+                    "Order received and is being processed"
+                );
+
+                // Retrieve the newly created tracked order
+                return await GetTrackedOrderByOrderIdAsync(orderID);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error creating tracking for order {orderID}: {ex.Message}");
+                return null;
             }
         }
     }
