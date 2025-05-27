@@ -327,64 +327,66 @@
                           CornerRadius="8"
                           Padding="15"
                           Visibility="Collapsed">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Order Status" 
+                        <!-- Header with Title and Refresh Button -->
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0"
+                                     Text="Order Status" 
                                      Style="{StaticResource SubtitleTextBlockStyle}"
-                                     Margin="0,0,0,10"/>
+                                     VerticalAlignment="Center"/>
+                            
+                            <Button Grid.Column="1"
+                                   x:Name="RefreshTrackingButton"
+                                   Content="Refresh"
+                                   Click="RefreshTracking_Click"
+                                   Style="{StaticResource DefaultButtonStyle}"/>
+                        </Grid>
 
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                        <!-- Order Information -->
+                        <StackPanel Grid.Row="1" Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="Order ID:" 
+                                         Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                <TextBlock x:Name="TrackingOrderId" 
+                                         Style="{StaticResource BodyTextBlockStyle}"/>
+                            </StackPanel>
 
-                                <!-- Left Column: Order Info -->
-                                <StackPanel Grid.Column="0" Spacing="8">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="Order ID:" 
-                                                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                                        <TextBlock x:Name="TrackingOrderId" 
-                                                 Style="{StaticResource BodyTextBlockStyle}"/>
-                                    </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="Current Status:" 
+                                         Style="{StaticResource BodyStrongTextBlockStyle}"
+                                         VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TrackingCurrentStatus"
+                                         Style="{StaticResource BodyTextBlockStyle}"
+                                         Foreground="{ThemeResource SystemAccentColor}"
+                                         VerticalAlignment="Center"/>
+                            </StackPanel>
 
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="Current Status:" 
-                                                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                                        <TextBlock x:Name="TrackingCurrentStatus"
-                                                 Style="{StaticResource SubtitleTextBlockStyle}"
-                                                 Foreground="{ThemeResource SystemAccentColor}"/>
-                                    </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Delivery Address:" 
+                                         Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                <TextBlock x:Name="TrackingDeliveryAddress"
+                                         Style="{StaticResource BodyTextBlockStyle}"
+                                         TextWrapping="Wrap"/>
+                            </StackPanel>
 
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="Estimated Delivery:" 
-                                                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                                        <TextBlock x:Name="TrackingEstimatedDelivery"
-                                                 Style="{StaticResource BodyTextBlockStyle}"/>
-                                    </StackPanel>
-                                </StackPanel>
-
-                                <!-- Right Column: Delivery Info -->
-                                <StackPanel Grid.Column="1" Spacing="8">
-                                    <TextBlock Text="Delivery Address:" 
-                                             Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                                    <TextBlock x:Name="TrackingDeliveryAddress"
-                                             Style="{StaticResource BodyTextBlockStyle}"
-                                             TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="Estimated Delivery:" 
+                                         Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                <TextBlock x:Name="TrackingEstimatedDelivery"
+                                         Style="{StaticResource BodyTextBlockStyle}"
+                                         TextWrapping="Wrap"/>
+                            </StackPanel>
                         </StackPanel>
-
-                        <Button Grid.Column="1"
-                               x:Name="RefreshTrackingButton"
-                               Content="Refresh"
-                               Click="RefreshTracking_Click"
-                               Style="{StaticResource DefaultButtonStyle}"
-                               VerticalAlignment="Top"/>
                     </Grid>
 
                     <!-- Tracking Timeline -->
