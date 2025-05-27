@@ -178,7 +178,11 @@ namespace MarketMinds.Views
                         ShowNotificationsPopup();
                         break;
                     case "Wishlist":
-                        // Show wishlist page in frame
+                        if (ContentFrame.Content is WishlistView)
+                        {
+                            return; // if the WishlistView is already in the frame, do not navigate to it again
+                        }
+                        ContentFrame.Navigate(typeof(WishlistView));
                         break;
                     case "Cart":
                         if (ContentFrame.Content is MyCartView)
