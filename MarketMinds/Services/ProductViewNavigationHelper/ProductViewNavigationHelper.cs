@@ -4,7 +4,7 @@ using MarketMinds.Views.Pages;
 
 namespace MarketMinds.Services
 {
-    public class ProductViewNavigationService : IProductViewNavigationService
+    public class ProductViewNavigationHelper : IProductViewNavigationHelper
     {
         public Microsoft.UI.Xaml.Window CreateProductDetailView(Product product)
         {

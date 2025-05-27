@@ -301,7 +301,7 @@ namespace MarketMinds.Views
             
             // Set up the page loaded event to initialize UI elements
             this.Loaded += MarketMindsPage_Loaded;
-            
+
             // Set Buy Products as the default selection - this will trigger ProductsPivot_SelectionChanged
             ProductsPivot.SelectedIndex = 0;
         }
@@ -616,16 +616,26 @@ namespace MarketMinds.Views
                 int offset = CurrentPageIndex * ItemsPerPage;
 
                 // Get total count with filters applied
-                var totalCount = await Task.Run(() => 
-                    this.BuyProductsViewModel.GetFilteredProductCount(
+                int totalCount;
+                try {
+                    totalCount = await this.BuyProductsViewModel.GetFilteredProductCountAsync(
                         selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                         selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                         MaxPrice < 100101 ? MaxPrice : null,
                         !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                    )
-                );
+                    );
+                    
+                    if (totalCount < 0) { // Sanity check
+                        Debug.WriteLine("Warning: Got negative count from API, defaulting to 0");
+                        totalCount = 0;
+                    }
+                }
+                catch (Exception countEx) {
+                    Debug.WriteLine($"Error getting product count: {countEx.Message}");
+                    totalCount = 0; // Default to zero if count fails
+                }
 
-                // Calculate total pages
+                // Calculate total pages (minimum 1 page)
                 TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalCount / ItemsPerPage));
 
                 // Ensure current page is valid
@@ -636,16 +646,24 @@ namespace MarketMinds.Views
                 }
 
                 // Get filtered products for current page
-                var products = await Task.Run(() => 
-                    this.BuyProductsViewModel.GetFilteredProducts(
+                List<BuyProduct> products = new List<BuyProduct>();
+                try
+                {
+                    products = await this.BuyProductsViewModel.GetFilteredProductsAsync(
                         offset, 
-                        ItemsPerPage,
+                        ItemsPerPage, // Ensure we're only fetching the exact amount needed for the page
                         selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                         selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                         MaxPrice < 100101 ? MaxPrice : null,
                         !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                    )
-                );
+                    );
+                    Debug.WriteLine($"Fetched {products.Count} products for page {CurrentPageIndex + 1} with {ItemsPerPage} items per page");
+                }
+                catch (Exception fetchEx)
+                {
+                    Debug.WriteLine($"Error fetching products: {fetchEx.Message}");
+                    products = new List<BuyProduct>(); // Empty list on error
+                }
 
                 // Update UI on the UI thread
                 BuyProductsCollection.Clear();
