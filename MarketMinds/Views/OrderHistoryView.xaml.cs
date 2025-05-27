@@ -220,7 +220,7 @@ namespace MarketMinds.Views
                     {
                         if (clickedButton != null)
                         {
-                            clickedButton.Content = "See Details";
+                            clickedButton.Content = "View Details";
                             clickedButton.IsEnabled = true;
                         }
                     });
@@ -228,8 +228,10 @@ namespace MarketMinds.Views
             }
         }
 
+        private OrderSummary currentOrderSummary;
+
         /// <summary>
-        /// Displays a detailed dialog for a specific order summary.
+        /// Displays a detailed dialog for a specific order summary using the XAML-defined dialog.
         /// </summary>
         /// <param name="orderSummary">The order summary object containing details to display. Must not be null.</param>
         /// <param name="orderSummaryId">The ID of the order summary. Must be a positive integer.</param>
@@ -239,7 +241,7 @@ namespace MarketMinds.Views
         {
             try
             {
-                bool isTaskEnqueued = DispatcherQueue.TryEnqueue(() =>
+                DispatcherQueue.TryEnqueue(() =>
                 {
                     try
                     {
@@ -249,117 +251,90 @@ namespace MarketMinds.Views
                             return;
                         }
 
-                        var orderDetailsPanel = new StackPanel { Spacing = 10, Padding = new Thickness(10) };
+                        // Store the current order summary for the contract generation
+                        currentOrderSummary = orderSummary;
 
-                        AddDetailRowToPanel(orderDetailsPanel, "Order Summary ID:", orderSummary.ID.ToString());
-                        AddDetailRowToPanel(orderDetailsPanel, "Subtotal:", orderSummary.Subtotal.ToString("C"));
-                        AddDetailRowToPanel(orderDetailsPanel, "Delivery Fee:", orderSummary.DeliveryFee.ToString("C"));
-                        AddDetailRowToPanel(orderDetailsPanel, "Final Total:", orderSummary.FinalTotal.ToString("C"));
-                        AddDetailRowToPanel(orderDetailsPanel, "Customer Name:", orderSummary.FullName);
-                        AddDetailRowToPanel(orderDetailsPanel, "Email:", orderSummary.Email);
-                        AddDetailRowToPanel(orderDetailsPanel, "Phone:", orderSummary.PhoneNumber);
-                        AddDetailRowToPanel(orderDetailsPanel, "Address:", orderSummary.Address);
-                        AddDetailRowToPanel(orderDetailsPanel, "Postal Code:", orderSummary.PostalCode);
+                        // Clear previous content
+                        OrderDetailsContent.Children.Clear();
+
+                        // Populate order details
+                        AddDetailRowToPanel(OrderDetailsContent, "Order Summary ID:", orderSummary.ID.ToString());
+                        AddDetailRowToPanel(OrderDetailsContent, "Subtotal:", orderSummary.Subtotal.ToString("C"));
+                        AddDetailRowToPanel(OrderDetailsContent, "Delivery Fee:", orderSummary.DeliveryFee.ToString("C"));
+                        AddDetailRowToPanel(OrderDetailsContent, "Final Total:", orderSummary.FinalTotal.ToString("C"));
+                        AddDetailRowToPanel(OrderDetailsContent, "Customer Name:", orderSummary.FullName);
+                        AddDetailRowToPanel(OrderDetailsContent, "Email:", orderSummary.Email);
+                        AddDetailRowToPanel(OrderDetailsContent, "Phone:", orderSummary.PhoneNumber);
+                        AddDetailRowToPanel(OrderDetailsContent, "Address:", orderSummary.Address);
+                        AddDetailRowToPanel(OrderDetailsContent, "Postal Code:", orderSummary.PostalCode);
 
                         if (!string.IsNullOrEmpty(orderSummary.AdditionalInfo))
                         {
-                            AddDetailRowToPanel(orderDetailsPanel, "Additional Info:", orderSummary.AdditionalInfo);
+                            AddDetailRowToPanel(OrderDetailsContent, "Additional Info:", orderSummary.AdditionalInfo);
                         }
 
-                        
-                        AddDetailRowToPanel(orderDetailsPanel, "Warranty Tax:", orderSummary.WarrantyTax.ToString("C"));
+                        AddDetailRowToPanel(OrderDetailsContent, "Warranty Tax:", orderSummary.WarrantyTax.ToString("C"));
 
                         if (!string.IsNullOrEmpty(orderSummary.ContractDetails))
                         {
-                            AddDetailRowToPanel(orderDetailsPanel, "Contract Details:", orderSummary.ContractDetails);
-                        }                        // Add Generate Contract button that displays the contract directly
-                        var generateContractButton = new Button
-                        {
-                            Content = "Generate Contract",
-                            Margin = new Thickness(0, 10, 0, 0),
-                            HorizontalAlignment = HorizontalAlignment.Left
-                        };                        generateContractButton.Click += (s, args) =>
-                        {
-                            DispatcherQueue.TryEnqueue(async () =>
-                            {
-                                try
-                                {
-                                    // Disable the button and show loading state
-                                    generateContractButton.IsEnabled = false;
-                                    generateContractButton.Content = "Generating...";
-                                    
-                                    await HandleGenerateAndDisplayContractClick(orderSummary);
-                                    
-                                    // Update button to show success
-                                    generateContractButton.Content = "✓ Contract Generated";
-                                    generateContractButton.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
-                                    
-                                    // Add a success message to the dialog instead of showing a separate dialog
-                                    var successMessage = new TextBlock
-                                    {
-                                        Text = "✓ Contract generated and opened successfully!",
-                                        Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green),
-                                        FontWeight = FontWeights.SemiBold,
-                                        Margin = new Thickness(0, 10, 0, 0)
-                                    };
-                                    orderDetailsPanel.Children.Add(successMessage);
-                                }
-                                catch (Exception ex)
-                                {
-                                    System.Diagnostics.Debug.WriteLine($"Contract generation error: {ex.Message}");
-                                    
-                                    // Reset button and show error in the dialog
-                                    generateContractButton.IsEnabled = true;
-                                    generateContractButton.Content = "Generate Contract";
-                                    
-                                    var errorMessage = new TextBlock
-                                    {
-                                        Text = $"✗ Failed to generate contract: {ex.Message}",
-                                        Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red),
-                                        FontWeight = FontWeights.SemiBold,
-                                        Margin = new Thickness(0, 10, 0, 0),
-                                        TextWrapping = TextWrapping.Wrap
-                                    };
-                                    orderDetailsPanel.Children.Add(errorMessage);
-                                }
-                            });
-                        };
+                            AddDetailRowToPanel(OrderDetailsContent, "Contract Details:", orderSummary.ContractDetails);
+                        }
 
-                        orderDetailsPanel.Children.Add(generateContractButton);
+                        // Reset contract UI elements
+                        GenerateContractButton.Content = "Generate Contract";
+                        GenerateContractButton.IsEnabled = true;
+                        ContractSuccessMessage.Visibility = Visibility.Collapsed;
+                        ContractErrorMessage.Visibility = Visibility.Collapsed;
 
-                        var scrollViewer = new ScrollViewer
-                        {
-                            Content = orderDetailsPanel,
-                            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                            MaxHeight = 500
-                        };
-
-                        ContentDialog errorContentDialog = new ContentDialog
-                        {
-                            Title = "Order Details",
-                            Content = scrollViewer,
-                            CloseButtonText = "Close",
-                            DefaultButton = ContentDialogButton.Close,
-                            XamlRoot = Content.XamlRoot
-                        };
-
-                        _ = errorContentDialog.ShowAsync();
+                        // Set XamlRoot and show dialog
+                        OrderDetailsDialog.XamlRoot = Content.XamlRoot;
+                        _ = OrderDetailsDialog.ShowAsync();
                     }
                     catch (Exception exception)
                     {
                         System.Diagnostics.Debug.WriteLine($"Error setting up dialog: {exception.Message}");
                     }
                 });
-
-                if (!isTaskEnqueued)
-                {
-                    System.Diagnostics.Debug.WriteLine("Failed to enqueue dialog creation operation");
-                }
             }
             catch (Exception exception)
             {
                 System.Diagnostics.Debug.WriteLine($"Error showing order details: {exception.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Event handler for the Generate Contract button click in the XAML dialog.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
+        private async void GenerateContractButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentOrderSummary == null) return;
+
+            try
+            {
+                // Update UI to show loading state
+                GenerateContractButton.IsEnabled = false;
+                GenerateContractButton.Content = "Generating...";
+                ContractSuccessMessage.Visibility = Visibility.Collapsed;
+                ContractErrorMessage.Visibility = Visibility.Collapsed;
+
+                // Generate the contract
+                await HandleGenerateAndDisplayContractClick(currentOrderSummary);
+
+                // Show success state
+                GenerateContractButton.Content = "✓ Contract Generated";
+                ContractSuccessMessage.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Contract generation error: {ex.Message}");
+
+                // Show error state
+                GenerateContractButton.IsEnabled = true;
+                GenerateContractButton.Content = "Generate Contract";
+                ContractErrorMessage.Text = $"✗ Failed to generate contract: {ex.Message}";
+                ContractErrorMessage.Visibility = Visibility.Visible;
             }
         }        /// <summary>
         /// Handles the click event for generating and displaying a contract.

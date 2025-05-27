@@ -22,11 +22,13 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Padding="20,10">
-            <TextBlock Text="📋 Order History" 
-                      FontSize="24" 
-                      FontWeight="Bold" 
-                      Margin="0,0,0,5"
-                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,5">
+                <FontIcon Glyph="&#xF0E3;" FontSize="24" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                <TextBlock Text="Order History" 
+                          FontSize="24" 
+                          FontWeight="Bold" 
+                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+            </StackPanel>
             <TextBlock Text="Track your orders and their status" 
                       FontSize="14" 
                       Margin="0,0,0,15"
@@ -34,42 +36,62 @@
         </StackPanel>
 
         <!-- Filter Controls -->
-        <StackPanel Orientation="Horizontal" 
-                   Grid.Row="0" 
-                   Padding="20,60,20,10" 
-                   Spacing="15" 
-                   Background="{ThemeResource ControlFillColorSecondaryBrush}">
+        <Grid Grid.Row="0" 
+              Padding="20,80,20,10" 
+              Background="{ThemeResource ControlFillColorSecondaryBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Search Orders" 
-                      VerticalAlignment="Center" 
-                      FontWeight="SemiBold"
-                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-            <TextBox x:Name="SearchTextBox" 
-                    PlaceholderText="Search by product name, order ID, or category..."
-                    Width="300"
-                    TextChanged="SearchTextBox_TextChanged"
-                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                    Background="{ThemeResource ControlFillColorDefaultBrush}"/>
+            <!-- Left side: Search controls -->
+            <StackPanel Grid.Column="0" 
+                       Orientation="Horizontal" 
+                       Spacing="15" 
+                       VerticalAlignment="Center">
+                <TextBlock Text="Search Orders" 
+                          VerticalAlignment="Center" 
+                          FontWeight="SemiBold"
+                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                <TextBox x:Name="SearchTextBox" 
+                        PlaceholderText="Search by order ID, product name | condition | category or payment method..."
+                        Width="600"
+                        Height="32"
+                        TextChanged="SearchTextBox_TextChanged"
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                        Background="{ThemeResource ControlFillColorDefaultBrush}"/>
+            </StackPanel>
 
-            <TextBlock Text="Time Period" 
-                      VerticalAlignment="Center" 
-                      FontWeight="SemiBold"
-                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-            <ComboBox x:Name="TimePeriodComboBox" Width="150" SelectedIndex="0"
-                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                      Background="{ThemeResource ControlFillColorDefaultBrush}">
-                <ComboBoxItem Content="Last 3 Months"/>
-                <ComboBoxItem Content="Last 6 Months"/>
-                <ComboBoxItem Content="This Year"/>
-                <ComboBoxItem Content="All Orders"/>
-            </ComboBox>
+            <!-- Right side: Time period and refresh controls -->
+            <StackPanel Grid.Column="1" 
+                       Orientation="Horizontal" 
+                       Spacing="15" 
+                       VerticalAlignment="Center">
+                <TextBlock Text="Time Period" 
+                          VerticalAlignment="Center" 
+                          FontWeight="SemiBold"
+                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                <ComboBox x:Name="TimePeriodComboBox" Width="150" Height="32" SelectedIndex="0"
+                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                          Background="{ThemeResource ControlFillColorDefaultBrush}">
+                    <ComboBoxItem Content="Last 3 Months"/>
+                    <ComboBoxItem Content="Last 6 Months"/>
+                    <ComboBoxItem Content="This Year"/>
+                    <ComboBoxItem Content="All Orders"/>
+                </ComboBox>
 
-            <Button Content="🔄 Refresh" 
-                   Click="RefreshButton_Click"
-                   Background="{ThemeResource SystemAccentColor}"
-                   Foreground="{ThemeResource AccentButtonForeground}"
-                   Padding="15,8"/>
-        </StackPanel>
+                <Button Click="RefreshButton_Click"
+                       Background="{ThemeResource SystemAccentColor}"
+                       Foreground="{ThemeResource AccentButtonForeground}"
+                       Height="32"
+                       Padding="15,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE72C;" />
+                        <TextBlock Text="Refresh" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
 
         <!-- Orders ListView with Grouping -->
         <ListView x:Name="OrdersListView" 
@@ -157,10 +179,11 @@
                                                Height="32" 
                                                CornerRadius="6"
                                                Margin="0,0,12,0">
-                                            <TextBlock Text="📦" 
-                                                      HorizontalAlignment="Center" 
-                                                      VerticalAlignment="Center"
-                                                      FontSize="16"/>
+                                            <FontIcon Glyph="&#xE7B8;" 
+                                                     HorizontalAlignment="Center" 
+                                                     VerticalAlignment="Center"
+                                                     FontSize="16"
+                                                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                         </Border>
 
                                         <!-- Product Details -->
@@ -230,14 +253,42 @@
         <ContentDialog x:Name="OrderDetailsDialog"
                       Title="Order Details"
                       CloseButtonText="Close"
-                      PrimaryButtonText="OK"
-                      DefaultButton="Close">
+                      DefaultButton="Close"
+                      RequestedTheme="Default">
             <ScrollViewer VerticalScrollMode="Auto"
                          VerticalScrollBarVisibility="Auto"
-                         MaxHeight="400">
-                <StackPanel x:Name="OrderDetailsContent"
-                           Spacing="8"
-                           Padding="12">
+                         HorizontalScrollBarVisibility="Disabled"
+                         MaxHeight="500">
+                <StackPanel Spacing="10" Padding="10">
+                    
+                    <!-- Order Summary Details will be populated dynamically -->
+                    <StackPanel x:Name="OrderDetailsContent" Spacing="10">
+                        <!-- Order details will be added here dynamically -->
+                    </StackPanel>
+                    
+                    <!-- Generate Contract Section -->
+                    <StackPanel x:Name="ContractSection" Spacing="10" Margin="0,10,0,0">
+                        <Button x:Name="GenerateContractButton"
+                               Content="Generate Contract"
+                               Click="GenerateContractButton_Click"
+                               Background="{ThemeResource SystemAccentColor}"
+                               Foreground="{ThemeResource AccentButtonForeground}"
+                               HorizontalAlignment="Left"/>
+                        
+                        <!-- Success/Error Messages -->
+                        <TextBlock x:Name="ContractSuccessMessage"
+                                  Text="✓ Contract generated and opened successfully!"
+                                  Foreground="{ThemeResource SystemAccentColor}"
+                                  FontWeight="SemiBold"
+                                  Visibility="Collapsed"
+                                  TextWrapping="Wrap"/>
+                        
+                        <TextBlock x:Name="ContractErrorMessage"
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                  FontWeight="SemiBold"
+                                  Visibility="Collapsed"
+                                  TextWrapping="Wrap"/>
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
         </ContentDialog>
