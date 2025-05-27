@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 
 namespace Server.Controllers
 {
@@ -51,30 +52,19 @@ namespace Server.Controllers
         public async Task<IActionResult> GetUserContext(int userId)
         {
             try
-            {       
-                if (userId <= 0)
-                {
-                    return BadRequest("Invalid user ID");
-                }
-
+            {
                 string userContext = await chatbotRepository.GetUserContextAsync(userId);
-                
-                if (string.IsNullOrWhiteSpace(userContext))
-                {
-                    return BadRequest($"Empty user context returned for user {userId}");
-                }
-                
                 return Ok(new UserContextResponse
                 {
-                    Context = userContext ?? string.Empty,
-                    Success = !string.IsNullOrWhiteSpace(userContext)
+                    Context = userContext,
+                    Success = true
                 });
             }
             catch (Exception exception)
             {
                 return Ok(new UserContextResponse
                 {
-                    Context = string.Empty,
+                    Context = "Error retrieving user context.",
                     Success = false
                 });
             }
@@ -88,13 +78,14 @@ namespace Server.Controllers
                 var user = await chatbotRepository.GetUserAsync(userId);
                 if (user == null)
                 {
-                    return NotFound($"User with ID {userId} not found");
+                    return NotFound();
                 }
+
                 return Ok(user);
             }
             catch (Exception exception)
             {
-                return StatusCode(500, "Error retrieving user data");
+                return StatusCode(500, "Error retrieving user information.");
             }
         }
 
@@ -106,13 +97,14 @@ namespace Server.Controllers
                 var basket = await chatbotRepository.GetUserBasketAsync(userId);
                 if (basket == null)
                 {
-                    return NotFound($"Basket for user ID {userId} not found");
+                    return NotFound();
                 }
+
                 return Ok(basket);
             }
             catch (Exception exception)
             {
-                return StatusCode(500, "Error retrieving basket data");
+                return StatusCode(500, "Error retrieving user basket.");
             }
         }
 
@@ -126,7 +118,7 @@ namespace Server.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(500, "Error retrieving basket items");
+                return StatusCode(500, "Error retrieving basket items.");
             }
         }
 
@@ -138,13 +130,14 @@ namespace Server.Controllers
                 var product = await chatbotRepository.GetBuyProductAsync(productId);
                 if (product == null)
                 {
-                    return NotFound($"Product with ID {productId} not found");
+                    return NotFound();
                 }
+
                 return Ok(product);
             }
             catch (Exception exception)
             {
-                return StatusCode(500, "Error retrieving product data");
+                return StatusCode(500, "Error retrieving product information.");
             }
         }
 
@@ -158,7 +151,7 @@ namespace Server.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(500, "Error retrieving reviews given by user");
+                return StatusCode(500, "Error retrieving reviews.");
             }
         }
 
@@ -172,7 +165,7 @@ namespace Server.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(500, "Error retrieving reviews received by user");
+                return StatusCode(500, "Error retrieving reviews.");
             }
         }
 
@@ -186,7 +179,7 @@ namespace Server.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(500, "Error retrieving buyer orders");
+                return StatusCode(500, "Error retrieving buyer orders.");
             }
         }
 
@@ -200,7 +193,63 @@ namespace Server.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(500, "Error retrieving seller orders");
+                return StatusCode(500, "Error retrieving seller orders.");
+            }
+        }
+
+        [HttpGet("TrackedOrders/{userId}")]
+        public async Task<IActionResult> GetTrackedOrders(int userId)
+        {
+            try
+            {
+                var trackedOrders = await chatbotRepository.GetTrackedOrdersAsync(userId);
+                return Ok(trackedOrders);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(500, "Error retrieving tracked orders.");
+            }
+        }
+
+        [HttpGet("UserWaitlists/{userId}")]
+        public async Task<IActionResult> GetUserWaitlists(int userId)
+        {
+            try
+            {
+                var waitlists = await chatbotRepository.GetUserWaitlistsAsync(userId);
+                return Ok(waitlists);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(500, "Error retrieving user waitlists.");
+            }
+        }
+
+        [HttpGet("UserAuctionProducts/{userId}")]
+        public async Task<IActionResult> GetUserAuctionProducts(int userId)
+        {
+            try
+            {
+                var auctionProducts = await chatbotRepository.GetUserAuctionProductsAsync(userId);
+                return Ok(auctionProducts);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(500, "Error retrieving user auction products.");
+            }
+        }
+
+        [HttpGet("UserBids/{userId}")]
+        public async Task<IActionResult> GetUserBids(int userId)
+        {
+            try
+            {
+                var bids = await chatbotRepository.GetUserBidsAsync(userId);
+                return Ok(bids);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(500, "Error retrieving user bids.");
             }
         }
     }

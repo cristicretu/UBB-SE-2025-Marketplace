@@ -81,6 +81,49 @@ namespace MarketMinds.Controllers
             }
         }
 
+        [HttpGet("filtered")]
+        [ProducesResponseType(typeof(List<AuctionProductDTO>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredAuctionProducts(
+            [FromQuery] int offset = 0, 
+            [FromQuery] int count = 0,
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null)
+        {
+            try
+            {
+                List<AuctionProduct> products = auctionProductsRepository.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm);
+                var dtos = AuctionProductMapper.ToDTOList(products);
+                return Ok(dtos);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to retrieve filtered auction products: {exception.Message}");
+            }
+        }
+
+        [HttpGet("filtered/count")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredAuctionProductsCount(
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null)
+        {
+            try
+            {
+                var count = auctionProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm);
+                return Ok(count);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to get filtered auction products count: {exception.Message}");
+            }
+        }
+
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AuctionProductDTO), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

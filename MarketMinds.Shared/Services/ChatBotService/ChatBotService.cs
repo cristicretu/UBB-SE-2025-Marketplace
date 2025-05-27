@@ -205,31 +205,35 @@ public class ChatbotService : IChatbotService
                 return $"User with ID {userId} not found.";
             }
 
-            var basket = await chatbotRepository.GetUserBasketAsync(userId);
-            List<BasketItem> basketItems = null;
-            Dictionary<int, BuyProduct> products = new Dictionary<int, BuyProduct>();
+            // Get shopping cart items instead of basket
+            var shoppingCartItems = await chatbotRepository.GetShoppingCartItemsAsync(userId);
             
-            if (basket != null)
-            {
-                basketItems = await chatbotRepository.GetBasketItemsAsync(basket.Id);
-                
-                foreach (var item in basketItems)
-                {
-                    if (!products.ContainsKey(item.ProductId))
-                    {
-                        var product = await chatbotRepository.GetBuyProductAsync(item.ProductId);
-                        if (product != null)
-                        {
-                            products[item.ProductId] = product;
-                        }
-                    }
-                }
-            }
-            
+            // Get user reviews (given and received)
             var reviewsGiven = await chatbotRepository.GetReviewsGivenByUserAsync(userId);
-            var sellerIds = reviewsGiven.Select(r => r.SellerId).Distinct().ToList();
-            var sellers = new Dictionary<int, User>();
+            var reviewsReceived = await chatbotRepository.GetReviewsReceivedByUserAsync(userId);
             
+            // Get order information
+            var buyerOrders = await chatbotRepository.GetBuyerOrdersAsync(userId);
+            var sellerOrders = await chatbotRepository.GetSellerOrdersAsync(userId);
+            
+            // Get tracked orders for shipping status
+            var trackedOrders = await chatbotRepository.GetTrackedOrdersAsync(userId);
+            
+            // Get waitlist information
+            var waitlistItems = await chatbotRepository.GetUserWaitlistsAsync(userId);
+            
+            // Get auction products (if seller) and bids (if buyer)
+            var auctionProducts = user.UserType != BUYER_TYPE_VALUE ? 
+                await chatbotRepository.GetUserAuctionProductsAsync(userId) : new List<AuctionProduct>();
+            var userBids = user.UserType == BUYER_TYPE_VALUE ? 
+                await chatbotRepository.GetUserBidsAsync(userId) : new List<Bid>();
+            
+            // Collect seller and buyer information for context
+            Dictionary<int, User> sellers = new Dictionary<int, User>();
+            Dictionary<int, User> buyers = new Dictionary<int, User>();
+            
+            // Add seller info from reviews
+            var sellerIds = reviewsGiven.Select(r => r.SellerId).Distinct().ToList();
             foreach (var sellerId in sellerIds)
             {
                 var seller = await chatbotRepository.GetUserByIdAsync(sellerId);
@@ -239,10 +243,8 @@ public class ChatbotService : IChatbotService
                 }
             }
             
-            var reviewsReceived = await chatbotRepository.GetReviewsReceivedByUserAsync(userId);
+            // Add buyer info from reviews
             var buyerIds = reviewsReceived.Select(r => r.BuyerId).Distinct().ToList();
-            var buyers = new Dictionary<int, User>();
-            
             foreach (var buyerId in buyerIds)
             {
                 var buyer = await chatbotRepository.GetUserByIdAsync(buyerId);
@@ -252,9 +254,8 @@ public class ChatbotService : IChatbotService
                 }
             }
             
-            var buyerOrders = await chatbotRepository.GetBuyerOrdersAsync(userId);
+            // Add seller info from orders
             var sellerIdsFromOrders = buyerOrders.Select(o => o.SellerId).Distinct().ToList();
-            
             foreach (var sellerId in sellerIdsFromOrders)
             {
                 if (!sellers.ContainsKey(sellerId))
@@ -267,9 +268,8 @@ public class ChatbotService : IChatbotService
                 }
             }
             
-            var sellerOrders = await chatbotRepository.GetSellerOrdersAsync(userId);
+            // Add buyer info from orders
             var buyerIdsFromOrders = sellerOrders.Select(o => o.BuyerId).Distinct().ToList();
-            
             foreach (var buyerId in buyerIdsFromOrders)
             {
                 if (!buyers.ContainsKey(buyerId))
@@ -281,10 +281,33 @@ public class ChatbotService : IChatbotService
                     }
                 }
             }
+            
+            // Add bidder info from auctions
+            if (auctionProducts.Any())
+            {
+                var bidderIds = auctionProducts
+                    .SelectMany(ap => ap.Bids)
+                    .Select(b => b.BidderId)
+                    .Distinct()
+                    .ToList();
+                
+                foreach (var bidderId in bidderIds)
+                {
+                    if (!buyers.ContainsKey(bidderId))
+                    {
+                        var bidder = await chatbotRepository.GetUserByIdAsync(bidderId);
+                        if (bidder != null)
+                        {
+                            buyers[bidderId] = bidder;
+                        }
+                    }
+                }
+            }
 
-            return FormatUserContext(user, basket, basketItems, products, 
+            return FormatUserContext(user, shoppingCartItems, 
                 reviewsGiven, sellers, reviewsReceived, buyers, 
-                buyerOrders, sellerOrders);
+                buyerOrders, sellerOrders, trackedOrders, waitlistItems,
+                auctionProducts, userBids);
         }
         catch (Exception ex)
         {
@@ -294,15 +317,17 @@ public class ChatbotService : IChatbotService
 
     private string FormatUserContext(
         User user,
-        Basket basket,
-        List<BasketItem> basketItems,
-        Dictionary<int, BuyProduct> products,
+        List<Product> shoppingCartItems,
         List<Review> reviewsGiven,
         Dictionary<int, User> sellers,
         List<Review> reviewsReceived,
         Dictionary<int, User> buyers,
         List<Order> buyerOrders,
-        List<Order> sellerOrders)
+        List<Order> sellerOrders,
+        List<TrackedOrder> trackedOrders,
+        List<UserWaitList> waitlistItems,
+        List<AuctionProduct> auctionProducts,
+        List<Bid> userBids)
     {
         var contextBuilder = new StringBuilder();
 
@@ -317,38 +342,91 @@ public class ChatbotService : IChatbotService
             contextBuilder.AppendLine();
         }
 
-        if (basket != null && basketItems != null)
+        // Shopping Cart information
+        if (shoppingCartItems != null && shoppingCartItems.Any())
         {
-            if (basketItems.Any())
+            contextBuilder.AppendLine("CURRENT SHOPPING CART ITEMS:");
+            decimal totalCartValue = 0;
+            
+            foreach (var item in shoppingCartItems)
             {
-                contextBuilder.AppendLine("CURRENT BASKET ITEMS:");
-                decimal totalBasketValue = 0;
-                
-                foreach (var item in basketItems)
-                {
-                    if (products.TryGetValue(item.ProductId, out var product))
-                    {
-                        decimal itemTotal = (decimal)(item.Price * item.Quantity);
-                        totalBasketValue += itemTotal;
-                        contextBuilder.AppendLine($"- {product.Title} (Quantity: {item.Quantity}, Price: ${item.Price:F2}, Total: ${itemTotal:F2})");
-                    }
-                }
-                
-                contextBuilder.AppendLine($"Total Basket Value: ${totalBasketValue:F2}");
-                contextBuilder.AppendLine();
+                decimal itemTotal = (decimal)(item.Price * item.Stock); // Stock field is used for quantity
+                totalCartValue += itemTotal;
+                contextBuilder.AppendLine($"- {item.Title} (Quantity: {item.Stock}, Price: ${item.Price:F2}, Total: ${itemTotal:F2})");
             }
-            else
-            {
-                contextBuilder.AppendLine("CURRENT BASKET: Your basket is currently empty");
-                contextBuilder.AppendLine();
-            }
+            
+            contextBuilder.AppendLine($"Total Cart Value: ${totalCartValue:F2}");
+            contextBuilder.AppendLine();
         }
         else
         {
-            contextBuilder.AppendLine("CURRENT BASKET: You don't have a basket yet");
+            contextBuilder.AppendLine("CURRENT SHOPPING CART: Your shopping cart is currently empty");
             contextBuilder.AppendLine();
         }
 
+        // Order tracking information
+        if (trackedOrders != null && trackedOrders.Any())
+        {
+            contextBuilder.AppendLine("TRACKED ORDERS:");
+            
+            foreach (var trackedOrder in trackedOrders)
+            {
+                var matchingOrder = buyerOrders.FirstOrDefault(o => o.Id == trackedOrder.OrderID);
+                string orderName = matchingOrder != null ? matchingOrder.Name : $"Order #{trackedOrder.OrderID}";
+                
+                contextBuilder.AppendLine($"- {orderName}");
+                contextBuilder.AppendLine($"  Status: {trackedOrder.CurrentStatus}");
+                contextBuilder.AppendLine($"  Estimated Delivery: {trackedOrder.EstimatedDeliveryDate}");
+                contextBuilder.AppendLine();
+            }
+        }
+
+        // Waitlist information
+        if (waitlistItems != null && waitlistItems.Any())
+        {
+            contextBuilder.AppendLine("WAITLIST ITEMS:");
+            
+            foreach (var waitlistItem in waitlistItems)
+            {
+                contextBuilder.AppendLine($"- Product ID: {waitlistItem.ProductWaitListID}");
+                contextBuilder.AppendLine($"  Added on: {waitlistItem.JoinedTime}");
+                if (waitlistItem.PreferredEndDate.HasValue)
+                {
+                    contextBuilder.AppendLine($"  Preferred end date: {waitlistItem.PreferredEndDate.Value.ToShortDateString()}");
+                }
+                contextBuilder.AppendLine();
+            }
+        }
+
+        // Auction information - either products (if seller) or bids (if buyer)
+        if (auctionProducts != null && auctionProducts.Any())
+        {
+            contextBuilder.AppendLine("YOUR AUCTION LISTINGS:");
+            
+            foreach (var auction in auctionProducts)
+            {
+                decimal highestBid = auction.Bids?.OrderByDescending(b => b.Price).FirstOrDefault()?.Price != null ? 
+                    (decimal)auction.Bids.OrderByDescending(b => b.Price).FirstOrDefault()?.Price : 0;
+                contextBuilder.AppendLine($"- {auction.Title} (Starting Price: ${auction.StartingPrice:F2}, Current Highest Bid: ${highestBid:F2})");
+                contextBuilder.AppendLine($"  End Date: {auction.EndTime}");
+                contextBuilder.AppendLine($"  Number of Bids: {auction.Bids?.Count ?? 0}");
+                contextBuilder.AppendLine();
+            }
+        }
+        
+        if (userBids != null && userBids.Any())
+        {
+            contextBuilder.AppendLine("YOUR AUCTION BIDS:");
+            
+            foreach (var bid in userBids)
+            {
+                contextBuilder.AppendLine($"- Bid Amount: ${bid.Price:F2} on Product ID: {bid.ProductId}");
+                contextBuilder.AppendLine($"  Bid Date: {bid.Timestamp}");
+                contextBuilder.AppendLine();
+            }
+        }
+
+        // Reviews information
         if (reviewsGiven != null && reviewsGiven.Any())
         {
             contextBuilder.AppendLine("REVIEWS YOU'VE GIVEN:");
@@ -385,6 +463,7 @@ public class ChatbotService : IChatbotService
             contextBuilder.AppendLine();
         }
 
+        // Order history
         if (buyerOrders != null && buyerOrders.Any())
         {
             contextBuilder.AppendLine("YOUR PURCHASE HISTORY:");
@@ -402,6 +481,7 @@ public class ChatbotService : IChatbotService
                 {
                     contextBuilder.AppendLine($"  Description: {order.Description}");
                 }
+                contextBuilder.AppendLine($"  Order Date: {order.OrderDate}");
             }
             
             contextBuilder.AppendLine();
@@ -424,6 +504,7 @@ public class ChatbotService : IChatbotService
                 {
                     contextBuilder.AppendLine($"  Description: {order.Description}");
                 }
+                contextBuilder.AppendLine($"  Order Date: {order.OrderDate}");
             }
             
             contextBuilder.AppendLine();

@@ -167,6 +167,55 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         /// <inheritdoc />
+        public async Task<List<OrderDisplayInfo>> GetOrdersWithProductInfoAsync(int userId, int offset, int count, string? searchText = null, string? timePeriod = null)
+        {
+            var queryParams = new List<string>
+            {
+                $"offset={offset}",
+                $"count={count}"
+            };
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                queryParams.Add($"searchText={System.Net.WebUtility.UrlEncode(searchText)}");
+            }
+
+            if (!string.IsNullOrEmpty(timePeriod))
+            {
+                queryParams.Add($"timePeriod={System.Net.WebUtility.UrlEncode(timePeriod)}");
+            }
+
+            string queryString = "?" + string.Join("&", queryParams);
+
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/buyer/{userId}/display{queryString}");
+            await this.ThrowOnError(nameof(GetOrdersWithProductInfoAsync), response);
+            var orderInfos = await response.Content.ReadFromJsonAsync<List<OrderDisplayInfo>>();
+            return orderInfos ?? new List<OrderDisplayInfo>();
+        }
+
+        /// <inheritdoc />
+        public async Task<int> GetOrdersCountAsync(int userId, string? searchText = null, string? timePeriod = null)
+        {
+            var queryParams = new List<string>();
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                queryParams.Add($"searchText={System.Net.WebUtility.UrlEncode(searchText)}");
+            }
+
+            if (!string.IsNullOrEmpty(timePeriod))
+            {
+                queryParams.Add($"timePeriod={System.Net.WebUtility.UrlEncode(timePeriod)}");
+            }
+
+            string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
+
+            var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/buyer/{userId}/count{queryString}");
+            await this.ThrowOnError(nameof(GetOrdersCountAsync), response);
+            var count = await response.Content.ReadFromJsonAsync<int>();
+            return count;
+        }
+
+        /// <inheritdoc />
         public async Task<Dictionary<int, string>> GetProductCategoryTypesAsync(int userId)
         {
             var response = await this.httpClient.GetAsync($"{ApiBaseRoute}/buyer/{userId}/category-types");

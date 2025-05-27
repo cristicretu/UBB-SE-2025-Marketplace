@@ -316,21 +316,58 @@ namespace Server.Controllers
         }
 
         /// <summary>
-        /// Gets enhanced order display information for a user, with optional filtering.
+        /// Gets enhanced order display information for a user, with optional filtering and pagination.
         /// </summary>
         /// <param name="userId">The ID of the user (buyer).</param>
+        /// <param name="offset">Optional offset for pagination (number of orders to skip).</param>
+        /// <param name="count">Optional count for pagination (number of orders to take).</param>
         /// <param name="searchText">Optional text to filter product names.</param>
         /// <param name="timePeriod">Optional time period filter (e.g., "Last 3 Months", "This Year").</param>
         /// <returns>A list of order display information objects.</returns>
         [HttpGet("buyer/{userId}/display")]
         [ProducesResponseType(typeof(List<OrderDisplayInfo>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<OrderDisplayInfo>>> GetOrdersWithProductInfo(int userId, [FromQuery] string searchText = null, [FromQuery] string timePeriod = null)
+        public async Task<ActionResult<List<OrderDisplayInfo>>> GetOrdersWithProductInfo(int userId, [FromQuery] int? offset = null, [FromQuery] int? count = null, [FromQuery] string searchText = null, [FromQuery] string timePeriod = null)
         {
             try
             {
-                var orderInfos = await this.orderRepository.GetOrdersWithProductInfoAsync(userId, searchText, timePeriod);
+                List<OrderDisplayInfo> orderInfos;
+                
+                // If offset and count are provided, use pagination
+                if (offset.HasValue && count.HasValue)
+                {
+                    orderInfos = await this.orderRepository.GetOrdersWithProductInfoAsync(userId, offset.Value, count.Value, searchText, timePeriod);
+                }
+                else
+                {
+                    // Use the original method without pagination
+                    orderInfos = await this.orderRepository.GetOrdersWithProductInfoAsync(userId, searchText, timePeriod);
+                }
+                
                 return this.Ok(orderInfos);
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Gets the total count of orders for a user with optional filtering.
+        /// </summary>
+        /// <param name="userId">The ID of the user (buyer).</param>
+        /// <param name="searchText">Optional text to filter product names.</param>
+        /// <param name="timePeriod">Optional time period filter (e.g., "Last 3 Months", "This Year").</param>
+        /// <returns>The total count of orders matching the criteria.</returns>
+        [HttpGet("buyer/{userId}/count")]
+        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<int>> GetOrdersCount(int userId, [FromQuery] string searchText = null, [FromQuery] string timePeriod = null)
+        {
+            try
+            {
+                var count = await this.orderRepository.GetOrdersCountAsync(userId, searchText, timePeriod);
+                return this.Ok(count);
             }
             catch (Exception ex)
             {

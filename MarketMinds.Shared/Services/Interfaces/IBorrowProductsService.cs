@@ -108,5 +108,27 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         /// <param name="productDTO">The DTO to validate.</param>
         /// <returns>A dictionary of validation errors, if any.</returns>
         Task<Dictionary<string, string[]>> ValidateProductDTOAsync(CreateBorrowProductDTO productDTO);
+
+        /// <summary>
+        /// Gets filtered borrow products with pagination support.
+        /// </summary>
+        /// <param name="offset">The number of products to skip (0 for first page).</param>
+        /// <param name="count">The number of products to return (0 for all products).</param>
+        /// <param name="conditionIds">List of condition IDs to filter by (null or empty for no filter).</param>
+        /// <param name="categoryIds">List of category IDs to filter by (null or empty for no filter).</param>
+        /// <param name="maxPrice">Maximum price filter (null for no maximum).</param>
+        /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
+        /// <returns>A list of filtered borrow products for the specified page.</returns>
+        List<BorrowProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
+
+        /// <summary>
+        /// Gets the total count of borrow products matching the specified filters.
+        /// </summary>
+        /// <param name="conditionIds">List of condition IDs to filter by (null or empty for no filter).</param>
+        /// <param name="categoryIds">List of category IDs to filter by (null or empty for no filter).</param>
+        /// <param name="maxPrice">Maximum price filter (null for no maximum).</param>
+        /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
+        /// <returns>The total number of borrow products matching the filters.</returns>
+        int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
     }
 }

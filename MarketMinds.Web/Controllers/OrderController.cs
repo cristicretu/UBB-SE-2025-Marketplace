@@ -38,12 +38,12 @@ namespace WebMarketplace.Controllers
         }
 
         // GET: Order/OrderHistory
-        public async Task<IActionResult> OrderHistory(int userId = 0)
+        public async Task<IActionResult> OrderHistory(int userId = 0, int offset = 0, int count = 4, string search = null, string timePeriod = null)
         {
             ViewData["ApiBaseUrl"] = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
             try
             {
-                _logger.LogInformation($"OrderHistory action called with userId parameter: {userId}");
+                _logger.LogInformation($"OrderHistory action called with userId: {userId}, offset: {offset}, count: {count}, search: {search}, timePeriod: {timePeriod}");
                 
                 // Get the current user's ID from claims if userId is not provided
                 if (userId <= 0)
@@ -56,8 +56,56 @@ namespace WebMarketplace.Controllers
                     }
                 }
                 
-                var orders = await _orderService.GetOrdersWithProductInfoAsync(userId);
-                _logger.LogInformation($"Retrieved {orders?.Count ?? 0} orders for userId: {userId}");
+                // Get paginated orders and total count
+                var orders = await _orderService.GetOrdersWithProductInfoAsync(userId, offset, count, search, timePeriod);
+                var totalCount = await _orderService.GetOrdersCountAsync(userId, search, timePeriod);
+                
+                _logger.LogInformation($"Retrieved {orders?.Count ?? 0} orders out of {totalCount} total for userId: {userId}");
+                
+                // Calculate pagination metadata
+                int currentPage = (offset / count) + 1;
+                int totalPages = (int)Math.Ceiling((double)totalCount / count);
+                bool hasNextPage = offset + count < totalCount;
+                bool hasPreviousPage = offset > 0;
+                
+                // Calculate page range for pagination controls (show current page ± 2 pages)
+                int startPage = Math.Max(1, currentPage - 2);
+                int endPage = Math.Min(totalPages, currentPage + 2);
+                
+                // Build pagination URLs
+                var pageUrls = new Dictionary<int, string>();
+                for (int i = startPage; i <= endPage; i++)
+                {
+                    int pageOffset = (i - 1) * count;
+                    pageUrls[i] = BuildPaginationUrl(pageOffset, count, search, timePeriod);
+                }
+                
+                // Set ViewBag properties for pagination
+                ViewBag.CurrentOffset = offset;
+                ViewBag.CurrentCount = count;
+                ViewBag.TotalOrders = totalCount;
+                ViewBag.HasNextPage = hasNextPage;
+                ViewBag.HasPreviousPage = hasPreviousPage;
+                ViewBag.SearchQuery = search;
+                ViewBag.TimePeriod = timePeriod;
+                ViewBag.CurrentPage = currentPage;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.StartPage = startPage;
+                ViewBag.EndPage = endPage;
+                ViewBag.PageUrls = pageUrls;
+                
+                // Build navigation URLs
+                ViewBag.PrevPageUrl = hasPreviousPage ? BuildPaginationUrl(offset - count, count, search, timePeriod) : null;
+                ViewBag.NextPageUrl = hasNextPage ? BuildPaginationUrl(offset + count, count, search, timePeriod) : null;
+                ViewBag.FirstPageUrl = BuildPaginationUrl(0, count, search, timePeriod);
+                
+                int lastPageOffset = (totalPages - 1) * count;
+                ViewBag.LastPageUrl = BuildPaginationUrl(lastPageOffset, count, search, timePeriod);
+                ViewBag.LastPageNumber = totalPages;
+                
+                // Ellipsis logic
+                ViewBag.ShowFirstPageEllipsis = startPage > 2;
+                ViewBag.ShowLastPageEllipsis = endPage < totalPages - 1;
                 
                 // Pass seller status to view
                 ViewBag.IsSeller = IsUserSeller();
@@ -70,32 +118,26 @@ namespace WebMarketplace.Controllers
             }
         }
 
-        // GET: Order/GetFilteredOrders
+        // GET: Order/GetFilteredOrders - Redirects to OrderHistory with search parameters
         [HttpGet]
-        public async Task<IActionResult> GetFilteredOrders(string searchText, string timePeriod)
+        public IActionResult GetFilteredOrders(string searchText, string timePeriod)
         {
             try
             {
                 _logger.LogInformation($"GetFilteredOrders called with searchText: {searchText}, timePeriod: {timePeriod}");
                 
-                // Get the current user's ID from claims
-                int userId = GetCurrentUserId();
-                if (userId <= 0)
-                {
-                    _logger.LogWarning("No valid user ID found in claims for GetFilteredOrders");
-                    return Json(new { success = false, message = "Unable to determine your user ID. Please log in again." });
-                }
-
-                _logger.LogInformation($"Getting orders for userId: {userId}");
-                var orders = await _orderService.GetOrdersWithProductInfoAsync(userId, searchText, timePeriod);
-                _logger.LogInformation($"Found {orders?.Count ?? 0} orders");
-
-                return Json(new { success = true, orders = orders });
+                // Redirect to OrderHistory with search parameters
+                return RedirectToAction("OrderHistory", new { 
+                    offset = 0, 
+                    count = 4, 
+                    search = searchText, 
+                    timePeriod = timePeriod 
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error in GetFilteredOrders. searchText: {searchText}, timePeriod: {timePeriod}");
-                return Json(new { success = false, message = $"Error retrieving orders: {ex.Message}" });
+                return RedirectToAction("OrderHistory");
             }
         }
 
@@ -360,6 +402,27 @@ namespace WebMarketplace.Controllers
             }
             
             return 0;
+        }
+
+        private string BuildPaginationUrl(int offset, int count, string? search, string? timePeriod)
+        {
+            var queryParams = new List<string>
+            {
+                $"offset={offset}",
+                $"count={count}"
+            };
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                queryParams.Add($"search={Uri.EscapeDataString(search)}");
+            }
+
+            if (!string.IsNullOrEmpty(timePeriod))
+            {
+                queryParams.Add($"timePeriod={Uri.EscapeDataString(timePeriod)}");
+            }
+
+            return $"/Order/OrderHistory?{string.Join("&", queryParams)}";
         }
     }
 } 

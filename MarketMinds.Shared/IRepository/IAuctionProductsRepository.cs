@@ -19,10 +19,32 @@ namespace MarketMinds.Shared.IRepository
         List<AuctionProduct> GetProducts(int offset, int count);
 
         /// <summary>
+        /// Retrieves auction products filtered by conditions, categories, maximum price, and search term with pagination support.
+        /// </summary>
+        /// <param name="offset">The number of products to skip (0 for first page).</param>
+        /// <param name="count">The number of products to return (0 for all products).</param>
+        /// <param name="conditionIds">List of condition IDs to filter by (null or empty for no filter).</param>
+        /// <param name="categoryIds">List of category IDs to filter by (null or empty for no filter).</param>
+        /// <param name="maxPrice">Maximum price filter (null for no maximum).</param>
+        /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
+        /// <returns>A list of filtered auction products for the specified page.</returns>
+        List<AuctionProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
+
+        /// <summary>
         /// Gets the total count of auction products.
         /// </summary>
         /// <returns>The total number of auction products.</returns>
         int GetProductCount();
+
+        /// <summary>
+        /// Gets the total count of auction products matching the specified filters.
+        /// </summary>
+        /// <param name="conditionIds">List of condition IDs to filter by (null or empty for no filter).</param>
+        /// <param name="categoryIds">List of category IDs to filter by (null or empty for no filter).</param>
+        /// <param name="maxPrice">Maximum price filter (null for no maximum).</param>
+        /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
+        /// <returns>The total number of auction products matching the filters.</returns>
+        int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
 
         /// <summary>
         /// Gets an auction product by its ID.

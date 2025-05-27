@@ -127,9 +127,13 @@ namespace WebMarketplace.Controllers
         /// This includes a "view as" feature where sellers can see their own profile as others see it.
         /// </summary>
         /// <param name="id">The seller's user ID.</param>
+        /// <param name="offset">The offset for pagination.</param>
+        /// <param name="count">The number of products per page.</param>
+        /// <param name="search">The search term for filtering products.</param>
+        /// <param name="sortAscending">Whether to sort products by price in ascending order.</param>
         /// <returns>The view.</returns>
         [Route("SellerProfile/{id:int}")]
-        public async Task<IActionResult> PublicProfile(int id)
+        public async Task<IActionResult> PublicProfile(int id, int offset = 0, int count = 12, string search = null, bool? sortAscending = null)
         {
             try
             {
@@ -152,7 +156,7 @@ namespace WebMarketplace.Controllers
 
                 var viewModel = new SellerProfileViewModel(targetUser, _userService, _sellerService, 
                     _auctionProductService, _borrowProductsService, _buyProductsService);
-                await viewModel.InitializeAsync();
+                await viewModel.InitializeAsync(offset, count, search, sortAscending);
 
                 // Load followers list for this seller
                 try
@@ -169,6 +173,70 @@ namespace WebMarketplace.Controllers
                 // Set flag to indicate this is a public view (cannot edit)
                 // Even if the seller is viewing their own profile, it's read-only in public view
                 ViewBag.IsOwnProfile = false;
+                
+                // Add pagination metadata
+                ViewBag.CurrentOffset = offset;
+                ViewBag.CurrentCount = count;
+                ViewBag.TotalProducts = viewModel.TotalProductCount;
+                ViewBag.HasNextPage = count > 0 && (offset + count) < viewModel.TotalProductCount;
+                ViewBag.HasPreviousPage = offset > 0;
+                ViewBag.SearchQuery = search ?? string.Empty;
+                
+                // Build pagination URLs
+                int currentPage = count > 0 ? (offset / count) + 1 : 1;
+                int totalPages = count > 0 ? (int)Math.Ceiling((double)viewModel.TotalProductCount / count) : 1;
+                
+                ViewBag.PrevPageUrl = currentPage > 1 ? BuildPaginationUrl(id, Math.Max(0, offset - count), count, search, sortAscending) : null;
+                ViewBag.NextPageUrl = currentPage < totalPages ? BuildPaginationUrl(id, offset + count, count, search, sortAscending) : null;
+                
+                // Dynamic pagination: show current page ± 2 pages (5 pages total)
+                var pageUrls = new Dictionary<int, string>();
+                int maxPagesToShow = 5;
+                int halfRange = maxPagesToShow / 2; // 2 pages on each side
+                
+                // Calculate the start and end page numbers
+                int startPage = Math.Max(1, currentPage - halfRange);
+                int endPage = Math.Min(totalPages, currentPage + halfRange);
+                
+                // Adjust if we're near the beginning or end
+                if (endPage - startPage + 1 < maxPagesToShow)
+                {
+                    if (startPage == 1)
+                    {
+                        endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+                    }
+                    else if (endPage == totalPages)
+                    {
+                        startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+                    }
+                }
+                
+                // Build URLs for the visible page range
+                for (int pageNum = startPage; pageNum <= endPage; pageNum++)
+                {
+                    int pageOffset = (pageNum - 1) * count;
+                    pageUrls[pageNum] = BuildPaginationUrl(id, pageOffset, count, search, sortAscending);
+                }
+                ViewBag.PageUrls = pageUrls;
+                ViewBag.CurrentPage = currentPage;
+                ViewBag.StartPage = startPage;
+                ViewBag.EndPage = endPage;
+                
+                // Show "..." and last page if there are more pages beyond our range
+                if (endPage < totalPages)
+                {
+                    int lastPageOffset = (totalPages - 1) * count;
+                    ViewBag.LastPageUrl = BuildPaginationUrl(id, lastPageOffset, count, search, sortAscending);
+                    ViewBag.LastPageNumber = totalPages;
+                    ViewBag.ShowLastPageEllipsis = endPage < totalPages - 1; // Show "..." if there's a gap
+                }
+                
+                // Show first page if our range doesn't start at 1
+                if (startPage > 1)
+                {
+                    ViewBag.FirstPageUrl = BuildPaginationUrl(id, 0, count, search, sortAscending);
+                    ViewBag.ShowFirstPageEllipsis = startPage > 2; // Show "..." if there's a gap
+                }
 
                 // Check if current user is a buyer and get follow status
                 var currentUserId = GetCurrentUserId();
@@ -204,109 +272,93 @@ namespace WebMarketplace.Controllers
         }
 
         /// <summary>
-        /// Filters products based on search text.
+        /// Filters products based on search text with server-side pagination.
         /// </summary>
         /// <param name="searchText">The search text.</param>
         /// <param name="sellerId">Optional seller ID for public profiles.</param>
         /// <param name="isManageMode">Whether we're in manage/edit mode.</param>
-        /// <returns>A partial view of filtered products.</returns>
+        /// <returns>A redirect to the appropriate page with search parameters.</returns>
         [HttpPost]
-        public async Task<IActionResult> FilterProducts(string searchText, int? sellerId = null, bool isManageMode = false)
+        public IActionResult FilterProducts(string searchText, int? sellerId = null, bool isManageMode = false)
         {
             try
             {
-                User user;
-                bool isOwnProfile;
-                
-                if (sellerId.HasValue)
+                _logger.LogInformation("FilterProducts called with searchText: {SearchText}, sellerId: {SellerId}, isManageMode: {IsManageMode}", 
+                    searchText, sellerId, isManageMode);
+
+                // Redirect to the appropriate page with search parameter
+                if (isManageMode)
                 {
-                    // Public profile - get the target seller's user
-                    user = await GetUserById(sellerId.Value);
-                    if (user == null)
-                    {
-                        return Json(new { success = false, message = "Seller not found" });
-                    }
-                    isOwnProfile = false; // Public profile - no edit buttons
+                    return RedirectToAction("Manage", new { search = searchText, offset = 0, count = 12 });
+                }
+                else if (sellerId.HasValue)
+                {
+                    return RedirectToAction("PublicProfile", new { id = sellerId.Value, search = searchText, offset = 0, count = 12 });
                 }
                 else
                 {
-                    // Could be either Index (view-only) or Manage (editable)
-                    user = await GetCurrentUser();
-                    isOwnProfile = isManageMode; // Only show edit buttons in manage mode
+                    return RedirectToAction("Index");
                 }
-
-                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService, 
-                    _auctionProductService, _borrowProductsService, _buyProductsService);
-                await viewModel.InitializeAsync();
-
-                viewModel.FilterProducts(searchText);
-
-                // Set the ViewBag for the partial view
-                ViewBag.IsOwnProfile = isOwnProfile;
-
-                return PartialView("_ProductsListPartial", viewModel);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error filtering products");
-                return Json(new { success = false, message = ex.Message });
+                return RedirectToAction("Index");
             }
         }
 
         /// <summary>
-        /// Sorts products by price.
+        /// Sorts products by price with server-side redirect to preserve pagination.
         /// </summary>
         /// <param name="sellerId">Optional seller ID for public profiles.</param>
         /// <param name="isManageMode">Whether we're in manage/edit mode.</param>
         /// <param name="sortAscending">Current sort direction - if null, will toggle from ascending.</param>
-        /// <returns>A partial view of sorted products.</returns>
+        /// <param name="search">Current search query to preserve.</param>
+        /// <param name="offset">Current pagination offset to preserve.</param>
+        /// <param name="count">Current pagination count to preserve.</param>
+        /// <returns>A redirect to the appropriate page with sort parameters.</returns>
         [HttpPost]
-        public async Task<IActionResult> SortProducts(int? sellerId = null, bool isManageMode = false, bool? sortAscending = null)
+        public IActionResult SortProducts(int? sellerId = null, bool isManageMode = false, bool? sortAscending = null, 
+            string search = null, int offset = 0, int count = 12)
         {
             try
             {
-                User user;
-                bool isOwnProfile;
-                
-                if (sellerId.HasValue)
-                {
-                    // Public profile - get the target seller's user
-                    user = await GetUserById(sellerId.Value);
-                    if (user == null)
-                    {
-                        return Json(new { success = false, message = "Seller not found" });
-                    }
-                    isOwnProfile = false; // Public profile - no edit buttons
-                }
-                else
-                {
-                    // Could be either Index (view-only) or Manage (editable)
-                    user = await GetCurrentUser();
-                    isOwnProfile = isManageMode; // Only show edit buttons in manage mode
-                }
-
-                var viewModel = new SellerProfileViewModel(user, _userService, _sellerService, 
-                    _auctionProductService, _borrowProductsService, _buyProductsService);
-                await viewModel.InitializeAsync();
+                _logger.LogInformation("SortProducts called with sellerId: {SellerId}, isManageMode: {IsManageMode}, sortAscending: {SortAscending}", 
+                    sellerId, isManageMode, sortAscending);
 
                 // Determine sort direction: if sortAscending is null, start with ascending (true)
                 // If sortAscending has a value, toggle it
                 bool newSortAscending = sortAscending.HasValue ? !sortAscending.Value : true;
-                
-                // Set the sort state and sort the products
-                viewModel.IsSortedByPrice = newSortAscending;
-                viewModel.SortProductsWithDirection(newSortAscending);
 
-                // Set the ViewBag for the partial view
-                ViewBag.IsOwnProfile = isOwnProfile;
-                ViewBag.SortAscending = newSortAscending; // Pass the new sort direction to the view
-
-                return PartialView("_ProductsListPartial", viewModel);
+                // Redirect to the appropriate page with sort parameter
+                if (isManageMode)
+                {
+                    return RedirectToAction("Manage", new { 
+                        search = search, 
+                        offset = offset, 
+                        count = count, 
+                        sortAscending = newSortAscending 
+                    });
+                }
+                else if (sellerId.HasValue)
+                {
+                    return RedirectToAction("PublicProfile", new { 
+                        id = sellerId.Value, 
+                        search = search, 
+                        offset = offset, 
+                        count = count, 
+                        sortAscending = newSortAscending 
+                    });
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sorting products");
-                return Json(new { success = false, message = ex.Message });
+                return RedirectToAction("Index");
             }
         }
 
@@ -365,9 +417,13 @@ namespace WebMarketplace.Controllers
         /// <summary>
         /// Displays the private editable Seller Profile page (seller's own profile management).
         /// </summary>
+        /// <param name="offset">The offset for pagination.</param>
+        /// <param name="count">The number of products per page.</param>
+        /// <param name="search">The search term for filtering products.</param>
+        /// <param name="sortAscending">Whether to sort products by price in ascending order.</param>
         /// <returns>The view.</returns>
         [Authorize]
-        public async Task<IActionResult> Manage()
+        public async Task<IActionResult> Manage(int offset = 0, int count = 12, string search = null, bool? sortAscending = null)
         {
             try
             {
@@ -393,7 +449,7 @@ namespace WebMarketplace.Controllers
 
                 var viewModel = new SellerProfileViewModel(user, _userService, _sellerService, 
                     _auctionProductService, _borrowProductsService, _buyProductsService);
-                await viewModel.InitializeAsync();
+                await viewModel.InitializeAsync(offset, count, search, sortAscending);
 
                 // Load followers list for this seller
                 try
@@ -409,6 +465,70 @@ namespace WebMarketplace.Controllers
 
                 // Set flag to indicate this is the seller's own profile (can edit)
                 ViewBag.IsOwnProfile = true;
+                
+                // Add pagination metadata
+                ViewBag.CurrentOffset = offset;
+                ViewBag.CurrentCount = count;
+                ViewBag.TotalProducts = viewModel.TotalProductCount;
+                ViewBag.HasNextPage = count > 0 && (offset + count) < viewModel.TotalProductCount;
+                ViewBag.HasPreviousPage = offset > 0;
+                ViewBag.SearchQuery = search ?? string.Empty;
+                
+                // Build pagination URLs for manage mode
+                int currentPage = count > 0 ? (offset / count) + 1 : 1;
+                int totalPages = count > 0 ? (int)Math.Ceiling((double)viewModel.TotalProductCount / count) : 1;
+                
+                ViewBag.PrevPageUrl = currentPage > 1 ? BuildManagePaginationUrl(Math.Max(0, offset - count), count, search, sortAscending) : null;
+                ViewBag.NextPageUrl = currentPage < totalPages ? BuildManagePaginationUrl(offset + count, count, search, sortAscending) : null;
+                
+                // Dynamic pagination: show current page ± 2 pages (5 pages total)
+                var pageUrls = new Dictionary<int, string>();
+                int maxPagesToShow = 5;
+                int halfRange = maxPagesToShow / 2; // 2 pages on each side
+                
+                // Calculate the start and end page numbers
+                int startPage = Math.Max(1, currentPage - halfRange);
+                int endPage = Math.Min(totalPages, currentPage + halfRange);
+                
+                // Adjust if we're near the beginning or end
+                if (endPage - startPage + 1 < maxPagesToShow)
+                {
+                    if (startPage == 1)
+                    {
+                        endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+                    }
+                    else if (endPage == totalPages)
+                    {
+                        startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+                    }
+                }
+                
+                // Build URLs for the visible page range
+                for (int pageNum = startPage; pageNum <= endPage; pageNum++)
+                {
+                    int pageOffset = (pageNum - 1) * count;
+                    pageUrls[pageNum] = BuildManagePaginationUrl(pageOffset, count, search, sortAscending);
+                }
+                ViewBag.PageUrls = pageUrls;
+                ViewBag.CurrentPage = currentPage;
+                ViewBag.StartPage = startPage;
+                ViewBag.EndPage = endPage;
+                
+                // Show "..." and last page if there are more pages beyond our range
+                if (endPage < totalPages)
+                {
+                    int lastPageOffset = (totalPages - 1) * count;
+                    ViewBag.LastPageUrl = BuildManagePaginationUrl(lastPageOffset, count, search, sortAscending);
+                    ViewBag.LastPageNumber = totalPages;
+                    ViewBag.ShowLastPageEllipsis = endPage < totalPages - 1; // Show "..." if there's a gap
+                }
+                
+                // Show first page if our range doesn't start at 1
+                if (startPage > 1)
+                {
+                    ViewBag.FirstPageUrl = BuildManagePaginationUrl(0, count, search, sortAscending);
+                    ViewBag.ShowFirstPageEllipsis = startPage > 2; // Show "..." if there's a gap
+                }
 
                 return View("Index", viewModel);
             }
@@ -562,6 +682,65 @@ namespace WebMarketplace.Controllers
                 TempData["ErrorMessage"] = "An error occurred while trying to unfollow this seller.";
                 return RedirectToAction("PublicProfile", new { id = sellerId });
             }
+        }
+
+        /// <summary>
+        /// Builds a pagination URL for public seller profile pages.
+        /// </summary>
+        /// <param name="sellerId">The seller ID.</param>
+        /// <param name="offset">The offset for pagination.</param>
+        /// <param name="count">The number of products per page.</param>
+        /// <param name="search">The search term.</param>
+        /// <param name="sortAscending">The sort direction.</param>
+        /// <returns>The pagination URL.</returns>
+        private string BuildPaginationUrl(int sellerId, int offset, int count, string? search, bool? sortAscending = null)
+        {
+            var queryParams = new List<string>
+            {
+                $"offset={offset}",
+                $"count={count}"
+            };
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                queryParams.Add($"search={Uri.EscapeDataString(search)}");
+            }
+
+            if (sortAscending.HasValue)
+            {
+                queryParams.Add($"sortAscending={sortAscending.Value.ToString().ToLower()}");
+            }
+
+            return $"{Url.Action("PublicProfile", new { id = sellerId })}?{string.Join("&", queryParams)}";
+        }
+
+        /// <summary>
+        /// Builds a pagination URL for manage seller profile pages.
+        /// </summary>
+        /// <param name="offset">The offset for pagination.</param>
+        /// <param name="count">The number of products per page.</param>
+        /// <param name="search">The search term.</param>
+        /// <param name="sortAscending">The sort direction.</param>
+        /// <returns>The pagination URL.</returns>
+        private string BuildManagePaginationUrl(int offset, int count, string? search, bool? sortAscending = null)
+        {
+            var queryParams = new List<string>
+            {
+                $"offset={offset}",
+                $"count={count}"
+            };
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                queryParams.Add($"search={Uri.EscapeDataString(search)}");
+            }
+
+            if (sortAscending.HasValue)
+            {
+                queryParams.Add($"sortAscending={sortAscending.Value.ToString().ToLower()}");
+            }
+
+            return $"{Url.Action("Manage")}?{string.Join("&", queryParams)}";
         }
     }
 }

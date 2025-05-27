@@ -20,6 +20,8 @@ namespace MarketMinds.Shared.Services
         Task<Order> GetOrderByIdAsync(int orderId);
         Task<List<Order>> GetCombinedOrderHistoryAsync(int buyerId, string timePeriodFilter = "all");
         Task<List<OrderDisplayInfo>> GetOrdersWithProductInfoAsync(int userId, string searchText = null, string timePeriod = null);
+        Task<List<OrderDisplayInfo>> GetOrdersWithProductInfoAsync(int userId, int offset, int count, string searchText = null, string timePeriod = null);
+        Task<int> GetOrdersCountAsync(int userId, string searchText = null, string timePeriod = null);
         Task<Dictionary<int, string>> GetProductCategoryTypesAsync(int userId);
         Task<OrderSummary> GetOrderSummaryAsync(int orderSummaryId);
 
