@@ -135,8 +135,8 @@ namespace MarketMinds
         private const int SELLER = 3;
 
         private static IConfiguration appConfiguration;
-        public static Window LoginWindow = null!;
-        public static Window MainWindow = null!;
+        public static Microsoft.UI.Xaml.Window LoginWindow = null!;
+        public static Microsoft.UI.Xaml.Window MainWindow = null!;
         public static HomePageView HomePageWindow = null!;
         private static HttpClient httpClient;
 
