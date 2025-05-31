@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Windowing;
 using MarketMinds.Shared.Models;
+using MarketMinds.Views.Pages;
 
 namespace MarketMinds.Views
 {
@@ -250,8 +251,11 @@ namespace MarketMinds.Views
                         ContentFrame.Navigate(typeof(OrderHistoryView));
                         break;
                     case "MyReviews":
-                        // Navigate to user reviews page
-                        // Could create a dedicated page for this
+                        if (ContentFrame.Content is MyReviewsView)
+                        {
+                            return; // if the MyReviewsView is already in the frame, do not navigate to it again
+                        }
+                        ContentFrame.Navigate(typeof(MyReviewsView));
                         break;
                     case "SignOut":
                         App.CloseHomePageWindow();
