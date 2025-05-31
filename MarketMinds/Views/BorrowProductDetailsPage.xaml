@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketMinds.Views.BorrowProductDetailsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds.Views"
+    xmlns:models="using:MarketMinds.Shared.Models"
+    xmlns:converters="using:MarketMinds.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:UrlToImageSourceConverter x:Key="UrlToImageSourceConverter"/>
+        <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
+        <converters:InvertedBoolVisibilityConverter x:Key="InvertedBoolVisibilityConverter"/>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:DateTimeToShortDateConverter x:Key="DateTimeToShortDateConverter"/>
+        <converters:BoolToAvailabilityConverter x:Key="BoolToAvailabilityConverter"/>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
+    </Page.Resources>
+
+    <ScrollViewer ZoomMode="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid Margin="16" HorizontalAlignment="Center" MaxWidth="1400">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Breadcrumb -->
+                <RowDefinition Height="*"/>    <!-- Main Content -->
+                <RowDefinition Height="Auto"/> <!-- Back Button -->
+            </Grid.RowDefinitions>
+
+            <!-- Breadcrumb -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                <Button Content="Home" 
+                        Style="{ThemeResource TextBlockButtonStyle}"
+                        Click="HomeButton_Click"/>
+                <TextBlock Text=" > " 
+                           VerticalAlignment="Center" 
+                           Margin="8,0"/>
+                <TextBlock Text="{x:Bind Product.Title, Mode=OneWay}" 
+                           VerticalAlignment="Center" 
+                           FontWeight="SemiBold"/>
+            </StackPanel>
+
+            <!-- Main Content -->
+            <Border Grid.Row="1" 
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Product Images Section -->
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Main Image Display -->
+                        <Border Grid.Row="0" 
+                                Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}"
+                                CornerRadius="8,0,0,0"
+                                MinHeight="400">
+                            <Grid>
+                                <!-- Main Image -->
+                                <Image x:Name="MainImage" 
+                                       Source="{x:Bind Product.Images, Mode=OneWay, Converter={StaticResource UrlToImageSourceConverter}, ConverterParameter='ms-appx:///Assets/Products/default-product.png'}"
+                                       Stretch="Uniform"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+
+                                <!-- Image Counter -->
+                                <Border Background="{ThemeResource SystemFillColorSolidNeutralBrush}"
+                                        CornerRadius="12"
+                                        Padding="8,4"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Margin="16"
+                                        Visibility="{x:Bind HasMultipleImages, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                    <TextBlock Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                               FontSize="12"
+                                               FontWeight="Medium">
+                                        <Run Text="{x:Bind CurrentImageIndex, Mode=OneWay}"/>
+                                        <Run Text=" / "/>
+                                        <Run Text="{x:Bind TotalImages, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Thumbnail Images -->
+                        <ScrollViewer Grid.Row="1" 
+                                      HorizontalScrollMode="Auto" 
+                                      VerticalScrollMode="Disabled"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Hidden"
+                                      Padding="16"
+                                      Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                      Visibility="{x:Bind HasMultipleImages, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                            <ItemsRepeater ItemsSource="{x:Bind Product.Images, Mode=OneWay}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Orientation="Horizontal" Spacing="12"/>
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="models:ProductImage">
+                                        <Button Background="Transparent"
+                                                BorderThickness="2"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                CornerRadius="4"
+                                                Padding="2"
+                                                Width="64"
+                                                Height="64"
+                                                Tag="{x:Bind Url}"
+                                                Click="ThumbnailImage_Click">
+                                            <Image Source="{x:Bind Url, Converter={StaticResource UrlToImageSourceConverter}}"
+                                                   Stretch="UniformToFill"/>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </ScrollViewer>
+
+                        <!-- Borrowing Section -->
+                        <StackPanel Grid.Row="2" 
+                                    Padding="16" 
+                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                    Spacing="16"
+                                    Visibility="{x:Bind ShowBorrowingSection, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                            
+                            <TextBlock Text="Borrow Product" 
+                                       Style="{StaticResource SubtitleTextBlockStyle}"
+                                       FontWeight="SemiBold"/>
+
+                            <!-- Login Prompt for Non-Buyers -->
+                            <InfoBar Severity="Informational"
+                                     IsOpen="{x:Bind ShowLoginPrompt, Mode=OneWay}"
+                                     Title="Login Required"
+                                     Message="Please log in as a buyer to borrow this product."/>
+
+                            <!-- Available Now Section -->
+                            <StackPanel Spacing="12" 
+                                        Visibility="{x:Bind IsAvailableNow, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                <InfoBar Severity="Success"
+                                         IsOpen="True"
+                                         Title="Available for Borrowing"
+                                         Message="This product is available for borrowing now!"/>
+                                
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Select Borrowing End Date:" 
+                                               Style="{StaticResource BaseTextBlockStyle}"
+                                               FontWeight="Medium"/>
+                                    <CalendarDatePicker x:Name="BorrowEndDatePicker"
+                                                        MinDate="{x:Bind MinBorrowDate, Mode=OneWay}"
+                                                        MaxDate="{x:Bind MaxBorrowDate, Mode=OneWay}"
+                                                        HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+                                
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <Button x:Name="BorrowButton"
+                                            Background="{ThemeResource SystemAccentColor}"
+                                            Foreground="{ThemeResource AccentButtonForeground}"
+                                            Padding="16,8"
+                                            CornerRadius="4"
+                                            Click="BorrowButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE787;" FontSize="16"/>
+                                            <TextBlock Text="Borrow Product" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <TextBlock x:Name="BorrowResult" 
+                                               Text="Select an end date to borrow this product"
+                                               VerticalAlignment="Center"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontStyle="Italic"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Future Availability Section -->
+                            <StackPanel Spacing="12" 
+                                        Visibility="{x:Bind IsFutureAvailable, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                <InfoBar Severity="Informational"
+                                         IsOpen="True"
+                                         Title="Available Soon"
+                                         Message="This product will be available for borrowing soon!"/>
+                                
+                                <StackPanel Spacing="4">
+                                    <TextBlock FontWeight="Medium">
+                                        <Run Text="Available from: "/>
+                                        <Run Text="{x:Bind Product.StartDate, Mode=OneWay, Converter={StaticResource DateTimeToShortDateConverter}}" FontWeight="Bold"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{x:Bind DaysUntilAvailable, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Available in {0} days'}"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Currently Borrowed Section -->
+                            <StackPanel Spacing="12" 
+                                        Visibility="{x:Bind IsCurrentlyBorrowed, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                <InfoBar Severity="Warning"
+                                         IsOpen="True"
+                                         Title="Currently Borrowed"
+                                         Message="This product is currently borrowed by another user."/>
+                                
+                                <StackPanel Spacing="4">
+                                    <TextBlock FontWeight="Medium">
+                                        <Run Text="Available again on: "/>
+                                        <Run Text="{x:Bind Product.EndDate, Mode=OneWay, Converter={StaticResource DateTimeToShortDateConverter}}" FontWeight="Bold"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{x:Bind RemainingTime, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Time remaining: {0}'}"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+
+                                <!-- Return Button for Current Borrower -->
+                                <Button x:Name="ReturnButton"
+                                        Background="{ThemeResource SystemAccentColor}"
+                                        Foreground="{ThemeResource AccentButtonForeground}"
+                                        Padding="12,8"
+                                        CornerRadius="4"
+                                        Visibility="{x:Bind IsCurrentBorrower, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"
+                                        Click="ReturnButton_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon Glyph="&#xE72C;" FontSize="16"/>
+                                        <TextBlock Text="Return Product" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Waitlist Section -->
+                            <StackPanel Spacing="12" 
+                                        Visibility="{x:Bind ShowWaitlistSection, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                <TextBlock Text="Waiting List" 
+                                           Style="{StaticResource BaseTextBlockStyle}"
+                                           FontWeight="SemiBold"/>
+                                
+                                <InfoBar Severity="Informational"
+                                         IsOpen="True"
+                                         Title="How the waiting list works"
+                                         Message="Choose your desired borrowing end date and join the waitlist. When the product becomes available, it will be automatically assigned to the first person in line."/>
+                                
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Choose your desired borrowing end date:" 
+                                               Style="{StaticResource BaseTextBlockStyle}"
+                                               FontWeight="Medium"/>
+                                    <CalendarDatePicker x:Name="WaitlistEndDatePicker"
+                                                        MinDate="{x:Bind MinWaitlistDate, Mode=OneWay}"
+                                                        MaxDate="{x:Bind MaxWaitlistDate, Mode=OneWay}"
+                                                        HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+                                
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <Button x:Name="JoinWaitlistButton"
+                                            Background="#FF9500"
+                                            Foreground="White"
+                                            Padding="16,8"
+                                            CornerRadius="4"
+                                            Click="JoinWaitlistButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE710;" FontSize="16"/>
+                                            <TextBlock Text="Join Waiting List" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <TextBlock x:Name="WaitlistResult" 
+                                               Text="Select an end date to join the waitlist"
+                                               VerticalAlignment="Center"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontStyle="Italic"/>
+                                </StackPanel>
+                                
+                                <Button x:Name="LeaveWaitlistButton"
+                                        Background="{ThemeResource SystemFillColorNeutralBrush}"
+                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                        Padding="16,8"
+                                        CornerRadius="4"
+                                        HorizontalAlignment="Stretch"
+                                        Click="LeaveWaitlistButton_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon Glyph="&#xE738;" FontSize="16"/>
+                                        <TextBlock Text="Leave Waitlist" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Button>
+                                
+                                <TextBlock x:Name="WaitlistPosition" 
+                                           Text="Checking your position in the waitlist..."
+                                           HorizontalAlignment="Center"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           FontStyle="Italic"/>
+                            </StackPanel>
+
+                            <!-- Seller Warning -->
+                            <InfoBar Severity="Warning"
+                                     IsOpen="{x:Bind IsCurrentUserSeller, Mode=OneWay}"
+                                     Title="Seller Account"
+                                     Message="Sellers cannot borrow products."/>
+                        </StackPanel>
+
+                        <!-- Info Section for Product Owners and Sellers -->
+                        <StackPanel Grid.Row="2" 
+                                    Padding="16" 
+                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                    Spacing="16"
+                                    Visibility="{x:Bind ShowBorrowingSection, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}">
+                            
+                            <!-- Product Owner Info -->
+                            <InfoBar Severity="Informational"
+                                     IsOpen="{x:Bind IsProductOwner, Mode=OneWay}"
+                                     Title="Your Product"
+                                     Message="This is your product. You cannot borrow your own items."/>
+                            
+                            <!-- Seller Info -->
+                            <InfoBar Severity="Informational"
+                                     IsOpen="{x:Bind IsCurrentUserSeller, Mode=OneWay}"
+                                     Title="Seller Account"
+                                     Message="As a seller, you cannot borrow products. Switch to a buyer account to borrow items."/>
+                            
+                            <!-- Non-logged in user info -->
+                            <InfoBar Severity="Informational"
+                                     IsOpen="{x:Bind ShowLoginPrompt, Mode=OneWay}"
+                                     Title="Login Required"
+                                     Message="Please log in as a buyer to borrow this product."/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Product Information Section -->
+                    <ScrollViewer Grid.Column="1" 
+                                  VerticalScrollMode="Auto" 
+                                  VerticalScrollBarVisibility="Auto"
+                                  Padding="24">
+                        <StackPanel Spacing="24">
+                            <!-- Product Header -->
+                            <StackPanel Spacing="12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBlock Grid.Column="0"
+                                               Text="{x:Bind Product.Title, Mode=OneWay}"
+                                               Style="{StaticResource TitleTextBlockStyle}"
+                                               TextWrapping="Wrap"/>
+                                    
+                                    <Border Grid.Column="1"
+                                            Background="{x:Bind AvailabilityColor, Mode=OneWay}"
+                                            CornerRadius="12"
+                                            Padding="8,4">
+                                        <TextBlock Text="{x:Bind AvailabilityText, Mode=OneWay}"
+                                                   Foreground="White"
+                                                   FontSize="12"
+                                                   FontWeight="Medium"/>
+                                    </Border>
+                                </Grid>
+                                
+                                <StackPanel Orientation="Horizontal" Spacing="16">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <FontIcon Glyph="&#xE8EC;" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{x:Bind CategoryName, Mode=OneWay}" 
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <FontIcon Glyph="&#xE73E;" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{x:Bind ConditionName, Mode=OneWay}" 
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <FontIcon Glyph="&#xE916;" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{x:Bind RemainingTime, Mode=OneWay}" 
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{x:Bind Product.DailyRate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='€{0:F2}'}"
+                                               Style="{StaticResource HeaderTextBlockStyle}"
+                                               Foreground="{ThemeResource SystemAccentColor}"/>
+                                    <TextBlock Text="/ day" 
+                                               VerticalAlignment="Bottom"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Description -->
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE8A5;" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="Description" 
+                                               Style="{StaticResource SubtitleTextBlockStyle}"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                                <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="12">
+                                    <TextBlock Text="{x:Bind ProductDescription, Mode=OneWay}"
+                                               TextWrapping="Wrap"
+                                               LineHeight="20"/>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Lender Information -->
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE77B;" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="Lender Information" 
+                                               Style="{StaticResource SubtitleTextBlockStyle}"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                                <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{x:Bind SellerName, Mode=OneWay}"
+                                                   FontWeight="Medium"
+                                                   VerticalAlignment="Center"/>
+                                        
+                                        <Button Grid.Column="1"
+                                                Background="{ThemeResource SystemAccentColor}"
+                                                Foreground="{ThemeResource AccentButtonForeground}"
+                                                Padding="8,4"
+                                                CornerRadius="4"
+                                                FontSize="12"
+                                                Visibility="{x:Bind CanLeaveReview, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"
+                                                Click="LeaveReviewButton_Click">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <FontIcon Glyph="&#xE735;" FontSize="12"/>
+                                                <TextBlock Text="Leave Review"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Tags Section -->
+                            <StackPanel Spacing="8" 
+                                        Visibility="{x:Bind HasTags, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE8EC;" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="Tags" 
+                                               Style="{StaticResource SubtitleTextBlockStyle}"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                                <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="12">
+                                    <ItemsRepeater ItemsSource="{x:Bind Product.Tags, Mode=OneWay}">
+                                        <ItemsRepeater.Layout>
+                                            <UniformGridLayout Orientation="Horizontal" 
+                                                               MinItemWidth="80" 
+                                                               MinItemHeight="32"
+                                                               ItemsStretch="None"/>
+                                        </ItemsRepeater.Layout>
+                                        <ItemsRepeater.ItemTemplate>
+                                            <DataTemplate x:DataType="models:ProductTag">
+                                                <Border Background="{ThemeResource SystemAccentColorLight2}"
+                                                        CornerRadius="12"
+                                                        Padding="8,4"
+                                                        Margin="2">
+                                                    <TextBlock Text="{x:Bind Title}"
+                                                               FontSize="12"
+                                                               FontWeight="Medium"
+                                                               Foreground="{ThemeResource SystemAccentColorDark1}"
+                                                               HorizontalAlignment="Center"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Back Button -->
+            <StackPanel Grid.Row="2" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Center" 
+                        Margin="0,16,0,0">
+                <Button Click="BackButton_Click"
+                        Background="Transparent"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        Padding="16,8"
+                        CornerRadius="4">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE72B;" FontSize="16"/>
+                        <TextBlock Text="Back to Borrow Products" FontWeight="Medium"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page> 

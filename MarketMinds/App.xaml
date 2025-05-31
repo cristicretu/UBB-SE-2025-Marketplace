@@ -22,6 +22,9 @@
             <converters:LocationFormatConverter x:Key="LocationFormatConverter"/>
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
             <converters:DateToDateTimeConverter x:Key="DateToDateTimeConverter"/>
+            <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
+            <converters:InvertedBoolVisibilityConverter x:Key="InvertedBoolVisibilityConverter"/>
+            <converters:StringFormatConverter x:Key="StringFormatConverter"/>
             
             <!-- Other app resources here -->
         </ResourceDictionary>

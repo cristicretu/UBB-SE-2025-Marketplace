@@ -509,11 +509,12 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
         {
             try
             {
-                auctionProductsRepository.CreateListing(auctionProduct);
+                auctionProductsRepository.UpdateAuctionProduct(auctionProduct);
                 return true;
             }
             catch (Exception exception)
             {
+                Console.WriteLine($"TRACE: UpdateAuctionProductAsync failed: {exception.Message}");
                 return false;
             }
         }
