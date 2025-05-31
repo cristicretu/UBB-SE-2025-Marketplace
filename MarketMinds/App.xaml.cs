@@ -174,6 +174,12 @@ namespace MarketMinds
                 // NEED THIS:
                 UserSession.CurrentUserId = CurrentUser.Id;
 
+                // Initialize user-dependent ViewModels
+                BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
+                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, CurrentUser);
+                SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
+                SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
+
                 // Redirect based on user role
                 switch (user.UserType)
                 {

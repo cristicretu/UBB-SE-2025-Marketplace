@@ -1,0 +1,514 @@
+<UserControl
+    x:Class="MarketMinds.Views.Pages.AuctionProductDetailsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <!-- Theme-aware Resources -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+        
+        <Style x:Key="InfoLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+        
+        <Style x:Key="InfoValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </Style>
+        
+        <Style x:Key="PriceStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{ThemeResource SystemAccentColor}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="32">
+        <StackPanel MaxWidth="1200" HorizontalAlignment="Center" Spacing="32">
+            
+            <!-- Loading State -->
+            <ProgressRing x:Name="LoadingRing" 
+                         IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+                         Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"
+                         Width="50" Height="50"/>
+
+            <!-- Content -->
+            <StackPanel Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}" 
+                       Spacing="24">
+
+                <!-- Breadcrumb -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <HyperlinkButton Content="Home" 
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Click="HomeButton_Click"/>
+                    <TextBlock Text=">" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="Auction Products" 
+                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                              FontWeight="Medium"
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Messages -->
+                <InfoBar x:Name="ErrorInfoBar"
+                        IsOpen="{x:Bind ViewModel.HasErrorMessage, Mode=OneWay}"
+                        Severity="Error"
+                        Title="Error"
+                        Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"/>
+
+                <InfoBar x:Name="SuccessInfoBar"
+                        IsOpen="{x:Bind ViewModel.HasSuccessMessage, Mode=OneWay}"
+                        Severity="Success"
+                        Title="Success"
+                        Message="{x:Bind ViewModel.SuccessMessage, Mode=OneWay}"/>
+
+                <!-- Main Product Section -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                       CornerRadius="8" 
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                       BorderThickness="1">
+                    <Grid ColumnDefinitions="1*,1*">
+                        
+                        <!-- Product Images Section -->
+                        <StackPanel Grid.Column="0">
+                            <!-- Main Image -->
+                            <Border Background="{ThemeResource LayerFillColorDefaultBrush}" Height="500" CornerRadius="8,0,0,0">
+                                <Grid>
+                                    <!-- Main Image Display -->
+                                    <Image x:Name="MainImage" 
+                                          Stretch="Uniform"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                                    
+                                    <!-- No Image State -->
+                                    <StackPanel x:Name="NoImagePanel"
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"
+                                               Spacing="16">
+                                        <FontIcon Glyph="&#xEB9F;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="No Image Available" 
+                                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                                  FontSize="18"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Image Counter -->
+                                    <Border x:Name="ImageCounterBorder"
+                                           Background="#80000000" 
+                                           CornerRadius="16"
+                                           Padding="12,6"
+                                           Margin="16"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Top">
+                                        <TextBlock x:Name="ImageCounter" 
+                                                  Text="1 / 1"
+                                                  Foreground="White" 
+                                                  FontSize="14"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- Thumbnail Images -->
+                            <ScrollViewer x:Name="ThumbnailScroller"
+                                         HorizontalScrollMode="Auto" 
+                                         HorizontalScrollBarVisibility="Auto"
+                                         VerticalScrollMode="Disabled"
+                                         VerticalScrollBarVisibility="Disabled"
+                                         Padding="16"
+                                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                                <ItemsControl x:Name="ThumbnailsControl" ItemsSource="{x:Bind ViewModel.Images, Mode=OneWay}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="12"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Width="64" Height="64" 
+                                                   CornerRadius="8"
+                                                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                   BorderThickness="2">
+                                                <Button Background="Transparent" 
+                                                       BorderThickness="0"
+                                                       Padding="0"
+                                                       CornerRadius="6"
+                                                       Click="ThumbnailImage_Click">
+                                                    <Image Source="{Binding Url}" 
+                                                          Stretch="UniformToFill"/>
+                                                </Button>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
+
+                        <!-- Product Information Section -->
+                        <StackPanel Grid.Column="1" Padding="32" Spacing="24">
+                            
+                            <!-- Product Header -->
+                            <StackPanel Spacing="16">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" 
+                                              Text="{x:Bind ViewModel.Title, Mode=OneWay}"
+                                              FontSize="30"
+                                              FontWeight="Bold"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                              TextWrapping="Wrap"/>
+                                    
+                                    <Border Grid.Column="1"
+                                           x:Name="StatusBorder"
+                                           CornerRadius="16"
+                                           Padding="12,6">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <FontIcon Glyph="&#xE916;" FontSize="16"/>
+                                            <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                                                      FontWeight="Medium"
+                                                      FontSize="14"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                                
+                                <!-- Product Info Tags -->
+                                <StackPanel Orientation="Horizontal" Spacing="16">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <FontIcon Glyph="&#xE8FD;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{x:Bind ViewModel.CategoryName, Mode=OneWay}" 
+                                                  Style="{StaticResource InfoValueStyle}"
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <FontIcon Glyph="&#xE73E;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{x:Bind ViewModel.ConditionName, Mode=OneWay}" 
+                                                  Style="{StaticResource InfoValueStyle}"
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <FontIcon Glyph="&#xE916;" FontSize="16" Foreground="{ThemeResource SystemAccentColor}"/>
+                                        <TextBlock Text="{x:Bind ViewModel.TimeLeft, Mode=OneWay}"
+                                                  Foreground="{ThemeResource SystemAccentColor}"
+                                                  FontWeight="Medium"
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                
+                                <!-- Price Section -->
+                                <StackPanel Spacing="8">
+                                    <TextBlock x:Name="CurrentPriceText"
+                                              Style="{StaticResource PriceStyle}"/>
+                                    <TextBlock x:Name="StartingPriceText"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                              FontSize="14"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Bidding Section -->
+                            <StackPanel x:Name="BiddingSection" Spacing="12">
+                                <TextBlock Text="Place Your Bid" Style="{StaticResource SectionHeaderStyle}"/>
+
+                                <!-- Buyer Bid Form -->
+                                <Border x:Name="BidForm"
+                                       Background="{ThemeResource LayerFillColorDefaultBrush}" 
+                                       CornerRadius="8" 
+                                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                                       BorderThickness="1"
+                                       Padding="16">
+                                    <StackPanel Spacing="16">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Your Bid Amount" 
+                                                      FontWeight="Medium"
+                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                            <TextBox x:Name="BidAmountTextBox"
+                                                    Text="{x:Bind ViewModel.BidAmount, Mode=TwoWay}"
+                                                    InputScope="Number"
+                                                    BorderThickness="1"
+                                                    BorderBrush="{ThemeResource TextControlElevationBorderBrush}"
+                                                    CornerRadius="8"
+                                                    Padding="12"
+                                                    TextChanged="BidAmountTextBox_TextChanged"/>
+                                            <TextBlock x:Name="MinimumBidText"
+                                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                      FontSize="12"/>
+                                        </StackPanel>
+                                        
+                                        <Button Background="{ThemeResource SystemAccentColor}"
+                                               Foreground="{ThemeResource AccentButtonForeground}"
+                                               CornerRadius="8"
+                                               Padding="24,12"
+                                               HorizontalAlignment="Stretch"
+                                               Command="{x:Bind ViewModel.PlaceBidCommand}"
+                                               IsEnabled="{x:Bind ViewModel.CanPlaceBid, Mode=OneWay}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ProgressRing Width="16" Height="16" 
+                                                             IsActive="{x:Bind ViewModel.IsPlacingBid, Mode=OneWay}"
+                                                             Visibility="{x:Bind ViewModel.IsPlacingBid, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"/>
+                                                <FontIcon Glyph="&#xE8FD;" FontSize="16"
+                                                         Visibility="{x:Bind ViewModel.IsPlacingBid, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}"/>
+                                                <TextBlock Text="Place Bid" FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Seller Warning -->
+                                <Border x:Name="SellerWarning"
+                                       Background="{ThemeResource SystemFillColorCautionBackgroundBrush}" 
+                                       CornerRadius="8" 
+                                       BorderBrush="{ThemeResource SystemFillColorCautionBrush}" 
+                                       BorderThickness="1"
+                                       Padding="16"
+                                       Visibility="{x:Bind ViewModel.IsUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                                        <TextBlock Text="Sellers cannot place bids on auctions."
+                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Auction Ended Message -->
+                            <Border x:Name="AuctionEndedMessage"
+                                   Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}" 
+                                   CornerRadius="8" 
+                                   BorderBrush="{ThemeResource SystemFillColorCriticalBrush}" 
+                                   BorderThickness="1"
+                                   Padding="16"
+                                   Visibility="{x:Bind ViewModel.IsAuctionEnded, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                                    <TextBlock Text="This auction has ended."
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                              FontWeight="Medium"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Owner Controls - Update End Date -->
+                            <StackPanel x:Name="OwnerControls" 
+                                       Spacing="12"
+                                       Visibility="{x:Bind ViewModel.IsOwner, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                <TextBlock Text="Update Auction End Date" Style="{StaticResource SectionHeaderStyle}"/>
+
+                                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
+                                       CornerRadius="8" 
+                                       BorderBrush="{ThemeResource SystemAccentColor}" 
+                                       BorderThickness="1"
+                                       Padding="16">
+                                    <StackPanel Spacing="12">
+                                        <TextBlock Text="As the seller, you can extend the auction end date" 
+                                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                                  FontSize="14"/>
+                                        
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="New End Date" 
+                                                      FontWeight="Medium"
+                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                            <CalendarDatePicker x:Name="NewEndDatePicker"
+                                                               HorizontalAlignment="Stretch"
+                                                               PlaceholderText="Select new end date"
+                                                               DateChanged="NewEndDatePicker_DateChanged"/>
+                                        </StackPanel>
+                                        
+                                        <Button Background="{ThemeResource SystemAccentColor}"
+                                               Foreground="{ThemeResource AccentButtonForeground}"
+                                               CornerRadius="8"
+                                               Padding="16,10"
+                                               HorizontalAlignment="Left"
+                                               Command="{x:Bind ViewModel.UpdateEndDateCommand}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ProgressRing Width="16" Height="16" 
+                                                             IsActive="{x:Bind ViewModel.IsUpdatingEndDate, Mode=OneWay}"
+                                                             Visibility="{x:Bind ViewModel.IsUpdatingEndDate, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"/>
+                                                <FontIcon Glyph="&#xE8DF;" FontSize="16"
+                                                         Visibility="{x:Bind ViewModel.IsUpdatingEndDate, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}"/>
+                                                <TextBlock Text="Update End Date" FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Product Information Sections -->
+                            <StackPanel Spacing="24">
+                                
+                                <!-- Description -->
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Description" Style="{StaticResource SectionHeaderStyle}"/>
+                                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
+                                           CornerRadius="8" 
+                                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                                           BorderThickness="1"
+                                           Padding="16">
+                                        <TextBlock Text="{x:Bind ViewModel.Description, Mode=OneWay}"
+                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                  TextWrapping="Wrap"
+                                                  LineHeight="24"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Seller Information -->
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Seller Information" Style="{StaticResource SectionHeaderStyle}"/>
+                                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
+                                           CornerRadius="8" 
+                                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                                           BorderThickness="1"
+                                           Padding="16">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0"
+                                                      Text="{x:Bind ViewModel.SellerName, Mode=OneWay}"
+                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                      FontWeight="Medium"
+                                                      VerticalAlignment="Center"/>
+                                            
+                                            <Button Grid.Column="1"
+                                                   x:Name="LeaveReviewButton"
+                                                   Background="{ThemeResource SystemAccentColor}"
+                                                   Foreground="{ThemeResource AccentButtonForeground}"
+                                                   CornerRadius="8"
+                                                   Padding="12,8"
+                                                   Click="LeaveReviewButton_Click">
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <FontIcon Glyph="&#xE8FB;" FontSize="14"/>
+                                                    <TextBlock Text="Leave Review" FontSize="14" FontWeight="Medium"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Tags -->
+                                <StackPanel x:Name="TagsSection" Spacing="12">
+                                    <TextBlock Text="Tags" Style="{StaticResource SectionHeaderStyle}"/>
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.Tags, Mode=OneWay}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}" 
+                                                       CornerRadius="16"
+                                                       Padding="12,6"
+                                                       Margin="0,0,8,8">
+                                                    <TextBlock Text="{Binding Title}"
+                                                              Foreground="{ThemeResource SystemAccentColor}"
+                                                              FontSize="14"
+                                                              FontWeight="Medium"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Bid History Section -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                       CornerRadius="8" 
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                       BorderThickness="1">
+                    <StackPanel>
+                        <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="24,16">
+                            <TextBlock Text="Bid History" Style="{StaticResource SectionHeaderStyle}" Margin="0"/>
+                        </Border>
+                        
+                        <!-- Bid History Table -->
+                        <StackPanel x:Name="BidHistoryTable">
+                            <!-- Table Header -->
+                            <Grid Background="{ThemeResource LayerFillColorDefaultBrush}" Padding="24,12" ColumnDefinitions="*,*,*">
+                                <TextBlock Grid.Column="0" Text="BIDDER" 
+                                          FontSize="12" FontWeight="Medium" 
+                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                          HorizontalAlignment="Left"/>
+                                <TextBlock Grid.Column="1" Text="AMOUNT" 
+                                          FontSize="12" FontWeight="Medium" 
+                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                          HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="TIME" 
+                                          FontSize="12" FontWeight="Medium" 
+                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                          HorizontalAlignment="Right"/>
+                            </Grid>
+                            
+                            <!-- Table Body -->
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.BidHistory, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+                                            <Grid Padding="24,16" ColumnDefinitions="*,*,*" Background="Transparent">
+                                                <TextBlock Grid.Column="0" 
+                                                          Text="{Binding Bidder.Username}"
+                                                          FontWeight="Medium" 
+                                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                          HorizontalAlignment="Left"
+                                                          VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1" 
+                                                          Text="{Binding Price, Converter={StaticResource StringFormatConverter}, ConverterParameter='€{0:F2}'}"
+                                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                                          FontWeight="Medium"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" 
+                                                          Text="{Binding Timestamp, Converter={StaticResource DateTimeFormatConverter}, ConverterParameter='MM/dd/yyyy HH:mm'}"
+                                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                          HorizontalAlignment="Right"
+                                                          VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- No Bids State -->
+                        <StackPanel x:Name="NoBidsState"
+                                   Padding="24,48" 
+                                   HorizontalAlignment="Center"
+                                   Spacing="16">
+                            <FontIcon Glyph="&#xE9F9;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="No Bids Yet" 
+                                      FontSize="18" FontWeight="Medium" 
+                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                      HorizontalAlignment="Center"/>
+                            <TextBlock Text="Be the first to place a bid on this auction!" 
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                      HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Back Button -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,32,0,48">
+                    <Button Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                           BorderThickness="1"
+                           CornerRadius="8"
+                           Padding="24,12"
+                           Click="BackButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE72B;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Back to Auction Products" 
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                      FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl> 

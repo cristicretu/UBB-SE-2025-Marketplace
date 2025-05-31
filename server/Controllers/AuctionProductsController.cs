@@ -250,19 +250,39 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult UpdateAuctionProduct(int id, [FromBody] AuctionProduct product)
         {
-            if (id != product?.Id)
+            Console.WriteLine($"SERVER: UpdateAuctionProduct called with id={id}");
+            Console.WriteLine($"SERVER: Received product: ID={product?.Id}, Title='{product?.Title}', EndTime={product?.EndTime}");
+            
+            if (product == null)
             {
+                Console.WriteLine($"SERVER: UpdateAuctionProduct - Product is null");
+                return BadRequest("Product data is required.");
+            }
+            
+            if (id != product.Id)
+            {
+                Console.WriteLine($"SERVER: UpdateAuctionProduct - ID mismatch: route id={id}, product id={product.Id}");
                 return BadRequest("ID mismatch between route and product.");
             }
 
             try
             {
+                Console.WriteLine($"SERVER: UpdateAuctionProduct - Before InitializeDates: EndTime={product.EndTime}");
                 InitializeDates(product);
+                Console.WriteLine($"SERVER: UpdateAuctionProduct - After InitializeDates: EndTime={product.EndTime}");
+                
+                Console.WriteLine($"SERVER: UpdateAuctionProduct - Calling repository.UpdateProduct");
                 auctionProductsRepository.UpdateProduct(product);
+                Console.WriteLine($"SERVER: UpdateAuctionProduct - Update successful");
                 return NoContent();
             }
             catch (Exception exception)
             {
+                Console.WriteLine($"SERVER: UpdateAuctionProduct - Exception: {exception.GetType().Name}: {exception.Message}");
+                if (exception.InnerException != null)
+                {
+                    Console.WriteLine($"SERVER: UpdateAuctionProduct - Inner exception: {exception.InnerException.GetType().Name}: {exception.InnerException.Message}");
+                }
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while updating the product.");
             }
         }
