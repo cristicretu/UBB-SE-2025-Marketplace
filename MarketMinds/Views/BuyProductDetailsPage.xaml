@@ -297,22 +297,40 @@
                                                        Text="{x:Bind SellerName, Mode=OneWay}"
                                                        FontWeight="Medium"
                                                        VerticalAlignment="Center"/>
-                                            
+
                                             <Button Grid.Column="1"
-                                                    x:Name="LeaveReviewButton"
-                                                    Background="{ThemeResource SystemAccentColor}"
-                                                    Foreground="{ThemeResource AccentButtonForeground}"
+                                                    x:Name="ViewSellerButton"
+                                                    Background="Transparent"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
                                                     CornerRadius="4"
                                                     Padding="12,8"
-                                                    Visibility="{x:Bind IsCurrentUserBuyer, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"
-                                                    Click="LeaveReviewButton_Click">
+                                                    Margin="0,0,8,0"
+                                                    Click="ViewSellerButton_Click">
+                                                
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon Glyph="&#xE734;" FontSize="14"/>
-                                                    <TextBlock Text="Leave Review" FontSize="12" FontWeight="SemiBold"/>
+                                                    <FontIcon Glyph="&#xE8A4;" FontSize="14"/>
+                                                    <TextBlock Text="View Profile" FontSize="12" FontWeight="SemiBold"/>
                                                 </StackPanel>
                                             </Button>
+
+                                            
                                         </Grid>
                                     </Border>
+
+                                    <Button 
+                                        x:Name="LeaveReviewButton"
+                                        Background="{ThemeResource SystemAccentColor}"
+                                        Foreground="{ThemeResource AccentButtonForeground}"
+                                        CornerRadius="4"
+                                        Padding="12,8"
+                                        Visibility="{x:Bind IsCurrentUserBuyer, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"
+                                        Click="LeaveReviewButton_Click">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <FontIcon Glyph="&#xE734;" FontSize="14"/>
+                                                <TextBlock Text="Leave Review" FontSize="12" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                        </Button>
                                 </StackPanel>
 
                                 <!-- Tags -->

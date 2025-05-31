@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
+using MarketMinds.Views.Pages;
 
 namespace MarketMinds.Views
 {
@@ -283,20 +284,70 @@ namespace MarketMinds.Views
             }
         }
 
+        private void ViewSellerButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Product?.Seller == null) return;
+
+            try
+            {
+                // Navigate to seller profile page
+                Frame.Navigate(typeof(SellerProfilePage), Product.Seller);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error navigating to seller profile: {ex.Message}");
+                
+                var dialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "An error occurred while trying to view the seller profile.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                _ = dialog.ShowAsync();
+            }
+        }
+
         private void LeaveReviewButton_Click(object sender, RoutedEventArgs e)
         {
             if (Product?.Seller == null) return;
 
-            // Navigate to review page or show review dialog
-            // For now, just show a placeholder dialog
-            var dialog = new ContentDialog
+            try
             {
-                Title = "Leave Review",
-                Content = $"Review functionality for seller '{SellerName}' will be implemented here.",
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
-            _ = dialog.ShowAsync();
+                // Create review data to pass to the review page
+                var reviewData = new SellerReviewData
+                {
+                    SellerId = Product.Seller.Id,
+                    SellerName = Product.Seller.Username,
+                    ProductId = Product.Id,
+                    ProductTitle = Product.Title
+                };
+                
+                // Navigate to leave review page
+                Frame.Navigate(typeof(LeaveSellerReviewPage), reviewData);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error navigating to leave review: {ex.Message}");
+                
+                var dialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "An error occurred while trying to leave a review.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                _ = dialog.ShowAsync();
+            }
+        }
+
+        // Helper class to pass seller review data between pages
+        public class SellerReviewData
+        {
+            public int SellerId { get; set; }
+            public string SellerName { get; set; }
+            public int ProductId { get; set; }
+            public string ProductTitle { get; set; }
         }
 
         private void HomeButton_Click(object sender, RoutedEventArgs e)
