@@ -21,6 +21,59 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 throw new ArgumentNullException(nameof(product));
             }
 
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(product.Title))
+            {
+                throw new ArgumentException("Product title is required", nameof(product.Title));
+            }
+
+            if (product.SellerId <= 0)
+            {
+                throw new ArgumentException("Valid seller ID is required", nameof(product.SellerId));
+            }
+
+            if (product.CategoryId <= 0)
+            {
+                throw new ArgumentException("Valid category ID is required", nameof(product.CategoryId));
+            }
+
+            if (product.ConditionId <= 0)
+            {
+                throw new ArgumentException("Valid condition ID is required", nameof(product.ConditionId));
+            }
+
+            Console.WriteLine($"Repository: Adding product with Title='{product.Title}', " +
+                            $"SellerId={product.SellerId}, CategoryId={product.CategoryId}, " +
+                            $"ConditionId={product.ConditionId}, Price={product.Price}, Stock={product.Stock}");
+
+            // Validate foreign keys exist in database
+            try
+            {
+                var sellerExists = context.Users.Any(u => u.Id == product.SellerId);
+                if (!sellerExists)
+                {
+                    throw new ArgumentException($"Seller with ID {product.SellerId} does not exist", nameof(product.SellerId));
+                }
+
+                var categoryExists = context.ProductCategories.Any(c => c.Id == product.CategoryId);
+                if (!categoryExists)
+                {
+                    throw new ArgumentException($"Category with ID {product.CategoryId} does not exist", nameof(product.CategoryId));
+                }
+
+                var conditionExists = context.ProductConditions.Any(c => c.Id == product.ConditionId);
+                if (!conditionExists)
+                {
+                    throw new ArgumentException($"Condition with ID {product.ConditionId} does not exist", nameof(product.ConditionId));
+                }
+
+                Console.WriteLine("Repository: Foreign key validation passed");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Repository: Foreign key validation failed: {ex.Message}");
+                throw;
+            }
 
             if (product.ProductTags != null && product.ProductTags.Any())
             {
@@ -34,24 +87,41 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                         {
                             productTag.Tag = existingTag; // Attach the tracked entity
                         }
+                        else
+                        {
+                            Console.WriteLine($"Warning: Tag with ID {productTag.TagId} not found in database");
+                        }
                     }
                 }
             }
 
             try
             {
+                Console.WriteLine("Repository: Adding product to context");
                 context.BuyProducts.Add(product);
+                
+                Console.WriteLine("Repository: Saving changes to database");
                 context.SaveChanges();
-
+                
+                Console.WriteLine($"Repository: Product successfully saved with ID {product.Id}");
             }
             catch (DbUpdateException ex)
             {
                 Console.WriteLine($"EF Core AddProduct Error: {ex.InnerException?.Message ?? ex.Message}");
-                throw;
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                
+                // Log more details about the validation errors
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception details: {ex.InnerException}");
+                }
+                
+                throw new ApplicationException($"Database error while adding product: {ex.InnerException?.Message ?? ex.Message}", ex);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"General AddProduct Error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 throw;
             }
         }

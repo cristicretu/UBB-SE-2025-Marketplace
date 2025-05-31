@@ -232,6 +232,33 @@ namespace Server.Controllers
         }
 
         /// <summary>
+        /// Gets the followers for a specific seller.
+        /// </summary>
+        /// <param name="sellerId">The ID of the seller.</param>
+        /// <returns>An ActionResult containing a list of followers.</returns>
+        [HttpGet("{sellerId}/followers")]
+        [ProducesResponseType(typeof(List<Buyer>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<Buyer>>> GetFollowers(int sellerId)
+        {
+            if (sellerId <= 0)
+            {
+                return this.BadRequest("Valid sellerId is required.");
+            }
+
+            try
+            {
+                var followers = await this.sellerRepository.GetFollowers(sellerId);
+                return this.Ok(followers);
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while getting followers for Seller ID: {sellerId}. Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Updates seller information.
         /// </summary>
         /// <param name="seller">The seller entity with updated information.</param>

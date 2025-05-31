@@ -27,13 +27,36 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid Padding="20" ColumnSpacing="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
 
+        <!-- Header with Back Button -->
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="10" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal">
+
+                <Button x:Name="BackButton"
+                        Click="BackButton_Click"
+                        Style="{StaticResource DefaultButtonStyle}"
+                        Background="{ThemeResource SystemAccentColor}"
+                        Foreground="{ThemeResource AccentButtonForeground}">
+                    <FontIcon Glyph="&#xE72B;" FontSize="14"/>
+                </Button>
+            </StackPanel>
+            
+            <TextBlock Text="Order Tracking Management" 
+                       Style="{StaticResource TitleTextBlockStyle}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,0,3"/>
+        </StackPanel>
+
         <!-- Left Panel: Order Details and Timeline -->
-        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="20">
                 <!-- Order Details Card -->
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -134,14 +157,14 @@
         </ScrollViewer>
 
         <!-- Right Panel: Control Panel -->
-        <Border Grid.Column="1" 
+        <Border Grid.Row="1" Grid.Column="1"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 CornerRadius="8"
                 Padding="16"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                Height="Auto"
-                MaxHeight="800">
+                MaxHeight="700"
+                VerticalAlignment="Top">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="16">
                     <TextBlock Text="Control Panel"
@@ -151,7 +174,8 @@
                     <StackPanel Spacing="8">
                         <Button Content="Revert to Last Checkpoint"
                                 Click="RevertLastCheckpointButton_Clicked"
-                                Style="{StaticResource AccentButtonStyle}"
+                                Background="{ThemeResource SystemAccentColor}"
+                                Foreground="{ThemeResource AccentButtonForeground}"
                                 HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
@@ -162,12 +186,15 @@
                         <Button x:Name="showDeliveryDateUpdateButton"
                                 Content="Change Delivery Date"
                                 Click="ShowDeliveryDateUpdateButton_Clicked"
-                                Style="{StaticResource AccentButtonStyle}"
+                                Background="{ThemeResource SystemAccentColor}"
+                                Foreground="{ThemeResource AccentButtonForeground}"
                                 HorizontalAlignment="Stretch"/>
                         <StackPanel x:Name="deliveryDateUpdatePanel" Visibility="Collapsed">
                             <CalendarDatePicker x:Name="deliveryCalendarDatePicker"
                                               PlaceholderText="Select date"
-                                              Visibility="Visible"/>
+                                              Visibility="Visible"
+                                              HorizontalAlignment="Stretch"
+                                              Margin="0,0,0,10"/>
                             <Button x:Name="confirmChangeEstimatedDeliveryDateButton"
                                     Content="Update Delivery Date"
                                     Click="ConfirmChangeEstimatedDeliveryDateButton_Clicked"
@@ -188,7 +215,8 @@
                                 Visibility="Visible"/>
                         <ComboBox x:Name="StatusComboBoxAdd"
                                  PlaceholderText="Select Status"
-                                 Visibility="Visible">
+                                 Visibility="Visible"
+                                  HorizontalAlignment="Stretch">
                             <ComboBoxItem Content="PROCESSING"/>
                             <ComboBoxItem Content="SHIPPED"/>
                             <ComboBoxItem Content="IN_WAREHOUSE"/>
@@ -224,10 +252,12 @@
                                   Spacing="8">
                             <CalendarDatePicker x:Name="TimestampDatePicker"
                                               PlaceholderText="Select date"
-                                              Header="Select date"/>
+                                              Header="Select date"
+                                              HorizontalAlignment="Stretch"/>
                             <TimePicker x:Name="TimestampTimePicker"
                                       ClockIdentifier="24HourClock"
-                                      Header="Select time"/>
+                                      Header="Select time"
+                                      HorizontalAlignment="Stretch"/>
                         </StackPanel>
                         <TextBox x:Name="LocationTextBoxUpdate"
                                 PlaceholderText="Location (Optional)"

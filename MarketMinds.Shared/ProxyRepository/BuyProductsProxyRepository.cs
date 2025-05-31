@@ -154,9 +154,58 @@ namespace MarketMinds.Shared.ProxyRepository
 
         public string CreateListing(object productToSend)
         {
-            var response = httpClient.PostAsJsonAsync("buyproducts", productToSend).Result;
-            response.EnsureSuccessStatusCode();
-            return response.Content.ReadAsStringAsync().Result;
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                Console.WriteLine($"Sending POST request to create product at URL: {httpClient.BaseAddress}buyproducts");
+                
+                var response = httpClient.PostAsJsonAsync("buyproducts", productToSend).Result;
+                
+                Console.WriteLine($"Response status: {(int)response.StatusCode} {response.ReasonPhrase}");
+                
+                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    var errorContent = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine($"400 Bad Request Error Details: {errorContent}");
+                    
+                    // Try to parse ModelState errors if present
+                    try
+                    {
+                        var errorResponse = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(errorContent);
+                        if (errorResponse.ContainsKey("errors"))
+                        {
+                            Console.WriteLine("Validation errors found in response:");
+                            var errorsJson = errorResponse["errors"].ToString();
+                            Console.WriteLine(errorsJson);
+                        }
+                    }
+                    catch
+                    {
+                        // If we can't parse as JSON, just log the raw content
+                        Console.WriteLine($"Raw error content: {errorContent}");
+                    }
+                    
+                    throw new HttpRequestException($"Bad Request (400): {errorContent}");
+                }
+                
+                response.EnsureSuccessStatusCode();
+                return response.Content.ReadAsStringAsync().Result;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"HTTP Request failed: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error in CreateListing: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public void DeleteListing(int id)

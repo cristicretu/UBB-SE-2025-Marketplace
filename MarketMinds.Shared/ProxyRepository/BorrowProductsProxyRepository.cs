@@ -35,6 +35,9 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             BorrowProduct borrowProduct = product as BorrowProduct;
 
+            Console.WriteLine($"ProxyRepository.CreateListing - Input dates: " +
+                            $"StartDate={borrowProduct.StartDate}, EndDate={borrowProduct.EndDate}, TimeLimit={borrowProduct.TimeLimit}");
+
             var sellerId = borrowProduct.Seller?.Id ?? borrowProduct.SellerId;
             var conditionId = borrowProduct.Condition?.Id ?? borrowProduct.ConditionId;
             var categoryId = borrowProduct.Category?.Id ?? borrowProduct.CategoryId;
@@ -66,11 +69,18 @@ namespace MarketMinds.Shared.ProxyRepository
                        : borrowProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
             };
 
+            Console.WriteLine($"ProxyRepository.CreateListing - Sending to server: " +
+                            $"StartDate={productToSend.StartDate}, EndDate={productToSend.EndDate}, TimeLimit={productToSend.TimeLimit}");
+
             var serializerOptions = new System.Text.Json.JsonSerializerOptions
             {
                 WriteIndented = true,
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
+
+            // Serialize and log the JSON being sent
+            var jsonToSend = System.Text.Json.JsonSerializer.Serialize(productToSend, serializerOptions);
+            Console.WriteLine($"ProxyRepository.CreateListing - JSON being sent:\n{jsonToSend}");
 
             var content = System.Net.Http.Json.JsonContent.Create(productToSend, null, serializerOptions);
             var response = httpClient.PostAsync("borrowproducts", content).Result;

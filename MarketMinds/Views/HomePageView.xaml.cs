@@ -194,6 +194,13 @@ namespace MarketMinds.Views
                     case "MyAccount":
                         // This is handled in the ProfileMenuItem_Click method because it has a submenu of buttons
                         break;
+                }
+            }
+
+            if (sender is Button button1)
+            {
+                switch (button1.Tag)
+                {
                     // Only sellers' cases
                     case "CreateListing":
                         if (ContentFrame.Content is CreateListingView)

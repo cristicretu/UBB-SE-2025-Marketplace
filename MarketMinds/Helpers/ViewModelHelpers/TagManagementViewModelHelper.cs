@@ -27,6 +27,17 @@ namespace MarketMinds.Helpers
             return false;
         }
 
+        public bool AddTagToCollectionBeginning(string tag, ObservableCollection<string> tags)
+        {
+            tag = tag.Trim();
+            if (!string.IsNullOrEmpty(tag) && !tags.Contains(tag))
+            {
+                tags.Insert(0, tag);
+                return true;
+            }
+            return false;
+        }
+
         public bool RemoveTagFromCollection(string tag, ObservableCollection<string> tags)
         {
             if (tag != null && tags.Contains(tag))

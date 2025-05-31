@@ -6,12 +6,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:MarketMinds.Views"
+    xmlns:converters="using:MarketMinds.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <!-- Converter for Boolean to Expand/Collapse Icon -->
         <local:BoolToExpandIconConverter x:Key="BoolToExpandIconConverter"/>
+        <!-- Converters for loading state -->
+        <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
+        <converters:InvertedBoolVisibilityConverter x:Key="InvertedBoolVisibilityConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -93,6 +97,15 @@
             </StackPanel>
         </Grid>
 
+        <!-- Loading indicator -->
+        <ProgressRing x:Name="LoadingRing" 
+                     Grid.Row="1"
+                     IsActive="{x:Bind IsLoading, Mode=OneWay}"
+                     HorizontalAlignment="Center" 
+                     VerticalAlignment="Center"
+                     Width="50" Height="50"
+                     Foreground="{ThemeResource SystemAccentColor}"/>
+
         <!-- Orders ListView with Grouping -->
         <ListView x:Name="OrdersListView" 
                  Grid.Row="1"
@@ -101,7 +114,8 @@
                  VerticalAlignment="Stretch"
                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                 BorderThickness="1">
+                 BorderThickness="1"
+                 Visibility="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}">
 
             <!-- Item Template for OrderGroup -->
             <ListView.ItemTemplate>

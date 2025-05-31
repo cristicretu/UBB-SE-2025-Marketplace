@@ -68,6 +68,13 @@ namespace MarketMinds.Shared.IRepository
         Task<Seller> GetSellerInfo(User user);
 
         /// <summary>
+        /// Gets the followers for a given seller.
+        /// </summary>
+        /// <param name="sellerId">The ID of the seller whose followers are to be retrieved.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of followers.</returns>
+        Task<List<Buyer>> GetFollowers(int sellerId);
+
+        /// <summary>
         /// Updates the seller information.
         /// </summary>
         /// <param name="seller">The seller whose information is to be updated.</param>

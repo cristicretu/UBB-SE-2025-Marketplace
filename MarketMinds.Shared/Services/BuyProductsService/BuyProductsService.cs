@@ -142,77 +142,113 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 throw new ArgumentNullException(nameof(product), "Product cannot be null.");
             }
 
+            // Comprehensive validation with detailed error messages
+            var validationErrors = new List<string>();
+
             if (string.IsNullOrWhiteSpace(product.Title))
             {
-                throw new ArgumentException("Product title is required.", nameof(product.Title));
-            }
-
-            if (product.Price < 0)
-            {
-                throw new ArgumentException("Price cannot be negative.", nameof(product.Price));
+                validationErrors.Add("Product title is required and cannot be empty.");
             }
 
             if (product.SellerId <= 0)
             {
-                throw new ArgumentException("Valid seller ID is required.", nameof(product.SellerId));
+                validationErrors.Add("Valid seller ID is required (must be > 0).");
+            }
+
+            if (product.Price < 0)
+            {
+                validationErrors.Add("Price cannot be negative.");
+            }
+
+            if (product.ConditionId <= 0 && (product.Condition == null || product.Condition.Id <= 0))
+            {
+                validationErrors.Add("Valid condition ID is required (must be > 0).");
+            }
+
+            if (product.CategoryId <= 0 && (product.Category == null || product.Category.Id <= 0))
+            {
+                validationErrors.Add("Valid category ID is required (must be > 0).");
+            }
+
+            if (product.Stock < 0)
+            {
+                validationErrors.Add("Stock quantity cannot be negative.");
+            }
+
+            if (validationErrors.Any())
+            {
+                var errorMessage = string.Join(" ", validationErrors);
+                Console.WriteLine($"CreateListing validation failed: {errorMessage}");
+                throw new ArgumentException(errorMessage);
             }
 
             Console.WriteLine($"Creating buy product with SellerId={product.SellerId}, " +
-                             $"Seller object: {(product.Seller != null ? $"Id={product.Seller.Id}" : "null")}");
+                             $"CategoryId={product.CategoryId}, ConditionId={product.ConditionId}, " +
+                             $"Title='{product.Title}', Price={product.Price}, Stock={product.Stock}");
 
             try
             {
-                var productTags = new List<BuyProductProductTag>();
-                if (product.Tags != null && product.Tags.Any())
-                {
-                    foreach (var tag in product.Tags)
-                    {
-                        var productTag = new BuyProductProductTag
-                        {
-                            TagId = tag.Id,
-                            Tag = tag
-                        };
-                        productTags.Add(productTag);
-                    }
-                }
-
+                // Create a clean product without tags initially to avoid validation issues
                 var productToSend = new BuyProduct
                 {
-                    Title = product.Title,
-                    Description = product.Description,
+                    Title = product.Title?.Trim(),
+                    Description = product.Description?.Trim() ?? string.Empty,
                     SellerId = product.SellerId,
-                    ConditionId = product.Condition?.Id ?? 0,
-                    CategoryId = product.Category?.Id ?? 0,
+                    ConditionId = product.Condition?.Id ?? product.ConditionId,
+                    CategoryId = product.Category?.Id ?? product.CategoryId,
                     Price = product.Price,
-                    Stock = product.Stock,
-                    ProductTags = productTags,
+                    Stock = product.Stock > 0 ? product.Stock : 1,
+                    ProductTags = new List<BuyProductProductTag>(), // Empty list
                     Images = new List<BuyProductImage>()
                 };
 
-                // Add images
+                // Add images if any
                 if (product.NonMappedImages != null && product.NonMappedImages.Any())
                 {
                     foreach (var img in product.NonMappedImages)
                     {
-                        productToSend.Images.Add(new BuyProductImage { Url = img.Url ?? string.Empty });
+                        if (!string.IsNullOrWhiteSpace(img.Url))
+                        {
+                            productToSend.Images.Add(new BuyProductImage { Url = img.Url });
+                        }
                     }
                 }
                 else if (product.Images != null && product.Images.Any())
                 {
                     foreach (var img in product.Images)
                     {
-                        productToSend.Images.Add(new BuyProductImage { Url = img.Url });
+                        if (!string.IsNullOrWhiteSpace(img.Url))
+                        {
+                            productToSend.Images.Add(new BuyProductImage { Url = img.Url });
+                        }
                     }
                 }
 
-                // Serialize the object to see what's actually being sent
-                var jsonToSend = System.Text.Json.JsonSerializer.Serialize(productToSend, new JsonSerializerOptions { WriteIndented = true });
+                // Log the final product data being sent
+                Console.WriteLine($"Final product to send: Title='{productToSend.Title}', " +
+                                $"SellerId={productToSend.SellerId}, CategoryId={productToSend.CategoryId}, " +
+                                $"ConditionId={productToSend.ConditionId}, Price={productToSend.Price}, " +
+                                $"Stock={productToSend.Stock}, TagCount={0}, " + // No tags for now
+                                $"ImageCount={productToSend.Images.Count}");
+
+                // Serialize to see the actual JSON being sent
+                var jsonToSend = System.Text.Json.JsonSerializer.Serialize(productToSend, 
+                    new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                Console.WriteLine($"JSON being sent to server:\n{jsonToSend}");
 
                 var responseJson = buyProductsRepository.CreateListing(productToSend);
+                Console.WriteLine($"Server response: {responseJson}");
             }
             catch (HttpRequestException ex)
             {
+                Console.WriteLine($"HTTP Error creating product: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine($"Error creating product: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 throw;
             }
         }

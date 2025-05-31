@@ -39,6 +39,7 @@ namespace MarketMinds.Shared.Models
             Title = title;
             Description = description;
             Seller = seller;
+            SellerId = seller.Id;
             Condition = productCondition;
             Category = productCategory;
             Tags = productTags ?? new List<ProductTag>();

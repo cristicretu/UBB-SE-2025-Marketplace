@@ -17,8 +17,10 @@ using Microsoft.UI.Xaml.Data;
 namespace MarketMinds.Views
 {
     [ExcludeFromCodeCoverage]
-    public sealed partial class OrderHistoryView : Page
+    public sealed partial class OrderHistoryView : Page, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
         /// <summary>
         /// The order history view page;
         /// </summary>
@@ -29,6 +31,23 @@ namespace MarketMinds.Views
         private ITrackedOrderViewModel trackedOrderViewModel;
         private Dictionary<int, string> orderProductCategoryTypes = new Dictionary<int, string>();
         private int currentTrackingOrderId;
+        private bool _isLoading = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the page is currently loading.
+        /// </summary>
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set
+            {
+                if (_isLoading != value)
+                {
+                    _isLoading = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLoading)));
+                }
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the OrderHistoryUI page.
@@ -68,10 +87,14 @@ namespace MarketMinds.Views
         {
             try
             {
+                // Set loading state
+                IsLoading = true;
+                
                 var selectedPeriod = (TimePeriodComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
                 if (selectedPeriod == null)
                 {
+                    IsLoading = false;
                     return;
                 }
 
@@ -86,52 +109,60 @@ namespace MarketMinds.Views
 
                 DispatcherQueue.TryEnqueue(() =>
                 {
-                    if (orderDisplayInfos == null)
+                    try
                     {
-                        throw new NullReferenceException("orderDisplayInfos is null");
-                    }
-
-                    if (OrdersListView == null)
-                    {
-                        throw new NullReferenceException("OrdersListView is null");
-                    }
-
-                    if (NoResultsText == null)
-                    {
-                        throw new NullReferenceException("NoResultsText is null");
-                    }
-                    if (orderDisplayInfos.Count > 0)
-                    {
-                        // Group the orders by OrderSummaryID and create OrderGroup objects
-                        var groupedOrders = orderDisplayInfos
-                            .GroupBy(order => order.OrderSummaryID)
-                            .Select(group => new OrderGroup
-                            {
-                                Name = $"Order #{group.Key}",
-                                Items = group.Cast<dynamic>().ToList()
-                            })
-                            .ToList();
-
-                        // Bind the grouped data to the ListView
-                        OrdersListView.ItemsSource = groupedOrders;
-                        OrdersListView.Visibility = Visibility.Visible;
-                        NoResultsText.Visibility = Visibility.Collapsed;
-                    }
-                    else
-                    {
-                        // Clear the ListView when no results
-                        OrdersListView.ItemsSource = null;
-                        OrdersListView.Visibility = Visibility.Collapsed;
-                        NoResultsText.Visibility = Visibility.Visible;
-
-                        NoResultsText.Text = string.IsNullOrEmpty(searchText) ?
-                            "No orders found" :
-                            $"No orders found containing '{searchText}'";
-
-                        if (selectedPeriod != "All Orders")
+                        if (orderDisplayInfos == null)
                         {
-                            NoResultsText.Text += $" in {selectedPeriod}";
+                            throw new NullReferenceException("orderDisplayInfos is null");
                         }
+
+                        if (OrdersListView == null)
+                        {
+                            throw new NullReferenceException("OrdersListView is null");
+                        }
+
+                        if (NoResultsText == null)
+                        {
+                            throw new NullReferenceException("NoResultsText is null");
+                        }
+                        if (orderDisplayInfos.Count > 0)
+                        {
+                            // Group the orders by OrderSummaryID and create OrderGroup objects
+                            var groupedOrders = orderDisplayInfos
+                                .GroupBy(order => order.OrderSummaryID)
+                                .Select(group => new OrderGroup
+                                {
+                                    Name = $"Order #{group.Key}",
+                                    Items = group.Cast<dynamic>().ToList()
+                                })
+                                .ToList();
+
+                            // Bind the grouped data to the ListView
+                            OrdersListView.ItemsSource = groupedOrders;
+                            OrdersListView.Visibility = Visibility.Visible;
+                            NoResultsText.Visibility = Visibility.Collapsed;
+                        }
+                        else
+                        {
+                            // Clear the ListView when no results
+                            OrdersListView.ItemsSource = null;
+                            OrdersListView.Visibility = Visibility.Collapsed;
+                            NoResultsText.Visibility = Visibility.Visible;
+
+                            NoResultsText.Text = string.IsNullOrEmpty(searchText) ?
+                                "No orders found" :
+                                $"No orders found containing '{searchText}'";
+
+                            if (selectedPeriod != "All Orders")
+                            {
+                                NoResultsText.Text += $" in {selectedPeriod}";
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        // Clear loading state
+                        IsLoading = false;
                     }
                 });
             }
@@ -139,20 +170,28 @@ namespace MarketMinds.Views
             {
                 DispatcherQueue.TryEnqueue(async () =>
                 {
-                    // Clear the ListView on error
-                    OrdersListView.ItemsSource = null;
-                    OrdersListView.Visibility = Visibility.Collapsed;
-                    NoResultsText.Visibility = Visibility.Visible;
-                    NoResultsText.Text = "Error loading orders";
-
-                    var errorContentDialog = new ContentDialog
+                    try
                     {
-                        Title = "Error",
-                        Content = $"Failed to load orders: {exception.Message}",
-                        CloseButtonText = "OK",
-                        XamlRoot = this.Content.XamlRoot
-                    };
-                    await errorContentDialog.ShowAsync();
+                        // Clear the ListView on error
+                        OrdersListView.ItemsSource = null;
+                        OrdersListView.Visibility = Visibility.Collapsed;
+                        NoResultsText.Visibility = Visibility.Visible;
+                        NoResultsText.Text = "Error loading orders";
+
+                        var errorContentDialog = new ContentDialog
+                        {
+                            Title = "Error",
+                            Content = $"Failed to load orders: {exception.Message}",
+                            CloseButtonText = "OK",
+                            XamlRoot = this.Content.XamlRoot
+                        };
+                        await errorContentDialog.ShowAsync();
+                    }
+                    finally
+                    {
+                        // Clear loading state on error
+                        IsLoading = false;
+                    }
                 });
             }
         }
@@ -526,7 +565,18 @@ namespace MarketMinds.Views
                 try
                 {
                     currentTrackingOrderId = orderID;
-                    await ShowTrackOrderDialog(orderID);
+                    
+                    // Check if current user is a seller
+                    if (App.CurrentUser.UserType == (int)MarketMinds.Shared.Models.UserRole.Seller)
+                    {
+                        // For sellers, open the TrackedOrderControlPage window
+                        await OpenTrackedOrderWindowForSeller(orderID);
+                    }
+                    else
+                    {
+                        // For buyers, show the tracking dialog as before
+                        await ShowTrackOrderDialog(orderID);
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -784,6 +834,74 @@ namespace MarketMinds.Views
             {
                 System.Diagnostics.Debug.WriteLine($"Error creating tracking for order {orderID}: {ex.Message}");
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Opens the TrackedOrderControlPage for sellers with the specified order ID.
+        /// </summary>
+        /// <param name="orderID">The ID of the order to track</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        private async Task OpenTrackedOrderWindowForSeller(int orderID)
+        {
+            try
+            {
+                // Get tracked order by order ID using our helper method
+                var trackedOrder = await GetTrackedOrderByOrderIdAsync(orderID);
+
+                if (trackedOrder == null)
+                {
+                    // Create tracking information if it doesn't exist
+                    trackedOrder = await CreateTrackingForOrderAsync(orderID);
+
+                    if (trackedOrder == null)
+                    {
+                        await ShowCustomMessageAsync("Error", "Unable to create or retrieve tracking information for this order.");
+                        return;
+                    }
+                }
+
+                // Navigate to the TrackedOrderControlPage
+                var trackedOrderControlPage = new TrackedOrderControlPage();
+                await trackedOrderControlPage.SetTrackedOrderIDAsync(trackedOrder.TrackedOrderID);
+                
+                // Get the current frame and navigate to the page
+                Frame currentFrame = null;
+                
+                // Try to find the frame by walking up the visual tree
+                var parent = this.Parent;
+                while (parent != null && currentFrame == null)
+                {
+                    if (parent is Frame frame)
+                    {
+                        currentFrame = frame;
+                        break;
+                    }
+                    parent = (parent as FrameworkElement)?.Parent;
+                }
+                
+                // If we found a frame, navigate to the page
+                if (currentFrame != null)
+                {
+                    currentFrame.Navigate(typeof(TrackedOrderControlPage), trackedOrder.TrackedOrderID);
+                }
+                else
+                {
+                    // Fallback: try to use the app's main frame if available
+                    if (App.MainWindow?.Content is Frame mainFrame)
+                    {
+                        mainFrame.Navigate(typeof(TrackedOrderControlPage), trackedOrder.TrackedOrderID);
+                    }
+                    else
+                    {
+                        await ShowCustomMessageAsync("Error", "Cannot navigate to order tracking page.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error opening tracked order page: {ex.Message}");
+                await ShowCustomMessageAsync("Error", $"Failed to open order tracking page: {ex.Message}");
             }
         }
     }
