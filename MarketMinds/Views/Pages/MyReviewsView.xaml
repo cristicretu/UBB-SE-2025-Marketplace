@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:MarketMinds.Converters"
     mc:Ignorable="d"
-    Background="#1e293b">    <Page.Resources>
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">    <Page.Resources>
         <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
         <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
     </Page.Resources>
@@ -23,7 +23,7 @@
             <TextBlock Text="Reviews Received"
                        FontSize="32"
                        FontWeight="Bold"
-                       Foreground="White"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                        Margin="0,0,0,8"/>
         </StackPanel>
 
@@ -53,11 +53,11 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <!-- Review Card -->
-                        <Border Background="#2d3748"
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 CornerRadius="12"
                                 Padding="24"
                                 BorderThickness="1"
-                                BorderBrush="#4a5568">
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
                             
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -78,7 +78,7 @@
                                                Text="{Binding BuyerUsername}"
                                                FontSize="18"
                                                FontWeight="SemiBold"
-                                               Foreground="White"
+                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                VerticalAlignment="Center"/>
 
                                     <StackPanel Grid.Column="1" 
@@ -89,12 +89,12 @@
                                                        IsClearEnabled="False"
                                                        IsReadOnly="True"
                                                        MaxRating="5"
-                                                       Foreground="#fbbf24"
+                                                       Foreground="{ThemeResource SystemFillColorAttentionBrush}"
                                                        Margin="0,0,8,0"/>
                                         <TextBlock Text="{Binding Rating}"
                                                    FontSize="14"
                                                    FontWeight="Medium"
-                                                   Foreground="#e5e7eb"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Grid>
@@ -103,7 +103,7 @@
                                 <TextBlock Grid.Row="1"
                                            Text="{Binding Description}"
                                            FontSize="14"
-                                           Foreground="#d1d5db"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                            TextWrapping="Wrap"
                                            LineHeight="20"
                                            Margin="0,0,0,16"/>
@@ -133,7 +133,7 @@
                                                         Width="96"
                                                         Height="96"
                                                         Margin="0,0,12,0"
-                                                        Background="#374151">
+                                                        Background="{ThemeResource ControlFillColorDefaultBrush}">
                                                     <Image Source="{Binding Url}"
                                                            Stretch="UniformToFill"
                                                            VerticalAlignment="Center"
@@ -156,29 +156,29 @@
                         VerticalAlignment="Center"
                         Margin="0,80,0,0">
                 
-                <Border Background="#2d3748"
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                         CornerRadius="12"
                         Padding="32"
                         BorderThickness="1"
-                        BorderBrush="#4a5568">
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
                     
                     <StackPanel HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xE8F1;"
                                   FontSize="48"
-                                  Foreground="#6b7280"
+                                  Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                   HorizontalAlignment="Center"
                                   Margin="0,0,0,16"/>
                         
                         <TextBlock Text="No reviews yet"
                                    FontSize="18"
                                    FontWeight="SemiBold"
-                                   Foreground="White"
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,8"/>
                         
                         <TextBlock Text="You haven't received any reviews yet."
                                    FontSize="14"
-                                   Foreground="#9ca3af"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    HorizontalAlignment="Center"
                                    TextAlignment="Center"/>                    </StackPanel>
                 </Border>
