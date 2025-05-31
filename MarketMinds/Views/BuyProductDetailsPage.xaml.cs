@@ -44,7 +44,6 @@ namespace MarketMinds.Views
             set => SetProperty(ref isInWishlist, value);
         }
 
-        // Computed properties
         public int TotalImages => Product?.Images?.Count() ?? 0;
         public bool HasMultipleImages => TotalImages > 1;
         public string ProductDescription => Product?.Description ?? "No description available.";
@@ -52,13 +51,32 @@ namespace MarketMinds.Views
         public int SellerId => Product?.Seller?.Id ?? 0;
         public bool HasTags => Product?.Tags?.Any() == true;
 
-        // Stock properties
         public bool HasStock => Product?.Stock > 0;
         public bool IsLowStock => Product?.Stock > 0 && Product?.Stock <= 5;
         public string StockText => Product?.Stock == 1 ? "item left" : "items left";
-        public SolidColorBrush StockTextColor => IsLowStock ? 
-            new SolidColorBrush(Microsoft.UI.Colors.Orange) : 
-            new SolidColorBrush(Microsoft.UI.Colors.Green);
+        public SolidColorBrush StockTextColor
+        {
+            get
+            {
+                try
+                {
+                    if (IsLowStock)
+                    {
+                        return (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                    }
+                    else
+                    {
+                        return (SolidColorBrush)Application.Current.Resources["SystemAccentColorBrush"];
+                    }
+                }
+                catch
+                {
+                    return IsLowStock ? 
+                        new SolidColorBrush(Microsoft.UI.Colors.Orange) : 
+                        new SolidColorBrush(Microsoft.UI.Colors.Green);
+                }
+            }
+        }
         public string LowStockMessage => $"Only {Product?.Stock} items remaining!";
 
         // User role properties

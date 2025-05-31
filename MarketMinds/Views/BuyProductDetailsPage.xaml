@@ -18,7 +18,7 @@
     </Page.Resources>
 
     <ScrollViewer ZoomMode="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
-        <Grid Margin="16" HorizontalAlignment="Center">
+        <Grid Margin="16" HorizontalAlignment="Center" MaxWidth="1400">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Breadcrumb -->
                 <RowDefinition Height="*"/>    <!-- Main Content -->
@@ -50,26 +50,27 @@
                 
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="2*"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Product Images Section -->
                     <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="400"/>
+                            <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <!-- Main Image Display -->
                         <Border Grid.Row="0" 
                                 Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}"
-                                CornerRadius="8,0,0,0">
+                                CornerRadius="8,0,0,0"
+                                MinHeight="500">
                             <Grid>
                                 <!-- Main Image -->
                                 <Image x:Name="MainImage" 
                                        Source="{x:Bind Product.Images, Mode=OneWay, Converter={StaticResource UrlToImageSourceConverter}, ConverterParameter='ms-appx:///Assets/Products/default-product.png'}"
-                                       Stretch="UniformToFill"
+                                       Stretch="Uniform"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
                                 
