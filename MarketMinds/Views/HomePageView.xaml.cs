@@ -15,19 +15,29 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Windowing;
 using MarketMinds.Shared.Models;
 using MarketMinds.Views.Pages;
+using System.Diagnostics;
+using Microsoft.UI;
+using Windows.Graphics;
+using WinRT.Interop;
+using XamlWindow = Microsoft.UI.Xaml.Window;
 
 namespace MarketMinds.Views
 {
     /// <summary>
     /// Main window for the MarketMinds application. Contains a header and a Frame for content navigation.
     /// </summary>
-    public sealed partial class HomePageView : Window
+    public sealed partial class HomePageView : XamlWindow
     {
         private const int BUYER_TYPE = 2;
         private const int SELLER_TYPE = 3;
         private bool isBuyer;
         private bool isSeller;
         private DispatcherTimer resizeTimer;
+        
+        // Custom title bar fields
+        private AppWindow _apw;
+        private OverlappedPresenter _presenter;
+        private const int TitleBarHeight = 32;
 
         // Public property to expose ContentFrame for navigation from other classes
         public Frame MainContentFrame => ContentFrame;
@@ -35,6 +45,12 @@ namespace MarketMinds.Views
         public HomePageView()
         {
             this.InitializeComponent();
+
+            // Enable custom title bar
+            ExtendsContentIntoTitleBar = true;
+            
+            // Initialize custom title bar
+            InitializeCustomTitleBar();
 
             // Initialize resize timer
             resizeTimer = new DispatcherTimer();
@@ -55,6 +71,90 @@ namespace MarketMinds.Views
             this.Activated += HomePageView_Activated;
         }
 
+        private void InitializeCustomTitleBar()
+        {
+            try
+            {
+                // Get window handle and ID for AppWindow
+                IntPtr hWnd = WindowNative.GetWindowHandle(this);
+                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+                _apw = AppWindow.GetFromWindowId(windowId);
+                _presenter = _apw.Presenter as OverlappedPresenter;
+
+                if (AppWindowTitleBar.IsCustomizationSupported())
+                {
+                    var titleBar = _apw.TitleBar;
+                    titleBar.ExtendsContentIntoTitleBar = true;
+
+                    // Set transparent backgrounds for buttons
+                    titleBar.ButtonBackgroundColor = Colors.Transparent;
+                    titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+                    // Get theme-aware brushes for button states
+                    var buttonHoverBackgroundBrush = Application.Current.Resources["SystemControlBackgroundListLowBrush"] as SolidColorBrush;
+                    var buttonPressedBackgroundBrush = Application.Current.Resources["SystemControlBackgroundListMediumBrush"] as SolidColorBrush;
+
+                    if (buttonHoverBackgroundBrush != null)
+                        titleBar.ButtonHoverBackgroundColor = buttonHoverBackgroundBrush.Color;
+                    else
+                        titleBar.ButtonHoverBackgroundColor = Colors.Transparent;
+
+                    if (buttonPressedBackgroundBrush != null)
+                        titleBar.ButtonPressedBackgroundColor = buttonPressedBackgroundBrush.Color;
+                    else
+                        titleBar.ButtonPressedBackgroundColor = Colors.Transparent;
+
+                    // Set theme-aware foreground colors
+                    var foregroundBrush = Application.Current.Resources["SystemControlForegroundBaseHighBrush"] as SolidColorBrush;
+                    var foregroundHoverBrush = Application.Current.Resources["SystemControlForegroundBaseHighBrush"] as SolidColorBrush;
+                    var foregroundPressedBrush = Application.Current.Resources["SystemControlForegroundBaseMediumBrush"] as SolidColorBrush;
+
+                    if (foregroundBrush != null)
+                        titleBar.ButtonForegroundColor = foregroundBrush.Color;
+
+                    if (foregroundHoverBrush != null)
+                        titleBar.ButtonHoverForegroundColor = foregroundHoverBrush.Color;
+
+                    if (foregroundPressedBrush != null)
+                        titleBar.ButtonPressedForegroundColor = foregroundPressedBrush.Color;
+
+                    // Set drag rectangles for title bar
+                    SetTitleBarDragRectangles();
+
+                    // Add padding to account for title bar height
+                    ContentRoot.Margin = new Thickness(0, TitleBarHeight, 0, 0);
+
+                    // Update drag rectangles when window size changes (this will be called in SizeChanged)
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Titlebar customization not supported: {ex.Message}");
+            }
+        }
+
+        private void SetTitleBarDragRectangles()
+        {
+            try
+            {
+                if (_apw?.TitleBar != null)
+                {
+                    var titleBar = _apw.TitleBar;
+                    int windowWidth = (int)_apw.Size.Width;
+                    int systemButtonsWidth = 138; // Width of minimize, maximize, close buttons
+
+                    titleBar.SetDragRectangles(new RectInt32[]
+                    {
+                        new RectInt32(0, 0, windowWidth - systemButtonsWidth, TitleBarHeight)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error setting drag rectangles: {ex.Message}");
+            }
+        }
+
         private void HomePageView_Activated(object sender, WindowActivatedEventArgs e)
         {
             if (e.WindowActivationState == WindowActivationState.Deactivated)
@@ -65,21 +165,31 @@ namespace MarketMinds.Views
 
         private void SetInitialWindowSize()
         {
-            // Get the display area of the primary monitor
-            var displayArea = DisplayArea.Primary;
-            var workArea = displayArea.WorkArea;
+            try
+            {
+                // Use the custom AppWindow if available, otherwise fall back to this.AppWindow
+                var appWindow = _apw ?? this.AppWindow;
+                
+                // Get the display area of the primary monitor
+                var displayArea = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Primary);
+                var workArea = displayArea.WorkArea;
 
-            // Calculate 2/3 of screen size for initial window
-            int initialWidth = (int)(workArea.Width * 2.0 / 3.0);
-            int initialHeight = (int)(workArea.Height * 2.0 / 3.0);
+                // Calculate 2/3 of screen size for initial window
+                int initialWidth = (int)(workArea.Width * 2.0 / 3.0);
+                int initialHeight = (int)(workArea.Height * 2.0 / 3.0);
 
-            // Set the window size
-            this.AppWindow.Resize(new Windows.Graphics.SizeInt32(initialWidth, initialHeight));
+                // Set the window size
+                appWindow.Resize(new Windows.Graphics.SizeInt32(initialWidth, initialHeight));
 
-            // Center the window on screen
-            int x = (workArea.Width - initialWidth) / 2;
-            int y = (workArea.Height - initialHeight) / 2;
-            this.AppWindow.Move(new Windows.Graphics.PointInt32(x, y));
+                // Center the window on screen
+                int x = (workArea.Width - initialWidth) / 2;
+                int y = (workArea.Height - initialHeight) / 2;
+                appWindow.Move(new Windows.Graphics.PointInt32(x, y));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error setting window size: {ex.Message}");
+            }
         }
 
         private void HomePageView_SizeChanged(object sender, WindowSizeChangedEventArgs args)
@@ -88,6 +198,9 @@ namespace MarketMinds.Views
             // This ensures we only check minimum size after resizing stops
             resizeTimer.Stop();
             resizeTimer.Start();
+            
+            // Update title bar drag rectangles
+            SetTitleBarDragRectangles();
         }
 
         private void ResizeTimer_Tick(object sender, object e)
