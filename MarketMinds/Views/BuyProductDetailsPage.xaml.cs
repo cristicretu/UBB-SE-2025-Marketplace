@@ -21,7 +21,6 @@ namespace MarketMinds.Views
         public ShoppingCartViewModel ShoppingCartViewModel { get; set; }
         public BuyerWishlistItemViewModel BuyerWishlistItemViewModel { get; set; }
 
-        // Product data
         private BuyProduct product;
         public BuyProduct Product
         {
@@ -30,13 +29,6 @@ namespace MarketMinds.Views
         }
 
         // Image handling properties
-        private string mainImageSource;
-        public string MainImageSource
-        {
-            get => mainImageSource;
-            set => SetProperty(ref mainImageSource, value);
-        }
-
         private int currentImageIndex = 1;
         public int CurrentImageIndex
         {
@@ -44,90 +36,55 @@ namespace MarketMinds.Views
             set => SetProperty(ref currentImageIndex, value);
         }
 
-        public int TotalImages => Product?.Images?.Count ?? 0;
-        public bool HasMultipleImages => TotalImages > 1;
-
-        // Product information properties
-        public string ProductDescription => !string.IsNullOrWhiteSpace(Product?.Description) 
-            ? Product.Description 
-            : "No description available for this product.";
-
-        public string SellerName
-        {
-            get
-            {
-                if (Product?.Seller is User user)
-                {
-                    return user.Username ?? "Unknown seller";
-                }
-                return "Unknown seller";
-            }
-        }
-
-        public int SellerId
-        {
-            get
-            {
-                if (Product?.Seller is User user)
-                {
-                    return user.Id;
-                }
-                return 0;
-            }
-        }
-
-        // Stock-related properties
-        public bool HasStock => Product?.Stock > 0;
-        public bool IsLowStock => Product?.Stock > 0 && Product.Stock <= 5;
-        public string LowStockMessage => $"Only {Product?.Stock} items left in stock!";
-        public string StockText => Product?.Stock == 1 ? " item in stock" : " items in stock";
-        public SolidColorBrush StockTextColor => IsLowStock 
-            ? new SolidColorBrush(Microsoft.UI.Colors.Orange) 
-            : new SolidColorBrush(Microsoft.UI.Colors.Gray);
-
         // Wishlist properties
-        public string WishlistGlyph => IsInWishlist ? "\uE00B" : "\uE006"; // Filled heart vs outline heart
-        public SolidColorBrush WishlistIconColor => IsInWishlist 
-            ? new SolidColorBrush(Microsoft.UI.Colors.Red) 
-            : new SolidColorBrush(Microsoft.UI.Colors.Gray);
-
         private bool isInWishlist;
         public bool IsInWishlist
         {
             get => isInWishlist;
-            set
-            {
-                if (SetProperty(ref isInWishlist, value))
-                {
-                    OnPropertyChanged(nameof(WishlistGlyph));
-                    OnPropertyChanged(nameof(WishlistIconColor));
-                }
-            }
+            set => SetProperty(ref isInWishlist, value);
         }
 
-        // Tags property
+        // Computed properties
+        public int TotalImages => Product?.Images?.Count() ?? 0;
+        public bool HasMultipleImages => TotalImages > 1;
+        public string ProductDescription => Product?.Description ?? "No description available.";
+        public string SellerName => Product?.Seller?.Username ?? "Unknown Seller";
+        public int SellerId => Product?.Seller?.Id ?? 0;
         public bool HasTags => Product?.Tags?.Any() == true;
+
+        // Stock properties
+        public bool HasStock => Product?.Stock > 0;
+        public bool IsLowStock => Product?.Stock > 0 && Product?.Stock <= 5;
+        public string StockText => Product?.Stock == 1 ? "item left" : "items left";
+        public SolidColorBrush StockTextColor => IsLowStock ? 
+            new SolidColorBrush(Microsoft.UI.Colors.Orange) : 
+            new SolidColorBrush(Microsoft.UI.Colors.Green);
+        public string LowStockMessage => $"Only {Product?.Stock} items remaining!";
 
         // User role properties
         public bool IsCurrentUserBuyer => App.CurrentUser?.UserType == 2;
         public bool IsCurrentUserSeller => App.CurrentUser?.UserType == 3;
         public bool ShowLoginPrompt => !IsCurrentUserBuyer;
 
+        // Wishlist display properties
+        public string WishlistGlyph => IsInWishlist ? "\uE006" : "\uE00A"; // Filled vs outline heart
+        public SolidColorBrush WishlistIconColor => IsInWishlist ? 
+            new SolidColorBrush(Microsoft.UI.Colors.Red) : 
+            new SolidColorBrush(Microsoft.UI.Colors.Gray);
+
         public BuyProductDetailsPage()
         {
             this.InitializeComponent();
-
-            // Get ViewModels from App
-            this.ShoppingCartViewModel = App.ShoppingCartViewModel ?? throw new InvalidOperationException("ShoppingCartViewModel not initialized");
-            this.BuyerWishlistItemViewModel = App.BuyerWishlistItemViewModel ?? throw new InvalidOperationException("BuyerWishlistItemViewModel not initialized");
-
-            this.ShoppingCartViewModel.BuyerId = App.CurrentUser?.Id ?? 0;
+            
+            // Initialize ViewModels
+            ShoppingCartViewModel = new ShoppingCartViewModel();
+            BuyerWishlistItemViewModel = new BuyerWishlistItemViewModel();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-
+            
             if (e.Parameter is BuyProduct buyProduct)
             {
                 Product = buyProduct;
@@ -148,15 +105,13 @@ namespace MarketMinds.Views
         {
             if (Product == null) return;
 
-            // Initialize main image
+            // Initialize image index
             if (Product.Images?.Any() == true)
             {
-                MainImageSource = Product.Images.First().Url;
                 CurrentImageIndex = 1;
             }
             else
             {
-                MainImageSource = "ms-appx:///Assets/Products/default-product.png";
                 CurrentImageIndex = 0;
             }
 
@@ -169,21 +124,32 @@ namespace MarketMinds.Views
             OnPropertyChanged(nameof(ProductDescription));
             OnPropertyChanged(nameof(SellerName));
             OnPropertyChanged(nameof(SellerId));
+            OnPropertyChanged(nameof(HasTags));
             OnPropertyChanged(nameof(HasStock));
             OnPropertyChanged(nameof(IsLowStock));
-            OnPropertyChanged(nameof(LowStockMessage));
             OnPropertyChanged(nameof(StockText));
             OnPropertyChanged(nameof(StockTextColor));
-            OnPropertyChanged(nameof(HasTags));
-
-            Debug.WriteLine($"Initialized product details for: {Product.Title}");
+            OnPropertyChanged(nameof(LowStockMessage));
+            OnPropertyChanged(nameof(IsCurrentUserBuyer));
+            OnPropertyChanged(nameof(IsCurrentUserSeller));
+            OnPropertyChanged(nameof(ShowLoginPrompt));
         }
 
         private void UpdateWishlistStatus()
         {
-            if (Product != null && BuyerWishlistItemViewModel != null)
+            if (Product == null || !IsCurrentUserBuyer) return;
+
+            try
             {
+                // Check if product is in wishlist using the existing method
                 IsInWishlist = BuyerWishlistItemViewModel.IsInWishlist(Product.Id);
+                
+                OnPropertyChanged(nameof(WishlistGlyph));
+                OnPropertyChanged(nameof(WishlistIconColor));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error checking wishlist status: {ex.Message}");
             }
         }
 
@@ -191,99 +157,133 @@ namespace MarketMinds.Views
         {
             if (sender is Button button && button.Tag is string imageUrl)
             {
-                MainImageSource = imageUrl;
-                
-                // Update current image index
-                if (Product?.Images != null)
+                try
                 {
-                    var index = Product.Images.ToList().FindIndex(img => img.Url == imageUrl);
-                    if (index >= 0)
+                    // Update the main image source directly
+                    MainImage.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(imageUrl));
+                    
+                    // Update current image index
+                    if (Product?.Images != null)
                     {
-                        CurrentImageIndex = index + 1;
+                        var index = Product.Images.ToList().FindIndex(img => img.Url == imageUrl);
+                        if (index >= 0)
+                        {
+                            CurrentImageIndex = index + 1;
+                        }
                     }
-                }
 
-                Debug.WriteLine($"Changed main image to: {imageUrl}");
+                    Debug.WriteLine($"Changed main image to: {imageUrl}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error changing main image: {ex.Message}");
+                }
             }
         }
 
         private async void AddToCartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !HasStock)
-            {
-                Debug.WriteLine("Cannot add to cart: Product is null or out of stock");
-                return;
-            }
+            if (Product == null || !IsCurrentUserBuyer) return;
 
             try
             {
-                // Disable button during operation
-                if (sender is Button button)
-                {
-                    button.IsEnabled = false;
-                }
-
                 await ShoppingCartViewModel.AddToCartAsync(Product, 1);
-                Debug.WriteLine($"Added {Product.Title} to cart");
-
+                
                 // Show success message
-                await ShowInfoDialog("Added to Cart", $"{Product.Title} has been added to your cart.");
+                var dialog = new ContentDialog
+                {
+                    Title = "Added to Cart",
+                    Content = $"{Product.Title} has been added to your cart.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error adding to cart: {ex.Message}");
-                await ShowErrorDialog("Error", $"Failed to add product to cart: {ex.Message}");
-            }
-            finally
-            {
-                // Re-enable button
-                if (sender is Button button)
+                
+                var dialog = new ContentDialog
                 {
-                    button.IsEnabled = true;
-                }
+                    Title = "Error",
+                    Content = "An error occurred while adding the item to your cart.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
             }
         }
 
-        private void WishlistButton_Click(object sender, RoutedEventArgs e)
+        private async void WishlistButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || BuyerWishlistItemViewModel == null)
-            {
-                Debug.WriteLine("Cannot toggle wishlist: Product or ViewModel is null");
-                return;
-            }
+            if (Product == null || !IsCurrentUserBuyer) return;
 
             try
             {
+                string message;
+
                 if (IsInWishlist)
                 {
+                    // Remove from wishlist
                     BuyerWishlistItemViewModel.RemoveFromWishlist(Product.Id);
-                    Debug.WriteLine($"Removed {Product.Title} from wishlist");
+                    IsInWishlist = false;
+                    message = "Removed from wishlist";
                 }
                 else
                 {
+                    // Add to wishlist
                     BuyerWishlistItemViewModel.AddToWishlist(Product.Id);
-                    Debug.WriteLine($"Added {Product.Title} to wishlist");
+                    IsInWishlist = true;
+                    message = "Added to wishlist";
                 }
 
-                // Update wishlist status
-                UpdateWishlistStatus();
+                OnPropertyChanged(nameof(WishlistGlyph));
+                OnPropertyChanged(nameof(WishlistIconColor));
+
+                // Show feedback message
+                var dialog = new ContentDialog
+                {
+                    Title = "Success",
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error toggling wishlist: {ex.Message}");
+                Debug.WriteLine($"Error updating wishlist: {ex.Message}");
+                
+                var dialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "An error occurred while updating your wishlist.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
             }
         }
 
         private void LeaveReviewButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement review functionality
-            // This would typically navigate to a review creation page or show a review dialog
-            Debug.WriteLine($"Leave review clicked for seller: {SellerName}");
+            if (Product?.Seller == null) return;
+
+            // Navigate to review page or show review dialog
+            // For now, just show a placeholder dialog
+            var dialog = new ContentDialog
+            {
+                Title = "Leave Review",
+                Content = $"Review functionality for seller '{SellerName}' will be implemented here.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            _ = dialog.ShowAsync();
         }
 
         private void HomeButton_Click(object sender, RoutedEventArgs e)
         {
-            // Navigate to MarketMindsPage (home)
+            // Navigate to home/main page
             Frame.Navigate(typeof(MarketMindsPage));
         }
 
@@ -301,56 +301,13 @@ namespace MarketMinds.Views
             }
         }
 
-        private async System.Threading.Tasks.Task ShowInfoDialog(string title, string message)
+        private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
-            try
+            if (!Equals(field, value))
             {
-                var dialog = new ContentDialog
-                {
-                    Title = title,
-                    Content = message,
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-
-                await dialog.ShowAsync();
+                field = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error showing info dialog: {ex.Message}");
-            }
-        }
-
-        private async System.Threading.Tasks.Task ShowErrorDialog(string title, string message)
-        {
-            try
-            {
-                var dialog = new ContentDialog
-                {
-                    Title = title,
-                    Content = message,
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-
-                await dialog.ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error showing error dialog: {ex.Message}");
-            }
-        }
-
-        private bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (Equals(storage, value))
-            {
-                return false;
-            }
-
-            storage = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            return true;
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
