@@ -8,40 +8,32 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <!-- Converters and Resources -->
-        <SolidColorBrush x:Key="PurpleBrush" Color="#9333EA"/>
-        <SolidColorBrush x:Key="PurpleLightBrush" Color="#A855F7"/>
-        <SolidColorBrush x:Key="GrayBrush" Color="#6B7280"/>
-        <SolidColorBrush x:Key="LightGrayBrush" Color="#F9FAFB"/>
-        <SolidColorBrush x:Key="RedBrush" Color="#DC2626"/>
-        <SolidColorBrush x:Key="GreenBrush" Color="#059669"/>
-        <SolidColorBrush x:Key="YellowBrush" Color="#D97706"/>
-        
+        <!-- Theme-aware Resources -->
         <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
         </Style>
         
         <Style x:Key="InfoLabelStyle" TargetType="TextBlock">
             <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
             <Setter Property="Margin" Value="0,0,8,0"/>
         </Style>
         
         <Style x:Key="InfoValueStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#6B7280"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
         </Style>
         
         <Style x:Key="PriceStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="32"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="{StaticResource PurpleBrush}"/>
+            <Setter Property="Foreground" Value="{ThemeResource SystemAccentColor}"/>
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer Background="{StaticResource LightGrayBrush}" Padding="32">
+    <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="32">
         <StackPanel MaxWidth="1200" HorizontalAlignment="Center" Spacing="32">
             
             <!-- Loading State -->
@@ -57,11 +49,11 @@
                 <!-- Breadcrumb -->
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <HyperlinkButton Content="Home" 
-                                   Foreground="{StaticResource GrayBrush}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Click="HomeButton_Click"/>
-                    <TextBlock Text=">" Foreground="{StaticResource GrayBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text=">" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                     <TextBlock Text="Auction Products" 
-                              Foreground="#374151" 
+                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                               FontWeight="Medium"
                               VerticalAlignment="Center"/>
                 </StackPanel>
@@ -80,16 +72,16 @@
                         Message="{x:Bind ViewModel.SuccessMessage, Mode=OneWay}"/>
 
                 <!-- Main Product Section -->
-                <Border Background="White" 
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
                        CornerRadius="8" 
-                       BorderBrush="#E5E7EB" 
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                        BorderThickness="1">
                     <Grid ColumnDefinitions="1*,1*">
                         
                         <!-- Product Images Section -->
                         <StackPanel Grid.Column="0">
                             <!-- Main Image -->
-                            <Border Background="#F3F4F6" Height="500" CornerRadius="8,0,0,0">
+                            <Border Background="{ThemeResource LayerFillColorDefaultBrush}" Height="500" CornerRadius="8,0,0,0">
                                 <Grid>
                                     <!-- Main Image Display -->
                                     <Image x:Name="MainImage" 
@@ -102,9 +94,9 @@
                                                HorizontalAlignment="Center" 
                                                VerticalAlignment="Center"
                                                Spacing="16">
-                                        <FontIcon Glyph="&#xEB9F;" FontSize="48" Foreground="{StaticResource GrayBrush}"/>
+                                        <FontIcon Glyph="&#xEB9F;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         <TextBlock Text="No Image Available" 
-                                                  Foreground="{StaticResource GrayBrush}" 
+                                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                                   FontSize="18"/>
                                     </StackPanel>
                                     
@@ -131,7 +123,7 @@
                                          VerticalScrollMode="Disabled"
                                          VerticalScrollBarVisibility="Disabled"
                                          Padding="16"
-                                         Background="White">
+                                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                                 <ItemsControl x:Name="ThumbnailsControl" ItemsSource="{x:Bind ViewModel.Images, Mode=OneWay}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
@@ -142,7 +134,7 @@
                                         <DataTemplate>
                                             <Border Width="64" Height="64" 
                                                    CornerRadius="8"
-                                                   BorderBrush="#D1D5DB"
+                                                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                    BorderThickness="2">
                                                 <Button Background="Transparent" 
                                                        BorderThickness="0"
@@ -169,7 +161,7 @@
                                               Text="{x:Bind ViewModel.Title, Mode=OneWay}"
                                               FontSize="30"
                                               FontWeight="Bold"
-                                              Foreground="#111827"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                               TextWrapping="Wrap"/>
                                     
                                     <Border Grid.Column="1"
@@ -188,23 +180,23 @@
                                 <!-- Product Info Tags -->
                                 <StackPanel Orientation="Horizontal" Spacing="16">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <FontIcon Glyph="&#xE8FD;" FontSize="16" Foreground="{StaticResource GrayBrush}"/>
+                                        <FontIcon Glyph="&#xE8FD;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         <TextBlock Text="{x:Bind ViewModel.CategoryName, Mode=OneWay}" 
                                                   Style="{StaticResource InfoValueStyle}"
                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
                                     
                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <FontIcon Glyph="&#xE73E;" FontSize="16" Foreground="{StaticResource GrayBrush}"/>
+                                        <FontIcon Glyph="&#xE73E;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         <TextBlock Text="{x:Bind ViewModel.ConditionName, Mode=OneWay}" 
                                                   Style="{StaticResource InfoValueStyle}"
                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
                                     
                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <FontIcon Glyph="&#xE916;" FontSize="16" Foreground="#D97706"/>
+                                        <FontIcon Glyph="&#xE916;" FontSize="16" Foreground="{ThemeResource SystemAccentColor}"/>
                                         <TextBlock Text="{x:Bind ViewModel.TimeLeft, Mode=OneWay}"
-                                                  Foreground="#D97706"
+                                                  Foreground="{ThemeResource SystemAccentColor}"
                                                   FontWeight="Medium"
                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
@@ -215,7 +207,7 @@
                                     <TextBlock x:Name="CurrentPriceText"
                                               Style="{StaticResource PriceStyle}"/>
                                     <TextBlock x:Name="StartingPriceText"
-                                              Foreground="{StaticResource GrayBrush}"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                               FontSize="14"/>
                                 </StackPanel>
                             </StackPanel>
@@ -226,31 +218,31 @@
 
                                 <!-- Buyer Bid Form -->
                                 <Border x:Name="BidForm"
-                                       Background="#F9FAFB" 
+                                       Background="{ThemeResource LayerFillColorDefaultBrush}" 
                                        CornerRadius="8" 
-                                       BorderBrush="#E5E7EB" 
+                                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                                        BorderThickness="1"
                                        Padding="16">
                                     <StackPanel Spacing="16">
                                         <StackPanel Spacing="8">
                                             <TextBlock Text="Your Bid Amount" 
                                                       FontWeight="Medium"
-                                                      Foreground="#374151"/>
+                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                             <TextBox x:Name="BidAmountTextBox"
                                                     Text="{x:Bind ViewModel.BidAmount, Mode=TwoWay}"
                                                     InputScope="Number"
                                                     BorderThickness="1"
-                                                    BorderBrush="#D1D5DB"
+                                                    BorderBrush="{ThemeResource TextControlElevationBorderBrush}"
                                                     CornerRadius="8"
                                                     Padding="12"
                                                     TextChanged="BidAmountTextBox_TextChanged"/>
                                             <TextBlock x:Name="MinimumBidText"
-                                                      Foreground="{StaticResource GrayBrush}"
+                                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                       FontSize="12"/>
                                         </StackPanel>
                                         
-                                        <Button Background="{StaticResource PurpleBrush}"
-                                               Foreground="White"
+                                        <Button Background="{ThemeResource SystemAccentColor}"
+                                               Foreground="{ThemeResource AccentButtonForeground}"
                                                CornerRadius="8"
                                                Padding="24,12"
                                                HorizontalAlignment="Stretch"
@@ -270,16 +262,16 @@
 
                                 <!-- Seller Warning -->
                                 <Border x:Name="SellerWarning"
-                                       Background="#FEF3C7" 
+                                       Background="{ThemeResource SystemFillColorCautionBackgroundBrush}" 
                                        CornerRadius="8" 
-                                       BorderBrush="#F59E0B" 
+                                       BorderBrush="{ThemeResource SystemFillColorCautionBrush}" 
                                        BorderThickness="1"
                                        Padding="16"
                                        Visibility="{x:Bind ViewModel.IsUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="#D97706"/>
+                                        <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
                                         <TextBlock Text="Sellers cannot place bids on auctions."
-                                                  Foreground="#92400E"
+                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
@@ -287,16 +279,16 @@
 
                             <!-- Auction Ended Message -->
                             <Border x:Name="AuctionEndedMessage"
-                                   Background="#FEE2E2" 
+                                   Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}" 
                                    CornerRadius="8" 
-                                   BorderBrush="#F87171" 
+                                   BorderBrush="{ThemeResource SystemFillColorCriticalBrush}" 
                                    BorderThickness="1"
                                    Padding="16"
                                    Visibility="{x:Bind ViewModel.IsAuctionEnded, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="{StaticResource RedBrush}"/>
+                                    <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
                                     <TextBlock Text="This auction has ended."
-                                              Foreground="#B91C1C"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                               FontWeight="Medium"
                                               VerticalAlignment="Center"/>
                                 </StackPanel>
@@ -308,28 +300,28 @@
                                        Visibility="{x:Bind ViewModel.IsOwner, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
                                 <TextBlock Text="Update Auction End Date" Style="{StaticResource SectionHeaderStyle}"/>
 
-                                <Border Background="#F0F9FF" 
+                                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
                                        CornerRadius="8" 
-                                       BorderBrush="#0EA5E9" 
+                                       BorderBrush="{ThemeResource SystemAccentColor}" 
                                        BorderThickness="1"
                                        Padding="16">
                                     <StackPanel Spacing="12">
                                         <TextBlock Text="As the seller, you can extend the auction end date" 
-                                                  Foreground="#0369A1" 
+                                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                                   FontSize="14"/>
                                         
                                         <StackPanel Spacing="8">
                                             <TextBlock Text="New End Date" 
                                                       FontWeight="Medium"
-                                                      Foreground="#374151"/>
+                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                             <CalendarDatePicker x:Name="NewEndDatePicker"
                                                                HorizontalAlignment="Stretch"
                                                                PlaceholderText="Select new end date"
                                                                DateChanged="NewEndDatePicker_DateChanged"/>
                                         </StackPanel>
                                         
-                                        <Button Background="#0EA5E9"
-                                               Foreground="White"
+                                        <Button Background="{ThemeResource SystemAccentColor}"
+                                               Foreground="{ThemeResource AccentButtonForeground}"
                                                CornerRadius="8"
                                                Padding="16,10"
                                                HorizontalAlignment="Left"
@@ -353,13 +345,13 @@
                                 <!-- Description -->
                                 <StackPanel Spacing="12">
                                     <TextBlock Text="Description" Style="{StaticResource SectionHeaderStyle}"/>
-                                    <Border Background="#F9FAFB" 
+                                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
                                            CornerRadius="8" 
-                                           BorderBrush="#E5E7EB" 
+                                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                                            BorderThickness="1"
                                            Padding="16">
                                         <TextBlock Text="{x:Bind ViewModel.Description, Mode=OneWay}"
-                                                  Foreground="#374151"
+                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                   TextWrapping="Wrap"
                                                   LineHeight="24"/>
                                     </Border>
@@ -368,22 +360,22 @@
                                 <!-- Seller Information -->
                                 <StackPanel Spacing="12">
                                     <TextBlock Text="Seller Information" Style="{StaticResource SectionHeaderStyle}"/>
-                                    <Border Background="#F9FAFB" 
+                                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
                                            CornerRadius="8" 
-                                           BorderBrush="#E5E7EB" 
+                                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                                            BorderThickness="1"
                                            Padding="16">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBlock Grid.Column="0"
                                                       Text="{x:Bind ViewModel.SellerName, Mode=OneWay}"
-                                                      Foreground="#374151"
+                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                       FontWeight="Medium"
                                                       VerticalAlignment="Center"/>
                                             
                                             <Button Grid.Column="1"
                                                    x:Name="LeaveReviewButton"
-                                                   Background="{StaticResource GreenBrush}"
-                                                   Foreground="White"
+                                                   Background="{ThemeResource SystemAccentColor}"
+                                                   Foreground="{ThemeResource AccentButtonForeground}"
                                                    CornerRadius="8"
                                                    Padding="12,8"
                                                    Click="LeaveReviewButton_Click">
@@ -407,12 +399,12 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border Background="#DBEAFE" 
+                                                <Border Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}" 
                                                        CornerRadius="16"
                                                        Padding="12,6"
                                                        Margin="0,0,8,8">
                                                     <TextBlock Text="{Binding Title}"
-                                                              Foreground="#1E40AF"
+                                                              Foreground="{ThemeResource SystemAccentColor}"
                                                               FontSize="14"
                                                               FontWeight="Medium"/>
                                                 </Border>
@@ -426,30 +418,30 @@
                 </Border>
 
                 <!-- Bid History Section -->
-                <Border Background="White" 
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
                        CornerRadius="8" 
-                       BorderBrush="#E5E7EB" 
+                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                        BorderThickness="1">
                     <StackPanel>
-                        <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="24,16">
+                        <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="24,16">
                             <TextBlock Text="Bid History" Style="{StaticResource SectionHeaderStyle}" Margin="0"/>
                         </Border>
                         
                         <!-- Bid History Table -->
                         <StackPanel x:Name="BidHistoryTable">
                             <!-- Table Header -->
-                            <Grid Background="#F9FAFB" Padding="24,12" ColumnDefinitions="*,*,*">
+                            <Grid Background="{ThemeResource LayerFillColorDefaultBrush}" Padding="24,12" ColumnDefinitions="*,*,*">
                                 <TextBlock Grid.Column="0" Text="BIDDER" 
                                           FontSize="12" FontWeight="Medium" 
-                                          Foreground="{StaticResource GrayBrush}"
+                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                           HorizontalAlignment="Left"/>
                                 <TextBlock Grid.Column="1" Text="AMOUNT" 
                                           FontSize="12" FontWeight="Medium" 
-                                          Foreground="{StaticResource GrayBrush}"
+                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                           HorizontalAlignment="Center"/>
                                 <TextBlock Grid.Column="2" Text="TIME" 
                                           FontSize="12" FontWeight="Medium" 
-                                          Foreground="{StaticResource GrayBrush}"
+                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                           HorizontalAlignment="Right"/>
                             </Grid>
                             
@@ -457,23 +449,23 @@
                             <ItemsControl ItemsSource="{x:Bind ViewModel.BidHistory, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#F3F4F6" BorderThickness="0,1,0,0">
+                                        <Border BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
                                             <Grid Padding="24,16" ColumnDefinitions="*,*,*" Background="Transparent">
                                                 <TextBlock Grid.Column="0" 
                                                           Text="{Binding Bidder.Username}"
                                                           FontWeight="Medium" 
-                                                          Foreground="#111827"
+                                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                           HorizontalAlignment="Left"
                                                           VerticalAlignment="Center"/>
                                                 <TextBlock Grid.Column="1" 
                                                           Text="{Binding Price, Converter={StaticResource StringFormatConverter}, ConverterParameter='€{0:F2}'}"
-                                                          Foreground="#374151" 
+                                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                                           FontWeight="Medium"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center"/>
                                                 <TextBlock Grid.Column="2" 
                                                           Text="{Binding Timestamp, Converter={StaticResource DateTimeFormatConverter}, ConverterParameter='MM/dd/yyyy HH:mm'}"
-                                                          Foreground="{StaticResource GrayBrush}"
+                                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                           HorizontalAlignment="Right"
                                                           VerticalAlignment="Center"/>
                                             </Grid>
@@ -488,13 +480,13 @@
                                    Padding="24,48" 
                                    HorizontalAlignment="Center"
                                    Spacing="16">
-                            <FontIcon Glyph="&#xE9F9;" FontSize="48" Foreground="{StaticResource GrayBrush}"/>
+                            <FontIcon Glyph="&#xE9F9;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                             <TextBlock Text="No Bids Yet" 
                                       FontSize="18" FontWeight="Medium" 
-                                      Foreground="#111827"
+                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                       HorizontalAlignment="Center"/>
                             <TextBlock Text="Be the first to place a bid on this auction!" 
-                                      Foreground="{StaticResource GrayBrush}"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                       HorizontalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
@@ -502,16 +494,16 @@
 
                 <!-- Back Button -->
                 <StackPanel HorizontalAlignment="Center" Margin="0,32,0,48">
-                    <Button Background="White"
-                           BorderBrush="#D1D5DB"
+                    <Button Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                            BorderThickness="1"
                            CornerRadius="8"
                            Padding="24,12"
                            Click="BackButton_Click">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE72B;" FontSize="16" Foreground="{StaticResource GrayBrush}"/>
+                            <FontIcon Glyph="&#xE72B;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                             <TextBlock Text="Back to Auction Products" 
-                                      Foreground="{StaticResource GrayBrush}" 
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                       FontWeight="Medium"/>
                         </StackPanel>
                     </Button>

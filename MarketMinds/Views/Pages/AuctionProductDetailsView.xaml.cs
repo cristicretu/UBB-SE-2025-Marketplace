@@ -282,7 +282,7 @@ namespace MarketMinds.Views.Pages
                 if (frame != null)
                 {
                     System.Diagnostics.Debug.WriteLine("HomeButton_Click: Found frame via visual tree, navigating to MarketMindsPage");
-                    frame.Navigate(typeof(MarketMindsPage));
+                    frame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
                     return;
                 }
                 
@@ -293,7 +293,7 @@ namespace MarketMinds.Views.Pages
                     if (rootFrame != null)
                     {
                         System.Diagnostics.Debug.WriteLine("HomeButton_Click: Found frame via XamlRoot, navigating to MarketMindsPage");
-                        rootFrame.Navigate(typeof(MarketMindsPage));
+                        rootFrame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
                         return;
                     }
                 }
@@ -302,7 +302,7 @@ namespace MarketMinds.Views.Pages
                 if (App.HomePageWindow?.MainContentFrame != null)
                 {
                     System.Diagnostics.Debug.WriteLine("HomeButton_Click: Using HomePageWindow.MainContentFrame");
-                    App.HomePageWindow.MainContentFrame.Navigate(typeof(MarketMindsPage));
+                    App.HomePageWindow.MainContentFrame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
                     return;
                 }
                 
@@ -310,7 +310,7 @@ namespace MarketMinds.Views.Pages
                 if (App.MainWindow?.Content is Frame mainFrame)
                 {
                     System.Diagnostics.Debug.WriteLine("HomeButton_Click: Using MainWindow frame as fallback");
-                    mainFrame.Navigate(typeof(MarketMindsPage));
+                    mainFrame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
                     return;
                 }
                 
@@ -325,7 +325,7 @@ namespace MarketMinds.Views.Pages
                 {
                     if (App.HomePageWindow?.MainContentFrame != null)
                     {
-                        App.HomePageWindow.MainContentFrame.Navigate(typeof(MarketMindsPage));
+                        App.HomePageWindow.MainContentFrame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
                     }
                 }
                 catch (Exception fallbackEx)
@@ -358,22 +358,15 @@ namespace MarketMinds.Views.Pages
                     var frame = FindParent<Frame>(element);
                     if (frame != null)
                     {
-                        if (frame.CanGoBack)
-                        {
-                            frame.GoBack();
-                        }
-                        else
-                        {
-                            // If we can't go back, navigate to the main marketplace page
-                            frame.Navigate(typeof(MarketMindsPage));
-                        }
+                        // Navigate to MarketMindsPage with Auction Products tab selected (index 1)
+                        frame.Navigate(typeof(MarketMindsPage), 1);
                     }
                     else
                     {
                         // If no frame found, try to get the main window and navigate
                         if (App.MainWindow?.Content is Frame mainFrame)
                         {
-                            mainFrame.Navigate(typeof(MarketMindsPage));
+                            mainFrame.Navigate(typeof(MarketMindsPage), 1);
                         }
                     }
                 }
@@ -383,7 +376,7 @@ namespace MarketMinds.Views.Pages
                 // Fallback: just navigate to marketplace
                 if (App.MainWindow?.Content is Frame fallbackFrame)
                 {
-                    fallbackFrame.Navigate(typeof(MarketMindsPage));
+                    fallbackFrame.Navigate(typeof(MarketMindsPage), 1);
                 }
             }
         }
