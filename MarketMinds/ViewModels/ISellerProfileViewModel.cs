@@ -42,6 +42,11 @@ namespace MarketMinds.ViewModels
         bool IsExpanderExpanded { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether data is currently being loaded.
+        /// </summary>
+        bool IsLoading { get; set; }
+
+        /// <summary>
         /// Gets or sets the display name shown in the header of the profile.
         /// </summary>
         string DisplayName { get; set; }
@@ -80,6 +85,11 @@ namespace MarketMinds.ViewModels
         /// Gets or sets the seller's calculated trust score (0–100).
         /// </summary>
         double TrustScore { get; set; }
+
+        /// <summary>
+        /// Gets the rating value for the RatingControl (0-5 range).
+        /// </summary>
+        double RatingValue { get; }
 
         /// <summary>
         /// Gets or sets the store's description.
@@ -125,9 +135,10 @@ namespace MarketMinds.ViewModels
         // -----------------------------
 
         /// <summary>
-        /// Loads seller profile, notifications, and products asynchronously.
+        /// Loads the seller profile data asynchronously.
         /// </summary>
-        void LoadProfileAsync();
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task LoadProfileAsync();
 
         /// <summary>
         /// Loads the latest seller notifications asynchronously.

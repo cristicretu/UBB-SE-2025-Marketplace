@@ -30,7 +30,18 @@ namespace MarketMinds.ViewModels
         private ObservableCollection<Product> allProducts;
         private ObservableCollection<Product> filteredProducts;
         private bool isExpanderExpanded = false;
-        private const double MultiplierForTrustScoreFromAverageReview = 20.0;
+
+        // Backing fields for properties
+        private string storeName = string.Empty;
+        private string username = string.Empty;
+        private string email = string.Empty;
+        private string phoneNumber = string.Empty;
+        private string storeAddress = string.Empty;
+        private string storeDescription = string.Empty;
+        private string followersCount = "0";
+        private double trustScore = 0;
+        private bool isLoading = true;
+
         // Add products property to fulfill interface
         public ObservableCollection<Product> Products { get; set; }
         // Add validation properties to fulfill interface
@@ -45,14 +56,16 @@ namespace MarketMinds.ViewModels
         {
             this.sellerService = sellerService ?? throw new ArgumentNullException(nameof(sellerService));
 
-            this.StoreName = "Loading...";
-            this.Username = string.Empty;
-            this.Email = string.Empty;
-            this.PhoneNumber = string.Empty;
-            this.StoreAddress = string.Empty;
-            this.StoreDescription = string.Empty;
-            this.FollowersCount = "0";
-            this.TrustScore = 0;
+            // Initialize backing fields directly to avoid triggering PropertyChanged during construction
+            this.storeName = "Loading...";
+            this.username = string.Empty;
+            this.email = string.Empty;
+            this.phoneNumber = string.Empty;
+            this.storeAddress = string.Empty;
+            this.storeDescription = string.Empty;
+            this.followersCount = "0";
+            this.trustScore = 0;
+            this.isLoading = true; // Start in loading state
 
             this.allProducts = new ObservableCollection<Product>();
             this.Products = new ObservableCollection<Product>();
@@ -72,14 +85,81 @@ namespace MarketMinds.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public string StoreName { get; set; }
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string StoreAddress { get; set; }
-        public string StoreDescription { get; set; }
-        public string FollowersCount { get; set; }
-        public double TrustScore { get; set; }
+        public string StoreName
+        {
+            get => this.storeName;
+            set
+            {
+                this.storeName = value;
+                this.OnPropertyChanged();
+            }
+        }
+        public string Username
+        {
+            get => this.username;
+            set
+            {
+                this.username = value;
+                this.OnPropertyChanged();
+            }
+        }
+        public string Email
+        {
+            get => this.email;
+            set
+            {
+                this.email = value;
+                this.OnPropertyChanged();
+            }
+        }
+        public string PhoneNumber
+        {
+            get => this.phoneNumber;
+            set
+            {
+                this.phoneNumber = value;
+                this.OnPropertyChanged();
+            }
+        }
+        public string StoreAddress
+        {
+            get => this.storeAddress;
+            set
+            {
+                this.storeAddress = value;
+                this.OnPropertyChanged();
+            }
+        }
+        public string StoreDescription
+        {
+            get => this.storeDescription;
+            set
+            {
+                this.storeDescription = value;
+                this.OnPropertyChanged();
+            }
+        }
+        public string FollowersCount
+        {
+            get => this.followersCount;
+            set
+            {
+                this.followersCount = value;
+                this.OnPropertyChanged();
+            }
+        }
+        public double TrustScore
+        {
+            get => this.trustScore;
+            set
+            {
+                Debug.WriteLine($"TrustScore being set to: {value}");
+                this.trustScore = value;
+                this.OnPropertyChanged();
+                this.OnPropertyChanged(nameof(this.RatingValue)); // Also notify RatingValue
+                Debug.WriteLine($"Both TrustScore and RatingValue PropertyChanged notifications sent");
+            }
+        }
 
         public bool IsExpanderExpanded
         {
@@ -93,6 +173,29 @@ namespace MarketMinds.ViewModels
 
         public ObservableCollection<Product> FilteredProducts { get; set; }
         public ObservableCollection<string> Notifications { get; set; }
+
+        public bool IsLoading
+        {
+            get => this.isLoading;
+            set
+            {
+                Debug.WriteLine($"IsLoading being set to: {value}");
+                this.isLoading = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets the rating value specifically for the RatingControl (0-5 range).
+        /// </summary>
+        public double RatingValue
+        {
+            get 
+            { 
+                Debug.WriteLine($"RatingValue getter called, returning: {this.trustScore}");
+                return this.trustScore; 
+            }
+        }
 
         /// <summary>
         /// Loads all seller data including profile, notifications, and products.
@@ -115,11 +218,26 @@ namespace MarketMinds.ViewModels
         }
 
         /// <inheritdoc/>
-        public void LoadProfileAsync()
+        public async Task LoadProfileAsync()
         {
-            _ = this.LoadSellerProfile();
-            _ = this.LoadNotifications();
-            _ = this.LoadProducts();
+            Debug.WriteLine("LoadProfileAsync started - setting IsLoading to true");
+            this.IsLoading = true;
+            
+            try
+            {
+                await this.LoadSellerProfile();
+                await this.LoadNotifications();
+                await this.LoadProducts();
+                
+                Debug.WriteLine("LoadProfileAsync completed - setting IsLoading to false");
+                this.IsLoading = false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in LoadProfileAsync: {ex.Message}");
+                this.IsLoading = false;
+                throw;
+            }
         }
 
         /// <summary>
@@ -151,27 +269,35 @@ namespace MarketMinds.ViewModels
             try
             {
                 var trustScore = await this.sellerService.CalculateAverageReviewScore(this.seller.Id);
-                this.TrustScore = trustScore * MultiplierForTrustScoreFromAverageReview;
+                Debug.WriteLine($"Calculated trust score from service: {trustScore}");
+                
+                // Force update the property and notify UI multiple times to ensure RatingControl gets it
+                this.trustScore = trustScore;
+                Debug.WriteLine($"TrustScore backing field set to: {this.trustScore}");
+                
+                // Trigger property changed multiple ways
+                this.OnPropertyChanged(nameof(this.TrustScore));
+                Debug.WriteLine($"TrustScore property after manual OnPropertyChanged: {this.TrustScore}");
+                
+                // Also update through the property setter to ensure all notifications
+                this.TrustScore = trustScore;
+                Debug.WriteLine($"TrustScore property after property setter: {this.TrustScore}");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error calculating trust score: {ex.Message}");
                 this.TrustScore = 0;
+                Debug.WriteLine($"TrustScore set to 0 due to error");
             }
 
             this.DisplayName = !string.IsNullOrEmpty(this.Username)
                 ? this.Username
                 : (!string.IsNullOrEmpty(this.StoreName) ? this.StoreName : "Seller");
 
-            // Notify UI
+            // Property setters now automatically notify UI of changes
             this.OnPropertyChanged(nameof(this.DisplayName));
-            this.OnPropertyChanged(nameof(this.StoreName));
-            this.OnPropertyChanged(nameof(this.Username));
-            this.OnPropertyChanged(nameof(this.Email));
-            this.OnPropertyChanged(nameof(this.PhoneNumber));
-            this.OnPropertyChanged(nameof(this.StoreAddress));
-            this.OnPropertyChanged(nameof(this.StoreDescription));
-            this.OnPropertyChanged(nameof(this.FollowersCount));
+            
+            // Explicitly notify UI about TrustScore to ensure RatingControl updates
             this.OnPropertyChanged(nameof(this.TrustScore));
 
             Debug.WriteLine("LoadSellerProfile completed");
