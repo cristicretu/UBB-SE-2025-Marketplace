@@ -1,5 +1,13 @@
 # UBB-SE-2025-Marketplace
 
+## 🌐 Web
+![CleanShot 2025-05-31 at 8  12 03@2x-min](https://github.com/user-attachments/assets/aab603e9-444c-4354-b9b2-5d077ee313c1)
+
+
+## 💻 Desktop
+![CleanShot 2025-05-31 at 8  35 12@2x-min](https://github.com/user-attachments/assets/68a2d733-48ce-489b-a8cd-679d4161178c)
+
+
 ## Features
 
 - 🛍️ **Product Management**
