@@ -6,7 +6,6 @@
     xmlns:local="using:MarketMinds.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:converters="using:MarketMinds.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -16,6 +15,12 @@
         <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
         <!-- Converter to show element when false -->
         <converters:InvertedBoolVisibilityConverter x:Key="InvertedBoolVisibilityConverter"/>
+        <!-- Converter to get first letter of a string -->
+        <converters:FirstLetterConverter x:Key="FirstLetterConverter"/>
+        <!-- Converter to format count with parentheses -->
+        <converters:CountToStringConverter x:Key="CountToStringConverter"/>
+        <!-- Converter to show element when string is not empty -->
+        <converters:StringEmptyToVisibilityConverter x:Key="StringEmptyToVisibilityConverter"/>
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -95,7 +100,7 @@
 
                         <!-- Contact Information -->
                         <StackPanel Spacing="12">
-                            <!-- Address -->
+                        <!-- Address -->
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <FontIcon Glyph="&#xE707;" 
                                           FontSize="16" 
@@ -161,7 +166,7 @@
 
                                 <!-- Followers -->
                                 <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="8">
-                                    <TextBlock Text="{Binding FollowersCount}" 
+                                    <TextBlock Text="{Binding ActualFollowersCount}" 
                                                FontSize="20" 
                                                FontWeight="Bold"
                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
@@ -172,6 +177,70 @@
                                                HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
+                        </Border>
+                        
+                        <!-- Followers Section -->
+                        <Border Background="{ThemeResource ControlFillColorDefaultBrush}" 
+                                Padding="20" 
+                                CornerRadius="8"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1">
+                            <StackPanel Spacing="12">
+                                <!-- Followers Header -->
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE716;" 
+                                              FontSize="16" 
+                                              Foreground="{ThemeResource SystemAccentColor}"/>
+                                    <TextBlock Text="Followers" 
+                                               FontSize="14" 
+                                               FontWeight="SemiBold"
+                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding FollowersList.Count, Converter={StaticResource CountToStringConverter}}" 
+                                               FontSize="12"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                                
+                                <!-- Followers List -->
+                                <ScrollViewer MaxHeight="200" 
+                                              VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding FollowersList}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" 
+                                                        Padding="8" 
+                                                        Margin="0,0,0,4" 
+                                                        CornerRadius="4">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <!-- Follower Avatar -->
+                                                        <Border Background="{ThemeResource SystemAccentColor}" 
+                                                                Width="24" 
+                                                                Height="24" 
+                                                                CornerRadius="12">
+                                                            <TextBlock Text="{Binding User.Username, Converter={StaticResource FirstLetterConverter}}" 
+                                                                       FontSize="10" 
+                                                                       FontWeight="Bold"
+                                                                       Foreground="White"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        
+                                                        <!-- Follower Info -->
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding User.Username}" 
+                                                                       FontSize="12" 
+                                                                       FontWeight="Medium"
+                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                            <TextBlock Text="{Binding User.Email}" 
+                                                                       FontSize="10"
+                                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
                         </Border>
                     </StackPanel>
                 </Border>
@@ -227,6 +296,12 @@
                                                   VerticalAlignment="Center"
                                                   Margin="12,0,0,0"/>
                                     </Grid>
+                                    <!-- Username Error -->
+                                    <TextBlock Text="{Binding UsernameError}" 
+                                               FontSize="12"
+                                               Foreground="{ThemeResource SystemErrorTextColor}"
+                                               Visibility="{Binding UsernameError, Converter={StaticResource StringEmptyToVisibilityConverter}}"
+                                               Margin="0,-4,0,0"/>
                                 </StackPanel>
 
                                 <!-- Email -->
@@ -249,6 +324,12 @@
                                                   VerticalAlignment="Center"
                                                   Margin="12,0,0,0"/>
                                     </Grid>
+                                    <!-- Email Error -->
+                                    <TextBlock Text="{Binding EmailError}" 
+                                               FontSize="12"
+                                               Foreground="{ThemeResource SystemErrorTextColor}"
+                                               Visibility="{Binding EmailError, Converter={StaticResource StringEmptyToVisibilityConverter}}"
+                                               Margin="0,-4,0,0"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -279,12 +360,15 @@
                                                FontWeight="SemiBold"
                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                     <Grid>
-                                        <TextBox Text="{Binding PhoneNumber, Mode=TwoWay}" 
-                                                 PlaceholderText="Enter your phone number"
+                                        <TextBox x:Name="PhoneNumberTextBox"
+                                                 Text="{Binding PhoneNumber, Mode=TwoWay}" 
+                                                 PlaceholderText="+40 123456789"
                                                  Height="40"
                                                  Padding="40,8,12,0"
                                                  CornerRadius="4"
-                                                 Background="{ThemeResource ControlFillColorDefaultBrush}"/>
+                                                 Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                                 TextChanging="PhoneNumberTextBox_TextChanging"
+                                                 GotFocus="PhoneNumberTextBox_GotFocus"/>
                                         <FontIcon Glyph="&#xE717;" 
                                                   FontSize="16"
                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -292,6 +376,16 @@
                                                   VerticalAlignment="Center"
                                                   Margin="12,0,0,0"/>
                                     </Grid>
+                                    <!-- Phone Number Error -->
+                                    <TextBlock Text="{Binding PhoneNumberError}" 
+                                               FontSize="12"
+                                               Foreground="{ThemeResource SystemErrorTextColor}"
+                                               Visibility="{Binding PhoneNumberError, Converter={StaticResource StringEmptyToVisibilityConverter}}"
+                                               Margin="0,-4,0,0"/>
+                                    <TextBlock Text="Enter 9 digits (Romanian phone number format)" 
+                                               FontSize="12" 
+                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                               Margin="0,-4,0,0"/>
                                 </StackPanel>
 
                                 <!-- Address -->
@@ -314,6 +408,12 @@
                                                   VerticalAlignment="Center"
                                                   Margin="12,0,0,0"/>
                                     </Grid>
+                                    <!-- Address Error -->
+                                    <TextBlock Text="{Binding AddressError}" 
+                                               FontSize="12"
+                                               Foreground="{ThemeResource SystemErrorTextColor}"
+                                               Visibility="{Binding AddressError, Converter={StaticResource StringEmptyToVisibilityConverter}}"
+                                               Margin="0,-4,0,0"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -350,6 +450,12 @@
                                               VerticalAlignment="Center"
                                               Margin="12,0,0,0"/>
                                 </Grid>
+                                <!-- Store Name Error -->
+                                <TextBlock Text="{Binding StoreNameError}" 
+                                           FontSize="12"
+                                           Foreground="{ThemeResource SystemErrorTextColor}"
+                                           Visibility="{Binding StoreNameError, Converter={StaticResource StringEmptyToVisibilityConverter}}"
+                                           Margin="0,-4,0,0"/>
                             </StackPanel>
 
                             <!-- Store Description -->
@@ -366,6 +472,12 @@
                                          Padding="12"
                                          CornerRadius="4"
                                          Background="{ThemeResource ControlFillColorDefaultBrush}"/>
+                                <!-- Store Description Error -->
+                                <TextBlock Text="{Binding DescriptionError}" 
+                                           FontSize="12"
+                                           Foreground="{ThemeResource SystemErrorTextColor}"
+                                           Visibility="{Binding DescriptionError, Converter={StaticResource StringEmptyToVisibilityConverter}}"
+                                           Margin="0,-4,0,0"/>
                             </StackPanel>
                         </StackPanel>
 

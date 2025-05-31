@@ -39,6 +39,12 @@ namespace MarketMinds.Views
             
             // Load profile data asynchronously after UI is initialized
             _ = LoadProfileDataAsync();
+
+            // Set default phone number prefix if empty
+            if (string.IsNullOrEmpty(this.PhoneNumberTextBox.Text))
+            {
+                this.PhoneNumberTextBox.Text = "+40";
+            }
         }
 
         /// <summary>
@@ -96,8 +102,42 @@ namespace MarketMinds.Views
                 return;
             }
 
-            Debug.WriteLine("Calling UpdateProfile directly from form");
-            vm.UpdateProfile();
+            Debug.WriteLine("Calling UpdateProfile from form");
+            
+            try
+            {
+                bool success = await vm.UpdateProfile();
+                
+                if (success)
+                {
+                    // Show success dialog
+                    var successDialog = new ContentDialog
+                    {
+                        Title = "Success",
+                        Content = "Your profile has been updated successfully!",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    await successDialog.ShowAsync();
+                    Debug.WriteLine("Profile update successful - success dialog shown");
+                }
+                // Note: Error dialogs are already handled in the ViewModel
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unexpected error during profile update: {ex.Message}");
+                
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = $"An unexpected error occurred: {ex.Message}",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+
+                await errorDialog.ShowAsync();
+            }
         }
 
         /// <summary>
@@ -187,6 +227,77 @@ namespace MarketMinds.Views
         {
             // Simple regex for phone validation
             return System.Text.RegularExpressions.Regex.IsMatch(phoneNumber, @"^\+?[0-9\s\-\(\)]{6,20}$");
+        }
+
+        /// <summary>
+        /// Event handler for phone number text changes to enforce format restrictions.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="args">The event arguments.</param>
+        private void PhoneNumberTextBox_TextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
+        {
+            var textBox = sender;
+            var newText = textBox.Text;
+
+            // Ensure text always starts with "+40"
+            if (!newText.StartsWith("+40"))
+            {
+                textBox.Text = "+40";
+                textBox.SelectionStart = textBox.Text.Length;
+                return;
+            }
+
+            // Limit to 12 characters total
+            if (newText.Length > 12)
+            {
+                textBox.Text = newText.Substring(0, 12);
+                textBox.SelectionStart = textBox.Text.Length;
+                return;
+            }
+
+            // Only allow digits after "+40"
+            if (newText.Length > 3)
+            {
+                var digitsOnly = newText.Substring(3);
+                var filteredDigits = string.Empty;
+
+                foreach (char c in digitsOnly)
+                {
+                    if (char.IsDigit(c))
+                    {
+                        filteredDigits += c;
+                    }
+                }
+
+                var finalText = "+40" + filteredDigits;
+                if (finalText != newText)
+                {
+                    textBox.Text = finalText;
+                    textBox.SelectionStart = textBox.Text.Length;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Event handler for when phone number TextBox gets focus.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void PhoneNumberTextBox_GotFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+
+            // If text is empty or just "+40", position cursor at the end
+            if (string.IsNullOrEmpty(textBox.Text) || textBox.Text == "+40")
+            {
+                textBox.Text = "+40";
+                textBox.SelectionStart = textBox.Text.Length;
+            }
+            // If cursor is positioned before "+40", move it to after "+40"
+            else if (textBox.SelectionStart < 3)
+            {
+                textBox.SelectionStart = 3;
+            }
         }
     }
 }

@@ -213,5 +213,22 @@ namespace MarketMinds.Shared.Services
                 return null;
             }
         }
+
+        /// <inheritdoc/>
+        public async Task<List<Buyer>> GetFollowers(int sellerId)
+        {
+            Debug.WriteLine($"GetFollowers called for seller ID: {sellerId}");
+            try
+            {
+                var followers = await this.sellerRepository.GetFollowers(sellerId);
+                Debug.WriteLine($"Retrieved {followers.Count} followers");
+                return followers;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting followers: {ex.Message}");
+                return new List<Buyer>();
+            }
+        }
     }
 }

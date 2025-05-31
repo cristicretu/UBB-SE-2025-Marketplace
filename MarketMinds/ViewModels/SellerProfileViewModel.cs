@@ -5,7 +5,6 @@
 // -----------------------------------------------------------------------
 namespace MarketMinds.ViewModels
 {
-    using System.Windows.Media.Animation;
     using System.Diagnostics;
     using System;
     using System.Collections.Generic;
@@ -38,18 +37,85 @@ namespace MarketMinds.ViewModels
         private string phoneNumber = string.Empty;
         private string storeAddress = string.Empty;
         private string storeDescription = string.Empty;
-        private string followersCount = "0";
         private double trustScore = 0;
         private bool isLoading = true;
 
         // Add products property to fulfill interface
         public ObservableCollection<Product> Products { get; set; }
-        // Add validation properties to fulfill interface
-        public string StoreNameError { get; set; }
-        public string EmailError { get; set; }
-        public string PhoneNumberError { get; set; }
-        public string AddressError { get; set; }
-        public string DescriptionError { get; set; }
+        public ObservableCollection<Product> FilteredProducts { get; set; }
+        public ObservableCollection<string> Notifications { get; set; }
+
+        // Add followers list property
+        public ObservableCollection<Buyer> FollowersList { get; set; }
+
+        // Validation error properties
+        private string usernameError = string.Empty;
+        private string storeNameError = string.Empty;
+        private string emailError = string.Empty;
+        private string phoneNumberError = string.Empty;
+        private string addressError = string.Empty;
+        private string descriptionError = string.Empty;
+
+        public string UsernameError
+        {
+            get => this.usernameError;
+            set
+            {
+                this.usernameError = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public string StoreNameError
+        {
+            get => this.storeNameError;
+            set
+            {
+                this.storeNameError = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public string EmailError
+        {
+            get => this.emailError;
+            set
+            {
+                this.emailError = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public string PhoneNumberError
+        {
+            get => this.phoneNumberError;
+            set
+            {
+                this.phoneNumberError = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public string AddressError
+        {
+            get => this.addressError;
+            set
+            {
+                this.addressError = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public string DescriptionError
+        {
+            get => this.descriptionError;
+            set
+            {
+                this.descriptionError = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         public string DisplayName { get; set; }
         public Seller Seller => this.seller;
         public SellerProfileViewModel(ISellerService sellerService)
@@ -63,7 +129,6 @@ namespace MarketMinds.ViewModels
             this.phoneNumber = string.Empty;
             this.storeAddress = string.Empty;
             this.storeDescription = string.Empty;
-            this.followersCount = "0";
             this.trustScore = 0;
             this.isLoading = true; // Start in loading state
 
@@ -71,8 +136,7 @@ namespace MarketMinds.ViewModels
             this.Products = new ObservableCollection<Product>();
             this.FilteredProducts = new ObservableCollection<Product>();
             this.Notifications = new ObservableCollection<string>();
-
-            this.Notifications.Add("Debug: ViewModel initialized");
+            this.FollowersList = new ObservableCollection<Buyer>();
 
             _ = this.Initialize();
         }
@@ -139,15 +203,12 @@ namespace MarketMinds.ViewModels
                 this.OnPropertyChanged();
             }
         }
-        public string FollowersCount
-        {
-            get => this.followersCount;
-            set
-            {
-                this.followersCount = value;
-                this.OnPropertyChanged();
-            }
-        }
+
+        /// <summary>
+        /// Gets the followers count from the actual followers list.
+        /// </summary>
+        public string ActualFollowersCount => this.FollowersList?.Count.ToString() ?? "0";
+
         public double TrustScore
         {
             get => this.trustScore;
@@ -170,9 +231,6 @@ namespace MarketMinds.ViewModels
                 this.OnPropertyChanged();
             }
         }
-
-        public ObservableCollection<Product> FilteredProducts { get; set; }
-        public ObservableCollection<string> Notifications { get; set; }
 
         public bool IsLoading
         {
@@ -205,9 +263,7 @@ namespace MarketMinds.ViewModels
             try
             {
                 Debug.WriteLine("SellerProfileViewModel: Beginning initialization");
-                this.Notifications.Add("Debug: Loading seller data...");
-
-                this.Notifications.Add("Debug: Initialization complete");
+                // Initialization logic can be added here if needed
             }
             catch (Exception ex)
             {
@@ -228,6 +284,7 @@ namespace MarketMinds.ViewModels
                 await this.LoadSellerProfile();
                 await this.LoadNotifications();
                 await this.LoadProducts();
+                await this.LoadFollowers();
                 
                 Debug.WriteLine("LoadProfileAsync completed - setting IsLoading to false");
                 this.IsLoading = false;
@@ -259,7 +316,6 @@ namespace MarketMinds.ViewModels
             this.StoreName = this.seller.StoreName ?? string.Empty;
             this.StoreAddress = this.seller.StoreAddress ?? string.Empty;
             this.StoreDescription = this.seller.StoreDescription ?? string.Empty;
-            this.FollowersCount = this.seller.FollowersCount.ToString();
 
             // User-linked fields
             this.Username = this.seller.User?.Username ?? string.Empty;
@@ -306,7 +362,8 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Updates seller and User profile data via service.
         /// </summary>
-        public async void UpdateProfile()
+        /// <returns>True if the update was successful, false otherwise.</returns>
+        public async Task<bool> UpdateProfile()
         {
             // add input validation here
             var errors = ValidateFields();
@@ -315,8 +372,9 @@ namespace MarketMinds.ViewModels
                 string errorMessage = string.Join("\n", errors);
                 await this.ShowDialog("Validation Errors", errorMessage);
                 Debug.WriteLine("Dialog was shown");
-                return;
+                return false;
             }
+            
             Debug.WriteLine("UpdateProfile called");
             if (this.seller != null)
             {
@@ -338,16 +396,18 @@ namespace MarketMinds.ViewModels
                     this.seller = await this.sellerService.GetSellerByUser(this.User);
                     // Reload the profile data to update all UI bindings
                     await LoadSellerProfile();
-                    await ShowDialog("Success", "Your profile has been updated successfully.");
+                    return true;
                 }
                 catch (Exception ex)
                 {
                     await ShowDialog("Error", $"Failed to update profile: {ex.Message}");
+                    return false;
                 }
             }
             else
             {
                 await ShowDialog("Error", "Could not update profile: Seller information is missing.");
+                return false;
             }
         }
 
@@ -440,18 +500,50 @@ namespace MarketMinds.ViewModels
                             this.FilteredProducts.Add(product);
                             this.Products.Add(product);
                         }
-
-                        this.Notifications.Add($"Loaded {products.Count} products");
-                    }
-                    else
-                    {
-                        this.Notifications.Add("No products found");
                     }
                 }
             }
             catch (Exception ex)
             {
                 this.Notifications.Add($"Error loading products: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads the seller's followers.
+        /// </summary>
+        public async Task LoadFollowers()
+        {
+            try
+            {
+                if (this.seller != null && this.seller.Id > 0)
+                {
+                    var followers = await this.sellerService.GetFollowers(this.seller.Id);
+
+                    this.FollowersList.Clear();
+
+                    if (followers != null && followers.Count > 0)
+                    {
+                        foreach (var follower in followers)
+                        {
+                            this.FollowersList.Add(follower);
+                        }
+
+                        Debug.WriteLine($"Loaded {followers.Count} followers for seller {this.seller.Id}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"No followers found for seller {this.seller.Id}");
+                    }
+
+                    // Notify UI that the followers count has changed
+                    this.OnPropertyChanged(nameof(this.ActualFollowersCount));
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Notifications.Add($"Error loading followers: {ex.Message}");
+                Debug.WriteLine($"Error loading followers: {ex.Message}");
             }
         }
 
@@ -493,54 +585,57 @@ namespace MarketMinds.ViewModels
         public List<string> ValidateFields()
         {
             var errors = new List<string>();
-            // Add validation logic
+            
+            // Clear all error messages first
+            this.UsernameError = string.Empty;
+            this.StoreNameError = string.Empty;
+            this.EmailError = string.Empty;
+            this.PhoneNumberError = string.Empty;
+            this.AddressError = string.Empty;
+            this.DescriptionError = string.Empty;
+            
+            // Validate Username
+            if (string.IsNullOrWhiteSpace(this.Username))
+            {
+                errors.Add("Username is required.");
+                this.UsernameError = "Username is required.";
+            }
+            
+            // Validate Store Name
             if (string.IsNullOrWhiteSpace(this.StoreName))
             {
                 errors.Add("Store name is required.");
                 this.StoreNameError = "Store name is required.";
             }
-            else
-            {
-                this.StoreNameError = string.Empty;
-            }
+            
+            // Validate Email
             if (string.IsNullOrWhiteSpace(this.Email) || !this.Email.Contains("@"))
             {
                 errors.Add("Valid email is required.");
                 this.EmailError = "Valid email is required.";
             }
-            else
-            {
-                this.EmailError = string.Empty;
-            }
-            // check if phone number is valid, starts with +40 and has 10 digits starting with 0
+            
+            // Validate Phone Number (Romanian format: +40 followed by 9 digits)
             if (string.IsNullOrWhiteSpace(this.PhoneNumber) || !this.PhoneNumber.StartsWith("+40") || this.PhoneNumber.Length != 12)
             {
-                errors.Add("Valid phone number is required.");
-                this.PhoneNumberError = "Valid phone number is required.";
+                errors.Add("Valid phone number is required (+40 followed by 9 digits).");
+                this.PhoneNumberError = "Valid phone number is required (+40 followed by 9 digits).";
             }
-            else
-            {
-                this.PhoneNumberError = string.Empty;
-            }
+            
+            // Validate Address
             if (string.IsNullOrWhiteSpace(this.StoreAddress))
             {
                 errors.Add("Store address is required.");
                 this.AddressError = "Store address is required.";
             }
-            else
-            {
-                this.AddressError = string.Empty;
-            }
+            
+            // Validate Description
             if (string.IsNullOrWhiteSpace(this.StoreDescription))
             {
                 errors.Add("Store description is required.");
                 this.DescriptionError = "Store description is required.";
             }
-            else
-            {
-                this.DescriptionError = string.Empty;
-            }
-            // Notify UI of changes
+
             return errors;
         }
 
