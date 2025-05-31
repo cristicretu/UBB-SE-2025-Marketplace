@@ -306,6 +306,17 @@ namespace MarketMinds.Views
             ProductsPivot.SelectedIndex = 0;
         }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            
+            // Check if a specific tab index is passed as parameter
+            if (e.Parameter is int tabIndex && tabIndex >= 0 && tabIndex <= 2)
+            {
+                ProductsPivot.SelectedIndex = tabIndex;
+            }
+        }
+
         /// <summary>
         /// Initializes the debouncing timers for filters
         /// </summary>

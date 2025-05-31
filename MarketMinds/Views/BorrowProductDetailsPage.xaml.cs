@@ -108,12 +108,15 @@ namespace MarketMinds.Views
         // User role properties
         public bool IsCurrentUserBuyer => App.CurrentUser?.UserType == 2;
         public bool IsCurrentUserSeller => App.CurrentUser?.UserType == 3;
+        public bool IsProductOwner => Product?.SellerId == App.CurrentUser?.Id;
+        public bool CanInteractWithProduct => IsCurrentUserBuyer && !IsProductOwner;
         public bool ShowLoginPrompt => !IsCurrentUserBuyer;
-        public bool CanLeaveReview => IsCurrentUserBuyer && SellerId > 0;
+        public bool CanLeaveReview => IsCurrentUserBuyer && SellerId > 0 && !IsProductOwner;
 
         // Borrowing properties
         public bool IsCurrentBorrower => Product?.BorrowerId == App.CurrentUser?.Id;
-        public bool ShowWaitlistSection => IsCurrentUserBuyer && (IsCurrentlyBorrowed || IsFutureAvailable);
+        public bool ShowWaitlistSection => CanInteractWithProduct && (IsCurrentlyBorrowed || IsFutureAvailable);
+        public bool ShowBorrowingSection => CanInteractWithProduct;
 
         // Date properties for borrowing
         public DateTimeOffset MinBorrowDate => DateTime.Now.AddDays(1);
@@ -189,10 +192,13 @@ namespace MarketMinds.Views
             OnPropertyChanged(nameof(DaysUntilAvailable));
             OnPropertyChanged(nameof(IsCurrentUserBuyer));
             OnPropertyChanged(nameof(IsCurrentUserSeller));
+            OnPropertyChanged(nameof(IsProductOwner));
+            OnPropertyChanged(nameof(CanInteractWithProduct));
             OnPropertyChanged(nameof(ShowLoginPrompt));
             OnPropertyChanged(nameof(CanLeaveReview));
             OnPropertyChanged(nameof(IsCurrentBorrower));
             OnPropertyChanged(nameof(ShowWaitlistSection));
+            OnPropertyChanged(nameof(ShowBorrowingSection));
             OnPropertyChanged(nameof(MinBorrowDate));
             OnPropertyChanged(nameof(MaxBorrowDate));
             OnPropertyChanged(nameof(MinWaitlistDate));
@@ -229,7 +235,7 @@ namespace MarketMinds.Views
 
         private async void BorrowButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !IsCurrentUserBuyer) return;
+            if (Product == null || !CanInteractWithProduct) return;
 
             var endDate = BorrowEndDatePicker.Date;
             if (endDate == null)
@@ -263,11 +269,8 @@ namespace MarketMinds.Views
                 };
                 await dialog.ShowAsync();
 
-                // Refresh the page or navigate back
-                if (Frame.CanGoBack)
-                {
-                    Frame.GoBack();
-                }
+                // Navigate back to borrow products page
+                Frame.Navigate(typeof(MarketMindsPage), 2);
             }
             catch (Exception ex)
             {
@@ -325,11 +328,8 @@ namespace MarketMinds.Views
                 };
                 await dialog.ShowAsync();
 
-                // Refresh the page or navigate back
-                if (Frame.CanGoBack)
-                {
-                    Frame.GoBack();
-                }
+                // Navigate back to borrow products page
+                Frame.Navigate(typeof(MarketMindsPage), 2);
             }
             catch (Exception ex)
             {
@@ -352,7 +352,7 @@ namespace MarketMinds.Views
 
         private async void JoinWaitlistButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !IsCurrentUserBuyer) return;
+            if (Product == null || !CanInteractWithProduct) return;
 
             var endDate = WaitlistEndDatePicker.Date;
             if (endDate == null)
@@ -410,7 +410,7 @@ namespace MarketMinds.Views
 
         private async void LeaveWaitlistButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !IsCurrentUserBuyer) return;
+            if (Product == null || !CanInteractWithProduct) return;
 
             var confirmDialog = new ContentDialog
             {
@@ -479,22 +479,14 @@ namespace MarketMinds.Views
 
         private void HomeButton_Click(object sender, RoutedEventArgs e)
         {
-            // Navigate to home/main page
-            Frame.Navigate(typeof(MarketMindsPage));
+            // Navigate to home/main page with Buy Products tab selected (index 0)
+            Frame.Navigate(typeof(MarketMindsPage), 0);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            // Go back to previous page
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
-            else
-            {
-                // Fallback to MarketMindsPage if no back history
-                Frame.Navigate(typeof(MarketMindsPage));
-            }
+            // Navigate to MarketMindsPage with Borrow Products tab selected (index 2)
+            Frame.Navigate(typeof(MarketMindsPage), 2);
         }
 
         private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)

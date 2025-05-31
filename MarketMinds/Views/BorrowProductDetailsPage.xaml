@@ -130,7 +130,8 @@
                         <StackPanel Grid.Row="2" 
                                     Padding="16" 
                                     Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                    Spacing="16">
+                                    Spacing="16"
+                                    Visibility="{x:Bind ShowBorrowingSection, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
                             
                             <TextBlock Text="Borrow Product" 
                                        Style="{StaticResource SubtitleTextBlockStyle}"
@@ -296,6 +297,32 @@
                                      IsOpen="{x:Bind IsCurrentUserSeller, Mode=OneWay}"
                                      Title="Seller Account"
                                      Message="Sellers cannot borrow products."/>
+                        </StackPanel>
+
+                        <!-- Info Section for Product Owners and Sellers -->
+                        <StackPanel Grid.Row="2" 
+                                    Padding="16" 
+                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                    Spacing="16"
+                                    Visibility="{x:Bind ShowBorrowingSection, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}">
+                            
+                            <!-- Product Owner Info -->
+                            <InfoBar Severity="Informational"
+                                     IsOpen="{x:Bind IsProductOwner, Mode=OneWay}"
+                                     Title="Your Product"
+                                     Message="This is your product. You cannot borrow your own items."/>
+                            
+                            <!-- Seller Info -->
+                            <InfoBar Severity="Informational"
+                                     IsOpen="{x:Bind IsCurrentUserSeller, Mode=OneWay}"
+                                     Title="Seller Account"
+                                     Message="As a seller, you cannot borrow products. Switch to a buyer account to borrow items."/>
+                            
+                            <!-- Non-logged in user info -->
+                            <InfoBar Severity="Informational"
+                                     IsOpen="{x:Bind ShowLoginPrompt, Mode=OneWay}"
+                                     Title="Login Required"
+                                     Message="Please log in as a buyer to borrow this product."/>
                         </StackPanel>
                     </Grid>
 
