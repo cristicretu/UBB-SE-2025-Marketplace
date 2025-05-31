@@ -27,17 +27,12 @@ using MarketMinds.Shared.Services.ConversationService;
 using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Helper;
-using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services;
 using MarketMinds.Views;
 using MarketMinds.ViewModels.Admin;
 using static MarketMinds.ViewModels.ContractRenewViewModel;
 using MarketMinds.Server.Services;
 using MarketMinds.Shared.Repositories;
-using NUnit.Framework.Internal;
-using Microsoft.Extensions.Logging;
 
 namespace MarketMinds
 {
