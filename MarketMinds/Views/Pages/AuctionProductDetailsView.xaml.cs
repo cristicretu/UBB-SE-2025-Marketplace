@@ -271,113 +271,21 @@ namespace MarketMinds.Views.Pages
             }
         }
 
-        private void HomeButton_Click(object sender, RoutedEventArgs e)
+                private void HomeButton_Click(object sender, RoutedEventArgs e)
         {
-            try
+            // Navigate to home/main page with Buy Products tab selected (index 0)
+            if (App.HomePageWindow?.MainContentFrame != null)
             {
-                System.Diagnostics.Debug.WriteLine("HomeButton_Click: Starting navigation to home page");
-                
-                // Approach 1: Try to find Frame through visual tree traversal
-                var frame = FindParent<Frame>(this);
-                if (frame != null)
-                {
-                    System.Diagnostics.Debug.WriteLine("HomeButton_Click: Found frame via visual tree, navigating to MarketMindsPage");
-                    frame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
-                    return;
-                }
-                
-                // Approach 2: Try to get Frame from XamlRoot
-                if (this.XamlRoot?.Content is FrameworkElement rootElement)
-                {
-                    var rootFrame = FindParent<Frame>(rootElement);
-                    if (rootFrame != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine("HomeButton_Click: Found frame via XamlRoot, navigating to MarketMindsPage");
-                        rootFrame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
-                        return;
-                    }
-                }
-                
-                // Approach 3: Try HomePageWindow MainContentFrame (this is the most likely to work)
-                if (App.HomePageWindow?.MainContentFrame != null)
-                {
-                    System.Diagnostics.Debug.WriteLine("HomeButton_Click: Using HomePageWindow.MainContentFrame");
-                    App.HomePageWindow.MainContentFrame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
-                    return;
-                }
-                
-                // Approach 4: Try MainWindow Frame (fallback)
-                if (App.MainWindow?.Content is Frame mainFrame)
-                {
-                    System.Diagnostics.Debug.WriteLine("HomeButton_Click: Using MainWindow frame as fallback");
-                    mainFrame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
-                    return;
-                }
-                
-                System.Diagnostics.Debug.WriteLine("HomeButton_Click: No navigation method worked");
+                App.HomePageWindow.MainContentFrame.Navigate(typeof(MarketMindsPage), 0);
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"HomeButton_Click: Error during navigation: {ex.Message}");
-                
-                // Final fallback - try HomePageWindow MainContentFrame
-                try
-                {
-                    if (App.HomePageWindow?.MainContentFrame != null)
-                    {
-                        App.HomePageWindow.MainContentFrame.Navigate(typeof(MarketMindsPage), 0); // Navigate to Buy Products tab (index 0)
-                    }
-                }
-                catch (Exception fallbackEx)
-                {
-                    System.Diagnostics.Debug.WriteLine($"HomeButton_Click: Final fallback also failed: {fallbackEx.Message}");
-                }
-            }
-        }
-
-        private static T FindParent<T>(DependencyObject child) where T : DependencyObject
-        {
-            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
-
-            if (parentObject == null) return null;
-
-            if (parentObject is T parent)
-                return parent;
-
-            return FindParent<T>(parentObject);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            try
+            // Navigate to MarketMindsPage with Auction Products tab selected (index 1)
+            if (App.HomePageWindow?.MainContentFrame != null)
             {
-                // Navigate back to auction products list
-                if (this.XamlRoot?.Content is FrameworkElement element)
-                {
-                    // Find the Frame in the visual tree
-                    var frame = FindParent<Frame>(element);
-                    if (frame != null)
-                    {
-                        // Navigate to MarketMindsPage with Auction Products tab selected (index 1)
-                        frame.Navigate(typeof(MarketMindsPage), 1);
-                    }
-                    else
-                    {
-                        // If no frame found, try to get the main window and navigate
-                        if (App.MainWindow?.Content is Frame mainFrame)
-                        {
-                            mainFrame.Navigate(typeof(MarketMindsPage), 1);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Fallback: just navigate to marketplace
-                if (App.MainWindow?.Content is Frame fallbackFrame)
-                {
-                    fallbackFrame.Navigate(typeof(MarketMindsPage), 1);
-                }
+                App.HomePageWindow.MainContentFrame.Navigate(typeof(MarketMindsPage), 1);
             }
         }
 
