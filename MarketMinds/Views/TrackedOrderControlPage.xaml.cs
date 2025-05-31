@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -27,7 +28,28 @@ namespace MarketMinds.Views
             DataContext = ViewModel;
         }
 
+        /// <summary>
+        /// Called when the page is navigated to.
+        /// </summary>
+        /// <param name="e">Navigation event arguments</param>
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            
+            // Handle navigation parameter
+            if (e.Parameter is int trackedOrderID)
+            {
+                await SetTrackedOrderIDAsync(trackedOrderID);
+            }
+        }
+
         public async void SetTrackedOrderID(int trackedOrderID)
+        {
+            TrackedOrderID = trackedOrderID;
+            await LoadOrderData();
+        }
+
+        public async Task SetTrackedOrderIDAsync(int trackedOrderID)
         {
             TrackedOrderID = trackedOrderID;
             await LoadOrderData();
@@ -279,6 +301,67 @@ namespace MarketMinds.Views
                 {
                     DateTimePickers.Visibility = Visibility.Collapsed;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handles the back button click to navigate back to the order history.
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">Event arguments</param>
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Get the current frame and navigate back
+                Frame currentFrame = null;
+                
+                // Try to find the frame by walking up the visual tree
+                var parent = this.Parent;
+                while (parent != null && currentFrame == null)
+                {
+                    if (parent is Frame frame)
+                    {
+                        currentFrame = frame;
+                        break;
+                    }
+                    parent = (parent as FrameworkElement)?.Parent;
+                }
+                
+                // If we found a frame, navigate back
+                if (currentFrame != null)
+                {
+                    if (currentFrame.CanGoBack)
+                    {
+                        currentFrame.GoBack();
+                    }
+                    else
+                    {
+                        // If can't go back, navigate to OrderHistoryView directly
+                        currentFrame.Navigate(typeof(OrderHistoryView));
+                    }
+                }
+                else
+                {
+                    // Fallback: try to use the app's main frame if available
+                    if (App.MainWindow?.Content is Frame mainFrame)
+                    {
+                        if (mainFrame.CanGoBack)
+                        {
+                            mainFrame.GoBack();
+                        }
+                        else
+                        {
+                            mainFrame.Navigate(typeof(OrderHistoryView));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error navigating back: {ex.Message}");
+                // If navigation fails, try to show an error dialog
+                _ = ShowErrorDialog($"Failed to navigate back: {ex.Message}");
             }
         }
     }

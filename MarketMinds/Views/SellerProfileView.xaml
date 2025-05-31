@@ -76,9 +76,6 @@
                         <Button Content="Update Profile" Click="OnUpdateProfileButtonClick" 
                                 Width="180" Height="55" Margin="10,0,0,10"
                                 Style="{StaticResource UpdateButton}" />
-                        <Button Content="Manage Order Tracking" Click="OnManageOrderTrackingClick" 
-                                Width="180" Height="55" Margin="10,0,0,10"
-                                Style="{StaticResource UpdateButton}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
