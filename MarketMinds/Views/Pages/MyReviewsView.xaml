@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MarketMinds.Views.Pages.MyReviewsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MarketMinds.Views.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:MarketMinds.Converters"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">    <Page.Resources>
+        <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+        <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Section -->
+        <StackPanel Grid.Row="0" Margin="32,32,32,24">
+            <TextBlock Text="Reviews Received"
+                       FontSize="32"
+                       FontWeight="Bold"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                       Margin="0,0,0,8"/>
+        </StackPanel>
+
+        <!-- Reviews Content -->        <ScrollViewer Grid.Row="1" 
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Padding="32,0,32,32">
+            
+            <Grid>
+                <!-- Reviews List -->
+                <ListView x:Name="ReviewsListView"
+                      ItemsSource="{x:Bind ViewModel.Reviews, Mode=OneWay}"
+                      SelectionMode="None"
+                      IsItemClickEnabled="False"
+                      Background="Transparent">
+                
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0,0,0,16"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Review Card -->
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                CornerRadius="12"
+                                Padding="24"
+                                BorderThickness="1"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                            
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Header with reviewer name and rating -->
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding BuyerUsername}"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                               VerticalAlignment="Center"/>
+
+                                    <StackPanel Grid.Column="1" 
+                                                Orientation="Horizontal"
+                                                VerticalAlignment="Center">
+                                        <RatingControl x:Name="ReviewRating"
+                                                       Value="{Binding Rating, Mode=OneWay}"
+                                                       IsClearEnabled="False"
+                                                       IsReadOnly="True"
+                                                       MaxRating="5"
+                                                       Foreground="{ThemeResource SystemFillColorAttentionBrush}"
+                                                       Margin="0,0,8,0"/>
+                                        <TextBlock Text="{Binding Rating}"
+                                                   FontSize="14"
+                                                   FontWeight="Medium"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Review Description -->
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding Description}"
+                                           FontSize="14"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           LineHeight="20"
+                                           Margin="0,0,0,16"/>
+
+                                <!-- Review Images -->
+                                <Grid Grid.Row="2" 
+                                      Visibility="{Binding Images.Count, Converter={StaticResource CountToVisibilityConverter}}"
+                                      Margin="0,0,0,8">
+                                    
+                                    <GridView ItemsSource="{Binding Images}"
+                                              SelectionMode="None"
+                                              IsItemClickEnabled="False"
+                                              ScrollViewer.HorizontalScrollMode="Auto"
+                                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                              ScrollViewer.VerticalScrollMode="Disabled"
+                                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                                        
+                                        <GridView.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </GridView.ItemsPanel>
+
+                                        <GridView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="8"
+                                                        Width="96"
+                                                        Height="96"
+                                                        Margin="0,0,12,0"
+                                                        Background="{ThemeResource ControlFillColorDefaultBrush}">
+                                                    <Image Source="{Binding Url}"
+                                                           Stretch="UniformToFill"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </GridView.ItemTemplate>
+                                    </GridView>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <!-- Empty State -->
+            <StackPanel x:Name="EmptyStatePanel"
+                        Visibility="{x:Bind ViewModel.IsReviewsEmpty, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="0,80,0,0">
+                
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        CornerRadius="12"
+                        Padding="32"
+                        BorderThickness="1"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                    
+                    <StackPanel HorizontalAlignment="Center">
+                        <FontIcon Glyph="&#xE8F1;"
+                                  FontSize="48"
+                                  Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                  HorizontalAlignment="Center"
+                                  Margin="0,0,0,16"/>
+                        
+                        <TextBlock Text="No reviews yet"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"/>
+                        
+                        <TextBlock Text="You haven't received any reviews yet."
+                                   FontSize="14"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"/>                    </StackPanel>
+                </Border>
+            </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>
