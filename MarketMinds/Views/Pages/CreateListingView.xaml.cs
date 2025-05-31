@@ -31,23 +31,7 @@ namespace MarketMinds.Views
         private ProductCategoryViewModel productCategoryViewModel;
         private ProductConditionViewModel productConditionViewModel;
         private ProductTagViewModel productTagViewModel;
-        private TextBox titleTextBox;
-        private TextBlock titleErrorTextBlock;
-        private ComboBox categoryComboBox;
-        private TextBlock categoryErrorTextBlock;
-        private TextBox descriptionTextBox;
-        private TextBlock descriptionErrorTextBlock;
-        private TextBox tagsTextBox;
-        private TextBlock tagsErrorTextBlock;
-        private ListView tagsListView;
-        private TextBox imagesTextBox;
-        private ComboBox conditionComboBox;
-        private TextBlock conditionErrorTextBlock;
         private ObservableCollection<string> tags;
-        private Button uploadImageButton;
-        private TextBlock imagesTextBlock;
-        private TextBlock categoryTextBlock;
-        private TextBlock conditionTextBlock;
         private HomePageView homePageWindow;
         private readonly string imgurClientId;
         private static readonly HttpClient HttpClient = new HttpClient();
@@ -64,29 +48,18 @@ namespace MarketMinds.Views
         private readonly TagManagementViewModelHelper tagManagementHelper;
         private readonly ImageUploadService imageUploadService;
         private readonly ListingFormValidationService validationService;
+        private Border currentSelectedCard;
+
+        // Properties for binding
+        public CreateListingViewModelBase ViewModel => viewModel;
+        public ObservableCollection<string> Tags => tags;
 
         public CreateListingView()
         {
             this.InitializeComponent();
+
             imgurClientId = App.Configuration.GetSection("ImgurSettings:ClientId").Value;
-            titleTextBox = new TextBox { PlaceholderText = "Title" };
-            titleErrorTextBlock = new TextBlock { Text = "Title cannot be empty.", Foreground = new SolidColorBrush(Colors.Red), Visibility = Visibility.Collapsed };
-            categoryTextBlock = new TextBlock { Text = "Select Category" };
-            categoryComboBox = new ComboBox();
-            categoryErrorTextBlock = new TextBlock { Text = "Please select a category.", Foreground = new SolidColorBrush(Colors.Red), Visibility = Visibility.Collapsed };
-            descriptionTextBox = new TextBox { PlaceholderText = "Description" };
-            descriptionErrorTextBlock = new TextBlock { Text = "Description cannot be empty.", Foreground = new SolidColorBrush(Colors.Red), Visibility = Visibility.Collapsed };
-            tagsTextBox = new TextBox { PlaceholderText = "Tags" };
-            tagsErrorTextBlock = new TextBlock { Text = "Please add at least one tag.", Foreground = new SolidColorBrush(Colors.Red), Visibility = Visibility.Collapsed };
-            tagsListView = new ListView();
-            imagesTextBox = new TextBox { PlaceholderText = "Images" };
-            conditionTextBlock = new TextBlock { Text = "Select Condition" };
-            conditionComboBox = new ComboBox();
-            conditionErrorTextBlock = new TextBlock { Text = "Please select a condition.", Foreground = new SolidColorBrush(Colors.Red), Visibility = Visibility.Collapsed };
             tags = new ObservableCollection<string>();
-            uploadImageButton = new Button { Content = "Upload Image", Width = UPLOAD_IMAGE_BUTTON_WIDTH };
-            uploadImageButton.Click += OnUploadImageClick;
-            imagesTextBlock = new TextBlock { TextWrapping = TextWrapping.Wrap };
 
             // Use singleton instances from App class
             productCategoryViewModel = App.ProductCategoryViewModel;
@@ -98,121 +71,230 @@ namespace MarketMinds.Views
             imageUploadService = new ImageUploadService(AppConfig.Configuration);
             validationService = new ListingFormValidationService();
 
+            // Set up tags list
+            TagsListView.ItemsSource = tags;
+            homePageWindow = App.HomePageWindow;
+
+            // Load data and set default selection when page loads
+            this.Loaded += CreateListingView_Loaded;
+        }
+
+        private void CreateListingView_Loaded(object sender, RoutedEventArgs e)
+        {
             // Load categories and conditions into ComboBoxes
             LoadCategories();
             LoadConditions();
 
-            // Set up event handler for tagsTextBox
-            tagsTextBox.KeyDown += TagsTextBox_KeyDown;
+            // Initialize default viewModel
+            viewModel = new CreateBuyListingViewModel { BuyProductsService = App.BuyProductsService };
+            viewModel.SelectedListingType = "Buy";
 
-            // Set up the ListView item template
-            tagsListView.ItemClick += TagsListView_ItemClick;
-            tagsListView.IsItemClickEnabled = true;
+            // Default select the Sell card
+            UpdateCardSelectionState(SellCard);
+            ListingTypeComboBox.SelectedIndex = 0; // Select "Buy" which corresponds to Sell
 
-            tagsListView.ItemsSource = tags;
-            homePageWindow = App.HomePageWindow;
+            // Set date restrictions
+            SetDateRestrictions();
+
+            // Notify bindings to update
+            this.Bindings.Update();
+        }
+
+        private void SetDateRestrictions()
+        {
+            // Set minimum date to today for all date pickers
+            var today = DateTimeOffset.Now.Date;
+            
+            // For borrow product start date - can only select from today onwards
+            StartDatePicker.MinDate = today;
+            
+            // For borrow product end date - initially set to today, will be updated when start date is selected
+            TimeLimitDatePicker.MinDate = today;
+            // Disable end date picker until start date is selected
+            TimeLimitDatePicker.IsEnabled = false;
+            
+            // For auction end date - can only select from today onwards
+            AuctionEndDatePicker.MinDate = today;
+        }
+
+        private void StartDatePicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
+        {
+            // When start date changes, update the minimum date for end date picker
+            if (args.NewDate.HasValue)
+            {
+                // Enable the end date picker and set minimum date to the day after start date
+                TimeLimitDatePicker.IsEnabled = true;
+                TimeLimitDatePicker.MinDate = args.NewDate.Value.AddDays(1);
+                
+                // If the current end date is before the new minimum, clear it
+                if (TimeLimitDatePicker.Date.HasValue && TimeLimitDatePicker.Date.Value < TimeLimitDatePicker.MinDate)
+                {
+                    TimeLimitDatePicker.Date = null;
+                }
+            }
+            else
+            {
+                // If start date is cleared, disable end date picker and reset minimum to today
+                TimeLimitDatePicker.IsEnabled = false;
+                TimeLimitDatePicker.Date = null; // Clear any selected end date
+                TimeLimitDatePicker.MinDate = DateTimeOffset.Now.Date;
+            }
         }
 
         private void LoadCategories()
         {
             List<Category> categories = productCategoryViewModel.GetAllProductCategories();
-            categoryComboBox.ItemsSource = categories;
-            categoryComboBox.DisplayMemberPath = "DisplayTitle";
-            categoryComboBox.SelectedValuePath = "Id";
+            CategoryComboBox.ItemsSource = categories;
+            CategoryComboBox.DisplayMemberPath = "DisplayTitle";
+            CategoryComboBox.SelectedValuePath = "Id";
         }
 
         private void LoadConditions()
         {
             List<Condition> conditions = productConditionViewModel.GetAllProductConditions();
-            conditionComboBox.ItemsSource = conditions;
-            conditionComboBox.DisplayMemberPath = "DisplayTitle";
-            conditionComboBox.SelectedValuePath = "Id";
+            ConditionComboBox.ItemsSource = conditions;
+            ConditionComboBox.DisplayMemberPath = "DisplayTitle";
+            ConditionComboBox.SelectedValuePath = "Id";
+        }
+
+        private void ListingTypeCard_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            // Get the border that was clicked
+            if (sender is Border clickedCard)
+            {
+                // Get the type from the Tag property
+                string selectedType = clickedCard.Tag?.ToString();
+
+                // Find and select the corresponding ComboBox item
+                foreach (ComboBoxItem item in ListingTypeComboBox.Items)
+                {
+                    if (item.Content.ToString() == selectedType)
+                    {
+                        ListingTypeComboBox.SelectedItem = item;
+                        break;
+                    }
+                }
+
+                // Update visual selection state
+                UpdateCardSelectionState(clickedCard);
+            }
+        }
+
+        private void UpdateCardSelectionState(Border selectedCard)
+        {
+            // Reset all cards to default state
+            AuctionCard.Background = Application.Current.Resources["CardBackgroundFillColorDefaultBrush"] as SolidColorBrush
+                ?? new SolidColorBrush(Colors.Transparent);
+            AuctionCard.BorderBrush = Application.Current.Resources["CardStrokeColorDefaultBrush"] as SolidColorBrush
+                ?? new SolidColorBrush(Colors.LightGray);
+            AuctionCard.BorderThickness = new Thickness(1);
+
+            SellCard.Background = Application.Current.Resources["CardBackgroundFillColorDefaultBrush"] as SolidColorBrush
+                ?? new SolidColorBrush(Colors.Transparent);
+            SellCard.BorderBrush = Application.Current.Resources["CardStrokeColorDefaultBrush"] as SolidColorBrush
+                ?? new SolidColorBrush(Colors.LightGray);
+            SellCard.BorderThickness = new Thickness(1);
+
+            LendCard.Background = Application.Current.Resources["CardBackgroundFillColorDefaultBrush"] as SolidColorBrush
+                ?? new SolidColorBrush(Colors.Transparent);
+            LendCard.BorderBrush = Application.Current.Resources["CardStrokeColorDefaultBrush"] as SolidColorBrush
+                ?? new SolidColorBrush(Colors.LightGray);
+            LendCard.BorderThickness = new Thickness(1);
+
+            // Apply selected state to the clicked card
+            // Use a light variant of the accent color for the background
+            Windows.UI.Color accentColor = Colors.Blue;
+            if (Application.Current.Resources["SystemAccentColor"] is Windows.UI.Color color)
+            {
+                accentColor = color;
+            }
+
+            // Create a lighter version of the accent color (20% opacity)
+            var lightAccentColor = new Windows.UI.Color
+            {
+                A = 50, // 20% opacity
+                R = accentColor.R,
+                G = accentColor.G,
+                B = accentColor.B
+            };
+
+            selectedCard.Background = new SolidColorBrush(lightAccentColor);
+            selectedCard.BorderBrush = Application.Current.Resources["SystemAccentColor"] is Windows.UI.Color accent
+                ? new SolidColorBrush(accent)
+                : Application.Current.Resources["SystemAccentColor"] as SolidColorBrush
+                    ?? new SolidColorBrush(Colors.Blue);
+            selectedCard.BorderThickness = new Thickness(2);
+
+            // Save current selected card
+            currentSelectedCard = selectedCard;
         }
 
         private void ListingTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
         {
             listingTypeErrorTextBlock.Visibility = Visibility.Collapsed;
 
-            var selectedType = (selectionChangedEventArgs.AddedItems[0] as ComboBoxItem)?.Content.ToString();
-            FormContainer.Children.Clear();
-
-            switch (selectedType)
+            // If selection was triggered by UI, update card state
+            if (selectionChangedEventArgs.AddedItems.Count > 0)
             {
-                case "Buy":
-                    viewModel = new CreateBuyListingViewModel { BuyProductsService = App.BuyProductsService };
-                    // clear common fields
-                    AddBuyProductFields();
-                    break;
-                case "Borrow":
-                    viewModel = new CreateBorrowListingViewModel { BorrowProductsService = App.BorrowProductsService };
-                    AddBorrowProductFields();
-                    break;
-                case "Auction":
-                    viewModel = new CreateAuctionListingViewModel(App.AuctionProductsService);
-                    AddAuctionProductFields();
-                    break;
+                var selectedType = (selectionChangedEventArgs.AddedItems[0] as ComboBoxItem)?.Content.ToString();
+
+                // If selection was triggered programmatically, update card selection
+                if (currentSelectedCard == null || currentSelectedCard.Tag.ToString() != selectedType)
+                {
+                    // Find and update the corresponding card
+                    if (selectedType == "Buy")
+                    {
+                        UpdateCardSelectionState(SellCard);
+                    }
+                    else if (selectedType == "Borrow")
+                    {
+                        UpdateCardSelectionState(LendCard);
+                    }
+                    else if (selectedType == "Auction")
+                    {
+                        UpdateCardSelectionState(AuctionCard);
+                    }
+                }
+
+                switch (selectedType)
+                {
+                    case "Buy":
+                        viewModel = new CreateBuyListingViewModel { BuyProductsService = App.BuyProductsService };
+                        viewModel.SelectedListingType = "Buy";
+                        break;
+                    case "Borrow":
+                        viewModel = new CreateBorrowListingViewModel { BorrowProductsService = App.BorrowProductsService };
+                        viewModel.SelectedListingType = "Borrow";
+                        break;
+                    case "Auction":
+                        viewModel = new CreateAuctionListingViewModel(App.AuctionProductsService);
+                        viewModel.SelectedListingType = "Auction";
+                        break;
+                }
+
+                // Notify bindings to update
+                this.Bindings.Update();
             }
         }
 
-        private void AddCommonFields()
+        private void TagsAddButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            FormContainer.Children.Add(titleTextBox);
-            FormContainer.Children.Add(titleErrorTextBlock);
-            FormContainer.Children.Add(categoryTextBlock);
-            FormContainer.Children.Add(categoryComboBox);
-            FormContainer.Children.Add(categoryErrorTextBlock);
-            FormContainer.Children.Add(descriptionTextBox);
-            FormContainer.Children.Add(descriptionErrorTextBlock);
-            FormContainer.Children.Add(tagsTextBox);
-            FormContainer.Children.Add(tagsErrorTextBlock);
-            FormContainer.Children.Add(tagsListView);
-            FormContainer.Children.Add(uploadImageButton);
-            FormContainer.Children.Add(imagesTextBlock);
-            FormContainer.Children.Add(conditionTextBlock);
-            FormContainer.Children.Add(conditionComboBox);
-            FormContainer.Children.Add(conditionErrorTextBlock);
-        }
-
-        private void AddBuyProductFields()
-        {
-            AddCommonFields();
-            FormContainer.Children.Add(new TextBox { PlaceholderText = "Price", Name = "PriceTextBox" });
-        }
-
-        private void AddBorrowProductFields()
-        {
-            AddCommonFields();
-            var timeLimistDatePicker = new CalendarDatePicker
+            string tag = TagsTextBox.Text.Trim();
+            if (tagManagementHelper.AddTagToCollectionBeginning(tag, tags))
             {
-                PlaceholderText = "Time Limit",
-                Name = "TimeLimitDatePicker",
-                MinDate = DateTimeOffset.Now
-            };
-            FormContainer.Children.Add(timeLimistDatePicker);
-            FormContainer.Children.Add(new TextBox { PlaceholderText = "Daily Rate", Name = "DailyRateTextBox" });
-        }
-
-        private void AddAuctionProductFields()
-        {
-            AddCommonFields();
-            FormContainer.Children.Add(new TextBox { PlaceholderText = "Starting Price", Name = "StartingPriceTextBox" });
-            var endAuctionDatePicker = new CalendarDatePicker
-            {
-                PlaceholderText = "End Auction Date",
-                Name = "EndAuctionDatePicker",
-                MinDate = DateTimeOffset.Now
-            };
-            FormContainer.Children.Add(endAuctionDatePicker);
+                TagsTextBox.Text = string.Empty;
+            }
+            TagsTextBox.Focus(FocusState.Programmatic);
         }
 
         private void TagsTextBox_KeyDown(object sender, KeyRoutedEventArgs keyRoutedEventArgs)
         {
             if (keyRoutedEventArgs.Key == Windows.System.VirtualKey.Enter)
             {
-                string tag = tagsTextBox.Text.Trim();
-                if (tagManagementHelper.AddTagToCollection(tag, tags))
+                string tag = TagsTextBox.Text.Trim();
+                if (tagManagementHelper.AddTagToCollectionBeginning(tag, tags))
                 {
-                    tagsTextBox.Text = string.Empty;
+                    TagsTextBox.Text = string.Empty;
                 }
             }
         }
@@ -221,6 +303,28 @@ namespace MarketMinds.Views
         {
             string tag = itemClickEventArgs.ClickedItem as string;
             tagManagementHelper.RemoveTagFromCollection(tag, tags);
+            TagsTextBox.Focus(FocusState.Programmatic);
+        }
+
+        private void UploadBorder_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            OnUploadImageClick(sender, null);
+        }
+
+        private void UploadBorder_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Border border)
+            {
+                border.Opacity = 0.8;
+            }
+        }
+
+        private void UploadBorder_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Border border)
+            {
+                border.Opacity = 1.0;
+            }
         }
 
         private async void OnUploadImageClick(object sender, RoutedEventArgs routedEventArgs)
@@ -228,7 +332,7 @@ namespace MarketMinds.Views
             var picker = new FileOpenPicker();
 
             // Get the current homePageWindow handle (HWND)
-            var hwnd = WindowNative.GetWindowHandle(this.homePageWindow); // Assuming 'this.homePageWindow' is the correct MainWindow instance
+            var hwnd = WindowNative.GetWindowHandle(this.homePageWindow);
             InitializeWithWindow.Initialize(picker, hwnd);
 
             picker.ViewMode = PickerViewMode.Thumbnail;
@@ -246,11 +350,15 @@ namespace MarketMinds.Views
                     using (var stream = await file.OpenAsync(FileAccessMode.Read))
                     {
                         // Pass the stream, file name, and current images string to the service
-                        string updatedImagesString = await imageUploadService.AddImageToCollection(stream.AsStreamForRead(), file.Name, viewModel.ImagesString);
-                        if (updatedImagesString != viewModel.ImagesString)
+                        string updatedImagesString = await imageUploadService.AddImageToCollection(stream.AsStreamForRead(), file.Name, viewModel?.ImagesString ?? string.Empty);
+                        if (updatedImagesString != (viewModel?.ImagesString ?? string.Empty))
                         {
-                            viewModel.ImagesString = updatedImagesString;
-                            imagesTextBlock.Text = viewModel.ImagesString; // Update the UI
+                            if (viewModel != null)
+                            {
+                                viewModel.ImagesString = updatedImagesString;
+                                // Force binding update
+                                this.Bindings.Update();
+                            }
                         }
                     }
                 }
@@ -288,12 +396,28 @@ namespace MarketMinds.Views
         private void CreateListingButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             // Reset error messages
-            titleErrorTextBlock.Visibility = Visibility.Collapsed;
-            categoryErrorTextBlock.Visibility = Visibility.Collapsed;
-            descriptionErrorTextBlock.Visibility = Visibility.Collapsed;
-            tagsErrorTextBlock.Visibility = Visibility.Collapsed;
-            conditionErrorTextBlock.Visibility = Visibility.Collapsed;
+            TitleErrorTextBlock.Visibility = Visibility.Collapsed;
+            CategoryErrorTextBlock.Visibility = Visibility.Collapsed;
+            DescriptionErrorTextBlock.Visibility = Visibility.Collapsed;
+            TagsErrorTextBlock.Visibility = Visibility.Collapsed;
+            ConditionErrorTextBlock.Visibility = Visibility.Collapsed;
             listingTypeErrorTextBlock.Visibility = Visibility.Collapsed;
+
+            // Reset product-specific error messages
+            PriceErrorTextBlock.Visibility = Visibility.Collapsed;
+            StockErrorTextBlock.Visibility = Visibility.Collapsed;
+            StartDateErrorTextBlock.Visibility = Visibility.Collapsed;
+            EndDateErrorTextBlock.Visibility = Visibility.Collapsed;
+            DailyRateErrorTextBlock.Visibility = Visibility.Collapsed;
+            StartingBidErrorTextBlock.Visibility = Visibility.Collapsed;
+            AuctionEndDateErrorTextBlock.Visibility = Visibility.Collapsed;
+
+            // Check if user is logged in
+            if (App.CurrentUser == null || App.CurrentUser.Id <= 0)
+            {
+                _ = ShowErrorDialog("Authentication Error", "You must be logged in to create a listing. Please log in and try again.");
+                return;
+            }
 
             // Check if a listing type is selected
             if (ListingTypeComboBox.SelectedItem == null)
@@ -302,25 +426,28 @@ namespace MarketMinds.Views
                 return;
             }
 
-            // Collect common data
-            string title = titleTextBox.Text;
-            Category category = (ProductCategory)categoryComboBox.SelectedItem;
-            string description = descriptionTextBox.Text;
-            Condition condition = (ProductCondition)conditionComboBox.SelectedItem;
+            // Collect common data from XAML controls
+            string title = TitleTextBox.Text?.Trim();
+            Category category = (ProductCategory)CategoryComboBox.SelectedItem;
+            string description = DescriptionTextBox.Text?.Trim() ?? string.Empty;
+            Condition condition = (ProductCondition)ConditionComboBox.SelectedItem;
 
-            // ---> ADD EXPLICIT ID CHECK <---
-            if (category == null || category.Id == 0)
+            // Validate category selection
+            if (category == null || category.Id <= 0)
             {
-                categoryErrorTextBlock.Text = "Please select a valid category.";
-                categoryErrorTextBlock.Visibility = Visibility.Visible;
-                return; // Stop if category is null or ID is 0
-            }
-            if (condition == null || condition.Id == 0)
-            {
-                conditionErrorTextBlock.Text = "Please select a valid condition.";
-                conditionErrorTextBlock.Visibility = Visibility.Visible;
+                CategoryErrorTextBlock.Text = "Please select a valid category.";
+                CategoryErrorTextBlock.Visibility = Visibility.Visible;
                 return;
             }
+
+            // Validate condition selection
+            if (condition == null || condition.Id <= 0)
+            {
+                ConditionErrorTextBlock.Text = "Please select a valid condition.";
+                ConditionErrorTextBlock.Visibility = Visibility.Visible;
+                return;
+            }
+
             // Validate common fields
             bool isValid = validationService.ValidateCommonFields(title, category, description, tags, condition, out string errorMessage, out string errorField);
 
@@ -329,87 +456,160 @@ namespace MarketMinds.Views
                 switch (errorField)
                 {
                     case "Title":
-                        titleErrorTextBlock.Text = errorMessage;
-                        titleErrorTextBlock.Visibility = Visibility.Visible;
+                        TitleErrorTextBlock.Text = errorMessage;
+                        TitleErrorTextBlock.Visibility = Visibility.Visible;
                         break;
                     case "Category":
-                        categoryErrorTextBlock.Text = errorMessage;
-                        categoryErrorTextBlock.Visibility = Visibility.Visible;
+                        CategoryErrorTextBlock.Text = errorMessage;
+                        CategoryErrorTextBlock.Visibility = Visibility.Visible;
                         break;
                     case "Description":
-                        descriptionErrorTextBlock.Text = errorMessage;
-                        descriptionErrorTextBlock.Visibility = Visibility.Visible;
+                        DescriptionErrorTextBlock.Text = errorMessage;
+                        DescriptionErrorTextBlock.Visibility = Visibility.Visible;
                         break;
                     case "Tags":
-                        tagsErrorTextBlock.Text = errorMessage;
-                        tagsErrorTextBlock.Visibility = Visibility.Visible;
+                        TagsErrorTextBlock.Text = errorMessage;
+                        TagsErrorTextBlock.Visibility = Visibility.Visible;
                         break;
                     case "Condition":
-                        conditionErrorTextBlock.Text = errorMessage;
-                        conditionErrorTextBlock.Visibility = Visibility.Visible;
+                        ConditionErrorTextBlock.Text = errorMessage;
+                        ConditionErrorTextBlock.Visibility = Visibility.Visible;
                         break;
                 }
                 return;
             }
 
-            // Convert string tags to ProductTag objects
-            List<ProductTag> productTags = tagManagementHelper.ConvertStringTagsToProductTags(tags);
+            // Convert string tags to ProductTag objects (temporarily skip for testing)
+            List<ProductTag> productTags = new List<ProductTag>(); // Empty for now to test basic product creation
 
             // Collect specific data based on the selected type
             if (viewModel is CreateBuyListingViewModel)
             {
-                string priceText = ((TextBox)FormContainer.FindName("PriceTextBox")).Text;
-                if (!validationService.ValidateBuyProductFields(priceText, out float price))
+                string priceText = PriceTextBox.Text?.Trim();
+                string stockText = StockTextBox.Text?.Trim();
+
+                if (string.IsNullOrWhiteSpace(priceText) || !validationService.ValidateBuyProductFields(priceText, out float price))
                 {
-                    titleErrorTextBlock.Text = "Please enter a valid price.";
-                    titleErrorTextBlock.Visibility = Visibility.Visible;
+                    PriceErrorTextBlock.Text = "Please enter a valid price.";
+                    PriceErrorTextBlock.Visibility = Visibility.Visible;
                     return;
                 }
-                var product = new BuyProduct(0, title, description, App.CurrentUser, condition, category, productTags, viewModel.Images, price);
-                viewModel.CreateListing(product);
+
+                if (string.IsNullOrWhiteSpace(stockText) || !int.TryParse(stockText, out int stockQuantity) || stockQuantity <= 0)
+                {
+                    StockErrorTextBlock.Text = "Please enter a valid stock quantity (must be greater than 0).";
+                    StockErrorTextBlock.Visibility = Visibility.Visible;
+                    return;
+                }
+
+                // Create BuyProduct with proper validation
+                try
+                {
+                    var product = new BuyProduct
+                    {
+                        Id = 0, // New product
+                        Title = title,
+                        Description = description,
+                        SellerId = App.CurrentUser.Id, // Use current user ID
+                        Seller = App.CurrentUser,
+                        ConditionId = condition.Id,
+                        Condition = condition,
+                        CategoryId = category.Id,
+                        Category = category,
+                        Price = price,
+                        Stock = stockQuantity,
+                        Tags = productTags,
+                        NonMappedImages = viewModel.Images ?? new List<MarketMinds.Shared.Models.Image>()
+                    };
+
+                    Console.WriteLine($"Creating BuyProduct with: SellerId={product.SellerId}, " +
+                                    $"CategoryId={product.CategoryId}, ConditionId={product.ConditionId}, " +
+                                    $"Title='{product.Title}', Price={product.Price}, Stock={product.Stock}");
+
+                    viewModel.CreateListing(product);
+                    ShowSuccessMessage("Listing created successfully!");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating buy product: {ex.Message}");
+                    _ = ShowErrorDialog("Error Creating Listing", $"Failed to create listing: {ex.Message}");
+                    return;
+                }
             }
             else if (viewModel is CreateBorrowListingViewModel)
             {
-                var timeLimitDatePicker = (CalendarDatePicker)FormContainer.FindName("TimeLimitDatePicker");
-                if (!timeLimitDatePicker.Date.HasValue)
+                if (!StartDatePicker.Date.HasValue)
                 {
-                    titleErrorTextBlock.Text = "Please select a time limit.";
-                    titleErrorTextBlock.Visibility = Visibility.Visible;
-                    return;
-                }
-                DateTime endDate = timeLimitDatePicker.Date.Value.DateTime;
-
-                if (!float.TryParse(((TextBox)FormContainer.FindName("DailyRateTextBox")).Text, out float dailyRate))
-                {
-                    titleErrorTextBlock.Text = "Please enter a valid daily rate.";
-                    titleErrorTextBlock.Visibility = Visibility.Visible;
+                    StartDateErrorTextBlock.Text = "Please select a start date.";
+                    StartDateErrorTextBlock.Visibility = Visibility.Visible;
                     return;
                 }
 
-                var product = new BorrowProduct(0, title, description, App.CurrentUser, condition, category, productTags, viewModel.Images, DateTime.Now, endDate, endDate, dailyRate, false);
+                if (!TimeLimitDatePicker.Date.HasValue)
+                {
+                    EndDateErrorTextBlock.Text = "Please select an end date.";
+                    EndDateErrorTextBlock.Visibility = Visibility.Visible;
+                    return;
+                }
+
+                DateTime startDate = StartDatePicker.Date.Value.DateTime;
+                DateTime endDate = TimeLimitDatePicker.Date.Value.DateTime;
+
+                Console.WriteLine($"CreateListingView - User selected dates: StartDate={startDate}, EndDate={endDate}");
+
+                if (endDate <= startDate)
+                {
+                    EndDateErrorTextBlock.Text = "End date must be after start date.";
+                    EndDateErrorTextBlock.Visibility = Visibility.Visible;
+                    return;
+                }
+
+                if (!float.TryParse(DailyRateTextBox.Text, out float dailyRate) || dailyRate <= 0)
+                {
+                    DailyRateErrorTextBlock.Text = "Please enter a valid daily rate (must be greater than 0).";
+                    DailyRateErrorTextBlock.Visibility = Visibility.Visible;
+                    return;
+                }
+
+                Console.WriteLine($"CreateListingView - Creating BorrowProduct with: " +
+                                $"StartDate={startDate}, EndDate={endDate}, TimeLimit={endDate}");
+
+                var product = new BorrowProduct(0, title, description, App.CurrentUser, condition, category, productTags, viewModel.Images, endDate, startDate, endDate, dailyRate, false);
+
+                Console.WriteLine($"CreateListingView - BorrowProduct created with: " +
+                                $"StartDate={product.StartDate}, EndDate={product.EndDate}, TimeLimit={product.TimeLimit}");
+
                 viewModel.CreateListing(product);
+                ShowSuccessMessage("Rental listing created successfully!");
             }
             else if (viewModel is CreateAuctionListingViewModel)
             {
-                if (!float.TryParse(((TextBox)FormContainer.FindName("StartingPriceTextBox")).Text, out float startingPrice))
+                if (!float.TryParse(StartingBidTextBox.Text, out float startingPrice) || startingPrice <= 0)
                 {
-                    titleErrorTextBlock.Text = "Please enter a valid starting price.";
-                    titleErrorTextBlock.Visibility = Visibility.Visible;
+                    StartingBidErrorTextBlock.Text = "Please enter a valid starting price (must be greater than 0).";
+                    StartingBidErrorTextBlock.Visibility = Visibility.Visible;
                     return;
                 }
 
-                if (!((CalendarDatePicker)FormContainer.FindName("EndAuctionDatePicker")).Date.HasValue)
+                if (!AuctionEndDatePicker.Date.HasValue)
                 {
-                    titleErrorTextBlock.Text = "Please select an end auction date.";
-                    titleErrorTextBlock.Visibility = Visibility.Visible;
+                    AuctionEndDateErrorTextBlock.Text = "Please select an end auction date.";
+                    AuctionEndDateErrorTextBlock.Visibility = Visibility.Visible;
                     return;
                 }
-                DateTime endAuctionDate = ((CalendarDatePicker)FormContainer.FindName("EndAuctionDatePicker")).Date.Value.DateTime;
+                DateTime endAuctionDate = AuctionEndDatePicker.Date.Value.DateTime;
+
+                if (endAuctionDate <= DateTime.Now)
+                {
+                    AuctionEndDateErrorTextBlock.Text = "Auction end date must be in the future.";
+                    AuctionEndDateErrorTextBlock.Visibility = Visibility.Visible;
+                    return;
+                }
 
                 var product = new AuctionProduct(0, title, description, App.CurrentUser, condition, category, productTags, viewModel.Images, DateTime.Now, endAuctionDate, startingPrice);
                 viewModel.CreateListing(product);
+                ShowSuccessMessage("Auction listing created successfully!");
             }
-            ShowSuccessMessage("Listing created successfully!");
         }
     }
 }

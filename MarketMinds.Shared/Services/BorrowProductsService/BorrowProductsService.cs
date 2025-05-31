@@ -31,6 +31,9 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 throw new ArgumentException("Product must be a BorrowProduct.", nameof(product));
             }
 
+            Console.WriteLine($"BorrowProductsService.CreateListing - Before ApplyDefaultDates: " +
+                            $"StartDate={borrowProduct.StartDate}, EndDate={borrowProduct.EndDate}, TimeLimit={borrowProduct.TimeLimit}");
+
             // Convert Tags to ProductTags if ProductTags is empty but Tags has data
             if ((borrowProduct.ProductTags == null || !borrowProduct.ProductTags.Any()) &&
                 borrowProduct.Tags != null && borrowProduct.Tags.Any())
@@ -48,6 +51,9 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             }
 
             ApplyDefaultDates(borrowProduct);
+
+            Console.WriteLine($"BorrowProductsService.CreateListing - After ApplyDefaultDates: " +
+                            $"StartDate={borrowProduct.StartDate}, EndDate={borrowProduct.EndDate}, TimeLimit={borrowProduct.TimeLimit}");
 
             borrowProductsRepository.CreateListing(borrowProduct);
         }
@@ -137,28 +143,49 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
 
         private void ApplyDefaultDates(BorrowProduct product)
         {
-            if (product.StartDate == default)
+            Console.WriteLine($"ApplyDefaultDates - Input: StartDate={product.StartDate}, EndDate={product.EndDate}, TimeLimit={product.TimeLimit}");
+            
+            // Only set default values if the user didn't provide them
+            if (product.StartDate == default || product.StartDate == null)
             {
                 product.StartDate = DateTime.Now;
+                Console.WriteLine($"Set default StartDate: {product.StartDate}");
             }
 
-            if (product.EndDate == default)
+            if (product.EndDate == default || product.EndDate == null)
             {
-                product.EndDate = DateTime.Now.AddDays(7);
+                // Default to 7 days from start date, or 7 days from now if start date is not set
+                DateTime baseDate = product.StartDate ?? DateTime.Now;
+                product.EndDate = baseDate.AddDays(7);
+                Console.WriteLine($"Set default EndDate: {product.EndDate}");
             }
 
             if (product.TimeLimit == default)
             {
-                product.TimeLimit = DateTime.Now.AddDays(7);
+                // TimeLimit should be the end date of availability, or default to end date + some buffer
+                product.TimeLimit = product.EndDate ?? DateTime.Now.AddDays(7);
+                Console.WriteLine($"Set default TimeLimit: {product.TimeLimit}");
             }
 
+            // Validate date relationships
             DateTime startDate = product.StartDate ?? DateTime.Now;
             DateTime endDate = product.EndDate ?? startDate.AddDays(7);
 
+            // Fix illogical dates
             if (endDate < startDate)
             {
+                Console.WriteLine($"EndDate ({endDate}) is before StartDate ({startDate}), fixing...");
                 product.EndDate = startDate.AddDays(7);
             }
+            
+            // Ensure TimeLimit is at least as far as EndDate
+            if (product.TimeLimit < product.EndDate)
+            {
+                Console.WriteLine($"TimeLimit ({product.TimeLimit}) is before EndDate ({product.EndDate}), fixing...");
+                product.TimeLimit = product.EndDate ?? DateTime.Now.AddDays(7);
+            }
+
+            Console.WriteLine($"ApplyDefaultDates - Final: StartDate={product.StartDate}, EndDate={product.EndDate}, TimeLimit={product.TimeLimit}");
         }
 
         public void DeleteListing(Product product)

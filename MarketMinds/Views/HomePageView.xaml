@@ -17,13 +17,13 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Padding="12">
+        <Grid Grid.Row="0" Padding="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            
+
             <Button Grid.Column="0"
                     Click="MarketMinds_Title_Click" 
                     Background="Transparent" 
@@ -33,13 +33,28 @@
                           VerticalAlignment="Center"/>
             </Button>
 
-            <!-- Create Listing Button (seller only)-->
-            <AppBarButton x:Name="CreateListingButton" Grid.ColumnSpan="3" Label="Create Listing" Tag="CreateListing" Click="AppNavBarButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xE710;" />
-                    </AppBarButton.Icon>
-            </AppBarButton>
-            
+            <Grid Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Rectangle Stroke="{ThemeResource SystemAccentColor}" 
+                        StrokeThickness="1"
+                        StrokeDashArray="4,2"
+                        RadiusX="8" RadiusY="8"
+                        Margin="-1"/>
+
+                <Button x:Name="CreateListingButton"
+                        Tag="CreateListing"
+                        Click="AppNavBarButton_Click">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Glyph="&#xE710;"
+                                    FontSize="12"
+                                    Margin="0,3,5,0"/>
+                            <TextBlock>Create Listing</TextBlock>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+            </Grid>
+
+
             <!-- Chat Support Button (buyer only)-->
             <AppBarButton x:Name="ChatSupportButton"  Grid.ColumnSpan="3" Label="Chat Support" Tag="ChatSupport" Click="AppNavBarButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <AppBarButton.Icon>
