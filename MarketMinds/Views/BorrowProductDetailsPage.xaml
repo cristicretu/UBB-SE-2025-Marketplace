@@ -439,7 +439,7 @@
                                                                ItemsStretch="None"/>
                                         </ItemsRepeater.Layout>
                                         <ItemsRepeater.ItemTemplate>
-                                            <DataTemplate x:DataType="models:Tag">
+                                            <DataTemplate x:DataType="models:ProductTag">
                                                 <Border Background="{ThemeResource SystemAccentColorLight2}"
                                                         CornerRadius="12"
                                                         Padding="8,4"
