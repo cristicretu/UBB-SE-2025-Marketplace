@@ -1,0 +1,514 @@
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+using MarketMinds.Shared.Models;
+
+namespace MarketMinds.Views
+{
+    public sealed partial class BorrowProductDetailsPage : Page, INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private BorrowProduct product;
+        public BorrowProduct Product
+        {
+            get => product;
+            set => SetProperty(ref product, value);
+        }
+
+        // Image handling properties
+        private int currentImageIndex = 1;
+        public int CurrentImageIndex
+        {
+            get => currentImageIndex;
+            set => SetProperty(ref currentImageIndex, value);
+        }
+
+        // Computed properties
+        public int TotalImages => Product?.Images?.Count() ?? 0;
+        public bool HasMultipleImages => TotalImages > 1;
+        public string ProductDescription => Product?.Description ?? "No description available.";
+        public string SellerName => Product?.Seller?.Username ?? "Unknown Seller";
+        public int SellerId => Product?.Seller?.Id ?? 0;
+        public bool HasTags => Product?.Tags?.Any() == true;
+
+        // Availability properties
+        public bool IsAvailable => Product?.IsBorrowed != true;
+        public bool IsAvailableNow => IsAvailable && (Product?.StartDate == null || Product.StartDate.Value <= DateTime.Now);
+        public bool IsFutureAvailable => IsAvailable && Product?.StartDate.HasValue == true && Product.StartDate.Value > DateTime.Now;
+        public bool IsCurrentlyBorrowed => Product?.IsBorrowed == true;
+
+        public string AvailabilityText
+        {
+            get
+            {
+                if (IsAvailableNow) return "Available Now";
+                if (IsFutureAvailable) return $"Available {Product?.StartDate?.ToString("MMM dd")}";
+                return "Borrowed";
+            }
+        }
+
+        public SolidColorBrush AvailabilityColor
+        {
+            get
+            {
+                try
+                {
+                    if (IsAvailableNow)
+                        return (SolidColorBrush)Application.Current.Resources["SystemFillColorSuccessBrush"];
+                    if (IsFutureAvailable)
+                        return (SolidColorBrush)Application.Current.Resources["SystemFillColorCautionBrush"];
+                    return (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                }
+                catch
+                {
+                    if (IsAvailableNow) return new SolidColorBrush(Microsoft.UI.Colors.Green);
+                    if (IsFutureAvailable) return new SolidColorBrush(Microsoft.UI.Colors.Orange);
+                    return new SolidColorBrush(Microsoft.UI.Colors.Red);
+                }
+            }
+        }
+
+        public string CategoryName => Product?.Category?.Name ?? "Uncategorized";
+        public string ConditionName => Product?.Condition?.Name ?? "Unknown";
+
+        public string RemainingTime
+        {
+            get
+            {
+                if (Product?.EndDate.HasValue == true)
+                {
+                    var timeLeft = Product.EndDate.Value - DateTime.Now;
+                    if (timeLeft <= TimeSpan.Zero)
+                        return "Borrowing period ended";
+                    return $"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m";
+                }
+                return "No end date specified";
+            }
+        }
+
+        public int DaysUntilAvailable
+        {
+            get
+            {
+                if (Product?.StartDate.HasValue == true && Product.StartDate.Value > DateTime.Now)
+                {
+                    return (Product.StartDate.Value - DateTime.Now).Days;
+                }
+                return 0;
+            }
+        }
+
+        // User role properties
+        public bool IsCurrentUserBuyer => App.CurrentUser?.UserType == 2;
+        public bool IsCurrentUserSeller => App.CurrentUser?.UserType == 3;
+        public bool ShowLoginPrompt => !IsCurrentUserBuyer;
+        public bool CanLeaveReview => IsCurrentUserBuyer && SellerId > 0;
+
+        // Borrowing properties
+        public bool IsCurrentBorrower => Product?.BorrowerId == App.CurrentUser?.Id;
+        public bool ShowWaitlistSection => IsCurrentUserBuyer && (IsCurrentlyBorrowed || IsFutureAvailable);
+
+        // Date properties for borrowing
+        public DateTimeOffset MinBorrowDate => DateTime.Now.AddDays(1);
+        public DateTimeOffset MaxBorrowDate => Product?.TimeLimit ?? DateTime.Now.AddDays(30);
+        public DateTimeOffset MinWaitlistDate
+        {
+            get
+            {
+                if (IsCurrentlyBorrowed && Product?.EndDate.HasValue == true)
+                    return Product.EndDate.Value.AddDays(1);
+                if (IsFutureAvailable && Product?.StartDate.HasValue == true)
+                    return Product.StartDate.Value.AddDays(1);
+                return DateTime.Now.AddDays(1);
+            }
+        }
+        public DateTimeOffset MaxWaitlistDate => Product?.TimeLimit ?? DateTime.Now.AddDays(30);
+
+        public BorrowProductDetailsPage()
+        {
+            this.InitializeComponent();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            
+            if (e.Parameter is BorrowProduct borrowProduct)
+            {
+                Product = borrowProduct;
+                InitializeProductData();
+            }
+            else
+            {
+                Debug.WriteLine("BorrowProductDetailsPage: No product parameter provided");
+                // Navigate back if no product is provided
+                if (Frame.CanGoBack)
+                {
+                    Frame.GoBack();
+                }
+            }
+        }
+
+        private void InitializeProductData()
+        {
+            if (Product == null) return;
+
+            // Initialize image index
+            if (Product.Images?.Any() == true)
+            {
+                CurrentImageIndex = 1;
+            }
+            else
+            {
+                CurrentImageIndex = 0;
+            }
+
+            // Notify all computed properties
+            OnPropertyChanged(nameof(TotalImages));
+            OnPropertyChanged(nameof(HasMultipleImages));
+            OnPropertyChanged(nameof(ProductDescription));
+            OnPropertyChanged(nameof(SellerName));
+            OnPropertyChanged(nameof(SellerId));
+            OnPropertyChanged(nameof(HasTags));
+            OnPropertyChanged(nameof(IsAvailable));
+            OnPropertyChanged(nameof(IsAvailableNow));
+            OnPropertyChanged(nameof(IsFutureAvailable));
+            OnPropertyChanged(nameof(IsCurrentlyBorrowed));
+            OnPropertyChanged(nameof(AvailabilityText));
+            OnPropertyChanged(nameof(AvailabilityColor));
+            OnPropertyChanged(nameof(CategoryName));
+            OnPropertyChanged(nameof(ConditionName));
+            OnPropertyChanged(nameof(RemainingTime));
+            OnPropertyChanged(nameof(DaysUntilAvailable));
+            OnPropertyChanged(nameof(IsCurrentUserBuyer));
+            OnPropertyChanged(nameof(IsCurrentUserSeller));
+            OnPropertyChanged(nameof(ShowLoginPrompt));
+            OnPropertyChanged(nameof(CanLeaveReview));
+            OnPropertyChanged(nameof(IsCurrentBorrower));
+            OnPropertyChanged(nameof(ShowWaitlistSection));
+            OnPropertyChanged(nameof(MinBorrowDate));
+            OnPropertyChanged(nameof(MaxBorrowDate));
+            OnPropertyChanged(nameof(MinWaitlistDate));
+            OnPropertyChanged(nameof(MaxWaitlistDate));
+        }
+
+        private void ThumbnailImage_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string imageUrl)
+            {
+                try
+                {
+                    // Update the main image source directly
+                    MainImage.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(imageUrl));
+                    
+                    // Update current image index
+                    if (Product?.Images != null)
+                    {
+                        var index = Product.Images.ToList().FindIndex(img => img.Url == imageUrl);
+                        if (index >= 0)
+                        {
+                            CurrentImageIndex = index + 1;
+                        }
+                    }
+
+                    Debug.WriteLine($"Changed main image to: {imageUrl}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error changing main image: {ex.Message}");
+                }
+            }
+        }
+
+        private async void BorrowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Product == null || !IsCurrentUserBuyer) return;
+
+            var endDate = BorrowEndDatePicker.Date;
+            if (endDate == null)
+            {
+                BorrowResult.Text = "Please select an end date first";
+                BorrowResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                return;
+            }
+
+            try
+            {
+                // Disable button and show loading
+                BorrowButton.IsEnabled = false;
+                BorrowResult.Text = "Processing your request...";
+                BorrowResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Blue);
+
+                // Here you would call the actual borrowing service
+                // For now, just show a success message
+                await System.Threading.Tasks.Task.Delay(1000); // Simulate API call
+
+                BorrowResult.Text = "Success! Product borrowed successfully.";
+                BorrowResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Green);
+
+                // Show success dialog
+                var dialog = new ContentDialog
+                {
+                    Title = "Borrowing Successful",
+                    Content = $"You have successfully borrowed '{Product.Title}' until {endDate.Value.ToString("MMMM dd, yyyy")}.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+
+                // Refresh the page or navigate back
+                if (Frame.CanGoBack)
+                {
+                    Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error borrowing product: {ex.Message}");
+                
+                BorrowResult.Text = "Error processing request";
+                BorrowResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                
+                var dialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "An error occurred while processing your borrowing request.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                BorrowButton.IsEnabled = true;
+            }
+        }
+
+        private async void ReturnButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Product == null || !IsCurrentBorrower) return;
+
+            var confirmDialog = new ContentDialog
+            {
+                Title = "Confirm Return",
+                Content = "Are you sure you want to return this product?",
+                PrimaryButtonText = "Yes, Return",
+                CloseButtonText = "Cancel",
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await confirmDialog.ShowAsync();
+            if (result != ContentDialogResult.Primary) return;
+
+            try
+            {
+                // Disable button and show loading
+                ReturnButton.IsEnabled = false;
+
+                // Here you would call the actual return service
+                // For now, just show a success message
+                await System.Threading.Tasks.Task.Delay(1000); // Simulate API call
+
+                var dialog = new ContentDialog
+                {
+                    Title = "Return Successful",
+                    Content = "Product returned successfully.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+
+                // Refresh the page or navigate back
+                if (Frame.CanGoBack)
+                {
+                    Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error returning product: {ex.Message}");
+                
+                var dialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "An error occurred while processing your return request.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                ReturnButton.IsEnabled = true;
+            }
+        }
+
+        private async void JoinWaitlistButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Product == null || !IsCurrentUserBuyer) return;
+
+            var endDate = WaitlistEndDatePicker.Date;
+            if (endDate == null)
+            {
+                WaitlistResult.Text = "Please select your desired end date first";
+                WaitlistResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                return;
+            }
+
+            try
+            {
+                // Disable button and show loading
+                JoinWaitlistButton.IsEnabled = false;
+                WaitlistResult.Text = "Processing your request...";
+                WaitlistResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Blue);
+
+                // Here you would call the actual waitlist service
+                // For now, just show a success message
+                await System.Threading.Tasks.Task.Delay(1000); // Simulate API call
+
+                WaitlistResult.Text = "Success! You have joined the waitlist.";
+                WaitlistResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Green);
+
+                // Show success dialog
+                var dialog = new ContentDialog
+                {
+                    Title = "Joined Waitlist",
+                    Content = $"You have successfully joined the waitlist for '{Product.Title}'. You will be notified when it becomes available.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error joining waitlist: {ex.Message}");
+                
+                WaitlistResult.Text = "Error processing request";
+                WaitlistResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                
+                var dialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "An error occurred while joining the waitlist.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                JoinWaitlistButton.IsEnabled = true;
+            }
+        }
+
+        private async void LeaveWaitlistButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Product == null || !IsCurrentUserBuyer) return;
+
+            var confirmDialog = new ContentDialog
+            {
+                Title = "Leave Waitlist",
+                Content = "Are you sure you want to leave the waitlist for this product?",
+                PrimaryButtonText = "Yes, Leave",
+                CloseButtonText = "Cancel",
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await confirmDialog.ShowAsync();
+            if (result != ContentDialogResult.Primary) return;
+
+            try
+            {
+                // Disable button and show loading
+                LeaveWaitlistButton.IsEnabled = false;
+
+                // Here you would call the actual leave waitlist service
+                // For now, just show a success message
+                await System.Threading.Tasks.Task.Delay(1000); // Simulate API call
+
+                var dialog = new ContentDialog
+                {
+                    Title = "Left Waitlist",
+                    Content = "You have successfully left the waitlist.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error leaving waitlist: {ex.Message}");
+                
+                var dialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "An error occurred while leaving the waitlist.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                LeaveWaitlistButton.IsEnabled = true;
+            }
+        }
+
+        private void LeaveReviewButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Product?.Seller == null) return;
+
+            // Navigate to review page or show review dialog
+            // For now, just show a placeholder dialog
+            var dialog = new ContentDialog
+            {
+                Title = "Leave Review",
+                Content = $"Review functionality for lender '{SellerName}' will be implemented here.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            _ = dialog.ShowAsync();
+        }
+
+        private void HomeButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Navigate to home/main page
+            Frame.Navigate(typeof(MarketMindsPage));
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Go back to previous page
+            if (Frame.CanGoBack)
+            {
+                Frame.GoBack();
+            }
+            else
+            {
+                // Fallback to MarketMindsPage if no back history
+                Frame.Navigate(typeof(MarketMindsPage));
+            }
+        }
+
+        private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (!Equals(field, value))
+            {
+                field = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+} 

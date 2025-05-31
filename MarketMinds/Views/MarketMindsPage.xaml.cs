@@ -1006,7 +1006,7 @@ namespace MarketMinds.Views
             if (e.ClickedItem is BorrowProduct product)
             {
                 // Navigate to borrow product details page
-                // Frame.Navigate(typeof(BorrowProductDetailsPage), product);
+                Frame.Navigate(typeof(BorrowProductDetailsPage), product);
             }
         }
     }
