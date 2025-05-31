@@ -274,23 +274,6 @@ namespace MarketMinds.ViewModels
                 int newTrackedOrderID = await trackedOrderService.AddTrackedOrderAsync(trackedOrder);
                 trackedOrder.TrackedOrderID = newTrackedOrderID;
 
-                try
-                {
-                    // Order order = await orderViewModel.GetOrderByIdAsync(trackedOrder.OrderID);
-                    // if (order != null)
-                    // {
-                    //     await notificationService.SendShippingProgressNotificationAsync(
-                    //         order.Id,
-                    //         trackedOrder.TrackedOrderID,
-                    //         trackedOrder.CurrentStatus.ToString(),
-                    //         trackedOrder.EstimatedDeliveryDate.ToDateTime(TimeOnly.FromDateTime(DateTime.Now)));
-                    // }
-                }
-                catch
-                {
-                    // Notification failures shouldn't stop the order tracking process
-                }
-
                 return newTrackedOrderID;
             }
             catch (Exception exception)
@@ -322,26 +305,6 @@ namespace MarketMinds.ViewModels
                 TrackedOrder trackedOrder = await trackedOrderService.GetTrackedOrderByIDAsync(checkpoint.TrackedOrderID);
                 await UpdateTrackedOrderAsync(trackedOrder.TrackedOrderID, trackedOrder.EstimatedDeliveryDate, checkpoint.Status);
 
-                if (checkpoint.Status == OrderStatus.SHIPPED || checkpoint.Status == OrderStatus.OUT_FOR_DELIVERY)
-                {
-                    try
-                    {
-                        // Order order = await orderViewModel.GetOrderByIdAsync(trackedOrder.OrderID);
-                        // if (order != null)
-                        // {
-                        //     await notificationService.SendShippingProgressNotificationAsync(
-                        //         order.Id,
-                        //         trackedOrder.TrackedOrderID,
-                        //         trackedOrder.CurrentStatus.ToString(),
-                        //         trackedOrder.EstimatedDeliveryDate.ToDateTime(TimeOnly.FromDateTime(DateTime.Now)));
-                        // }
-                    }
-                    catch
-                    {
-                        // Notification failures shouldn't stop the order tracking process
-                    }
-                }
-
                 return newCheckpointID;
             }
             catch (Exception exception)
@@ -365,13 +328,8 @@ namespace MarketMinds.ViewModels
             {
                 await trackedOrderService.UpdateOrderCheckpointAsync(checkpointID, timestamp, location, description, status);
 
-                OrderCheckpoint updatedCheckpoint = await trackedOrderService.GetOrderCheckpointByIDAsync(checkpointID);
-                TrackedOrder associatedTrackedOrder = await trackedOrderService.GetTrackedOrderByIDAsync(updatedCheckpoint.TrackedOrderID);
-
-                await UpdateTrackedOrderAsync(
-                    associatedTrackedOrder.TrackedOrderID,
-                    associatedTrackedOrder.EstimatedDeliveryDate,
-                    updatedCheckpoint.Status);
+                // Note: No need to call UpdateTrackedOrderAsync here as UpdateOrderCheckpointAsync
+                // in the repository already handles status changes and notifications
             }
             catch (Exception exception)
             {
@@ -402,11 +360,8 @@ namespace MarketMinds.ViewModels
 
                 await trackedOrderService.UpdateOrderCheckpointAsync(checkpointID, timestamp, location, description, status);
 
-                TrackedOrder associatedTrackedOrder = await trackedOrderService.GetTrackedOrderByIDAsync(trackedOrderID);
-                await UpdateTrackedOrderAsync(
-                    associatedTrackedOrder.TrackedOrderID,
-                    associatedTrackedOrder.EstimatedDeliveryDate,
-                    status);
+                // Note: No need to call UpdateTrackedOrderAsync here as UpdateOrderCheckpointAsync
+                // in the repository already handles status changes and notifications
 
                 return true;
             }
@@ -479,27 +434,6 @@ namespace MarketMinds.ViewModels
                 if (updatedTrackedOrder.OrderID != orderID)
                 {
                     return false;
-                }
-
-                // Send notifications for shipping status changes
-                if (currentStatus == OrderStatus.SHIPPED || currentStatus == OrderStatus.OUT_FOR_DELIVERY)
-                {
-                    try
-                    {
-                        // Order order = await orderViewModel.GetOrderByIdAsync(orderID);
-                        // if (order != null)
-                        // {
-                        //     await notificationService.SendShippingProgressNotificationAsync(
-                        //         order.Id,
-                        //         trackedOrderID,
-                        //         currentStatus.ToString(),
-                        //         estimatedDeliveryDate.ToDateTime(TimeOnly.FromDateTime(DateTime.Now)));
-                        // }
-                    }
-                    catch
-                    {
-                        // Notification failures shouldn't stop the order tracking process
-                    }
                 }
 
                 return true;

@@ -42,6 +42,11 @@ namespace MarketMinds.ViewModels
         bool IsExpanderExpanded { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether data is currently being loaded.
+        /// </summary>
+        bool IsLoading { get; set; }
+
+        /// <summary>
         /// Gets or sets the display name shown in the header of the profile.
         /// </summary>
         string DisplayName { get; set; }
@@ -50,11 +55,6 @@ namespace MarketMinds.ViewModels
         /// Gets or sets the seller's username (from User).
         /// </summary>
         string Username { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of followers as a string.
-        /// </summary>
-        string FollowersCount { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the store (from Seller).
@@ -82,6 +82,11 @@ namespace MarketMinds.ViewModels
         double TrustScore { get; set; }
 
         /// <summary>
+        /// Gets the rating value for the RatingControl (0-5 range).
+        /// </summary>
+        double RatingValue { get; }
+
+        /// <summary>
         /// Gets or sets the store's description.
         /// </summary>
         string StoreDescription { get; set; }
@@ -91,9 +96,24 @@ namespace MarketMinds.ViewModels
         /// </summary>
         ObservableCollection<Product> Products { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list of followers for this seller.
+        /// </summary>
+        ObservableCollection<Buyer> FollowersList { get; set; }
+
+        /// <summary>
+        /// Gets the followers count from the actual followers list.
+        /// </summary>
+        string ActualFollowersCount { get; }
+
         // -----------------------------
         // Validation-related properties
         // -----------------------------
+
+        /// <summary>
+        /// Gets or sets the validation error message for the username field.
+        /// </summary>
+        string UsernameError { get; set; }
 
         /// <summary>
         /// Gets or sets the validation error message for the store name field.
@@ -125,15 +145,22 @@ namespace MarketMinds.ViewModels
         // -----------------------------
 
         /// <summary>
-        /// Loads seller profile, notifications, and products asynchronously.
+        /// Loads the seller profile data asynchronously.
         /// </summary>
-        void LoadProfileAsync();
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task LoadProfileAsync();
 
         /// <summary>
         /// Loads the latest seller notifications asynchronously.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task LoadNotifications();
+
+        /// <summary>
+        /// Loads the seller's followers asynchronously.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task LoadFollowers();
 
         /// <summary>
         /// Filters the list of products using a text search.
@@ -149,7 +176,8 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Updates the seller's profile in the backend (name, address, user info).
         /// </summary>
-        void UpdateProfile();
+        /// <returns>True if the update was successful, false otherwise.</returns>
+        Task<bool> UpdateProfile();
 
         /// <summary>
         /// Validates all input fields in the seller profile and returns any error messages found.

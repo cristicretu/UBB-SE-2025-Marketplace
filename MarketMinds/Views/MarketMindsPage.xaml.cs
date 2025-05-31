@@ -306,6 +306,17 @@ namespace MarketMinds.Views
             ProductsPivot.SelectedIndex = 0;
         }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            
+            // Check if a specific tab index is passed as parameter
+            if (e.Parameter is int tabIndex && tabIndex >= 0 && tabIndex <= 2)
+            {
+                ProductsPivot.SelectedIndex = tabIndex;
+            }
+        }
+
         /// <summary>
         /// Initializes the debouncing timers for filters
         /// </summary>
@@ -945,7 +956,7 @@ namespace MarketMinds.Views
             if (e.ClickedItem is BuyProduct product)
             {
                 // Navigate to product details page
-                // Frame.Navigate(typeof(ProductDetailsPage), product);
+                Frame.Navigate(typeof(BuyProductDetailsPage), product);
             }
         }
 
@@ -1006,7 +1017,7 @@ namespace MarketMinds.Views
             if (e.ClickedItem is BorrowProduct product)
             {
                 // Navigate to borrow product details page
-                // Frame.Navigate(typeof(BorrowProductDetailsPage), product);
+                Frame.Navigate(typeof(BorrowProductDetailsPage), product);
             }
         }
     }

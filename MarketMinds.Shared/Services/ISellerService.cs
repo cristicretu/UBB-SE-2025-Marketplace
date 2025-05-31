@@ -58,6 +58,13 @@ namespace MarketMinds.Shared.Services
         Task<Seller?> GetSellerByIdAsync(int sellerId);
 
         /// <summary>
+        /// Gets all followers for a seller.
+        /// </summary>
+        /// <param name="sellerId">The seller ID.</param>
+        /// <returns>List of buyers following the seller.</returns>
+        Task<List<Buyer>> GetFollowers(int sellerId);
+
+        /// <summary>
         /// Generates notification for followers count change.
         /// </summary>
         /// <param name="sellerId">The seller ID.</param>

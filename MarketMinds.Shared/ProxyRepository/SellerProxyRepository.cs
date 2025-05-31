@@ -258,6 +258,24 @@ namespace MarketMinds.Shared.ProxyRepository
             await this.ThrowOnError(nameof(UpdateTrustScore), response);
         }
 
+        /// <inheritdoc />
+        public async Task<List<Buyer>> GetFollowers(int sellerId)
+        {
+            Debug.WriteLine($"GetFollowers called for seller ID: {sellerId}");
+
+            var requestUrl = $"{ApiBaseRoute}/{sellerId}/followers";
+            Debug.WriteLine($"Request URL: {requestUrl}");
+
+            var response = await this.httpClient.GetAsync(requestUrl);
+            Debug.WriteLine($"Response status: {response.StatusCode}");
+
+            await this.ThrowOnError(nameof(GetFollowers), response);
+
+            var followers = await response.Content.ReadFromJsonAsync<List<Buyer>>();
+            Debug.WriteLine($"Retrieved {followers?.Count ?? 0} followers");
+            return followers ?? new List<Buyer>();
+        }
+
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)

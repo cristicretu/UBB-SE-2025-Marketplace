@@ -432,9 +432,13 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Filters header -->
                 <RowDefinition Height="Auto"/> <!-- Search box -->
+                <RowDefinition Height="Auto"/> <!-- Separator 1 -->
                 <RowDefinition Height="Auto"/> <!-- Price Range -->
+                <RowDefinition Height="Auto"/> <!-- Separator 2 -->
                 <RowDefinition Height="Auto"/> <!-- Categories -->
+                <RowDefinition Height="Auto"/> <!-- Separator 3 -->
                 <RowDefinition Height="Auto"/> <!-- Condition -->
+                <RowDefinition Height="Auto"/> <!-- Separator 4 -->
                 <RowDefinition Height="Auto"/> <!-- Clear Filters -->
                 <RowDefinition Height="*"/> <!-- Space for future elements -->
             </Grid.RowDefinitions>
@@ -455,8 +459,13 @@
                            QuerySubmitted="SearchBox_QuerySubmitted"
                            TextChanged="SearchBox_TextChanged"/>
             
+            <!-- Separator Line 1 -->
+            <Rectangle Grid.Row="2" Height="1" Margin="0,0,0,16" 
+                     Fill="{ThemeResource SystemControlForegroundBaseLowBrush}" 
+                     HorizontalAlignment="Stretch"/>
+            
             <!-- Price Range -->
-            <StackPanel Grid.Row="2" Margin="0,0,0,16">
+            <StackPanel Grid.Row="3" Margin="0,0,0,16">
                 <TextBlock Text="Price Range" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
                 <Slider x:Name="PriceRangeSlider" Minimum="1" Maximum="100101" Value="100101"
                        ThumbToolTipValueConverter="{x:Null}"
@@ -474,8 +483,13 @@
                 </Grid>
             </StackPanel>
 
+            <!-- Separator Line 2 -->
+            <Rectangle Grid.Row="4" Height="1" Margin="0,0,0,16" 
+                     Fill="{ThemeResource SystemControlForegroundBaseLowBrush}" 
+                     HorizontalAlignment="Stretch"/>
+            
             <!-- Categories -->
-            <StackPanel Grid.Row="3" Margin="0,0,0,16">
+            <StackPanel Grid.Row="5" Margin="0,0,0,16">
                 <TextBlock Text="Categories" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
                 <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollMode="Auto" MaxHeight="120">
                     <ItemsRepeater x:Name="CategoriesRepeater" ItemsSource="{x:Bind Categories, Mode=OneWay}">
@@ -494,8 +508,13 @@
                 </ScrollViewer>
             </StackPanel>
 
+            <!-- Separator Line 3 -->
+            <Rectangle Grid.Row="6" Height="1" Margin="0,0,0,16" 
+                     Fill="{ThemeResource SystemControlForegroundBaseLowBrush}" 
+                     HorizontalAlignment="Stretch"/>
+            
             <!-- Condition -->
-            <StackPanel Grid.Row="4" Margin="0,0,0,16">
+            <StackPanel Grid.Row="7" Margin="0,0,0,16">
                 <TextBlock Text="Condition" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
                 <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollMode="Auto" MaxHeight="120">
                     <ItemsRepeater x:Name="ConditionsRepeater" ItemsSource="{x:Bind Conditions, Mode=OneWay}">
@@ -514,8 +533,13 @@
                 </ScrollViewer>
             </StackPanel>
 
+            <!-- Separator Line 4 -->
+            <Rectangle Grid.Row="8" Height="1" Margin="0,0,0,16" 
+                     Fill="{ThemeResource SystemControlForegroundBaseLowBrush}" 
+                     HorizontalAlignment="Stretch"/>
+            
             <!-- Clear Filters Button -->
-            <Button Grid.Row="5" HorizontalAlignment="Stretch" Padding="0,8" Background="Transparent" BorderThickness="1"
+            <Button Grid.Row="9" HorizontalAlignment="Stretch" Padding="0,8" Background="Transparent" BorderThickness="1"
                     BorderBrush="{ThemeResource SystemControlBackgroundBaseLowBrush}" Click="ClearFilters_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <FontIcon Glyph="&#xE711;" FontSize="12" Margin="0,0,8,0"/>

@@ -140,5 +140,23 @@ namespace Server.Repository
             this.dbContext.SellerNotifications.Add(newNotification);
             await this.dbContext.SaveChangesAsync();
         }
+
+        /// <inheritdoc/>
+        public async Task<List<Buyer>> GetFollowers(int sellerId)
+        {
+            // Get all buyer IDs that are following this seller from the Followings table
+            var followerBuyerIds = await this.dbContext.Followings
+                .Where(f => f.SellerId == sellerId)
+                .Select(f => f.BuyerId)
+                .ToListAsync();
+
+            // Get the Buyer entities with their User information
+            var followers = await this.dbContext.Buyers
+                .Include(b => b.User)
+                .Where(b => followerBuyerIds.Contains(b.Id))
+                .ToListAsync();
+
+            return followers;
+        }
     }
 }
