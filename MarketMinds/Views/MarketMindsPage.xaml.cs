@@ -945,7 +945,7 @@ namespace MarketMinds.Views
             if (e.ClickedItem is BuyProduct product)
             {
                 // Navigate to product details page
-                // Frame.Navigate(typeof(ProductDetailsPage), product);
+                Frame.Navigate(typeof(BuyProductDetailsPage), product);
             }
         }
 
