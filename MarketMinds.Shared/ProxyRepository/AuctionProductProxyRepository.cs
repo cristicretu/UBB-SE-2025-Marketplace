@@ -14,7 +14,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public AuctionProductsProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
             if (!apiBaseUrl.EndsWith("/"))
             {
                 apiBaseUrl += "/";
@@ -187,6 +187,100 @@ namespace MarketMinds.Shared.ProxyRepository
         public void ConcludeAuction(AuctionProduct auction)
         {
             var response = httpClient.DeleteAsync($"auctionproducts/{auction.Id}").Result;
+        }
+
+        public void UpdateAuctionProduct(AuctionProduct auctionProduct)
+        {
+            if (auctionProduct == null)
+            {
+                throw new ArgumentNullException(nameof(auctionProduct), "Auction product cannot be null");
+            }
+
+            if (auctionProduct.Id <= 0)
+            {
+                throw new ArgumentException("Auction product ID must be greater than zero", nameof(auctionProduct.Id));
+            }
+
+            Console.WriteLine($"TRACE: Repository.UpdateAuctionProduct updating product ID {auctionProduct.Id} with EndTime: {auctionProduct.EndTime}");
+            Console.WriteLine($"TRACE: API Base URL: {apiBaseUrl}");
+            Console.WriteLine($"TRACE: Full endpoint URL will be: {httpClient.BaseAddress}auctionproducts/{auctionProduct.Id}");
+
+            // Filter out any null URLs in images
+            var imagesList = new List<object>();
+            if (auctionProduct.NonMappedImages != null && auctionProduct.NonMappedImages.Any())
+            {
+                imagesList = auctionProduct.NonMappedImages
+                    .Where(img => !string.IsNullOrWhiteSpace(img.Url))
+                    .Select(img => new { Url = img.Url })
+                    .Cast<object>()
+                    .ToList();
+            }
+            else if (auctionProduct.Images != null && auctionProduct.Images.Any())
+            {
+                imagesList = auctionProduct.Images
+                    .Where(img => !string.IsNullOrWhiteSpace(img.Url))
+                    .Select(img => new { Url = img.Url })
+                    .Cast<object>()
+                    .ToList();
+            }
+
+            // Convert tags to a serializable format
+            var tagsList = new List<object>();
+            if (auctionProduct.Tags != null && auctionProduct.Tags.Any())
+            {
+                tagsList = auctionProduct.Tags
+                    .Select(tag => new { Id = tag.Id, Title = tag.Title })
+                    .Cast<object>()
+                    .ToList();
+            }
+
+            // Create a simplified object for the API request with all necessary fields
+            var productToSend = new
+            {
+                Id = auctionProduct.Id,
+                Title = auctionProduct.Title,
+                Description = auctionProduct.Description,
+                SellerId = auctionProduct.SellerId,
+                ConditionId = auctionProduct.ConditionId,
+                CategoryId = auctionProduct.CategoryId,
+                startAuctionDate = auctionProduct.StartTime,
+                endAuctionDate = auctionProduct.EndTime,
+                startingPrice = auctionProduct.StartPrice,
+                currentPrice = auctionProduct.CurrentPrice,
+                Images = auctionProduct.Images?.Select(img => new { Url = img.Url }).ToArray() ?? new object[0],
+                Tags = auctionProduct.Tags?.Select(tag => new { Id = tag.Id, Title = tag.Title }).ToArray() ?? new object[0]
+            };
+
+            Console.WriteLine($"TRACE: About to send PUT request to update product {auctionProduct.Id} with endAuctionDate: {productToSend.endAuctionDate}");
+
+            try
+            {
+                var response = httpClient.PutAsJsonAsync($"auctionproducts/{auctionProduct.Id}", productToSend).Result;
+                
+                Console.WriteLine($"TRACE: PUT request completed. Status: {(int)response.StatusCode} {response.StatusCode}");
+                Console.WriteLine($"TRACE: Response headers: {response.Headers}");
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine($"TRACE: Error response content: {errorContent}");
+                    Console.WriteLine($"TRACE: Request URL was: {httpClient.BaseAddress}auctionproducts/{auctionProduct.Id}");
+                    Console.WriteLine($"TRACE: Request payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
+                    
+                    throw new HttpRequestException($"Failed to update auction product. Status: {(int)response.StatusCode} {response.ReasonPhrase}. Error: {errorContent}");
+                }
+
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine($"TRACE: Update API response received: {responseContent}");
+            }
+            catch (HttpRequestException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating auction product: {ex.Message}", ex);
+            }
         }
 
         public List<AuctionProduct> GetProducts()

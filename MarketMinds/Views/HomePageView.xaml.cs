@@ -28,6 +28,9 @@ namespace MarketMinds.Views
         private bool isSeller;
         private DispatcherTimer resizeTimer;
 
+        // Public property to expose ContentFrame for navigation from other classes
+        public Frame MainContentFrame => ContentFrame;
+
         public HomePageView()
         {
             this.InitializeComponent();

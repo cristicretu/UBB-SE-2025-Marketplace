@@ -997,7 +997,7 @@ namespace MarketMinds.Views
             if (e.ClickedItem is AuctionProduct product)
             {
                 // Navigate to auction product details page
-                // Frame.Navigate(typeof(AuctionProductDetailsPage), product);
+                Frame.Navigate(typeof(Views.Pages.AuctionProductDetailsPage), product);
             }
         }
 
