@@ -377,10 +377,91 @@
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock Text="{x:Bind Product.DailyRate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='€{0:F2}'}"
                                                Style="{StaticResource HeaderTextBlockStyle}"
-                                               Foreground="{ThemeResource SystemAccentColor}"/>
+                                               Foreground="{ThemeResource SystemAccentColor}"
+                                                Visibility="{x:Bind IsCurrentUserBuyer, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}" />
                                     <TextBlock Text="/ day" 
                                                VerticalAlignment="Bottom"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Margin="0,12,0,0"
+                                    Spacing="12"
+                                    Visibility="{x:Bind IsCurrentUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+
+                                    <!-- Section header -->
+                                    <TextBlock
+                                        Text="Update Daily Rate"
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                        Margin="0,0,0,8" />
+
+                                    <!-- Outer border (matches the “card” style in your page) -->
+                                    <Border
+                                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        CornerRadius="8"
+                                        BorderBrush="{ThemeResource SystemAccentColor}"
+                                        BorderThickness="1"
+                                        Padding="16">
+
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <!-- explanatory text -->
+                                                <RowDefinition Height="Auto"/>
+                                                <!-- New Rate label + NumberBox -->
+                                                <RowDefinition Height="Auto"/>
+                                                <!-- Update button -->
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Row 0: explanatory TextBlock -->
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Text="As the seller, you can adjust the daily rate for this product"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                FontSize="14" />
+
+                                            <!-- Row 1: “New Rate” label + NumberBox -->
+                                            <Grid Grid.Row="1" Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock
+                                                    Grid.Column="0"
+                                                    Text="New Rate"
+                                                    FontWeight="Medium"
+                                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                    VerticalAlignment="Center" />
+
+                                                <NumberBox
+                                                Grid.Column="1"
+                                                x:Name="DailyRateNumberBox"
+                                                PlaceholderText="€0.00"
+                                                Width="100"
+                                                Value="{x:Bind Product.DailyRate, Mode=TwoWay}"
+                                                Minimum="0"
+                                                Margin="8,0,0,0" />
+                                            </Grid>
+
+                                            <!-- Row 2: “Update Rate” button -->
+                                            <Button
+                                                Grid.Row="2"
+                                                Background="{ThemeResource SystemAccentColor}"
+                                                Foreground="{ThemeResource AccentButtonForeground}"
+                                                CornerRadius="8"
+                                                Padding="16,10"
+                                                HorizontalAlignment="Left"
+                                                Margin="0,16,0,0"
+                                                Click="UpdateDailyRateButton_Click">
+                                                <TextBlock
+                                            Text="Update Rate"
+                                            FontWeight="Medium" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
                                 </StackPanel>
                             </StackPanel>
 
