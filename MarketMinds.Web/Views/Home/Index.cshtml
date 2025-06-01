@@ -162,7 +162,7 @@
         
         <!-- Products Grid - Buy Products (default view) -->
         <div id="buyProducts" class="tab-content">
-            <div id="buyProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div id="buyProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3  xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 @foreach (var item in Model.BuyProducts)
                 {
                     <div class="product-item bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:shadow-md border border-gray-200"
@@ -275,7 +275,7 @@
         
         <!-- Products Grid - Auction Products (hidden initially) -->
         <div id="auctionProducts" class="tab-content hidden">
-            <div id="auctionProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div id="auctionProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3  xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 @foreach (var item in Model.AuctionProducts)
                 {
                     <div class="product-item bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:shadow-md border border-gray-200"
@@ -358,7 +358,7 @@
         
         <!-- Products Grid - Borrow Products (hidden initially) -->
         <div id="borrowProducts" class="tab-content hidden">
-            <div id="borrowProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div id="borrowProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3  xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 @foreach (var item in Model.BorrowProducts)
                 {
                     <div class="product-item bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:shadow-md border border-gray-200"
