@@ -18,7 +18,7 @@ namespace MarketMinds.Views.Pages
         public AuctionProductDetailsView()
         {
             this.InitializeComponent();
-            
+
             // Initialize ViewModel with the existing service from App
             if (App.AuctionProductsService != null)
             {
@@ -82,11 +82,11 @@ namespace MarketMinds.Views.Pages
             {
                 var firstImage = ViewModel.Images.First();
                 MainImage.Source = new BitmapImage(new Uri(firstImage.Url));
-                
+
                 NoImagePanel.Visibility = Visibility.Collapsed;
                 ImageCounterBorder.Visibility = ViewModel.Images.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
                 ThumbnailScroller.Visibility = ViewModel.Images.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-                
+
                 ImageCounter.Text = $"1 / {ViewModel.Images.Count}";
             }
             else
@@ -101,20 +101,20 @@ namespace MarketMinds.Views.Pages
         private void UpdateStatusDisplay()
         {
             var isEnded = ViewModel?.IsAuctionEnded ?? false;
-            
+
             // Update status border colors
-            StatusBorder.Background = isEnded 
+            StatusBorder.Background = isEnded
                 ? new SolidColorBrush(Microsoft.UI.Colors.Red) { Opacity = 0.1 }
                 : new SolidColorBrush(Microsoft.UI.Colors.Purple) { Opacity = 0.1 };
-            
+
             // Update status icon and text colors
             var statusIcon = (FontIcon)((StackPanel)StatusBorder.Child).Children[0];
             var statusText = (TextBlock)((StackPanel)StatusBorder.Child).Children[1];
-            
-            var foregroundColor = isEnded 
+
+            var foregroundColor = isEnded
                 ? new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 220, 38, 38))
                 : new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 147, 51, 234));
-            
+
             statusIcon.Foreground = foregroundColor;
             statusText.Foreground = foregroundColor;
         }
@@ -146,25 +146,25 @@ namespace MarketMinds.Views.Pages
             BiddingSection.Visibility = isEnded ? Visibility.Collapsed : Visibility.Visible;
             BidForm.Visibility = (canUserPlaceBids && !isUserSeller) ? Visibility.Visible : Visibility.Collapsed;
             SellerWarning.Visibility = isUserSeller ? Visibility.Visible : Visibility.Collapsed;
-            
+
             // Update auction ended message
             AuctionEndedMessage.Visibility = isEnded ? Visibility.Visible : Visibility.Collapsed;
-            
+
             // Update leave review button visibility
-            LeaveReviewButton.Visibility = (canUserPlaceBids && ViewModel?.Product?.Seller?.Id > 0) 
-                ? Visibility.Visible 
+            LeaveReviewButton.Visibility = (canUserPlaceBids && ViewModel?.Product?.Seller?.Id > 0)
+                ? Visibility.Visible
                 : Visibility.Collapsed;
-            
+
             // Update tags section visibility
-            TagsSection.Visibility = (ViewModel?.Tags != null && ViewModel.Tags.Any()) 
-                ? Visibility.Visible 
+            TagsSection.Visibility = (ViewModel?.Tags != null && ViewModel.Tags.Any())
+                ? Visibility.Visible
                 : Visibility.Collapsed;
         }
 
         private void UpdateBidHistoryVisibility()
         {
             var hasBids = ViewModel?.BidHistory != null && ViewModel.BidHistory.Any();
-            
+
             BidHistoryTable.Visibility = hasBids ? Visibility.Visible : Visibility.Collapsed;
             NoBidsState.Visibility = hasBids ? Visibility.Collapsed : Visibility.Visible;
         }
@@ -188,27 +188,31 @@ namespace MarketMinds.Views.Pages
 
         public string GetImageCounterText(ObservableCollection<ProductImage> images)
         {
-            if (images == null || !images.Any()) return "0 / 0";
+            if (images == null || !images.Any())
+            {
+                return "0 / 0";
+            }
+
             return $"1 / {images.Count}";
         }
 
         public SolidColorBrush GetStatusBackground(bool isAuctionEnded)
         {
-            return isAuctionEnded 
+            return isAuctionEnded
                 ? new SolidColorBrush(Microsoft.UI.Colors.Red) { Opacity = 0.1 }
                 : new SolidColorBrush(Microsoft.UI.Colors.Purple) { Opacity = 0.1 };
         }
 
         public SolidColorBrush GetStatusForeground(bool isAuctionEnded)
         {
-            return isAuctionEnded 
+            return isAuctionEnded
                 ? new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 220, 38, 38)) // Red
                 : new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 147, 51, 234)); // Purple
         }
 
         public SolidColorBrush GetTimeLeftColor(bool isAuctionEnded)
         {
-            return isAuctionEnded 
+            return isAuctionEnded
                 ? new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 220, 38, 38)) // Red
                 : new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 217, 119, 6)); // Orange/Yellow
         }
@@ -240,8 +244,8 @@ namespace MarketMinds.Views.Pages
 
         public Visibility CanLeaveReview()
         {
-            return (ViewModel?.CanUserPlaceBids == true && ViewModel?.Product?.Seller?.Id > 0) 
-                ? Visibility.Visible 
+            return (ViewModel?.CanUserPlaceBids == true && ViewModel?.Product?.Seller?.Id > 0)
+                ? Visibility.Visible
                 : Visibility.Collapsed;
         }
 
@@ -264,14 +268,14 @@ namespace MarketMinds.Views.Pages
             if (sender is Button button && button.DataContext is ProductImage image)
             {
                 MainImage.Source = new BitmapImage(new Uri(image.Url));
-                
+
                 // Update image counter
                 var index = ViewModel?.Images?.ToList().FindIndex(img => img.Id == image.Id) ?? 0;
                 ImageCounter.Text = $"{index + 1} / {ViewModel?.Images?.Count ?? 0}";
             }
         }
 
-                private void HomeButton_Click(object sender, RoutedEventArgs e)
+        private void HomeButton_Click(object sender, RoutedEventArgs e)
         {
             // Navigate to home/main page with Buy Products tab selected (index 0)
             if (App.HomePageWindow?.MainContentFrame != null)
@@ -314,4 +318,4 @@ namespace MarketMinds.Views.Pages
 
         #endregion
     }
-} 
+}

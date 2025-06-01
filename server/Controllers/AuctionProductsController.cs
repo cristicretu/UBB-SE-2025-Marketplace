@@ -297,13 +297,13 @@ namespace MarketMinds.Controllers
         {
             Console.WriteLine($"SERVER: UpdateAuctionProduct called with id={id}");
             Console.WriteLine($"SERVER: Received product: ID={product?.Id}, Title='{product?.Title}', EndTime={product?.EndTime}");
-            
+
             if (product == null)
             {
                 Console.WriteLine($"SERVER: UpdateAuctionProduct - Product is null");
                 return BadRequest("Product data is required.");
             }
-            
+
             if (id != product.Id)
             {
                 Console.WriteLine($"SERVER: UpdateAuctionProduct - ID mismatch: route id={id}, product id={product.Id}");
@@ -315,7 +315,7 @@ namespace MarketMinds.Controllers
                 Console.WriteLine($"SERVER: UpdateAuctionProduct - Before InitializeDates: EndTime={product.EndTime}");
                 InitializeDates(product);
                 Console.WriteLine($"SERVER: UpdateAuctionProduct - After InitializeDates: EndTime={product.EndTime}");
-                
+
                 Console.WriteLine($"SERVER: UpdateAuctionProduct - Calling repository.UpdateProduct");
                 auctionProductsRepository.UpdateProduct(product);
                 Console.WriteLine($"SERVER: UpdateAuctionProduct - Update successful");

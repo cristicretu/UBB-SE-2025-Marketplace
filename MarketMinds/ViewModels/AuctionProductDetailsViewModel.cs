@@ -1,47 +1,47 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using MarketMinds.Shared.Helper;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.Interfaces;
-using MarketMinds.Shared.Helper;
 using Microsoft.UI.Dispatching;
-using System.Collections.Generic;
 
 namespace MarketMinds.ViewModels
 {
     public class AuctionProductDetailsViewModel : INotifyPropertyChanged
     {
-        private readonly IAuctionProductService _auctionProductService;
-        private readonly DispatcherQueue _dispatcherQueue;
-        private AuctionProduct? _product;
-        private string _bidAmount = string.Empty;
-        private string _timeLeft = string.Empty;
-        private bool _isLoading = true;
-        private bool _isPlacingBid = false;
-        private string _errorMessage = string.Empty;
-        private string _successMessage = string.Empty;
-        private bool _canPlaceBid = false;
-        private DispatcherQueueTimer? _countdownTimer;
-        private DateTime _newEndDate = DateTime.Now.AddDays(1);
-        private bool _isUpdatingEndDate = false;
+        private readonly IAuctionProductService auctionProductService;
+        private readonly DispatcherQueue dispatcherQueue;
+        private AuctionProduct? product;
+        private string bidAmount = string.Empty;
+        private string timeLeft = string.Empty;
+        private bool isLoading = true;
+        private bool isPlacingBid = false;
+        private string errorMessage = string.Empty;
+        private string successMessage = string.Empty;
+        private bool canPlaceBid = false;
+        private DispatcherQueueTimer? countdownTimer;
+        private DateTime newEndDate = DateTime.Now.AddDays(1);
+        private bool isUpdatingEndDate = false;
 
         public AuctionProductDetailsViewModel(IAuctionProductService auctionProductService)
         {
-            _auctionProductService = auctionProductService;
-            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            
+            this.auctionProductService = auctionProductService;
+            dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
             // Simplify command - let XAML IsEnabled binding handle the enabled state
             PlaceBidCommand = new RelayCommand(async () => await PlaceBidAsync());
             UpdateEndDateCommand = new RelayCommand(async () => await UpdateEndDateAsync());
             BidHistory = new ObservableCollection<Bid>();
-            
+
             // Start countdown timer
             StartCountdownTimer();
-            
+
             // Ensure command state is properly initialized
             UpdateCanPlaceBid();
         }
@@ -52,12 +52,12 @@ namespace MarketMinds.ViewModels
 
         public AuctionProduct? Product
         {
-            get => _product;
+            get => product;
             set
             {
-                _product = value;
+                product = value;
                 OnPropertyChanged();
-                
+
                 // Update all related properties when product changes
                 OnPropertyChanged(nameof(Title));
                 OnPropertyChanged(nameof(Description));
@@ -74,52 +74,52 @@ namespace MarketMinds.ViewModels
                 OnPropertyChanged(nameof(CanCurrentUserBid));
                 OnPropertyChanged(nameof(CanUserPlaceBids));
                 OnPropertyChanged(nameof(IsOwner));
-                
+
                 // Load bid history and update UI state
                 LoadBidHistory();
                 UpdateCanPlaceBid();
-                
+
                 // Start countdown timer if product is loaded
-                if (_product != null)
+                if (product != null)
                 {
-                    _countdownTimer?.Stop();
+                    countdownTimer?.Stop();
                     StartCountdownTimer();
                 }
             }
         }
 
         public string Title => Product?.Title ?? string.Empty;
-        
+
         public string Description => Product?.Description ?? "No description available for this product.";
-        
+
         public double CurrentPrice => Product?.CurrentPrice ?? 0;
-        
+
         public double StartPrice => Product?.StartPrice ?? 0;
-        
+
         public string SellerName => Product?.Seller?.Username ?? "Unknown seller";
-        
+
         public string CategoryName => Product?.Category?.Name ?? "Uncategorized";
-        
+
         public string ConditionName => Product?.Condition?.Name ?? "Unknown";
 
-        public bool IsAuctionEnded => Product != null && _auctionProductService.IsAuctionEnded(Product);
+        public bool IsAuctionEnded => Product != null && auctionProductService.IsAuctionEnded(Product);
 
         public string StatusText => IsAuctionEnded ? "Ended" : "Live Auction";
 
-        public ObservableCollection<ProductImage> Images => Product?.Images != null 
-            ? new ObservableCollection<ProductImage>(Product.Images) 
+        public ObservableCollection<ProductImage> Images => Product?.Images != null
+            ? new ObservableCollection<ProductImage>(Product.Images)
             : new ObservableCollection<ProductImage>();
 
-        public ObservableCollection<ProductTag> Tags => Product?.Tags != null 
-            ? new ObservableCollection<ProductTag>(Product.Tags) 
+        public ObservableCollection<ProductTag> Tags => Product?.Tags != null
+            ? new ObservableCollection<ProductTag>(Product.Tags)
             : new ObservableCollection<ProductTag>();
 
         public string BidAmount
         {
-            get => _bidAmount;
+            get => bidAmount;
             set
             {
-                _bidAmount = value;
+                bidAmount = value;
                 OnPropertyChanged();
                 UpdateCanPlaceBid();
             }
@@ -127,24 +127,24 @@ namespace MarketMinds.ViewModels
 
         public string TimeLeft
         {
-            get => _timeLeft;
+            get => timeLeft;
             set
             {
-                _timeLeft = value;
+                timeLeft = value;
                 OnPropertyChanged();
             }
         }
 
         public bool IsLoading
         {
-            get => _isLoading;
+            get => isLoading;
             set
             {
-                _isLoading = value;
+                isLoading = value;
                 OnPropertyChanged();
-                
+
                 // Update button state when loading finishes
-                if (!_isLoading)
+                if (!isLoading)
                 {
                     UpdateCanPlaceBid();
                 }
@@ -153,10 +153,10 @@ namespace MarketMinds.ViewModels
 
         public bool IsPlacingBid
         {
-            get => _isPlacingBid;
+            get => isPlacingBid;
             set
             {
-                _isPlacingBid = value;
+                isPlacingBid = value;
                 OnPropertyChanged();
                 UpdateCanPlaceBid();
             }
@@ -164,10 +164,10 @@ namespace MarketMinds.ViewModels
 
         public string ErrorMessage
         {
-            get => _errorMessage;
+            get => errorMessage;
             set
             {
-                _errorMessage = value;
+                errorMessage = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasErrorMessage));
             }
@@ -175,22 +175,22 @@ namespace MarketMinds.ViewModels
 
         public string SuccessMessage
         {
-            get => _successMessage;
+            get => successMessage;
             set
             {
-                _successMessage = value;
+                successMessage = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasSuccessMessage));
             }
         }
 
         public bool HasErrorMessage => !string.IsNullOrEmpty(ErrorMessage);
-        
+
         public bool HasSuccessMessage => !string.IsNullOrEmpty(SuccessMessage);
 
         public bool CanPlaceBid
         {
-            get 
+            get
             {
                 // Always return true - let users click and show validation errors instead
                 return true;
@@ -198,12 +198,12 @@ namespace MarketMinds.ViewModels
             private set
             {
                 // Keep the setter for backward compatibility but it won't be used
-                if (_canPlaceBid != value)
+                if (canPlaceBid != value)
                 {
-                    _canPlaceBid = value;
-                    System.Diagnostics.Debug.WriteLine($"CanPlaceBid setter called: {_canPlaceBid}");
+                    canPlaceBid = value;
+                    System.Diagnostics.Debug.WriteLine($"CanPlaceBid setter called: {canPlaceBid}");
                     OnPropertyChanged();
-                    
+
                     // Force additional property change notifications
                     OnPropertyChanged(nameof(CanPlaceBid));
                 }
@@ -211,11 +211,11 @@ namespace MarketMinds.ViewModels
         }
 
         public bool CanCurrentUserBid => IsUserBuyer && !IsAuctionEnded;
-        
+
         public bool IsUserSeller => App.CurrentUser?.UserType == 3; // Seller
-        
+
         public bool IsUserBuyer => App.CurrentUser?.UserType == 2; // Buyer
-        
+
         public bool IsUserAdmin => App.CurrentUser?.UserType == 1; // Admin
 
         public bool CanUserPlaceBids => (IsUserBuyer || IsUserAdmin) && !IsUserSeller;
@@ -226,20 +226,20 @@ namespace MarketMinds.ViewModels
 
         public DateTime NewEndDate
         {
-            get => _newEndDate;
+            get => newEndDate;
             set
             {
-                _newEndDate = value;
+                newEndDate = value;
                 OnPropertyChanged();
             }
         }
 
         public bool IsUpdatingEndDate
         {
-            get => _isUpdatingEndDate;
+            get => isUpdatingEndDate;
             set
             {
-                _isUpdatingEndDate = value;
+                isUpdatingEndDate = value;
                 OnPropertyChanged();
             }
         }
@@ -265,15 +265,15 @@ namespace MarketMinds.ViewModels
                 ErrorMessage = string.Empty;
                 SuccessMessage = string.Empty;
 
-                var product = await _auctionProductService.GetAuctionProductByIdAsync(productId);
+                var product = await auctionProductService.GetAuctionProductByIdAsync(productId);
                 if (product != null)
                 {
                     Product = product;
                     UpdateTimeLeft();
-                    
+
                     // Add comprehensive debugging for user permissions
                     DebugUserPermissions();
-                    
+
                     // Ensure command state is updated after product loads
                     UpdateCanPlaceBid();
                 }
@@ -359,12 +359,12 @@ namespace MarketMinds.ViewModels
                 // All validations passed - attempt to place the bid
                 System.Diagnostics.Debug.WriteLine($"Placing bid: ProductId={Product.Id}, UserId={App.CurrentUser.Id}, BidValue={bidValue}");
 
-                var success = await _auctionProductService.PlaceBidAsync(Product.Id, App.CurrentUser.Id, bidValue);
+                var success = await auctionProductService.PlaceBidAsync(Product.Id, App.CurrentUser.Id, bidValue);
                 if (success)
                 {
                     SuccessMessage = $"Your bid of €{bidValue:F2} was successfully placed!";
                     BidAmount = string.Empty;
-                    
+
                     // Reload the product to get updated data
                     await LoadProductAsync(Product.Id);
                 }
@@ -376,7 +376,7 @@ namespace MarketMinds.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error placing bid: {ex}");
-                
+
                 // Handle specific exceptions with user-friendly messages
                 if (ex.Message.Contains("permission") || ex.Message.Contains("buyer"))
                 {
@@ -406,7 +406,7 @@ namespace MarketMinds.ViewModels
             // Button is always enabled now - validation happens when user clicks
             System.Diagnostics.Debug.WriteLine($"UpdateCanPlaceBid called - Button always enabled");
             System.Diagnostics.Debug.WriteLine($"Current state: IsPlacingBid={IsPlacingBid}, IsAuctionEnded={IsAuctionEnded}, CanUserPlaceBids={CanUserPlaceBids}, BidAmount='{BidAmount}', CurrentPrice={CurrentPrice}");
-            
+
             // Set to true (always enabled)
             CanPlaceBid = true;
         }
@@ -427,16 +427,19 @@ namespace MarketMinds.ViewModels
 
         private void StartCountdownTimer()
         {
-            _countdownTimer = _dispatcherQueue.CreateTimer();
-            _countdownTimer.Interval = TimeSpan.FromSeconds(1);
-            _countdownTimer.IsRepeating = true;
-            _countdownTimer.Tick += (sender, args) => UpdateTimeLeft();
-            _countdownTimer.Start();
+            countdownTimer = dispatcherQueue.CreateTimer();
+            countdownTimer.Interval = TimeSpan.FromSeconds(1);
+            countdownTimer.IsRepeating = true;
+            countdownTimer.Tick += (sender, args) => UpdateTimeLeft();
+            countdownTimer.Start();
         }
 
         private void UpdateTimeLeft()
         {
-            if (Product == null) return;
+            if (Product == null)
+            {
+                return;
+            }
 
             var timeLeft = Product.EndTime - DateTime.Now;
             if (timeLeft <= TimeSpan.Zero)
@@ -465,7 +468,7 @@ namespace MarketMinds.ViewModels
                 System.Diagnostics.Debug.WriteLine($"UserType: {currentUser.UserType}");
                 System.Diagnostics.Debug.WriteLine($"UserType Type: {currentUser.UserType.GetType().Name}");
             }
-            
+
             System.Diagnostics.Debug.WriteLine($"IsUserBuyer: {IsUserBuyer}");
             System.Diagnostics.Debug.WriteLine($"IsUserSeller: {IsUserSeller}");
             System.Diagnostics.Debug.WriteLine($"IsUserAdmin: {IsUserAdmin}");
@@ -505,7 +508,7 @@ namespace MarketMinds.ViewModels
                 System.Diagnostics.Debug.WriteLine($"Product Seller ID: {Product?.Seller?.Id}");
                 System.Diagnostics.Debug.WriteLine($"IsOwner: {IsOwner}");
                 System.Diagnostics.Debug.WriteLine($"IsUserSeller: {IsUserSeller}");
-                System.Diagnostics.Debug.WriteLine($"New End Date: {_newEndDate}");
+                System.Diagnostics.Debug.WriteLine($"New End Date: {newEndDate}");
                 System.Diagnostics.Debug.WriteLine($"Current Time: {DateTime.Now}");
 
                 // Validation 1: Check if product exists
@@ -530,14 +533,14 @@ namespace MarketMinds.ViewModels
                 }
 
                 // Validation 4: Check if new end date is provided and valid
-                if (_newEndDate <= DateTime.Now)
+                if (newEndDate <= DateTime.Now)
                 {
                     ErrorMessage = "Please select a future date for the auction end date.";
                     return;
                 }
 
                 // All validations passed - attempt to update the end date
-                System.Diagnostics.Debug.WriteLine($"Updating end date: ProductId={Product.Id}, NewEndDate={_newEndDate}");
+                System.Diagnostics.Debug.WriteLine($"Updating end date: ProductId={Product.Id}, NewEndDate={newEndDate}");
 
                 var originalEndTime = Product.EndTime;
                 System.Diagnostics.Debug.WriteLine($"Original EndTime: {originalEndTime}");
@@ -545,8 +548,8 @@ namespace MarketMinds.ViewModels
                 System.Diagnostics.Debug.WriteLine($"About to call UpdateAuctionProductAsync...");
 
                 // Update the product's end date
-                Product.EndTime = _newEndDate;
-                
+                Product.EndTime = newEndDate;
+
                 // Ensure foreign key fields are properly populated from navigation properties
                 if (Product.Seller != null)
                 {
@@ -563,13 +566,13 @@ namespace MarketMinds.ViewModels
 
                 System.Diagnostics.Debug.WriteLine($"Before update - SellerId: {Product.SellerId}, ConditionId: {Product.ConditionId}, CategoryId: {Product.CategoryId}");
 
-                var success = await _auctionProductService.UpdateAuctionProductAsync(Product);
-                
+                var success = await auctionProductService.UpdateAuctionProductAsync(Product);
+
                 System.Diagnostics.Debug.WriteLine($"UpdateAuctionProductAsync returned: {success}");
-                
+
                 if (success)
                 {
-                    SuccessMessage = $"The auction end date has been successfully updated to {_newEndDate:yyyy-MM-dd HH:mm}!";
+                    SuccessMessage = $"The auction end date has been successfully updated to {newEndDate:yyyy-MM-dd HH:mm}!";
                     // Refresh the time left display
                     UpdateTimeLeft();
                     System.Diagnostics.Debug.WriteLine($"Update successful! New EndTime: {Product.EndTime}");
@@ -590,7 +593,7 @@ namespace MarketMinds.ViewModels
                 {
                     System.Diagnostics.Debug.WriteLine($"Inner exception: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
                 }
-                
+
                 // Handle specific exceptions with user-friendly messages
                 if (ex.Message.Contains("permission") || ex.Message.Contains("seller") || ex.Message.Contains("owner"))
                 {
@@ -623,4 +626,4 @@ namespace MarketMinds.ViewModels
 
         #endregion
     }
-} 
+}

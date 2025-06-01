@@ -439,7 +439,7 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
             {
                 var maxPrice = await context.BorrowProducts
                     .MaxAsync(p => (double?)p.DailyRate);
-                
+
                 return maxPrice ?? 0.0; // Return 0 if no products found
             }
             catch (Exception ex)

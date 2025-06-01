@@ -295,7 +295,7 @@ namespace WebMarketplace.Models
 
                     // Use server-side filtering with sellerId parameter - THE SMART PAGINATION!
                     Console.WriteLine($"DEBUG: About to call GetFilteredProductCount for Buy products with sellerId: {sellerId}, search: '{search}'");
-                    try 
+                    try
                     {
                         buyCount = ((MarketMinds.Shared.Services.BuyProductsService.BuyProductsService)_buyProductsService).GetFilteredProductCount(null, null, null, search, sellerId);
                         Console.WriteLine($"DEBUG: Buy products count result: {buyCount}");
@@ -304,9 +304,9 @@ namespace WebMarketplace.Models
                     {
                         Console.WriteLine($"DEBUG: Exception in BuyProducts GetFilteredProductCount: {ex.Message}");
                     }
-                    
+
                     Console.WriteLine($"DEBUG: About to call GetFilteredAuctionProductCountAsync with sellerId: {sellerId}, search: '{search}'");
-                    try 
+                    try
                     {
                         auctionCount = await _auctionProductService.GetFilteredAuctionProductCountAsync(null, null, null, search, sellerId);
                         Console.WriteLine($"DEBUG: Auction products count result: {auctionCount}");
@@ -315,9 +315,9 @@ namespace WebMarketplace.Models
                     {
                         Console.WriteLine($"DEBUG: Exception in AuctionProducts GetFilteredAuctionProductCountAsync: {ex.Message}");
                     }
-                    
+
                     Console.WriteLine($"DEBUG: About to call GetFilteredProductCount for Borrow products with sellerId: {sellerId}, search: '{search}'");
-                    try 
+                    try
                     {
                         borrowCount = _borrowProductsService.GetFilteredProductCount(conditionIds: null, categoryIds: null, maxPrice: null, searchTerm: search, sellerId: sellerId);
                         Console.WriteLine($"DEBUG: Borrow products count result: {borrowCount}");
@@ -331,7 +331,7 @@ namespace WebMarketplace.Models
                     AllProductsCount = ((MarketMinds.Shared.Services.BuyProductsService.BuyProductsService)_buyProductsService).GetFilteredProductCount(null, null, null, null, sellerId) +
                                       await _auctionProductService.GetFilteredAuctionProductCountAsync(null, null, null, null, sellerId) +
                                       _borrowProductsService.GetFilteredProductCount(conditionIds: null, categoryIds: null, maxPrice: null, searchTerm: null, sellerId: sellerId);
-                    
+
                     TotalProductCount = buyCount + auctionCount + borrowCount;
                     Console.WriteLine($"DEBUG: Total counts - Buy: {buyCount}, Auction: {auctionCount}, Borrow: {borrowCount}");
                     Console.WriteLine($"DEBUG: AllProductsCount: {AllProductsCount}, TotalProductCount: {TotalProductCount}");
@@ -419,14 +419,14 @@ namespace WebMarketplace.Models
             {
                 int buyOffset = currentOffset;
                 int buyTake = Math.Min(remainingCount, buyCount - currentOffset);
-                
+
                 Console.WriteLine($"DEBUG: Loading buy products - offset: {buyOffset}, count: {buyTake}");
                 var buyProducts = ((MarketMinds.Shared.Services.BuyProductsService.BuyProductsService)_buyProductsService).GetFilteredProducts(buyOffset, buyTake, null, null, null, search, sellerId);
                 result.AddRange(buyProducts.Cast<Product>());
-                
+
                 remainingCount -= buyProducts.Count();
                 currentOffset = Math.Max(0, currentOffset - buyCount);
-                
+
                 Console.WriteLine($"DEBUG: Loaded {buyProducts.Count()} buy products, remaining: {remainingCount}");
             }
             else
@@ -439,14 +439,14 @@ namespace WebMarketplace.Models
             {
                 int auctionOffset = currentOffset;
                 int auctionTake = Math.Min(remainingCount, auctionCount - currentOffset);
-                
+
                 Console.WriteLine($"DEBUG: Loading auction products - offset: {auctionOffset}, count: {auctionTake}");
                 var auctionProducts = await _auctionProductService.GetFilteredAuctionProductsAsync(auctionOffset, auctionTake, null, null, null, search, sellerId);
                 result.AddRange(auctionProducts.Cast<Product>());
-                
+
                 remainingCount -= auctionProducts.Count();
                 currentOffset = Math.Max(0, currentOffset - auctionCount);
-                
+
                 Console.WriteLine($"DEBUG: Loaded {auctionProducts.Count()} auction products, remaining: {remainingCount}");
             }
             else
@@ -459,11 +459,11 @@ namespace WebMarketplace.Models
             {
                 int borrowOffset = currentOffset;
                 int borrowTake = Math.Min(remainingCount, borrowCount - currentOffset);
-                
+
                 Console.WriteLine($"DEBUG: Loading borrow products - offset: {borrowOffset}, count: {borrowTake}");
                 var borrowProducts = _borrowProductsService.GetFilteredProducts(borrowOffset, borrowTake, null, null, null, search, sellerId);
                 result.AddRange(borrowProducts.Cast<Product>());
-                
+
             }
 
             Console.WriteLine($"DEBUG: LoadProductsWithServerSidePagination complete - total loaded: {result.Count}");

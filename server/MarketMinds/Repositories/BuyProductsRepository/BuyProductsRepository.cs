@@ -99,23 +99,23 @@ namespace MarketMinds.Repositories.BuyProductsRepository
             {
                 Console.WriteLine("Repository: Adding product to context");
                 context.BuyProducts.Add(product);
-                
+
                 Console.WriteLine("Repository: Saving changes to database");
                 context.SaveChanges();
-                
+
                 Console.WriteLine($"Repository: Product successfully saved with ID {product.Id}");
             }
             catch (DbUpdateException ex)
             {
                 Console.WriteLine($"EF Core AddProduct Error: {ex.InnerException?.Message ?? ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                
+
                 // Log more details about the validation errors
                 if (ex.InnerException != null)
                 {
                     Console.WriteLine($"Inner exception details: {ex.InnerException}");
                 }
-                
+
                 throw new ApplicationException($"Database error while adding product: {ex.InnerException?.Message ?? ex.Message}", ex);
             }
             catch (Exception ex)
@@ -612,7 +612,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 var maxPrice = await context.BuyProducts
                     .Where(p => p.Stock > 0) // Only products with stock
                     .MaxAsync(p => (double?)p.Price);
-                
+
                 return maxPrice ?? 0.0; // Return 0 if no products found
             }
             catch (Exception ex)

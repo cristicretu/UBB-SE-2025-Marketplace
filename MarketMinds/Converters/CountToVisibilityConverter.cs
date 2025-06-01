@@ -36,7 +36,7 @@ namespace MarketMinds.Converters
             // Handle enumerable
             if (value is IEnumerable enumerable)
             {
-                foreach (var _ in enumerable)
+                foreach (var e in enumerable)
                 {
                     return Visibility.Visible; // If we can iterate at least once, it's not empty
                 }

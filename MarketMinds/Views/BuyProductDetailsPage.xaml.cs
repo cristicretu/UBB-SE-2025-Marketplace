@@ -74,8 +74,8 @@ namespace MarketMinds.Views
                 }
                 catch
                 {
-                    return IsLowStock ? 
-                        new SolidColorBrush(Microsoft.UI.Colors.Orange) : 
+                    return IsLowStock ?
+                        new SolidColorBrush(Microsoft.UI.Colors.Orange) :
                         new SolidColorBrush(Microsoft.UI.Colors.Green);
                 }
             }
@@ -89,14 +89,14 @@ namespace MarketMinds.Views
 
         // Wishlist display properties
         public string WishlistGlyph => IsInWishlist ? "\uE006" : "\uE00A"; // Filled vs outline heart
-        public SolidColorBrush WishlistIconColor => IsInWishlist ? 
-            new SolidColorBrush(Microsoft.UI.Colors.Red) : 
+        public SolidColorBrush WishlistIconColor => IsInWishlist ?
+            new SolidColorBrush(Microsoft.UI.Colors.Red) :
             new SolidColorBrush(Microsoft.UI.Colors.Gray);
 
         public BuyProductDetailsPage()
         {
             this.InitializeComponent();
-            
+
             // Initialize ViewModels
             ShoppingCartViewModel = new ShoppingCartViewModel();
             BuyerWishlistItemViewModel = new BuyerWishlistItemViewModel();
@@ -105,7 +105,7 @@ namespace MarketMinds.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            
+
             if (e.Parameter is BuyProduct buyProduct)
             {
                 Product = buyProduct;
@@ -124,7 +124,10 @@ namespace MarketMinds.Views
 
         private void InitializeProductData()
         {
-            if (Product == null) return;
+            if (Product == null)
+            {
+                return;
+            }
 
             // Initialize image index
             if (Product.Images?.Any() == true)
@@ -158,13 +161,16 @@ namespace MarketMinds.Views
 
         private void UpdateWishlistStatus()
         {
-            if (Product == null || !IsCurrentUserBuyer) return;
+            if (Product == null || !IsCurrentUserBuyer)
+            {
+                return;
+            }
 
             try
             {
                 // Check if product is in wishlist using the existing method
                 IsInWishlist = BuyerWishlistItemViewModel.IsInWishlist(Product.Id);
-                
+
                 OnPropertyChanged(nameof(WishlistGlyph));
                 OnPropertyChanged(nameof(WishlistIconColor));
             }
@@ -182,7 +188,7 @@ namespace MarketMinds.Views
                 {
                     // Update the main image source directly
                     MainImage.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(imageUrl));
-                    
+
                     // Update current image index
                     if (Product?.Images != null)
                     {
@@ -204,12 +210,15 @@ namespace MarketMinds.Views
 
         private async void AddToCartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !IsCurrentUserBuyer) return;
+            if (Product == null || !IsCurrentUserBuyer)
+            {
+                return;
+            }
 
             try
             {
                 await ShoppingCartViewModel.AddToCartAsync(Product, 1);
-                
+
                 // Show success message
                 var dialog = new ContentDialog
                 {
@@ -223,7 +232,7 @@ namespace MarketMinds.Views
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error adding to cart: {ex.Message}");
-                
+
                 var dialog = new ContentDialog
                 {
                     Title = "Error",
@@ -286,7 +295,10 @@ namespace MarketMinds.Views
 
         private async void WishlistButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !IsCurrentUserBuyer) return;
+            if (Product == null || !IsCurrentUserBuyer)
+            {
+                return;
+            }
 
             try
             {
@@ -323,7 +335,7 @@ namespace MarketMinds.Views
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error updating wishlist: {ex.Message}");
-                
+
                 var dialog = new ContentDialog
                 {
                     Title = "Error",
@@ -337,7 +349,10 @@ namespace MarketMinds.Views
 
         private void LeaveReviewButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product?.Seller == null) return;
+            if (Product?.Seller == null)
+            {
+                return;
+            }
 
             // Navigate to review page or show review dialog
             // For now, just show a placeholder dialog
@@ -385,4 +400,4 @@ namespace MarketMinds.Views
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-} 
+}

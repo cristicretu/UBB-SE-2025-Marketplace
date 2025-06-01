@@ -4,14 +4,14 @@
 
 namespace MarketMinds.ViewModels
 {
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Diagnostics;
     using System.Windows;
     using System.Windows.Input;
-    using System.ComponentModel;
-    using System.Collections.Generic;
-    using MarketMinds.Shared.Services;
-    using MarketMinds.Shared.Models;
     using MarketMinds.Shared.Helper;
-    using System.Diagnostics;
+    using MarketMinds.Shared.Models;
+    using MarketMinds.Shared.Services;
 
     /// <summary>
     /// View model class for managing buyer wishlist item data and operations.

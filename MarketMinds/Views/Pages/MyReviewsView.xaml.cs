@@ -23,7 +23,7 @@ namespace MarketMinds.Views.Pages
                 // Set the current user as the seller to view their own reviews
                 App.SeeSellerReviewsViewModel.Seller = App.CurrentUser;
                 App.SeeSellerReviewsViewModel.Viewer = App.CurrentUser;
-                
+
                 viewModel = App.SeeSellerReviewsViewModel;
                 viewModel.RefreshData();
             }
@@ -31,14 +31,13 @@ namespace MarketMinds.Views.Pages
             {
                 // Create a fallback ViewModel if none exists
                 viewModel = new SeeSellerReviewsViewModel(
-                    App.ReviewsService, 
-                    App.CurrentUser ?? new MarketMinds.Shared.Models.User(), 
-                    App.CurrentUser ?? new MarketMinds.Shared.Models.User()
-                );
+                    App.ReviewsService,
+                    App.CurrentUser ?? new MarketMinds.Shared.Models.User(),
+                    App.CurrentUser ?? new MarketMinds.Shared.Models.User());
             }
 
             this.InitializeComponent();
-            
+
             // Show/hide elements based on review count
             UpdateVisibility();
         }

@@ -262,16 +262,16 @@ namespace MarketMinds.Shared.ProxyRepository
             try
             {
                 Console.WriteLine($"Sending POST request to create product at URL: {httpClient.BaseAddress}buyproducts");
-                
+
                 var response = httpClient.PostAsJsonAsync("buyproducts", productToSend).Result;
-                
+
                 Console.WriteLine($"Response status: {(int)response.StatusCode} {response.ReasonPhrase}");
-                
+
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
                     var errorContent = response.Content.ReadAsStringAsync().Result;
                     Console.WriteLine($"400 Bad Request Error Details: {errorContent}");
-                    
+
                     // Try to parse ModelState errors if present
                     try
                     {
@@ -288,10 +288,10 @@ namespace MarketMinds.Shared.ProxyRepository
                         // If we can't parse as JSON, just log the raw content
                         Console.WriteLine($"Raw error content: {errorContent}");
                     }
-                    
+
                     throw new HttpRequestException($"Bad Request (400): {errorContent}");
                 }
-                
+
                 response.EnsureSuccessStatusCode();
                 return response.Content.ReadAsStringAsync().Result;
             }

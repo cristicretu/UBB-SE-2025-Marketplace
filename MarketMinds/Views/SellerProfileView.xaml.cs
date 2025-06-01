@@ -36,7 +36,7 @@ namespace MarketMinds.Views
             this.viewModel.User = App.CurrentUser;
             this.DataContext = this.viewModel; // Set DataContext so bindings work
             this.Loaded += SellerProfileView_Loaded;
-            
+
             // Load profile data asynchronously after UI is initialized
             _ = LoadProfileDataAsync();
 
@@ -103,11 +103,11 @@ namespace MarketMinds.Views
             }
 
             Debug.WriteLine("Calling UpdateProfile from form");
-            
+
             try
             {
                 bool success = await vm.UpdateProfile();
-                
+
                 if (success)
                 {
                     // Show success dialog
@@ -127,7 +127,7 @@ namespace MarketMinds.Views
             catch (Exception ex)
             {
                 Debug.WriteLine($"Unexpected error during profile update: {ex.Message}");
-                
+
                 var errorDialog = new ContentDialog
                 {
                     Title = "Error",
@@ -164,7 +164,7 @@ namespace MarketMinds.Views
                 // await Task.Delay(100); // Small delay to ensure UI is ready
                 await this.viewModel.LoadProfileAsync();
                 Debug.WriteLine("Profile data loading completed");
-                
+
                 // Debug the RatingControl after loading
                 await Task.Delay(500); // Small delay to ensure UI updates
                 this.DebugRatingControl();
@@ -187,13 +187,13 @@ namespace MarketMinds.Views
                     Debug.WriteLine($"RatingControl found - Value: {ratingControl.Value}");
                     Debug.WriteLine($"RatingControl - IsReadOnly: {ratingControl.IsReadOnly}");
                     Debug.WriteLine($"RatingControl - PlaceholderValue: {ratingControl.PlaceholderValue}");
-                    
+
                     // Try to force update
                     if (this.viewModel != null)
                     {
                         Debug.WriteLine($"ViewModel TrustScore: {this.viewModel.TrustScore}");
                         Debug.WriteLine($"ViewModel RatingValue: {this.viewModel.RatingValue}");
-                        
+
                         // Force set the value directly as a test
                         ratingControl.Value = this.viewModel.RatingValue;
                         Debug.WriteLine($"Manually set RatingControl.Value to: {this.viewModel.RatingValue}");

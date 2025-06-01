@@ -362,7 +362,6 @@ namespace MarketMinds.ViewModels
 
                 // Note: No need to call UpdateTrackedOrderAsync here as UpdateOrderCheckpointAsync
                 // in the repository already handles status changes and notifications
-
                 return true;
             }
             catch (Exception)

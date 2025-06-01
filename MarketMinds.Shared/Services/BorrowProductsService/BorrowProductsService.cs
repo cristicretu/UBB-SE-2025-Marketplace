@@ -144,7 +144,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         private void ApplyDefaultDates(BorrowProduct product)
         {
             Console.WriteLine($"ApplyDefaultDates - Input: StartDate={product.StartDate}, EndDate={product.EndDate}, TimeLimit={product.TimeLimit}");
-            
+
             // Only set default values if the user didn't provide them
             if (product.StartDate == default || product.StartDate == null)
             {
@@ -177,7 +177,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 Console.WriteLine($"EndDate ({endDate}) is before StartDate ({startDate}), fixing...");
                 product.EndDate = startDate.AddDays(7);
             }
-            
+
             // Ensure TimeLimit is at least as far as EndDate
             if (product.TimeLimit < product.EndDate)
             {

@@ -272,7 +272,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                                 $"ImageCount={productToSend.Images.Count}");
 
                 // Serialize to see the actual JSON being sent
-                var jsonToSend = System.Text.Json.JsonSerializer.Serialize(productToSend, 
+                var jsonToSend = System.Text.Json.JsonSerializer.Serialize(productToSend,
                     new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 Console.WriteLine($"JSON being sent to server:\n{jsonToSend}");
 

@@ -31,19 +31,19 @@ namespace MarketMinds.Views
         private ITrackedOrderViewModel trackedOrderViewModel;
         private Dictionary<int, string> orderProductCategoryTypes = new Dictionary<int, string>();
         private int currentTrackingOrderId;
-        private bool _isLoading = false;
+        private bool isLoading = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether the page is currently loading.
         /// </summary>
         public bool IsLoading
         {
-            get => _isLoading;
+            get => isLoading;
             set
             {
-                if (_isLoading != value)
+                if (isLoading != value)
                 {
-                    _isLoading = value;
+                    isLoading = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLoading)));
                 }
             }
@@ -89,7 +89,7 @@ namespace MarketMinds.Views
             {
                 // Set loading state
                 IsLoading = true;
-                
+
                 var selectedPeriod = (TimePeriodComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
                 if (selectedPeriod == null)
@@ -383,11 +383,11 @@ namespace MarketMinds.Views
         }
 
         /// <summary>
-                 /// Handles the click event for generating and displaying a contract.
-                 /// Similar to BuyerProfile implementation - generates PDF and opens it directly.
-                 /// </summary>
-                 /// <param name="orderSummary">The order summary object containing contract details.</param>
-                 /// <returns>A task representing the asynchronous operation.</returns>
+        /// Handles the click event for generating and displaying a contract.
+        /// Similar to BuyerProfile implementation - generates PDF and opens it directly.
+        /// </summary>
+        /// <param name="orderSummary">The order summary object containing contract details.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task HandleGenerateAndDisplayContractClick(OrderSummary orderSummary)
         {
             // Create a new contract
@@ -565,7 +565,7 @@ namespace MarketMinds.Views
                 try
                 {
                     currentTrackingOrderId = orderID;
-                    
+
                     // Check if current user is a seller
                     if (App.CurrentUser.UserType == (int)MarketMinds.Shared.Models.UserRole.Seller)
                     {
@@ -864,10 +864,10 @@ namespace MarketMinds.Views
                 // Navigate to the TrackedOrderControlPage
                 var trackedOrderControlPage = new TrackedOrderControlPage();
                 await trackedOrderControlPage.SetTrackedOrderIDAsync(trackedOrder.TrackedOrderID);
-                
+
                 // Get the current frame and navigate to the page
                 Frame currentFrame = null;
-                
+
                 // Try to find the frame by walking up the visual tree
                 var parent = this.Parent;
                 while (parent != null && currentFrame == null)
@@ -879,7 +879,7 @@ namespace MarketMinds.Views
                     }
                     parent = (parent as FrameworkElement)?.Parent;
                 }
-                
+
                 // If we found a frame, navigate to the page
                 if (currentFrame != null)
                 {
@@ -928,19 +928,19 @@ namespace MarketMinds.Views
 
     public class OrderGroup : INotifyPropertyChanged
     {
-        private bool _isExpanded = true; // Start expanded by default
+        private bool isExpanded = true; // Start expanded by default
 
         public string Name { get; set; }
         public List<dynamic> Items { get; set; }
 
         public bool IsExpanded
         {
-            get => _isExpanded;
+            get => isExpanded;
             set
             {
-                if (_isExpanded != value)
+                if (isExpanded != value)
                 {
-                    _isExpanded = value;
+                    isExpanded = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(ItemsVisibility));
                 }

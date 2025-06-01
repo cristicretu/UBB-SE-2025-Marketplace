@@ -104,15 +104,15 @@ namespace MarketMinds.Views
         {
             // Set minimum date to today for all date pickers
             var today = DateTimeOffset.Now.Date;
-            
+
             // For borrow product start date - can only select from today onwards
             StartDatePicker.MinDate = today;
-            
+
             // For borrow product end date - initially set to today, will be updated when start date is selected
             TimeLimitDatePicker.MinDate = today;
             // Disable end date picker until start date is selected
             TimeLimitDatePicker.IsEnabled = false;
-            
+
             // For auction end date - can only select from today onwards
             AuctionEndDatePicker.MinDate = today;
         }
@@ -125,7 +125,7 @@ namespace MarketMinds.Views
                 // Enable the end date picker and set minimum date to the day after start date
                 TimeLimitDatePicker.IsEnabled = true;
                 TimeLimitDatePicker.MinDate = args.NewDate.Value.AddDays(1);
-                
+
                 // If the current end date is before the new minimum, clear it
                 if (TimeLimitDatePicker.Date.HasValue && TimeLimitDatePicker.Date.Value < TimeLimitDatePicker.MinDate)
                 {

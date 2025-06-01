@@ -102,13 +102,7 @@ namespace MarketMinds.ViewModels
         /// <summary>
         /// Initializes a new instance of the <see cref="BillingInfoViewModel"/> class with a specific order history ID.
         /// </summary>
-        /// <param name="orderHistoryID">The order history ID to load.</param>
-        // public BillingInfoViewModel(int orderHistoryID) : this()
-        // {
-        //     this.orderHistoryID = orderHistoryID;
-        //     _ = this.InitializeViewModelAsync();
-        // }
-
+        /// <param name="orderHistoryID">The order history ID to load.</param
         public int GetQuantityForProduct(int productId)
         {
             if (productQuantities.TryGetValue(productId, out int quantity))
@@ -640,7 +634,7 @@ namespace MarketMinds.ViewModels
                             {
                                 productType = "auction"; // This might need to change depending on your backend
                             }
-                            else // Default to "new" for BuyProducts
+                            else
                             {
                                 productType = "new";
                             }

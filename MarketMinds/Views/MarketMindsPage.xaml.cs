@@ -317,13 +317,13 @@ namespace MarketMinds.Views
 
             // Load categories and conditions
             LoadCategoriesAndConditions();
-            
+
             // Initialize debouncing timers
             InitializeFilterTimers();
-            
+
             // Initialize max price from database
             InitializeMaxPriceAsync();
-            
+
             // Set up the page loaded event to initialize UI elements
             this.Loaded += MarketMindsPage_Loaded;
 
@@ -334,7 +334,7 @@ namespace MarketMinds.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            
+
             // Check if a specific tab index is passed as parameter
             if (e.Parameter is int tabIndex && tabIndex >= 0 && tabIndex <= 2)
             {
@@ -416,7 +416,7 @@ namespace MarketMinds.Views
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 SearchTerm = sender.Text;
-                
+
                 // Reset the timer - this creates a debouncing effect
                 searchFilterTimer.Stop();
                 searchFilterTimer.Start();
@@ -429,9 +429,9 @@ namespace MarketMinds.Views
         private void PriceRangeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             MaxPrice = e.NewValue;
-            
+
             // Text display is now handled by data binding, no manual update needed
-            
+
             // Reset the timer - this creates a debouncing effect
             if (priceFilterTimer != null)
             {
@@ -466,7 +466,7 @@ namespace MarketMinds.Views
             if (sender is CheckBox checkBox)
             {
                 int categoryId = (int)checkBox.Tag;
-                
+
                 if (checkBox.IsChecked == true)
                 {
                     if (!selectedCategoryIds.Contains(categoryId))
@@ -478,7 +478,7 @@ namespace MarketMinds.Views
                 {
                     selectedCategoryIds.Remove(categoryId);
                 }
-                
+
                 ApplyFilters();
             }
         }
@@ -491,7 +491,7 @@ namespace MarketMinds.Views
             if (sender is CheckBox checkBox)
             {
                 int conditionId = (int)checkBox.Tag;
-                
+
                 if (checkBox.IsChecked == true)
                 {
                     if (!selectedConditionIds.Contains(conditionId))
@@ -503,7 +503,7 @@ namespace MarketMinds.Views
                 {
                     selectedConditionIds.Remove(conditionId);
                 }
-                
+
                 ApplyFilters();
             }
         }
@@ -523,7 +523,7 @@ namespace MarketMinds.Views
         private void ApplyFilters()
         {
             CurrentPageIndex = 0; // Reset to first page when filters change
-            
+
             // Reload data for the current tab with the applied filters
             switch (ActiveTabIndex)
             {
@@ -547,25 +547,25 @@ namespace MarketMinds.Views
             // Reset filter values
             SearchBox.Text = string.Empty;
             SearchTerm = string.Empty;
-            
+
             // Reset price to maximum value from database
             MaxPrice = ActualMaxPriceFromDatabase;
             if (PriceRangeSlider != null)
             {
                 PriceRangeSlider.Value = ActualMaxPriceFromDatabase;
             }
-            
+
             // Clear selected categories and conditions
             selectedCategoryIds.Clear();
             selectedConditionIds.Clear();
-            
+
             // Reset My Products toggle
             ShowOnlyMyProducts = false;
             if (MyProductsToggle != null)
             {
                 MyProductsToggle.IsOn = false;
             }
-            
+
             // Uncheck all category checkboxes by iterating through the data source
             ClearCategoryCheckboxes();
             ClearConditionCheckboxes();
@@ -605,13 +605,16 @@ namespace MarketMinds.Views
         /// </summary>
         private void ClearCheckboxesInContainer(DependencyObject container)
         {
-            if (container == null) return;
+            if (container == null)
+            {
+                return;
+            }
 
             int childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(container);
             for (int i = 0; i < childCount; i++)
             {
                 var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(container, i);
-                
+
                 if (child is CheckBox checkBox)
                 {
                     checkBox.IsChecked = false;
@@ -666,7 +669,8 @@ namespace MarketMinds.Views
 
                 // Get total count with filters applied
                 int totalCount;
-                try {
+                try
+                {
                     if (ShowOnlyMyProducts && IsCurrentUserSeller)
                     {
                         totalCount = await this.BuyProductsViewModel.GetFilteredProductCountWithSellerAsync(
@@ -674,8 +678,7 @@ namespace MarketMinds.Views
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
                             !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null,
-                            App.CurrentUser?.Id
-                        );
+                            App.CurrentUser?.Id);
                     }
                     else
                     {
@@ -683,16 +686,17 @@ namespace MarketMinds.Views
                             selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
-                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                        );
+                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null);
                     }
-                    
-                    if (totalCount < 0) { // Sanity check
+
+                    if (totalCount < 0)
+                    { // Sanity check
                         Debug.WriteLine("Warning: Got negative count from API, defaulting to 0");
                         totalCount = 0;
                     }
                 }
-                catch (Exception countEx) {
+                catch (Exception countEx)
+                {
                     Debug.WriteLine($"Error getting product count: {countEx.Message}");
                     totalCount = 0; // Default to zero if count fails
                 }
@@ -714,25 +718,23 @@ namespace MarketMinds.Views
                     if (ShowOnlyMyProducts && IsCurrentUserSeller)
                     {
                         products = await this.BuyProductsViewModel.GetFilteredProductsWithSellerAsync(
-                            offset, 
+                            offset,
                             ItemsPerPage, // Ensure we're only fetching the exact amount needed for the page
                             selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
                             !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null,
-                            App.CurrentUser?.Id
-                        );
+                            App.CurrentUser?.Id);
                     }
                     else
                     {
                         products = await this.BuyProductsViewModel.GetFilteredProductsAsync(
-                            offset, 
+                            offset,
                             ItemsPerPage, // Ensure we're only fetching the exact amount needed for the page
                             selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
-                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                        );
+                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null);
                     }
                     Debug.WriteLine($"Fetched {products.Count} products for page {CurrentPageIndex + 1} with {ItemsPerPage} items per page");
                 }
@@ -808,7 +810,8 @@ namespace MarketMinds.Views
 
                 // Get total count with filters applied
                 int totalCount;
-                try {
+                try
+                {
                     if (ShowOnlyMyProducts && IsCurrentUserSeller)
                     {
                         totalCount = await this.AuctionProductsViewModel.GetFilteredProductCountWithSellerAsync(
@@ -816,8 +819,7 @@ namespace MarketMinds.Views
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
                             !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null,
-                            App.CurrentUser?.Id
-                        );
+                            App.CurrentUser?.Id);
                     }
                     else
                     {
@@ -825,16 +827,17 @@ namespace MarketMinds.Views
                             selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
-                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                        );
+                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null);
                     }
-                    
-                    if (totalCount < 0) { // Sanity check
+
+                    if (totalCount < 0)
+                    { // Sanity check
                         Debug.WriteLine("Warning: Got negative auction count from API, defaulting to 0");
                         totalCount = 0;
                     }
                 }
-                catch (Exception countEx) {
+                catch (Exception countEx)
+                {
                     Debug.WriteLine($"Error getting auction product count: {countEx.Message}");
                     totalCount = 0; // Default to zero if count fails
                 }
@@ -856,25 +859,23 @@ namespace MarketMinds.Views
                     if (ShowOnlyMyProducts && IsCurrentUserSeller)
                     {
                         auctionProducts = await this.AuctionProductsViewModel.GetFilteredProductsWithSellerAsync(
-                            offset, 
+                            offset,
                             ItemsPerPage, // Ensure we're only fetching the exact amount needed for the page
                             selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
                             !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null,
-                            App.CurrentUser?.Id
-                        );
+                            App.CurrentUser?.Id);
                     }
                     else
                     {
                         auctionProducts = await this.AuctionProductsViewModel.GetFilteredProductsAsync(
-                            offset, 
+                            offset,
                             ItemsPerPage, // Ensure we're only fetching the exact amount needed for the page
                             selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
-                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                        );
+                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null);
                     }
                     Debug.WriteLine($"Fetched {auctionProducts.Count} auction products for page {CurrentPageIndex + 1} with {ItemsPerPage} items per page");
                 }
@@ -923,7 +924,8 @@ namespace MarketMinds.Views
 
                 // Get total count with filters applied
                 int totalCount;
-                try {
+                try
+                {
                     if (ShowOnlyMyProducts && IsCurrentUserSeller)
                     {
                         totalCount = await this.BorrowProductsViewModel.GetFilteredProductCountWithSellerAsync(
@@ -931,8 +933,7 @@ namespace MarketMinds.Views
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
                             !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null,
-                            App.CurrentUser?.Id
-                        );
+                            App.CurrentUser?.Id);
                     }
                     else
                     {
@@ -940,16 +941,17 @@ namespace MarketMinds.Views
                             selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
-                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                        );
+                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null);
                     }
-                    
-                    if (totalCount < 0) { // Sanity check
+
+                    if (totalCount < 0)
+                    { // Sanity check
                         Debug.WriteLine("Warning: Got negative borrow count from API, defaulting to 0");
                         totalCount = 0;
                     }
                 }
-                catch (Exception countEx) {
+                catch (Exception countEx)
+                {
                     Debug.WriteLine($"Error getting borrow product count: {countEx.Message}");
                     totalCount = 0; // Default to zero if count fails
                 }
@@ -971,25 +973,23 @@ namespace MarketMinds.Views
                     if (ShowOnlyMyProducts && IsCurrentUserSeller)
                     {
                         borrowProducts = await this.BorrowProductsViewModel.GetFilteredProductsWithSellerAsync(
-                            offset, 
+                            offset,
                             ItemsPerPage, // Ensure we're only fetching the exact amount needed for the page
                             selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
                             !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null,
-                            App.CurrentUser?.Id
-                        );
+                            App.CurrentUser?.Id);
                     }
                     else
                     {
                         borrowProducts = await this.BorrowProductsViewModel.GetFilteredProductsAsync(
-                            offset, 
+                            offset,
                             ItemsPerPage, // Ensure we're only fetching the exact amount needed for the page
                             selectedConditionIds.Count > 0 ? selectedConditionIds : null,
                             selectedCategoryIds.Count > 0 ? selectedCategoryIds : null,
                             MaxPrice < ActualMaxPriceFromDatabase ? MaxPrice : null,
-                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null
-                        );
+                            !string.IsNullOrWhiteSpace(SearchTerm) ? SearchTerm : null);
                     }
                     Debug.WriteLine($"Fetched {borrowProducts.Count} borrow products for page {CurrentPageIndex + 1} with {ItemsPerPage} items per page");
                 }
@@ -1164,9 +1164,9 @@ namespace MarketMinds.Views
 
                 // Return the maximum of all three
                 var overallMax = Math.Max(Math.Max(buyMax, auctionMax), borrowMax);
-                
+
                 Debug.WriteLine($"Max prices - Buy: {buyMax}, Auction: {auctionMax}, Borrow: {borrowMax}, Overall: {overallMax}");
-                
+
                 return overallMax > 0 ? overallMax : 1000; // Default to 1000 if no products found
             }
             catch (Exception ex)
@@ -1186,14 +1186,14 @@ namespace MarketMinds.Views
                 var actualMaxPrice = await GetMaxPriceAsync();
                 ActualMaxPriceFromDatabase = actualMaxPrice;
                 MaxPrice = actualMaxPrice; // Set current filter to max by default
-                
+
                 // Update the price slider maximum if it exists
                 if (PriceRangeSlider != null)
                 {
                     PriceRangeSlider.Maximum = ActualMaxPriceFromDatabase;
                     PriceRangeSlider.Value = ActualMaxPriceFromDatabase; // Set to max by default
                 }
-                
+
                 Debug.WriteLine($"Initialized max price from database: {ActualMaxPriceFromDatabase}");
             }
             catch (Exception ex)
