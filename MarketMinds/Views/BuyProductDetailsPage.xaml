@@ -26,28 +26,12 @@
     <ScrollViewer ZoomMode="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
         <Grid Margin="16" HorizontalAlignment="Center" MaxWidth="1400">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Breadcrumb -->
                 <RowDefinition Height="*"/>    <!-- Main Content -->
                 <RowDefinition Height="Auto"/> <!-- Back Button -->
             </Grid.RowDefinitions>
 
-            <!-- Breadcrumb -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16" Spacing="8">
-                <Button x:Name="HomeButton" 
-                        Content="Home" 
-                        Style="{StaticResource TextBlockButtonStyle}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Click="HomeButton_Click"/>
-                <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                <TextBlock x:Name="ProductTitleBreadcrumb" 
-                           Text="{x:Bind Product.Title, Mode=OneWay}" 
-                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                           FontWeight="Medium"
-                           VerticalAlignment="Center"/>
-            </StackPanel>
-
             <!-- Main Product Section -->
-            <Border Grid.Row="1" 
+            <Border Grid.Row="0" 
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
@@ -153,12 +137,14 @@
                                     <TextBlock Grid.Column="0"
                                                Text="{x:Bind Product.Title, Mode=OneWay}"
                                                Style="{StaticResource TitleTextBlockStyle}"
-                                               TextWrapping="Wrap"/>
+                                               TextWrapping="Wrap"
+                                               FontSize="24"/>
              
                                     <Border Grid.Column="1"
                                             Background="{ThemeResource SystemAccentColorLight2}"
                                             CornerRadius="12"
                                             Padding="12,6"
+                                            Margin="10,16,0,0"
                                             VerticalAlignment="Top">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <FontIcon Glyph="&#xE73E;" 
@@ -186,70 +172,6 @@
                                             <TextBlock Text="{x:Bind Product.Condition.Name, Mode=OneWay, FallbackValue='Unknown'}"
                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         </StackPanel>
-                                    </StackPanel>
-
-                                    <StackPanel Visibility="{x:Bind IsCurrentUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
-                                        <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                            CornerRadius="8"
-                                            BorderBrush="{ThemeResource SystemAccentColor}"
-                                            BorderThickness="1"
-                                            Padding="16">
-
-                                        <Grid>
-                                            <!-- Define three rows: 
-                                             Row 0 → explanatory text 
-                                             Row 1 → “New Stock” + NumberBox 
-                                             Row 2 → Update Stock button -->
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
-
-                                            <!-- ─── Row 0: Explanatory text (full width) ─── -->
-                                            <TextBlock Grid.Row="0"
-                                                       Text="As the seller, you can adjust the available stock quantity"
-                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                       FontSize="14" />
-
-                                            <!-- ─── Row 1: “New Stock” label + NumberBox, left-aligned ─── -->
-                                            <Grid Grid.Row="1" Margin="0,8,0,0">
-                                                <!-- Two columns: Column 0 = label, Column 1 = NumberBox -->
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-
-                                                <TextBlock Grid.Column="0"
-                                                            Text="New Stock"
-                                                            FontWeight="Medium"
-                                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                                            VerticalAlignment="Center" />
-
-                                                <NumberBox Grid.Column="1"
-                                                            x:Name="StockNumberBox"
-                                                            PlaceholderText="Enter new stock"
-                                                            Width="120"
-                                                            Value="{x:Bind Product.Stock, Mode=TwoWay}"
-                                                            Minimum="0"
-                                                            Margin="8,0,0,0" />
-                                            </Grid>
-
-                                            <!-- ─── Row 2: “Update Stock” button, left-aligned with a top margin ─── -->
-                                            <Button Grid.Row="2"
-                                                    Background="{ThemeResource SystemAccentColor}"
-                                                    Foreground="{ThemeResource AccentButtonForeground}"
-                                                    CornerRadius="8"
-                                                    Padding="16,10"
-                                                    HorizontalAlignment="Left"
-                                                    Margin="0,16,0,0"
-                                                    Click="UpdateStockButton_Click">
-                                                <TextBlock Text="Update Stock"
-                                                            FontWeight="Medium"/>
-                                            </Button>
-
-                                        </Grid>
-                                    </Border>
                                     </StackPanel>
 
                                 </StackPanel>
@@ -378,6 +300,76 @@
                                     </Border>
                                 </StackPanel>
 
+                                <!-- Stock Update Section -->
+                                <StackPanel Spacing="12" Visibility="{x:Bind IsCurrentUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon Glyph="&#xE8AB;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="Update Stock" 
+                                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                                   FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                    <Border Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}"
+                                            CornerRadius="8"
+                                            Padding="16"
+                                            BorderBrush="{ThemeResource SystemAccentColor}"
+                                            BorderThickness="1">
+
+                                        <Grid>
+                                            <!-- Define three rows: 
+                                             Row 0 → explanatory text 
+                                             Row 1 → "New Stock" + NumberBox 
+                                             Row 2 → Update Stock button -->
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- ─── Row 0: Explanatory text (full width) ─── -->
+                                            <TextBlock Grid.Row="0"
+                                                       Text="As the seller, you can adjust the available stock quantity"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                       FontSize="14" />
+
+                                            <!-- ─── Row 1: "New Stock" label + NumberBox, left-aligned ─── -->
+                                            <Grid Grid.Row="1" Margin="0,8,0,0">
+                                                <!-- Two columns: Column 0 = label, Column 1 = NumberBox -->
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                            Text="New Stock"
+                                                            FontWeight="Medium"
+                                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                            VerticalAlignment="Center" />
+
+                                                <NumberBox Grid.Column="1"
+                                                            x:Name="StockNumberBox"
+                                                            PlaceholderText="Enter new stock"
+                                                            Width="120"
+                                                            Value="{x:Bind Product.Stock, Mode=TwoWay}"
+                                                            Minimum="0"
+                                                            Margin="8,0,0,0" />
+                                            </Grid>
+
+                                            <!-- ─── Row 2: "Update Stock" button, left-aligned with a top margin ─── -->
+                                            <Button Grid.Row="2"
+                                                    Background="{ThemeResource SystemAccentColor}"
+                                                    Foreground="{ThemeResource AccentButtonForeground}"
+                                                    CornerRadius="8"
+                                                    Padding="16,10"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,16,0,0"
+                                                    Click="UpdateStockButton_Click">
+                                                <TextBlock Text="Update Stock"
+                                                            FontWeight="Medium"/>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+
                                 <!-- Tags -->
                                 <StackPanel Spacing="12" Visibility="{x:Bind HasTags, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -415,7 +407,7 @@
             </Border>
 
             <!-- Back Button -->
-            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Margin="0,24,0,0">
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,24,0,0">
                 <Button x:Name="BackButton" 
                         Background="Transparent"
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -425,7 +417,7 @@
                         Click="BackButton_Click">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon Glyph="&#xE72B;" FontSize="16"/>
-                        <TextBlock Text="Back to Products" FontWeight="Medium"/>
+                        <TextBlock Text="Back to Buy Products" FontWeight="Medium"/>
                     </StackPanel>
                 </Button>
             </StackPanel>

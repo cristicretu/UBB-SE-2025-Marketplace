@@ -24,26 +24,12 @@
     <ScrollViewer ZoomMode="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
         <Grid Margin="16" HorizontalAlignment="Center" MaxWidth="1400">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Breadcrumb -->
                 <RowDefinition Height="*"/>    <!-- Main Content -->
                 <RowDefinition Height="Auto"/> <!-- Back Button -->
             </Grid.RowDefinitions>
 
-            <!-- Breadcrumb -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                <Button Content="Home" 
-                        Style="{ThemeResource TextBlockButtonStyle}"
-                        Click="HomeButton_Click"/>
-                <TextBlock Text=" > " 
-                           VerticalAlignment="Center" 
-                           Margin="8,0"/>
-                <TextBlock Text="{x:Bind Product.Title, Mode=OneWay}" 
-                           VerticalAlignment="Center" 
-                           FontWeight="SemiBold"/>
-            </StackPanel>
-
             <!-- Main Content -->
-            <Border Grid.Row="1" 
+            <Border Grid.Row="0" 
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
@@ -66,7 +52,7 @@
                         <Border Grid.Row="0" 
                                 Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}"
                                 CornerRadius="8,0,0,0"
-                                MinHeight="400">
+                                MinHeight="500">
                             <Grid>
                                 <!-- Main Image -->
                                 <Image x:Name="MainImage" 
@@ -78,12 +64,12 @@
                                 <!-- Image Counter -->
                                 <Border Background="{ThemeResource SystemFillColorSolidNeutralBrush}"
                                         CornerRadius="12"
-                                        Padding="8,4"
+                                        Padding="12,6"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Top"
                                         Margin="16"
                                         Visibility="{x:Bind HasMultipleImages, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
-                                    <TextBlock Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                    <TextBlock Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                FontSize="12"
                                                FontWeight="Medium">
                                         <Run Text="{x:Bind CurrentImageIndex, Mode=OneWay}"/>
@@ -101,29 +87,33 @@
                                       HorizontalScrollBarVisibility="Auto"
                                       VerticalScrollBarVisibility="Hidden"
                                       Padding="16"
-                                      Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                      Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                       Visibility="{x:Bind HasMultipleImages, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
-                            <ItemsRepeater ItemsSource="{x:Bind Product.Images, Mode=OneWay}">
-                                <ItemsRepeater.Layout>
-                                    <StackLayout Orientation="Horizontal" Spacing="12"/>
-                                </ItemsRepeater.Layout>
-                                <ItemsRepeater.ItemTemplate>
-                                    <DataTemplate x:DataType="models:ProductImage">
-                                        <Button Background="Transparent"
-                                                BorderThickness="2"
-                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                CornerRadius="4"
-                                                Padding="2"
-                                                Width="64"
-                                                Height="64"
-                                                Tag="{x:Bind Url}"
-                                                Click="ThumbnailImage_Click">
-                                            <Image Source="{x:Bind Url, Converter={StaticResource UrlToImageSourceConverter}}"
-                                                   Stretch="UniformToFill"/>
-                                        </Button>
-                                    </DataTemplate>
-                                </ItemsRepeater.ItemTemplate>
-                            </ItemsRepeater>
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <ItemsRepeater ItemsSource="{x:Bind Product.Images, Mode=OneWay}">
+                                    <ItemsRepeater.Layout>
+                                        <StackLayout Orientation="Horizontal" Spacing="12"/>
+                                    </ItemsRepeater.Layout>
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="models:ProductImage">
+                                            <Border Width="64" Height="64" 
+                                                    CornerRadius="8"
+                                                    BorderThickness="2"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}">
+                                                <Button Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="0"
+                                                        Click="ThumbnailImage_Click"
+                                                        Tag="{x:Bind Url}">
+                                                    <Image Source="{x:Bind Url, Converter={StaticResource UrlToImageSourceConverter}, ConverterParameter='ms-appx:///Assets/Products/default-product.png'}"
+                                                           Stretch="UniformToFill"/>
+                                                </Button>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+                            </StackPanel>
                         </ScrollViewer>
 
                         <!-- Borrowing Section -->
@@ -348,11 +338,15 @@
                                     <Border Grid.Column="1"
                                             Background="{x:Bind AvailabilityColor, Mode=OneWay}"
                                             CornerRadius="12"
-                                            Padding="8,4">
+                                            Height="24"
+                                            Padding="8,4"
+                                            VerticalAlignment="Top"
+                                            Margin="8,4,0,0">
                                         <TextBlock Text="{x:Bind AvailabilityText, Mode=OneWay}"
                                                    Foreground="White"
                                                    FontSize="12"
-                                                   FontWeight="Medium"/>
+                                                   FontWeight="Medium"
+                                                   VerticalAlignment="Center"/>
                                     </Border>
                                 </Grid>
                                 
@@ -377,91 +371,13 @@
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock Text="{x:Bind Product.DailyRate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='€{0:F2}'}"
                                                Style="{StaticResource HeaderTextBlockStyle}"
-                                               Foreground="{ThemeResource SystemAccentColor}"
-                                                Visibility="{x:Bind IsCurrentUserBuyer, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}" />
+                                               Foreground="{ThemeResource SystemAccentColor}" 
+                                               FontSize="40"
+                                               FontWeight="Medium"/>
                                     <TextBlock Text="/ day" 
-                                               VerticalAlignment="Bottom"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                </StackPanel>
-
-                                <StackPanel
-                                    Margin="0,12,0,0"
-                                    Spacing="12"
-                                    Visibility="{x:Bind IsCurrentUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
-
-                                    <!-- Section header -->
-                                    <TextBlock
-                                        Text="Update Daily Rate"
-                                        FontSize="20"
-                                        FontWeight="SemiBold"
-                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                        Margin="0,0,0,8" />
-
-                                    <!-- Outer border (matches the “card” style in your page) -->
-                                    <Border
-                                        Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                        CornerRadius="8"
-                                        BorderBrush="{ThemeResource SystemAccentColor}"
-                                        BorderThickness="1"
-                                        Padding="16">
-
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <!-- explanatory text -->
-                                                <RowDefinition Height="Auto"/>
-                                                <!-- New Rate label + NumberBox -->
-                                                <RowDefinition Height="Auto"/>
-                                                <!-- Update button -->
-                                            </Grid.RowDefinitions>
-
-                                            <!-- Row 0: explanatory TextBlock -->
-                                            <TextBlock
-                                                Grid.Row="0"
-                                                Text="As the seller, you can adjust the daily rate for this product"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                FontSize="14" />
-
-                                            <!-- Row 1: “New Rate” label + NumberBox -->
-                                            <Grid Grid.Row="1" Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-
-                                                <TextBlock
-                                                    Grid.Column="0"
-                                                    Text="New Rate"
-                                                    FontWeight="Medium"
-                                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                                    VerticalAlignment="Center" />
-
-                                                <NumberBox
-                                                Grid.Column="1"
-                                                x:Name="DailyRateNumberBox"
-                                                PlaceholderText="€0.00"
-                                                Width="100"
-                                                Value="{x:Bind Product.DailyRate, Mode=TwoWay}"
-                                                Minimum="0"
-                                                Margin="8,0,0,0" />
-                                            </Grid>
-
-                                            <!-- Row 2: “Update Rate” button -->
-                                            <Button
-                                                Grid.Row="2"
-                                                Background="{ThemeResource SystemAccentColor}"
-                                                Foreground="{ThemeResource AccentButtonForeground}"
-                                                CornerRadius="8"
-                                                Padding="16,10"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,16,0,0"
-                                                Click="UpdateDailyRateButton_Click">
-                                                <TextBlock
-                                            Text="Update Rate"
-                                            FontWeight="Medium" />
-                                            </Button>
-                                        </Grid>
-                                    </Border>
+                                               VerticalAlignment="Center"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="30"/>
                                 </StackPanel>
                             </StackPanel>
 
@@ -563,13 +479,94 @@
                                     </ItemsRepeater>
                                 </Border>
                             </StackPanel>
+
+                            <!-- Seller Daily Rate Update Section -->
+                            <StackPanel
+                                Margin="0,12,0,0"
+                                Spacing="12"
+                                Visibility="{x:Bind IsCurrentUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+
+                                <!-- Section header -->
+                                <TextBlock
+                                    Text="Update Daily Rate"
+                                    FontSize="20"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                    Margin="0,0,0,8" />
+
+                                <!-- Outer border (matches the "card" style in your page) -->
+                                <Border
+                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                    CornerRadius="8"
+                                    BorderBrush="{ThemeResource SystemAccentColor}"
+                                    BorderThickness="1"
+                                    Padding="16">
+
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <!-- explanatory text -->
+                                            <RowDefinition Height="Auto"/>
+                                            <!-- New Rate label + NumberBox -->
+                                            <RowDefinition Height="Auto"/>
+                                            <!-- Update button -->
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Row 0: explanatory TextBlock -->
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Text="As the seller, you can adjust the daily rate for this product"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            FontSize="14" />
+
+                                        <!-- Row 1: "New Rate" label + NumberBox -->
+                                        <Grid Grid.Row="1" Margin="0,8,0,0" HorizontalAlignment="Left">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                Text="New Rate"
+                                                FontWeight="Medium"
+                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                VerticalAlignment="Center" />
+
+                                            <NumberBox
+                                            Grid.Column="1"
+                                            x:Name="DailyRateNumberBox"
+                                            PlaceholderText="€0.00"
+                                            Width="100"
+                                            Value="{x:Bind Product.DailyRate, Mode=TwoWay}"
+                                            Minimum="0"
+                                            Margin="8,0,0,0" />
+                                        </Grid>
+
+                                        <!-- Row 2: "Update Rate" button -->
+                                        <Button
+                                            Grid.Row="2"
+                                            Background="{ThemeResource SystemAccentColor}"
+                                            Foreground="{ThemeResource AccentButtonForeground}"
+                                            CornerRadius="8"
+                                            Padding="16,10"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,16,0,0"
+                                            Click="UpdateDailyRateButton_Click">
+                                            <TextBlock
+                                        Text="Update Rate"
+                                        FontWeight="Medium" />
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
             </Border>
 
             <!-- Back Button -->
-            <StackPanel Grid.Row="2" 
+            <StackPanel Grid.Row="1" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Center" 
                         Margin="0,16,0,0">
