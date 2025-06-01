@@ -501,8 +501,17 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             await borrowProductsRepository.BorrowProductAsync(userId, productId, start, end);
         }
 
-
-
-
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                return await borrowProductsRepository.GetMaxPriceAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for borrow products: {ex.Message}");
+                return 0.0; // Return 0 on error
+            }
+        }
     }
 }

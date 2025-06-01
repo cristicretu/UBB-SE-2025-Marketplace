@@ -467,6 +467,22 @@ namespace MarketMinds.Shared.ProxyRepository
             }
         }
 
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                var response = await httpClient.GetAsync("borrowproducts/maxprice");
+                response.EnsureSuccessStatusCode();
+                var priceString = await response.Content.ReadAsStringAsync();
+                return double.Parse(priceString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for borrow products: {ex.Message}");
+                return 0.0; // Return 0 on error
+            }
+        }
+
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)

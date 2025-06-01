@@ -312,5 +312,21 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
 
             product.Tags = tags;
         }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                var maxPrice = await context.BorrowProducts
+                    .MaxAsync(p => (double?)p.DailyRate);
+                
+                return maxPrice ?? 0.0; // Return 0 if no products found
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for BorrowProducts: {ex.Message}");
+                return 0.0; // Return 0 on error
+            }
+        }
     }
 }

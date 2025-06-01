@@ -705,5 +705,36 @@ namespace MarketMinds.Shared.ProxyRepository
                 throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
             }
         }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var response = await httpClient.GetAsync("auctionproducts/maxprice");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"API returned error: {(int)response.StatusCode} {response.ReasonPhrase}. Details: {errorContent}");
+                }
+
+                var priceString = await response.Content.ReadAsStringAsync();
+                return double.Parse(priceString);
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new InvalidOperationException($"Failed to communicate with API: {httpEx.Message}", httpEx);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for auction products: {ex.Message}");
+                return 0.0; // Return 0 on error
+            }
+        }
     }
 }

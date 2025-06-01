@@ -341,5 +341,21 @@ namespace Server.Controllers
             borrowProductsRepository.UpdateProduct(product);
         }
 
+        [HttpGet("maxprice")]
+        [ProducesResponseType(typeof(double), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetMaxPrice()
+        {
+            try
+            {
+                var maxPrice = await borrowProductsRepository.GetMaxPriceAsync();
+                return Ok(maxPrice);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to get max price: {ex.Message}");
+            }
+        }
+
     }
 }

@@ -427,5 +427,21 @@ namespace MarketMinds.Controllers
                 product.CurrentPrice = product.StartPrice;
             }
         }
+
+        [HttpGet("maxprice")]
+        [ProducesResponseType(typeof(double), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetMaxPrice()
+        {
+            try
+            {
+                var maxPrice = await auctionProductsRepository.GetMaxPriceAsync();
+                return Ok(maxPrice);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to get max price: {exception.Message}");
+            }
+        }
     }
 }

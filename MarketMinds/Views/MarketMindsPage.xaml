@@ -467,7 +467,7 @@
             <!-- Price Range -->
             <StackPanel Grid.Row="3" Margin="0,0,0,16">
                 <TextBlock Text="Price Range" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
-                <Slider x:Name="PriceRangeSlider" Minimum="1" Maximum="100101" Value="100101"
+                <Slider x:Name="PriceRangeSlider" Minimum="1" Maximum="{x:Bind ActualMaxPriceFromDatabase, Mode=OneWay}" Value="{x:Bind MaxPrice, Mode=TwoWay}"
                        ThumbToolTipValueConverter="{x:Null}"
                        ValueChanged="PriceRangeSlider_ValueChanged"
                        Foreground="{ThemeResource SystemAccentColor}"/>
@@ -478,8 +478,8 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="$1" Grid.Column="0" Style="{StaticResource CaptionTextBlockStyle}"/>
-                    <TextBlock x:Name="SelectedPriceText" Text="$100101" Grid.Column="1" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"/>
-                    <TextBlock Text="$100101" Grid.Column="2" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock x:Name="SelectedPriceText" Text="{x:Bind MaxPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0:F0}'}" Grid.Column="1" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{x:Bind ActualMaxPriceFromDatabase, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='${0:F0}'}" Grid.Column="2" Style="{StaticResource CaptionTextBlockStyle}"/>
                 </Grid>
             </StackPanel>
 

@@ -415,5 +415,21 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 throw new Exception($"Failed to get filtered auction products count: {exception.Message}", exception);
             }
         }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                var maxPrice = await context.AuctionProducts
+                    .MaxAsync(p => (double?)p.CurrentPrice);
+                
+                return maxPrice ?? 0.0; // Return 0 if no products found
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for AuctionProducts: {ex.Message}");
+                return 0.0; // Return 0 on error
+            }
+        }
     }
 }

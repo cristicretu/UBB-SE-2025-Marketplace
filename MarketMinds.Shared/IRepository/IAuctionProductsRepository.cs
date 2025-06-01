@@ -70,5 +70,11 @@ namespace MarketMinds.Shared.IRepository
         /// </summary>
         /// <param name="product">The auction product to delete.</param>
         void DeleteProduct(AuctionProduct product);
+
+        /// <summary>
+        /// Gets the maximum current price of all auction products asynchronously.
+        /// </summary>
+        /// <returns>The maximum current price of auction products, or 0 if no products exist.</returns>
+        Task<double> GetMaxPriceAsync();
     }
 }

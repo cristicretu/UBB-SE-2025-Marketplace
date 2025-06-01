@@ -67,5 +67,11 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
         /// <param name="id">The ID of the auction product.</param>
         /// <returns>The auction product with the specified ID.</returns>
         AuctionProduct GetProductById(int id);
+
+        /// <summary>
+        /// Gets the maximum current price of all auction products asynchronously.
+        /// </summary>
+        /// <returns>The maximum current price of auction products, or 0 if no products exist.</returns>
+        Task<double> GetMaxPriceAsync();
     }
 }

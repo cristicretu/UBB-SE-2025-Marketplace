@@ -103,4 +103,20 @@ public class BuyProductsViewModel
             return 0;
         }
     }
+
+    /// <summary>
+    /// Gets the maximum price of all buy products asynchronously
+    /// </summary>
+    public async Task<double> GetMaxPriceAsync()
+    {
+        try
+        {
+            return await buyProductsService.GetMaxPriceAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting max price for buy products: {ex.Message}");
+            return 0.0;
+        }
+    }
 }

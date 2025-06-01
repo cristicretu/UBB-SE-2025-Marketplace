@@ -77,5 +77,11 @@ namespace MarketMinds.Shared.IRepository
         /// <param name="productId">The ID of the product to add the image to</param>
         /// <param name="image">The image to add</param>
         void AddImageToProduct(int productId, BorrowProductImage image);
+
+        /// <summary>
+        /// Gets the maximum daily rate of all borrow products asynchronously.
+        /// </summary>
+        /// <returns>The maximum daily rate of borrow products, or 0 if no products exist.</returns>
+        Task<double> GetMaxPriceAsync();
     }
 }

@@ -104,4 +104,20 @@ public class AuctionProductsViewModel
             return 0;
         }
     }
+
+    /// <summary>
+    /// Gets the maximum current price of all auction products asynchronously
+    /// </summary>
+    public async Task<double> GetMaxPriceAsync()
+    {
+        try
+        {
+            return await auctionProductsService.GetMaxPriceAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting max price for auction products: {ex.Message}");
+            return 0.0;
+        }
+    }
 }

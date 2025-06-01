@@ -631,5 +631,18 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             // Return an empty list when this method is called on this service
             return new List<Product>();
         }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                return await auctionProductsRepository.GetMaxPriceAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for auction products: {ex.Message}");
+                return 0.0; // Return 0 on error
+            }
+        }
     }
 }

@@ -489,5 +489,18 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 throw;
             }
         }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                return await buyProductsRepository.GetMaxPriceAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for buy products: {ex.Message}");
+                return 0.0; // Return 0 on error
+            }
+        }
     }
 }

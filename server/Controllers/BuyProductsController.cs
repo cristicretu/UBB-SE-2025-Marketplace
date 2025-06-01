@@ -426,5 +426,25 @@ namespace MarketMinds.Controllers
         {
             public int Quantity { get; set; }
         }
+
+        [HttpGet("maxprice")]
+        [ProducesResponseType(typeof(double), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetMaxPrice()
+        {
+            try
+            {
+                var maxPrice = await _buyProductsRepository.GetMaxPriceAsync();
+                return Ok(maxPrice);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+            }
+        }
     }
 }

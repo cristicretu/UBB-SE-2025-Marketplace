@@ -89,4 +89,20 @@ public class BorrowProductsViewModel
             return 0;
         }
     }
+
+    /// <summary>
+    /// Gets the maximum daily rate of all borrow products asynchronously
+    /// </summary>
+    public async Task<double> GetMaxPriceAsync()
+    {
+        try
+        {
+            return await borrowProductsService.GetMaxPriceAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting max price for borrow products: {ex.Message}");
+            return 0.0;
+        }
+    }
 }

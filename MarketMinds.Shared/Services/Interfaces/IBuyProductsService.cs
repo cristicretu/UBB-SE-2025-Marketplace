@@ -110,5 +110,11 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
         /// <returns>The total number of buy products matching the filters.</returns>
         int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
+
+        /// <summary>
+        /// Gets the maximum price of all buy products asynchronously.
+        /// </summary>
+        /// <returns>The maximum price of buy products, or 0 if no products exist.</returns>
+        Task<double> GetMaxPriceAsync();
     }
 }

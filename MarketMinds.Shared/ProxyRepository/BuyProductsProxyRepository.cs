@@ -287,35 +287,49 @@ namespace MarketMinds.Shared.ProxyRepository
 
             try
             {
-                // Create simple request with just the quantity to decrease
-                var stockUpdateRequest = new { Quantity = decreaseAmount };
-
-                // Use the dedicated stock update endpoint
-                string url = $"buyproducts/stock/{id}";
-                Console.WriteLine($"Sending POST request to update product {id} stock, decreasing by {decreaseAmount}");
-
-                var response = await httpClient.PostAsJsonAsync(url, stockUpdateRequest);
-
-                // Log the response status
-                Console.WriteLine($"Stock update response status: {(int)response.StatusCode} {response.ReasonPhrase}");
-
+                var requestData = new { Quantity = decreaseAmount };
+                
+                Console.WriteLine($"Calling API to update stock for product {id}, decreasing by {decreaseAmount}");
+                
+                var response = await httpClient.PostAsJsonAsync($"buyproducts/stock/{id}", requestData);
+                
+                Console.WriteLine($"Stock update response: {response.StatusCode}");
+                
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error content: {errorContent}");
+                    Console.WriteLine($"Stock update failed: {errorContent}");
+                    throw new HttpRequestException($"Stock update failed: {response.StatusCode} - {errorContent}");
                 }
-
-                await ThrowOnError(nameof(UpdateProductStockAsync), response);
-                Console.WriteLine($"Stock decreased successfully for product {id} by {decreaseAmount}");
+                
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Stock update successful: {responseContent}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception in UpdateProductStockAsync: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                }
+                Console.WriteLine($"Error updating product stock: {ex.Message}");
                 throw;
+            }
+        }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var response = await httpClient.GetAsync("buyproducts/maxprice");
+                response.EnsureSuccessStatusCode();
+                var priceString = await response.Content.ReadAsStringAsync();
+                return double.Parse(priceString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for buy products: {ex.Message}");
+                return 0.0; // Return 0 on error
             }
         }
 
@@ -323,12 +337,8 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             if (!response.IsSuccessStatusCode)
             {
-                string errorMessage = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(errorMessage))
-                {
-                    errorMessage = response.ReasonPhrase;
-                }
-                throw new Exception($"{methodName}: {errorMessage}");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"{methodName} failed: {response.StatusCode} - {errorContent}");
             }
         }
     }
