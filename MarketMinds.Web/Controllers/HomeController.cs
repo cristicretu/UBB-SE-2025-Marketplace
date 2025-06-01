@@ -421,9 +421,9 @@ namespace MarketMinds.Web.Controllers
                 {
                     case "auction":
                         auctionProducts = await _auctionProductService.GetFilteredAuctionProductsAsync(
-                            request.Offset, request.Count, request.ConditionIds, request.CategoryIds);
+                            request.Offset, request.Count, request.ConditionIds, request.CategoryIds, null, null, null);
                         totalProducts = await _auctionProductService.GetFilteredAuctionProductCountAsync(
-                            request.ConditionIds, request.CategoryIds);
+                            request.ConditionIds, request.CategoryIds, null, null, null);
                         break;
 
                     case "borrow":
