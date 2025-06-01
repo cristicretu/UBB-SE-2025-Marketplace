@@ -46,6 +46,19 @@ namespace MarketMinds.Shared.IRepository
         List<BuyProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
 
         /// <summary>
+        /// Retrieves buy products filtered by conditions, categories, maximum price, search term, and seller ID with pagination support.
+        /// </summary>
+        /// <param name="offset">The number of products to skip (0 for first page).</param>
+        /// <param name="count">The number of products to return (0 for all products).</param>
+        /// <param name="conditionIds">List of condition IDs to filter by (null or empty for no filter).</param>
+        /// <param name="categoryIds">List of category IDs to filter by (null or empty for no filter).</param>
+        /// <param name="maxPrice">Maximum price filter (null for no maximum).</param>
+        /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
+        /// <param name="sellerId">Seller ID to filter by (null for no seller filter).</param>
+        /// <returns>A list of filtered buy products for the specified page.</returns>
+        List<BuyProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null);
+
+        /// <summary>
         /// Gets the total count of buy products.
         /// </summary>
         /// <returns>The total number of buy products.</returns>
@@ -60,6 +73,17 @@ namespace MarketMinds.Shared.IRepository
         /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
         /// <returns>The total number of buy products matching the filters.</returns>
         int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
+
+        /// <summary>
+        /// Gets the total count of buy products matching the specified filters including seller ID.
+        /// </summary>
+        /// <param name="conditionIds">List of condition IDs to filter by (null or empty for no filter).</param>
+        /// <param name="categoryIds">List of category IDs to filter by (null or empty for no filter).</param>
+        /// <param name="maxPrice">Maximum price filter (null for no maximum).</param>
+        /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
+        /// <param name="sellerId">Seller ID to filter by (null for no seller filter).</param>
+        /// <returns>The total number of buy products matching the filters.</returns>
+        int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null);
 
         /// <summary>
         /// Retrieves a buy product by its ID.

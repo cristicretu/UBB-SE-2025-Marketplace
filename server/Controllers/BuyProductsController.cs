@@ -98,6 +98,34 @@ namespace MarketMinds.Controllers
             }
         }
 
+        [HttpGet("filtered/seller")]
+        [ProducesResponseType(typeof(List<BuyProductDTO>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredBuyProductsBySeller(
+            [FromQuery] int offset = 0,
+            [FromQuery] int count = 0,
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int? sellerId = null)
+        {
+            try
+            {
+                List<BuyProduct> products = _buyProductsRepository.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+                var dtos = BuyProductMapper.ToDTOList(products);
+                return Ok(dtos);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+            }
+        }
+
         [HttpGet("filtered/count")]
         [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -110,6 +138,31 @@ namespace MarketMinds.Controllers
             try
             {
                 var count = _buyProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm);
+                return Ok(count);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+            }
+        }
+
+        [HttpGet("filtered/count/seller")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredBuyProductsCountBySeller(
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int? sellerId = null)
+        {
+            try
+            {
+                var count = _buyProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
                 return Ok(count);
             }
             catch (ApplicationException ex)

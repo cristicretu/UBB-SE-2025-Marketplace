@@ -61,7 +61,8 @@ public class BuyProductsViewModel
     {
         try
         {
-            return await Task.Run(() => GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm));
+            // Always call the sellerId version with null to avoid ambiguity
+            return await Task.Run(() => buyProductsService.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, null));
         }
         catch (Exception ex)
         {
@@ -94,8 +95,8 @@ public class BuyProductsViewModel
     {
         try
         {
-            // Use the repository's dedicated count method instead of fetching all products
-            return await Task.Run(() => buyProductsService.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm));
+            // Always call the sellerId version with null to avoid ambiguity
+            return await Task.Run(() => buyProductsService.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm, null));
         }
         catch (Exception ex)
         {
@@ -115,8 +116,41 @@ public class BuyProductsViewModel
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error getting max price for buy products: {ex.Message}");
-            return 0.0;
+            Debug.WriteLine($"Error getting max price: {ex.Message}");
+            return 0.0; // Return 0 on error
+        }
+    }
+
+    /// <summary>
+    /// Gets filtered products asynchronously based on provided filters including seller filter
+    /// </summary>
+    public async Task<List<BuyProduct>> GetFilteredProductsWithSellerAsync(int offset, int count, List<int> conditionIds = null, List<int> categoryIds = null, double? maxPrice = null, string searchTerm = null, int? sellerId = null)
+    {
+        try
+        {
+            return await Task.Run(() => buyProductsService.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, sellerId));
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting filtered products with seller filter asynchronously: {ex.Message}");
+            return new List<BuyProduct>();
+        }
+    }
+
+    /// <summary>
+    /// Gets the count of filtered products asynchronously using direct server count API with seller filter
+    /// </summary>
+    public async Task<int> GetFilteredProductCountWithSellerAsync(List<int> conditionIds = null, List<int> categoryIds = null, double? maxPrice = null, string searchTerm = null, int? sellerId = null)
+    {
+        try
+        {
+            // Use the repository's dedicated count method instead of fetching all products
+            return await Task.Run(() => buyProductsService.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm, sellerId));
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting filtered product count with seller filter asynchronously: {ex.Message}");
+            return 0;
         }
     }
 }

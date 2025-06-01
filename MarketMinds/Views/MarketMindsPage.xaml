@@ -431,6 +431,7 @@
         <Grid Grid.Column="0" Grid.Row="0" Background="{ThemeResource SystemControlBackgroundAltMediumLowBrush}" Padding="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Filters header -->
+                <RowDefinition Height="Auto"/> <!-- My Products Toggle (Seller only) -->
                 <RowDefinition Height="Auto"/> <!-- Search box -->
                 <RowDefinition Height="Auto"/> <!-- Separator 1 -->
                 <RowDefinition Height="Auto"/> <!-- Price Range -->
@@ -450,8 +451,20 @@
                 <TextBlock Text="Filters" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center"/>
             </StackPanel>
             
+            <!-- My Products Toggle (Seller only) -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,16"
+                       Visibility="{x:Bind IsCurrentUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                <ToggleSwitch x:Name="MyProductsToggle" 
+                             Header="My Products" 
+                             OnContent="Show only my products"
+                             OffContent="Show all products"
+                             IsOn="{x:Bind ShowOnlyMyProducts, Mode=TwoWay}"
+                             Toggled="MyProductsToggle_Toggled"
+                             Foreground="{ThemeResource SystemAccentColor}"/>
+            </StackPanel>
+            
             <!-- Search Box -->
-            <AutoSuggestBox Grid.Row="1" x:Name="SearchBox" 
+            <AutoSuggestBox Grid.Row="2" x:Name="SearchBox" 
                            Margin="0,0,0,16" 
                            PlaceholderText="Search products..."
                            QueryIcon="Find" 
@@ -460,12 +473,12 @@
                            TextChanged="SearchBox_TextChanged"/>
             
             <!-- Separator Line 1 -->
-            <Rectangle Grid.Row="2" Height="1" Margin="0,0,0,16" 
+            <Rectangle Grid.Row="3" Height="1" Margin="0,0,0,16" 
                      Fill="{ThemeResource SystemControlForegroundBaseLowBrush}" 
                      HorizontalAlignment="Stretch"/>
             
             <!-- Price Range -->
-            <StackPanel Grid.Row="3" Margin="0,0,0,16">
+            <StackPanel Grid.Row="4" Margin="0,0,0,16">
                 <TextBlock Text="Price Range" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
                 <Slider x:Name="PriceRangeSlider" Minimum="1" Maximum="{x:Bind ActualMaxPriceFromDatabase, Mode=OneWay}" Value="{x:Bind MaxPrice, Mode=TwoWay}"
                        ThumbToolTipValueConverter="{x:Null}"
@@ -484,12 +497,12 @@
             </StackPanel>
 
             <!-- Separator Line 2 -->
-            <Rectangle Grid.Row="4" Height="1" Margin="0,0,0,16" 
+            <Rectangle Grid.Row="5" Height="1" Margin="0,0,0,16" 
                      Fill="{ThemeResource SystemControlForegroundBaseLowBrush}" 
                      HorizontalAlignment="Stretch"/>
             
             <!-- Categories -->
-            <StackPanel Grid.Row="5" Margin="0,0,0,16">
+            <StackPanel Grid.Row="6" Margin="0,0,0,16">
                 <TextBlock Text="Categories" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
                 <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollMode="Auto" MaxHeight="120">
                     <ItemsRepeater x:Name="CategoriesRepeater" ItemsSource="{x:Bind Categories, Mode=OneWay}">
@@ -509,12 +522,12 @@
             </StackPanel>
 
             <!-- Separator Line 3 -->
-            <Rectangle Grid.Row="6" Height="1" Margin="0,0,0,16" 
+            <Rectangle Grid.Row="7" Height="1" Margin="0,0,0,16" 
                      Fill="{ThemeResource SystemControlForegroundBaseLowBrush}" 
                      HorizontalAlignment="Stretch"/>
             
             <!-- Condition -->
-            <StackPanel Grid.Row="7" Margin="0,0,0,16">
+            <StackPanel Grid.Row="8" Margin="0,0,0,16">
                 <TextBlock Text="Condition" Style="{StaticResource BaseTextBlockStyle}" Margin="0,0,0,8"/>
                 <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollMode="Auto" MaxHeight="120">
                     <ItemsRepeater x:Name="ConditionsRepeater" ItemsSource="{x:Bind Conditions, Mode=OneWay}">
@@ -534,12 +547,12 @@
             </StackPanel>
 
             <!-- Separator Line 4 -->
-            <Rectangle Grid.Row="8" Height="1" Margin="0,0,0,16" 
+            <Rectangle Grid.Row="9" Height="1" Margin="0,0,0,16" 
                      Fill="{ThemeResource SystemControlForegroundBaseLowBrush}" 
                      HorizontalAlignment="Stretch"/>
             
             <!-- Clear Filters Button -->
-            <Button Grid.Row="9" HorizontalAlignment="Stretch" Padding="0,8" Background="Transparent" BorderThickness="1"
+            <Button Grid.Row="10" HorizontalAlignment="Stretch" Padding="0,8" Background="Transparent" BorderThickness="1"
                     BorderBrush="{ThemeResource SystemControlBackgroundBaseLowBrush}" Click="ClearFilters_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <FontIcon Glyph="&#xE711;" FontSize="12" Margin="0,0,8,0"/>

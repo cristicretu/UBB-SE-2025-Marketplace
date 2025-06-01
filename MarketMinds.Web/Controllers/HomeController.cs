@@ -194,27 +194,29 @@ namespace MarketMinds.Web.Controllers
                         case "auction":
                             auctionProducts = await _auctionProductService.GetFilteredAuctionProductsAsync(offset, count, conditionIds, categoryIds, maxPrice, search);
                             // Load first page of other tabs for tab switching
-                            if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService)
+                            if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService auctionBuyService)
                             {
-                                buyProducts = buyService.GetProducts(0, 12);
+                                buyProducts = auctionBuyService.GetProducts(0, 12);
                             }
                             borrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync(0, 12);
                             break;
 
                         case "borrow":
-                            borrowProducts = _borrowProductsService.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, search);
+                            borrowProducts = _borrowProductsService.GetFilteredProducts(
+                                offset, count, conditionIds, categoryIds, maxPrice, search, null);
                             // Load first page of other tabs for tab switching
-                            if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService2)
+                            if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService borrowBuyService)
                             {
-                                buyProducts = buyService2.GetProducts(0, 12);
+                                buyProducts = borrowBuyService.GetProducts(0, 12);
                             }
                             auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync(0, 12);
                             break;
 
                         default: // "buy"
-                            if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService3)
+                            if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService)
                             {
-                                buyProducts = buyService3.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, search);
+                                buyProducts = buyService.GetFilteredProducts(
+                                    offset, count, conditionIds, categoryIds, maxPrice, search);
                             }
                             // Load first page of other tabs for tab switching
                             auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync(0, 12);
@@ -262,9 +264,9 @@ namespace MarketMinds.Web.Controllers
                     var maxPriceTasks = new List<Task<double>>();
                     
                     // Buy products max price
-                    if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService)
+                    if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService maxPriceBuyService)
                     {
-                        maxPriceTasks.Add(buyService.GetMaxPriceAsync());
+                        maxPriceTasks.Add(maxPriceBuyService.GetMaxPriceAsync());
                     }
                     else
                     {
@@ -426,17 +428,17 @@ namespace MarketMinds.Web.Controllers
 
                     case "borrow":
                         borrowProducts = _borrowProductsService.GetFilteredProducts(
-                            request.Offset, request.Count, request.ConditionIds, request.CategoryIds);
+                            request.Offset, request.Count, request.ConditionIds, request.CategoryIds, null, null, null);
                         totalProducts = _borrowProductsService.GetFilteredProductCount(
-                            request.ConditionIds, request.CategoryIds);
+                            request.ConditionIds, request.CategoryIds, null, null, null);
                         break;
 
                     default: // "buy"
                         if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService)
                         {
                             buyProducts = buyService.GetFilteredProducts(
-                                request.Offset, request.Count, request.ConditionIds, request.CategoryIds);
-                            totalProducts = buyService.GetFilteredProductCount(request.ConditionIds, request.CategoryIds);
+                                request.Offset, request.Count, request.ConditionIds, request.CategoryIds, null, null);
+                            totalProducts = buyService.GetFilteredProductCount(request.ConditionIds, request.CategoryIds, null, null);
                         }
                         break;
                 }

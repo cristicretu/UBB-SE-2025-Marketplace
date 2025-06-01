@@ -471,6 +471,32 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             }
         }
 
+        public List<BorrowProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                return borrowProductsRepository.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered borrow products with seller filter: {ex.Message}");
+                return new List<BorrowProduct>();
+            }
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                return borrowProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered borrow product count with seller filter: {ex.Message}");
+                return 0;
+            }
+        }
+
         Task<Product> IProductService.GetProductByIdAsync(int productId)
         => Task.FromResult<Product>(GetBorrowProductByIdAsync(productId).Result);
 

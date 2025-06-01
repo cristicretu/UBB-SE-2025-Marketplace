@@ -152,6 +152,106 @@ namespace MarketMinds.Shared.ProxyRepository
             return int.Parse(countString);
         }
 
+        public string GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            var queryParams = new List<string>
+            {
+                $"offset={offset}",
+                $"count={count}"
+            };
+
+            if (conditionIds != null && conditionIds.Any())
+            {
+                foreach (var conditionId in conditionIds)
+                {
+                    queryParams.Add($"conditionIds={conditionId}");
+                }
+            }
+
+            if (categoryIds != null && categoryIds.Any())
+            {
+                foreach (var categoryId in categoryIds)
+                {
+                    queryParams.Add($"categoryIds={categoryId}");
+                }
+            }
+
+            if (maxPrice.HasValue)
+            {
+                queryParams.Add($"maxPrice={maxPrice.Value}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+            }
+
+            if (sellerId.HasValue)
+            {
+                queryParams.Add($"sellerId={sellerId.Value}");
+            }
+
+            string url = $"buyproducts/filtered/seller?{string.Join("&", queryParams)}";
+            var response = httpClient.GetAsync(url).Result;
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadAsStringAsync().Result;
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            var queryParams = new List<string>();
+
+            if (conditionIds != null && conditionIds.Any())
+            {
+                foreach (var conditionId in conditionIds)
+                {
+                    queryParams.Add($"conditionIds={conditionId}");
+                }
+            }
+
+            if (categoryIds != null && categoryIds.Any())
+            {
+                foreach (var categoryId in categoryIds)
+                {
+                    queryParams.Add($"categoryIds={categoryId}");
+                }
+            }
+
+            if (maxPrice.HasValue)
+            {
+                queryParams.Add($"maxPrice={maxPrice.Value}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+            }
+
+            if (sellerId.HasValue)
+            {
+                queryParams.Add($"sellerId={sellerId.Value}");
+            }
+
+            string url = queryParams.Any()
+                ? $"buyproducts/filtered/count/seller?{string.Join("&", queryParams)}"
+                : "buyproducts/filtered/count/seller";
+
+            var response = httpClient.GetAsync(url).Result;
+            response.EnsureSuccessStatusCode();
+            var countString = response.Content.ReadAsStringAsync().Result;
+            return int.Parse(countString);
+        }
+
         public string CreateListing(object productToSend)
         {
             if (httpClient == null || httpClient.BaseAddress == null)

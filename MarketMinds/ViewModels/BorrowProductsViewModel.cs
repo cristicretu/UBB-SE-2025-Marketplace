@@ -63,7 +63,7 @@ public class BorrowProductsViewModel
     {
         try
         {
-            var products = await Task.Run(() => borrowProductsService.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm));
+            var products = await Task.Run(() => borrowProductsService.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, null));
             return products;
         }
         catch (Exception ex)
@@ -80,12 +80,43 @@ public class BorrowProductsViewModel
     {
         try
         {
-            // Use dedicated count API instead of fetching all products
-            return await Task.Run(() => borrowProductsService.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm));
+            return await Task.Run(() => borrowProductsService.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm, null));
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error getting filtered borrow product count: {ex.Message}");
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Gets filtered borrow products asynchronously based on provided filters including seller filter
+    /// </summary>
+    public async Task<List<BorrowProduct>> GetFilteredProductsWithSellerAsync(int offset, int count, List<int> conditionIds = null, List<int> categoryIds = null, double? maxPrice = null, string searchTerm = null, int? sellerId = null)
+    {
+        try
+        {
+            return await Task.Run(() => borrowProductsService.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, sellerId));
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting filtered borrow products with seller filter: {ex.Message}");
+            return new List<BorrowProduct>();
+        }
+    }
+
+    /// <summary>
+    /// Gets the count of filtered borrow products asynchronously using dedicated count API with seller filter
+    /// </summary>
+    public async Task<int> GetFilteredProductCountWithSellerAsync(List<int> conditionIds = null, List<int> categoryIds = null, double? maxPrice = null, string searchTerm = null, int? sellerId = null)
+    {
+        try
+        {
+            return await Task.Run(() => borrowProductsService.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm, sellerId));
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting filtered borrow product count with seller filter: {ex.Message}");
             return 0;
         }
     }

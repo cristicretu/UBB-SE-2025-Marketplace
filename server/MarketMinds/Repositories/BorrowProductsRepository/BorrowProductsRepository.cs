@@ -170,6 +170,126 @@ namespace Server.MarketMinds.Repositories.BorrowProductsRepository
             }
         }
 
+        public List<BorrowProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                var query = context.BorrowProducts
+                    .Include(product => product.Condition)
+                    .Include(product => product.Category)
+                    .AsQueryable();
+
+                // Apply condition filter if provided
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    query = query.Where(p => conditionIds.Contains(p.ConditionId));
+                }
+
+                // Apply category filter if provided
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    query = query.Where(p => categoryIds.Contains(p.CategoryId));
+                }
+
+                // Apply maximum price filter if provided
+                if (maxPrice.HasValue)
+                {
+                    query = query.Where(p => p.DailyRate <= maxPrice.Value);
+                }
+
+                // Apply search term filter if provided
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    var lowerSearchTerm = searchTerm.ToLower();
+                    query = query.Where(p =>
+                        p.Title.ToLower().Contains(lowerSearchTerm) ||
+                        p.Description.ToLower().Contains(lowerSearchTerm));
+                }
+
+                // Apply seller filter if provided
+                if (sellerId.HasValue)
+                {
+                    query = query.Where(p => p.SellerId == sellerId.Value);
+                }
+
+                // Ensure consistent ordering for pagination
+                query = query.OrderBy(p => p.Id);
+
+                List<BorrowProduct> products;
+
+                if (count > 0)
+                {
+                    // Apply pagination
+                    products = query.Skip(offset).Take(count).ToList();
+                }
+                else
+                {
+                    // Return all filtered products if count is 0
+                    products = query.ToList();
+                }
+
+                foreach (var product in products)
+                {
+                    LoadProductRelationships(product);
+                }
+
+                return products;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered BorrowProducts with seller filter (offset: {offset}, count: {count}, conditions: {string.Join(",", conditionIds ?? new List<int>())}, categories: {string.Join(",", categoryIds ?? new List<int>())}, sellerId: {sellerId}): {ex.Message}");
+                throw;
+            }
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                var query = context.BorrowProducts.AsQueryable();
+
+                // Apply condition filter if provided
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    query = query.Where(p => conditionIds.Contains(p.ConditionId));
+                }
+
+                // Apply category filter if provided
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    query = query.Where(p => categoryIds.Contains(p.CategoryId));
+                }
+
+                // Apply maximum price filter if provided
+                if (maxPrice.HasValue)
+                {
+                    query = query.Where(p => p.DailyRate <= maxPrice.Value);
+                }
+
+                // Apply search term filter if provided
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    var lowerSearchTerm = searchTerm.ToLower();
+                    query = query.Where(p =>
+                        p.Title.ToLower().Contains(lowerSearchTerm) ||
+                        p.Description.ToLower().Contains(lowerSearchTerm));
+                }
+
+                // Apply seller filter if provided
+                if (sellerId.HasValue)
+                {
+                    query = query.Where(p => p.SellerId == sellerId.Value);
+                }
+
+                return query.Count();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered BorrowProducts count with seller filter (conditions: {string.Join(",", conditionIds ?? new List<int>())}, categories: {string.Join(",", categoryIds ?? new List<int>())}, maxPrice: {maxPrice}, searchTerm: {searchTerm}, sellerId: {sellerId}): {ex.Message}");
+                throw;
+            }
+        }
+
         public void DeleteProduct(BorrowProduct product)
         {
             context.BorrowProducts.Remove(product);

@@ -106,6 +106,50 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet("filtered/seller")]
+        [ProducesResponseType(typeof(List<BorrowProduct>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredBorrowProductsBySeller(
+            [FromQuery] int offset = 0,
+            [FromQuery] int count = 0,
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int? sellerId = null)
+        {
+            try
+            {
+                List<BorrowProduct> products = borrowProductsRepository.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to retrieve filtered borrow products by seller: {ex.Message}");
+            }
+        }
+
+        [HttpGet("filtered/count/seller")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredBorrowProductsCountBySeller(
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int? sellerId = null)
+        {
+            try
+            {
+                var count = borrowProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to get filtered borrow products count by seller: {ex.Message}");
+            }
+        }
+
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(BorrowProduct), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
