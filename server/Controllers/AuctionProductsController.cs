@@ -124,6 +124,51 @@ namespace MarketMinds.Controllers
             }
         }
 
+        [HttpGet("filtered/seller")]
+        [ProducesResponseType(typeof(List<AuctionProductDTO>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredAuctionProductsBySeller(
+            [FromQuery] int offset = 0,
+            [FromQuery] int count = 0,
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int? sellerId = null)
+        {
+            try
+            {
+                List<AuctionProduct> products = auctionProductsRepository.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+                var dtos = AuctionProductMapper.ToDTOList(products);
+                return Ok(dtos);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to retrieve filtered auction products by seller: {exception.Message}");
+            }
+        }
+
+        [HttpGet("filtered/count/seller")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetFilteredAuctionProductsCountBySeller(
+            [FromQuery] List<int>? conditionIds = null,
+            [FromQuery] List<int>? categoryIds = null,
+            [FromQuery] double? maxPrice = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int? sellerId = null)
+        {
+            try
+            {
+                var count = auctionProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+                return Ok(count);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to get filtered auction products count by seller: {exception.Message}");
+            }
+        }
+
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AuctionProductDTO), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -425,6 +470,22 @@ namespace MarketMinds.Controllers
             else if (product.CurrentPrice <= 0 && product.StartPrice > 0)
             {
                 product.CurrentPrice = product.StartPrice;
+            }
+        }
+
+        [HttpGet("maxprice")]
+        [ProducesResponseType(typeof(double), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetMaxPrice()
+        {
+            try
+            {
+                var maxPrice = await auctionProductsRepository.GetMaxPriceAsync();
+                return Ok(maxPrice);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"Failed to get max price: {exception.Message}");
             }
         }
     }

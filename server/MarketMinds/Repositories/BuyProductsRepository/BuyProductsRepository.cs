@@ -374,6 +374,144 @@ namespace MarketMinds.Repositories.BuyProductsRepository
             }
         }
 
+        public List<BuyProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                var query = context.BuyProducts
+                    .Include(p => p.Condition)
+                    .Include(p => p.Category)
+                    .Include(p => p.Images)
+                    .Include(p => p.ProductTags)
+                        .ThenInclude(pt => pt.Tag)
+                    .AsQueryable();
+
+                // Apply condition filter if provided
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    query = query.Where(p => conditionIds.Contains(p.ConditionId));
+                }
+
+                // Apply category filter if provided
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    query = query.Where(p => categoryIds.Contains(p.CategoryId));
+                }
+
+                // Apply maximum price filter if provided
+                if (maxPrice.HasValue)
+                {
+                    query = query.Where(p => p.Price <= maxPrice.Value);
+                }
+
+                // Apply search term filter if provided
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    var lowerSearchTerm = searchTerm.ToLower();
+                    query = query.Where(p =>
+                        p.Title.ToLower().Contains(lowerSearchTerm) ||
+                        p.Description.ToLower().Contains(lowerSearchTerm));
+                }
+
+                // Apply seller filter if provided
+                if (sellerId.HasValue)
+                {
+                    query = query.Where(p => p.SellerId == sellerId.Value);
+                }
+
+                // Filter out products with no stock
+                query = query.Where(p => p.Stock > 0);
+
+                // Ensure consistent ordering for pagination
+                query = query.OrderBy(p => p.Id);
+
+                List<BuyProduct> products;
+
+                if (count > 0)
+                {
+                    // Apply pagination
+                    products = query.Skip(offset).Take(count).ToList();
+                }
+                else
+                {
+                    // Return all filtered products if count is 0
+                    products = query.ToList();
+                }
+
+                // Manually load seller data for each product
+                foreach (var product in products)
+                {
+                    var seller = context.Sellers
+                        .Include(s => s.User)
+                        .FirstOrDefault(s => s.Id == product.SellerId);
+
+                    if (seller != null)
+                    {
+                        // Set the seller as the User (this workaround preserves compatibility with existing code)
+                        product.Seller = seller.User;
+                    }
+                }
+
+                return products;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered BuyProducts (offset: {offset}, count: {count}, conditions: {string.Join(",", conditionIds ?? new List<int>())}, categories: {string.Join(",", categoryIds ?? new List<int>())}, sellerId: {sellerId}): {ex.Message}");
+                throw;
+            }
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                var query = context.BuyProducts.AsQueryable();
+
+                // Apply condition filter if provided
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    query = query.Where(p => conditionIds.Contains(p.ConditionId));
+                }
+
+                // Apply category filter if provided
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    query = query.Where(p => categoryIds.Contains(p.CategoryId));
+                }
+
+                // Apply maximum price filter if provided
+                if (maxPrice.HasValue)
+                {
+                    query = query.Where(p => p.Price <= maxPrice.Value);
+                }
+
+                // Apply search term filter if provided
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    var lowerSearchTerm = searchTerm.ToLower();
+                    query = query.Where(p =>
+                        p.Title.ToLower().Contains(lowerSearchTerm) ||
+                        p.Description.ToLower().Contains(lowerSearchTerm));
+                }
+
+                // Apply seller filter if provided
+                if (sellerId.HasValue)
+                {
+                    query = query.Where(p => p.SellerId == sellerId.Value);
+                }
+
+                // Filter out products with no stock
+                query = query.Where(p => p.Stock > 0);
+
+                return query.Count();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered BuyProducts count (conditions: {string.Join(",", conditionIds ?? new List<int>())}, categories: {string.Join(",", categoryIds ?? new List<int>())}, maxPrice: {maxPrice}, searchTerm: {searchTerm}, sellerId: {sellerId}): {ex.Message}");
+                throw;
+            }
+        }
+
         public BuyProduct GetProductByID(int productId)
         {
             try
@@ -464,6 +602,23 @@ namespace MarketMinds.Repositories.BuyProductsRepository
             {
                 Console.WriteLine($"Error adding image to product ID {productId}: {ex.Message}");
                 throw;
+            }
+        }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                var maxPrice = await context.BuyProducts
+                    .Where(p => p.Stock > 0) // Only products with stock
+                    .MaxAsync(p => (double?)p.Price);
+                
+                return maxPrice ?? 0.0; // Return 0 if no products found
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for BuyProducts: {ex.Message}");
+                return 0.0; // Return 0 on error
             }
         }
     }

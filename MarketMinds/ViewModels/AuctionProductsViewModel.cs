@@ -78,7 +78,7 @@ public class AuctionProductsViewModel
     {
         try
         {
-            var products = await Task.Run(() => auctionProductsService.GetFilteredAuctionProductsAsync(offset, count, conditionIds, categoryIds, maxPrice, searchTerm));
+            var products = await Task.Run(() => auctionProductsService.GetFilteredAuctionProductsAsync(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, null));
             return products;
         }
         catch (Exception ex)
@@ -95,13 +95,62 @@ public class AuctionProductsViewModel
     {
         try
         {
-            // Use dedicated count API instead of fetching all products
-            return await auctionProductsService.GetFilteredAuctionProductCountAsync(conditionIds, categoryIds, maxPrice, searchTerm);
+            return await auctionProductsService.GetFilteredAuctionProductCountAsync(conditionIds, categoryIds, maxPrice, searchTerm, null);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error getting filtered auction product count: {ex.Message}");
             return 0;
+        }
+    }
+
+    /// <summary>
+    /// Gets filtered auction products asynchronously based on provided filters including seller filter
+    /// </summary>
+    public async Task<List<AuctionProduct>> GetFilteredProductsWithSellerAsync(int offset, int count, List<int> conditionIds = null, List<int> categoryIds = null, double? maxPrice = null, string searchTerm = null, int? sellerId = null)
+    {
+        try
+        {
+            var products = await Task.Run(() => auctionProductsService.GetFilteredAuctionProductsAsync(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, sellerId));
+            return products;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting filtered auction products with seller filter: {ex.Message}");
+            return new List<AuctionProduct>();
+        }
+    }
+
+    /// <summary>
+    /// Gets the count of filtered auction products asynchronously using dedicated count API with seller filter
+    /// </summary>
+    public async Task<int> GetFilteredProductCountWithSellerAsync(List<int> conditionIds = null, List<int> categoryIds = null, double? maxPrice = null, string searchTerm = null, int? sellerId = null)
+    {
+        try
+        {
+            // Use dedicated count API instead of fetching all products
+            return await auctionProductsService.GetFilteredAuctionProductCountAsync(conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting filtered auction product count with seller filter: {ex.Message}");
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Gets the maximum current price of all auction products asynchronously
+    /// </summary>
+    public async Task<double> GetMaxPriceAsync()
+    {
+        try
+        {
+            return await auctionProductsService.GetMaxPriceAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting max price for auction products: {ex.Message}");
+            return 0.0;
         }
     }
 }

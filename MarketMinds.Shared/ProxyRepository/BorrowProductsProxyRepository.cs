@@ -467,6 +467,137 @@ namespace MarketMinds.Shared.ProxyRepository
             }
         }
 
+        public List<BorrowProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
+
+                var queryParams = new List<string>
+                {
+                    $"offset={offset}",
+                    $"count={count}"
+                };
+
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    foreach (var conditionId in conditionIds)
+                    {
+                        queryParams.Add($"conditionIds={conditionId}");
+                    }
+                }
+
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    foreach (var categoryId in categoryIds)
+                    {
+                        queryParams.Add($"categoryIds={categoryId}");
+                    }
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    queryParams.Add($"maxPrice={maxPrice.Value}");
+                }
+
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+                }
+
+                if (sellerId.HasValue)
+                {
+                    queryParams.Add($"sellerId={sellerId.Value}");
+                }
+
+                string url = $"borrowproducts/filtered/seller?{string.Join("&", queryParams)}";
+                var response = httpClient.GetAsync(url).Result;
+                response.EnsureSuccessStatusCode();
+                var json = response.Content.ReadAsStringAsync().Result;
+
+                var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
+                return products ?? new List<BorrowProduct>();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error getting filtered borrow products by seller: {ex.Message}", ex);
+            }
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                var queryParams = new List<string>();
+
+                if (conditionIds != null && conditionIds.Any())
+                {
+                    foreach (var conditionId in conditionIds)
+                    {
+                        queryParams.Add($"conditionIds={conditionId}");
+                    }
+                }
+
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    foreach (var categoryId in categoryIds)
+                    {
+                        queryParams.Add($"categoryIds={categoryId}");
+                    }
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    queryParams.Add($"maxPrice={maxPrice.Value}");
+                }
+
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+                }
+
+                if (sellerId.HasValue)
+                {
+                    queryParams.Add($"sellerId={sellerId.Value}");
+                }
+
+                string url = queryParams.Any()
+                    ? $"borrowproducts/filtered/count/seller?{string.Join("&", queryParams)}"
+                    : "borrowproducts/filtered/count/seller";
+
+                var response = httpClient.GetAsync(url).Result;
+                response.EnsureSuccessStatusCode();
+                var countString = response.Content.ReadAsStringAsync().Result;
+                return int.Parse(countString);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error getting filtered borrow product count by seller: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                var response = await httpClient.GetAsync("borrowproducts/maxprice");
+                response.EnsureSuccessStatusCode();
+                var priceString = await response.Content.ReadAsStringAsync();
+                return double.Parse(priceString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for borrow products: {ex.Message}");
+                return 0.0; // Return 0 on error
+            }
+        }
+
         private async Task ThrowOnError(string methodName, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)

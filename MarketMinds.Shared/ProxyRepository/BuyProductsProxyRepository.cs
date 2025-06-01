@@ -152,6 +152,106 @@ namespace MarketMinds.Shared.ProxyRepository
             return int.Parse(countString);
         }
 
+        public string GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            var queryParams = new List<string>
+            {
+                $"offset={offset}",
+                $"count={count}"
+            };
+
+            if (conditionIds != null && conditionIds.Any())
+            {
+                foreach (var conditionId in conditionIds)
+                {
+                    queryParams.Add($"conditionIds={conditionId}");
+                }
+            }
+
+            if (categoryIds != null && categoryIds.Any())
+            {
+                foreach (var categoryId in categoryIds)
+                {
+                    queryParams.Add($"categoryIds={categoryId}");
+                }
+            }
+
+            if (maxPrice.HasValue)
+            {
+                queryParams.Add($"maxPrice={maxPrice.Value}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+            }
+
+            if (sellerId.HasValue)
+            {
+                queryParams.Add($"sellerId={sellerId.Value}");
+            }
+
+            string url = $"buyproducts/filtered/seller?{string.Join("&", queryParams)}";
+            var response = httpClient.GetAsync(url).Result;
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadAsStringAsync().Result;
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            var queryParams = new List<string>();
+
+            if (conditionIds != null && conditionIds.Any())
+            {
+                foreach (var conditionId in conditionIds)
+                {
+                    queryParams.Add($"conditionIds={conditionId}");
+                }
+            }
+
+            if (categoryIds != null && categoryIds.Any())
+            {
+                foreach (var categoryId in categoryIds)
+                {
+                    queryParams.Add($"categoryIds={categoryId}");
+                }
+            }
+
+            if (maxPrice.HasValue)
+            {
+                queryParams.Add($"maxPrice={maxPrice.Value}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+            }
+
+            if (sellerId.HasValue)
+            {
+                queryParams.Add($"sellerId={sellerId.Value}");
+            }
+
+            string url = queryParams.Any()
+                ? $"buyproducts/filtered/count/seller?{string.Join("&", queryParams)}"
+                : "buyproducts/filtered/count/seller";
+
+            var response = httpClient.GetAsync(url).Result;
+            response.EnsureSuccessStatusCode();
+            var countString = response.Content.ReadAsStringAsync().Result;
+            return int.Parse(countString);
+        }
+
         public string CreateListing(object productToSend)
         {
             if (httpClient == null || httpClient.BaseAddress == null)
@@ -302,7 +402,8 @@ namespace MarketMinds.Shared.ProxyRepository
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error content: {errorContent}");
+                    Console.WriteLine($"Stock update failed: {errorContent}");
+                    throw new HttpRequestException($"Stock update failed: {response.StatusCode} - {errorContent}");
                 }
 
                 await ThrowOnError(nameof(UpdateProductStockAsync), response);
@@ -310,12 +411,29 @@ namespace MarketMinds.Shared.ProxyRepository
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception in UpdateProductStockAsync: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                }
+                Console.WriteLine($"Error updating product stock: {ex.Message}");
                 throw;
+            }
+        }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var response = await httpClient.GetAsync("buyproducts/maxprice");
+                response.EnsureSuccessStatusCode();
+                var priceString = await response.Content.ReadAsStringAsync();
+                return double.Parse(priceString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for buy products: {ex.Message}");
+                return 0.0; // Return 0 on error
             }
         }
 
@@ -323,12 +441,8 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             if (!response.IsSuccessStatusCode)
             {
-                string errorMessage = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(errorMessage))
-                {
-                    errorMessage = response.ReasonPhrase;
-                }
-                throw new Exception($"{methodName}: {errorMessage}");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"{methodName} failed: {response.StatusCode} - {errorContent}");
             }
         }
     }

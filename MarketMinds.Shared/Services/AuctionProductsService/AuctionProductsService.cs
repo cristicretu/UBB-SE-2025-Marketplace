@@ -389,6 +389,32 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             }
         }
 
+        public async Task<List<AuctionProduct>> GetFilteredAuctionProductsAsync(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                return await auctionProductsRepository.GetFilteredAuctionProductsAsync(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered auction products with seller filter: {ex.Message}");
+                return new List<AuctionProduct>();
+            }
+        }
+
+        public async Task<int> GetFilteredAuctionProductCountAsync(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                return await auctionProductsRepository.GetFilteredAuctionProductCountAsync(conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered auction product count with seller filter: {ex.Message}");
+                return 0;
+            }
+        }
+
         public async Task<AuctionProduct> GetAuctionProductByIdAsync(int id)
         {
             try
@@ -630,6 +656,19 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             // Since this is AuctionProductsService, we don't have borrowable products
             // Return an empty list when this method is called on this service
             return new List<Product>();
+        }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                return await auctionProductsRepository.GetMaxPriceAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for auction products: {ex.Message}");
+                return 0.0; // Return 0 on error
+            }
         }
     }
 }

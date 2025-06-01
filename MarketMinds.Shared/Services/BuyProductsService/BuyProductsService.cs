@@ -135,6 +135,46 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             }
         }
 
+        public List<BuyProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                var json = buyProductsRepository.GetFilteredProducts(offset, count, conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+                Console.WriteLine($"Received filtered JSON from server with seller filter (offset: {offset}, count: {count}, conditions: {string.Join(",", conditionIds ?? new List<int>())}, categories: {string.Join(",", categoryIds ?? new List<int>())}, maxPrice: {maxPrice}, searchTerm: {searchTerm}, sellerId: {sellerId}):");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+
+                // First deserialize to DTOs
+                var productDTOs = JsonSerializer.Deserialize<List<BuyProductDTO>>(json, jsonOptions);
+
+                // Then map DTOs to domain models
+                var products = BuyProductMapper.FromDTOList(productDTOs);
+
+                return products ?? new List<BuyProduct>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered products with seller filter: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                return new List<BuyProduct>();
+            }
+        }
+
+        public int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null)
+        {
+            try
+            {
+                return buyProductsRepository.GetFilteredProductCount(conditionIds, categoryIds, maxPrice, searchTerm, sellerId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting filtered product count with seller filter: {ex.Message}");
+                return 0;
+            }
+        }
+
         public void CreateListing(BuyProduct product)
         {
             if (product == null)
@@ -488,6 +528,19 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             {
                 Console.WriteLine($"Error decreasing product stock: {ex.Message}");
                 throw;
+            }
+        }
+
+        public async Task<double> GetMaxPriceAsync()
+        {
+            try
+            {
+                return await buyProductsRepository.GetMaxPriceAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting max price for buy products: {ex.Message}");
+                return 0.0; // Return 0 on error
             }
         }
     }

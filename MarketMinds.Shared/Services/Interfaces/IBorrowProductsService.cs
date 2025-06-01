@@ -110,7 +110,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         Task<Dictionary<string, string[]>> ValidateProductDTOAsync(CreateBorrowProductDTO productDTO);
 
         /// <summary>
-        /// Gets filtered borrow products with pagination support.
+        /// Gets filtered borrow products with pagination support including seller filter.
         /// </summary>
         /// <param name="offset">The number of products to skip (0 for first page).</param>
         /// <param name="count">The number of products to return (0 for all products).</param>
@@ -118,17 +118,25 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         /// <param name="categoryIds">List of category IDs to filter by (null or empty for no filter).</param>
         /// <param name="maxPrice">Maximum price filter (null for no maximum).</param>
         /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
+        /// <param name="sellerId">Seller ID to filter by (null for no seller filter).</param>
         /// <returns>A list of filtered borrow products for the specified page.</returns>
-        List<BorrowProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
+        List<BorrowProduct> GetFilteredProducts(int offset, int count, List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null);
 
         /// <summary>
-        /// Gets the total count of borrow products matching the specified filters.
+        /// Gets the total count of borrow products matching the specified filters including seller filter.
         /// </summary>
         /// <param name="conditionIds">List of condition IDs to filter by (null or empty for no filter).</param>
         /// <param name="categoryIds">List of category IDs to filter by (null or empty for no filter).</param>
         /// <param name="maxPrice">Maximum price filter (null for no maximum).</param>
         /// <param name="searchTerm">Search term to filter by title, description, or seller (null or empty for no search).</param>
+        /// <param name="sellerId">Seller ID to filter by (null for no seller filter).</param>
         /// <returns>The total number of borrow products matching the filters.</returns>
-        int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null);
+        int GetFilteredProductCount(List<int>? conditionIds = null, List<int>? categoryIds = null, double? maxPrice = null, string? searchTerm = null, int? sellerId = null);
+
+        /// <summary>
+        /// Gets the maximum daily rate of all borrow products asynchronously.
+        /// </summary>
+        /// <returns>The maximum daily rate of borrow products, or 0 if no products exist.</returns>
+        Task<double> GetMaxPriceAsync();
     }
 }
