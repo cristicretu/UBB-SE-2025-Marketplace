@@ -422,6 +422,7 @@ namespace MarketMinds.ViewModels
                     BidHistory.Add(bid);
                 }
             }
+            OnPropertyChanged(nameof(BidHistory));
         }
 
         private void StartCountdownTimer()
