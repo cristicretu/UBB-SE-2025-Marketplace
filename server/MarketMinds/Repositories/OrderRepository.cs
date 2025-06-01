@@ -124,7 +124,7 @@ namespace Server.Repository
                 // Create and send payment confirmation notification to the buyer
                 PaymentConfirmationNotification notification = new PaymentConfirmationNotification(
                     recipientId: buyerId,
-                    timestamp: DateTime.UtcNow,
+                    timestamp: DateTime.Now,
                     productId: productId,
                     orderId: order.Id,
                     isRead: false);

@@ -99,19 +99,6 @@
                         </div>
                     }
 
-                    <!-- Success Messages -->
-                    @if (TempData["SuccessMessage"] != null)
-                    {
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p class="text-green-800 font-medium">@TempData["SuccessMessage"]</p>
-                            </div>
-                        </div>
-                    }
-
                     <form asp-action="Update" method="post" class="space-y-8">
                         <input type="hidden" asp-for="BuyerId" />
 
@@ -506,6 +493,105 @@
 
         @if (canEdit)
         {
+            <!-- Wallet Management -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+                <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-6 rounded-t-xl -mx-8 -mt-8 mb-8">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l5.9 3.9a2 2 0 002.2 0L17 8M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Wallet Management
+                    </h3>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Current Balance Display -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 border border-emerald-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-emerald-800">Current Balance</h4>
+                            <div class="p-2 bg-emerald-500 rounded-lg">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold text-emerald-800 mb-2" id="current-wallet-balance">
+                            Loading...
+                        </div>
+                        <p class="text-emerald-600 text-sm">Available in your digital wallet</p>
+                        <button onclick="refreshWalletBalance()" 
+                                class="mt-4 text-emerald-600 hover:text-emerald-700 text-sm font-medium flex items-center transition-colors">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Refresh Balance
+                        </button>
+                    </div>
+
+                    <!-- Add Funds Form -->
+                    <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Add Funds
+                        </h4>
+                        
+                        <form asp-controller="Wallet" asp-action="AddFunds" method="post" id="add-funds-form">
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="addAmount" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Amount to Add (€)
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 text-lg">€</span>
+                                        </div>
+                                        <input type="number" 
+                                               class="block w-full pl-8 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                                               id="addAmount" name="amount" 
+                                               placeholder="0.00" 
+                                               min="0.01" 
+                                               step="0.01" 
+                                               max="10000.00"
+                                               required />
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Minimum: €0.01 | Maximum: €10,000.00</p>
+                                </div>
+
+                                <!-- Quick Amount Buttons -->
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button type="button" onclick="setAmount(10)" 
+                                            class="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                                        €10
+                                    </button>
+                                    <button type="button" onclick="setAmount(25)" 
+                                            class="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                                        €25
+                                    </button>
+                                    <button type="button" onclick="setAmount(50)" 
+                                            class="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                                        €50
+                                    </button>
+                                    <button type="button" onclick="setAmount(100)" 
+                                            class="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                                        €100
+                                    </button>
+                                </div>
+
+                                <button type="submit" 
+                                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-sm flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Add Funds to Wallet
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- Contract Management -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                 <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
@@ -552,6 +638,11 @@
     <script>
         $(document).ready(function() {
             console.log("Document ready - initializing address logic");
+            
+            // Initialize wallet balance on page load
+            if ($("#current-wallet-balance").length > 0) {
+                loadWalletBalance();
+            }
             
             // Function to copy billing address to shipping address
             function copyBillingToShipping() {
@@ -750,6 +841,56 @@
             });
             
             console.log("JavaScript initialization complete");
+        });
+
+        // Wallet Management Functions
+        function loadWalletBalance() {
+            fetch('/Wallet/GetBalance')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('current-wallet-balance').textContent = data.formattedBalance;
+                    } else {
+                        document.getElementById('current-wallet-balance').textContent = 'Error loading balance';
+                        console.error('Error loading wallet balance:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching wallet balance:', error);
+                    document.getElementById('current-wallet-balance').textContent = 'Error loading balance';
+                });
+        }
+
+        function refreshWalletBalance() {
+            document.getElementById('current-wallet-balance').textContent = 'Loading...';
+            loadWalletBalance();
+        }
+
+        function setAmount(amount) {
+            document.getElementById('addAmount').value = amount.toFixed(2);
+        }
+
+        // Handle add funds form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const addFundsForm = document.getElementById('add-funds-form');
+            if (addFundsForm) {
+                addFundsForm.addEventListener('submit', function(e) {
+                    const amount = parseFloat(document.getElementById('addAmount').value);
+                    if (amount <= 0 || amount > 10000) {
+                        e.preventDefault();
+                        alert('Please enter a valid amount between €0.01 and €10,000.00');
+                        return false;
+                    }
+                    
+                    // Optional: Show loading state
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    const originalText = submitButton.innerHTML;
+                    submitButton.innerHTML = '<svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path></svg>Processing...';
+                    submitButton.disabled = true;
+                    
+                    // The form will submit normally to the server
+                });
+            }
         });
     </script>
 }

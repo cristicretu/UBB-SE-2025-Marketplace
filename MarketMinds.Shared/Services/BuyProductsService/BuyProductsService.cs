@@ -480,18 +480,9 @@ namespace MarketMinds.Shared.Services.BuyProductsService
             try
             {
                 // Get current product to check current stock
-                var product = GetProductById(productId);
+                BuyProduct product = (BuyProduct)await GetProductByIdAsync(productId);
 
-                // Calculate how much to decrease by
-                int decreaseAmount = product.Stock - newStockQuantity;
-                if (decreaseAmount < 0)
-                {
-                    // We're actually increasing stock
-                    decreaseAmount = 0;
-                }
-
-                // Call the repository with the decrease amount
-                await buyProductsRepository.UpdateProductStockAsync(productId, decreaseAmount);
+                await buyProductsRepository.UpdateProductStockAsync(productId, newStockQuantity);
             }
             catch (Exception ex)
             {
@@ -520,8 +511,18 @@ namespace MarketMinds.Shared.Services.BuyProductsService
 
             try
             {
+                BuyProduct product = (BuyProduct)await GetProductByIdAsync(productId);
+                if (product == null)
+                {
+                    throw new KeyNotFoundException($"Product with ID {productId} not found.");
+                }
+                var newStock = product.Stock - decreaseAmount;
+                if (newStock < 0)
+                {
+                    throw new InvalidOperationException($"Cannot decrease stock below zero. Current stock: {product.Stock}, Decrease amount: {decreaseAmount}");
+                }
                 // Directly call the repository with the decrease amount
-                await buyProductsRepository.UpdateProductStockAsync(productId, decreaseAmount);
+                await buyProductsRepository.UpdateProductStockAsync(productId, newStock);
             }
             catch (Exception ex)
             {

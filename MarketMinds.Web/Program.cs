@@ -125,6 +125,9 @@ builder.Services.AddSingleton<NotificationProxyRepository>(sp =>
         builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
 
 // Merged: Register all unique proxy repositories from both branches
+builder.Services.AddSingleton<OrderHistoryProxyRepository>(sp =>
+    new OrderHistoryProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
 builder.Services.AddSingleton<OrderProxyRepository>(sp =>
     new OrderProxyRepository(
         builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
@@ -139,6 +142,11 @@ builder.Services.AddSingleton<ShoppingCartProxyRepository>(sp =>
 builder.Services.AddSingleton<DummyWalletProxyRepository>(sp =>
     new DummyWalletProxyRepository(
         sp.GetRequiredService<IConfiguration>()["ApiSettings:BaseUrl"] ?? "http://localhost:5001"));
+
+// Add OrderHistoryProxyRepository registration
+builder.Services.AddSingleton<OrderHistoryProxyRepository>(sp =>
+    new OrderHistoryProxyRepository(
+        builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/"));
 
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();

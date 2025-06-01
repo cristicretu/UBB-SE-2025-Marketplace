@@ -21,6 +21,15 @@ namespace MarketMinds.Shared.Services
             this.dummyWalletRepository = new DummyWalletProxyRepository(AppConfig.GetBaseApiUrl());
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DummyWalletService"/> class with dependency injection.
+        /// </summary>
+        /// <param name="dummyWalletRepository">The wallet repository implementation.</param>
+        public DummyWalletService(IDummyWalletRepository dummyWalletRepository)
+        {
+            this.dummyWalletRepository = dummyWalletRepository ?? throw new ArgumentNullException(nameof(dummyWalletRepository));
+        }
+
         /// <inheritdoc/>
         public async Task<double> GetWalletBalanceAsync(int userId)
         {

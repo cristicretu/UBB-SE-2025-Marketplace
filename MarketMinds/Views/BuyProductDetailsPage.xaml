@@ -15,6 +15,12 @@
         <converters:UrlToImageSourceConverter x:Key="UrlToImageSourceConverter"/>
         <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
     </Page.Resources>
 
     <ScrollViewer ZoomMode="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
@@ -181,14 +187,71 @@
                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         </StackPanel>
                                     </StackPanel>
-                                    
-                                    <StackPanel Orientation="Horizontal" Spacing="6" Visibility="{x:Bind HasStock, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
-                                        <FontIcon Glyph="&#xE7B8;" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                        <TextBlock Foreground="{x:Bind StockTextColor, Mode=OneWay}">
-                                            <Run Text="{x:Bind Product.Stock, Mode=OneWay}"/>
-                                            <Run Text="{x:Bind StockText, Mode=OneWay}"/>
-                                        </TextBlock>
+
+                                    <StackPanel Visibility="{x:Bind IsCurrentUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                        <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                            CornerRadius="8"
+                                            BorderBrush="{ThemeResource SystemAccentColor}"
+                                            BorderThickness="1"
+                                            Padding="16">
+
+                                        <Grid>
+                                            <!-- Define three rows: 
+                                             Row 0 → explanatory text 
+                                             Row 1 → “New Stock” + NumberBox 
+                                             Row 2 → Update Stock button -->
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- ─── Row 0: Explanatory text (full width) ─── -->
+                                            <TextBlock Grid.Row="0"
+                                                       Text="As the seller, you can adjust the available stock quantity"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                       FontSize="14" />
+
+                                            <!-- ─── Row 1: “New Stock” label + NumberBox, left-aligned ─── -->
+                                            <Grid Grid.Row="1" Margin="0,8,0,0">
+                                                <!-- Two columns: Column 0 = label, Column 1 = NumberBox -->
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                            Text="New Stock"
+                                                            FontWeight="Medium"
+                                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                            VerticalAlignment="Center" />
+
+                                                <NumberBox Grid.Column="1"
+                                                            x:Name="StockNumberBox"
+                                                            PlaceholderText="Enter new stock"
+                                                            Width="120"
+                                                            Value="{x:Bind Product.Stock, Mode=TwoWay}"
+                                                            Minimum="0"
+                                                            Margin="8,0,0,0" />
+                                            </Grid>
+
+                                            <!-- ─── Row 2: “Update Stock” button, left-aligned with a top margin ─── -->
+                                            <Button Grid.Row="2"
+                                                    Background="{ThemeResource SystemAccentColor}"
+                                                    Foreground="{ThemeResource AccentButtonForeground}"
+                                                    CornerRadius="8"
+                                                    Padding="16,10"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,16,0,0"
+                                                    Click="UpdateStockButton_Click">
+                                                <TextBlock Text="Update Stock"
+                                                            FontWeight="Medium"/>
+                                            </Button>
+
+                                        </Grid>
+                                    </Border>
                                     </StackPanel>
+
                                 </StackPanel>
                                 
                                 <!-- Price -->

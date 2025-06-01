@@ -378,7 +378,7 @@ namespace MarketMinds.Shared.ProxyRepository
         /// <param name="id">Product ID</param>
         /// <param name="decreaseAmount">Amount to decrease from current stock</param>
         /// <returns>A task representing the asynchronous operation</returns>
-        public async Task UpdateProductStockAsync(int id, int decreaseAmount)
+        public async Task UpdateProductStockAsync(int id, int newStockQuantity)
         {
             if (httpClient == null || httpClient.BaseAddress == null)
             {
@@ -387,23 +387,27 @@ namespace MarketMinds.Shared.ProxyRepository
 
             try
             {
-                var requestData = new { Quantity = decreaseAmount };
-                
-                Console.WriteLine($"Calling API to update stock for product {id}, decreasing by {decreaseAmount}");
-                
-                var response = await httpClient.PostAsJsonAsync($"buyproducts/stock/{id}", requestData);
-                
-                Console.WriteLine($"Stock update response: {response.StatusCode}");
-                
+                // Create simple request with just the quantity to decrease
+                var stockUpdateRequest = new { Quantity = newStockQuantity };
+
+                // Use the dedicated stock update endpoint
+                string url = $"buyproducts/stock/{id}";
+                Console.WriteLine($"Sending POST request to update product {id} stock with {newStockQuantity}");
+
+                var response = await httpClient.PostAsJsonAsync(url, stockUpdateRequest);
+
+                // Log the response status
+                Console.WriteLine($"Stock update response status: {(int)response.StatusCode} {response.ReasonPhrase}");
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Stock update failed: {errorContent}");
                     throw new HttpRequestException($"Stock update failed: {response.StatusCode} - {errorContent}");
                 }
-                
-                var responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Stock update successful: {responseContent}");
+
+                await ThrowOnError(nameof(UpdateProductStockAsync), response);
+                Console.WriteLine($"Stock updated successfully for product {id} with {newStockQuantity}");
             }
             catch (Exception ex)
             {
