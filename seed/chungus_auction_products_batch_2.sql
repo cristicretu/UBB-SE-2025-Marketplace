@@ -1,4 +1,4 @@
--- Buy Products Batch starting from product 5001
+-- Auction Products Batch starting from product 5001
 -- Create temporary table for bulk operations
 CREATE TABLE #TempProducts (
     TempId INT IDENTITY(1,1),
@@ -7,14 +7,14 @@ CREATE TABLE #TempProducts (
     ImageUrl NVARCHAR(1000),
     ConditionId INT,
     CategoryId INT,
-    Price DECIMAL(10,2),
+    StartingPrice DECIMAL(10,2),
     Stock INT,
     Tags NVARCHAR(100)
 );
 
 -- Bulk insert products
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('★ StatTrak™ Huntsman Knife | Scorched (Field-Tested)', 'Huntsman Knife skin with Scorched finish featuring spray-paint in field-tested condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovbSsLQJfx_LLZTRB7dCJh5C0k_bkI7fUqWZU7Mxkh6fEoYmgjVayr0pta2D7ctXGcwE8MlCG_lG3kuvp0cW8vsiaziFlvSQh-z-DyNDFtxyM/512fx384f', 12, 8, 1946.91, 7, '7,3'),
 ('UMP-45 | Corporal (Well-Worn)', 'UMP-45 skin with Corporal finish featuring custom paint job in well-worn condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpoo7e1f1Jf0Ob3ZDBS09-5hpCEhfb4DLbUkmJE5Ysp3byUrI-i3gaw-hdoMWv0dobEJgdvaQzV_1W8wO3mg5G1uZWcmHNgpGB8smzBQoxT/512fx384f', 13, 14, 45.71, 4, '8,25,17'),
 ('StatTrak™ Desert Eagle | Oxide Blaze (Battle-Scarred)', 'Desert Eagle skin with Oxide Blaze finish featuring custom paint job in battle-scarred condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposr-kLAtl7PDdTjlH_9mkgL-OlvD4NoTSmXlD58F0hNbJ8I3jkRq2qhZuYWzxJ9eXcFM_MA3R_Ae6wejrhMK9uc-cnXdkuyBzsHyLzUSwn1gSOQaU3YKt/512fx384f', 14, 6, 25.5, 7, '2,25'),
@@ -1018,7 +1018,7 @@ INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId
 ('P2000 | Pulse (Field-Tested)', 'P2000 skin with Pulse finish featuring custom paint job in field-tested condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovrG1eVcwg8zLZAJSvozmxL-bgvvnNoTck29Y_cg_ie-Wpt2siwXk-RE9YWzxcoSRIwJoaFGF-FLsxee7g5C17Z_IwHswuz5iuyhlTG22XQ/512fx384f', 12, 9, 36.24, 2, '4,13');
 
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('★ Paracord Knife | Urban Masked (Field-Tested)', 'Paracord Knife skin with Urban Masked finish featuring spray-paint in field-tested condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovbSsLQJf0PzadQJR_OOilZCOqOLmMbrfqWZU7Mxkh6eQpI-n3gGx_UtsNWD6JNKQcAdtaQ3Z-Fm2lL_ogMK7tZ7Jmnowsyki-z-DyCqSa_9z/512fx384f', 12, 8, 2951.89, 18, '9,15'),
 ('MAC-10 | Ensnared (Field-Tested)', 'MAC-10 skin with Ensnared finish featuring custom paint job in field-tested condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpou7umeldf0Ob3fDxBvYyJhImTnvLLPr7Vn35cpscj37CS996g3FHj-EBpYWr6coPGcQFqZgqE8lPqle3pjJK5uJqbz3F9-n51qYN3NaA/512fx384f', 12, 3, 67.29, 14, '13,9'),
 ('Souvenir M4A1-S | Knight (Factory New)', 'Rare souvenir M4A1-S skin with Knight finish featuring anodized multicolored in factory new condition (Classified rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpou-6kejhz2v_Nfz5H_uO3mb-GkuP1P6jummJW4NE_3euYoNujiVHj_Eo-YjunJoKcIAc8Z1jX-gK8k7y6h5O4vZXIyiNisj5iuyg-Y-6U4A/512fx384f', 15, 6, 594.63, 17, '9,15'),
@@ -2021,7 +2021,7 @@ INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId
 ('Souvenir MAG-7 | Copper Coated (Field-Tested)', 'Rare souvenir MAG-7 skin with Copper Coated finish featuring gunsmith in field-tested condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpou7uifDhnwMzFcDoV09u5m4yPqPrxN7LEmyVQupMi2bGX8N_xilbmqEc5ZjylLNSUd1A2ZgvZ-AO5kOjo05S0v5-Y1zI97US915rs/512fx384f', 15, 3, 48.92, 16, '22,13,6');
 
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('R8 Revolver | Night (Battle-Scarred)', 'R8 Revolver skin with Night finish featuring solid color in battle-scarred condition (Consumer Grade rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpopL-zJAt21uH3YjJ94tWxnJS0n_L1JaKfwz0F6pZ0iL7DpY2m0QDsqkVrazqlcoCWJwc-ZlCDqFbrwr_ugcLpu4OJlyWaTSktgA/512fx384f', 14, 8, 2.9, 4, '21,22,16'),
 ('StatTrak™ AUG | Chameleon (Well-Worn)', 'AUG skin with Chameleon finish featuring custom paint job in well-worn condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpot6-iFAR17PLddgJB5N27kYyOmPn1OqnUqWZU7Mxkh6fHo46t3gCy-hVlZmuiJ4KTcgNrZlvY_wK_l-e-hMW775manyRqsykj-z-DyLlJNwzL/512fx384f', 13, 7, 593.87, 3, '19,10'),
 ('Souvenir Five-SeveN | Contractor (Minimal Wear)', 'Rare souvenir Five-SeveN skin with Contractor finish featuring solid color in minimal wear condition (Consumer Grade rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposLOzLhRlxfbGTi5N08y7l7-HnvD8J_WEkmkAv5Qh2L7ErY6jige38kQ6Z2GiLNPHJFdvNA2D-1jtw-66jJLpot2Xnq0nCve5/512fx384f', 15, 2, 7.85, 12, '16,6,25'),
@@ -3026,7 +3026,7 @@ There are six patterns in Java Edition and seven in Bedrock Edition. Stack size:
 ('StatTrak™ P2000 | Fire Elemental (Factory New)', 'P2000 skin with Fire Elemental finish featuring custom paint job in factory new condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovrG1eVcwg8zLZAJSvozmxL-NnuXxDL7dk2ZU5tFwhtbN_Iv9nBrg_Us9Mjv0JtSWcwVvYFCD-lbryb_nh5Dp6pjPz3Ey7CV05X_czhLkn1gSOW2nYfDu/512fx384f', 1, 6, 847.12, 15, '12,22');
 
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('Block of Redstone', 'A block of redstone is a mineral block equivalent to nine redstone dust. It acts as a permanently powered redstone power source that can be pushed by pistons. Stack size: 64. Perfect for Minecraft builders and adventurers.', 'https://minecraft-api.vercel.app/images/items/redstone_block.png', 8, 9, 252.81, 5, '13,15,5'),
 ('Splash Potion of the Turtle Master', 'Splash potions are a variant of potions that can be thrown. Stack size: 1. Perfect for Minecraft builders and adventurers.', 'https://minecraft-api.vercel.app/images/items/splash_potion_of_the_turtle_master.gif', 9, 1, 318.71, 16, '21,16,23'),
 ('★ Huntsman Knife | Blue Steel (Minimal Wear)', 'Huntsman Knife skin with Blue Steel finish featuring patina in minimal wear condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovbSsLQJfx_LLZTRB7dCJlZG0lfvhNr_ummJW4NE_2O-RpNjx3QPlrUE6Nzr6IILHJABoaQyFrFG4k7_r1pPv7ZnJyXpr6T5iuyh7_wBurQ/512fx384f', 11, 6, 581.19, 19, '14,18'),
@@ -4029,7 +4029,7 @@ INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId
 ('StatTrak™ Galil AR | Destroyer (Minimal Wear)', 'Galil AR skin with Destroyer finish featuring custom paint job in minimal wear condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposbupIgthwczLZAJF7dC_mL-PkuTgIbTIk3lu5Mx2gv2PptTx0QXkrRI4ajv7ddOVJFI8MgrQ_wPswufsgZfvtM6fm3E37CEisGGdwUKaA92Obw/512fx384f', 11, 13, 26.01, 16, '3,14');
 
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('MAC-10 | Amber Fade (Minimal Wear)', 'MAC-10 skin with Amber Fade finish featuring anodized airbrushed in minimal wear condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpou7umeldf0vL3dzxG6eO7kZSKm_v9MITdn2xZ_IsoiOuW8Nn2jQLj8xI4ajilcIKQdVI7NF_Q-VS-kLjm1pHv7ZWbmHBjpGB8sl0-NBg8/512fx384f', 11, 4, 66.25, 9, '9,23,2'),
 ('★ Gut Knife | Damascus Steel (Well-Worn)', 'Gut Knife skin with Damascus Steel finish featuring patina in well-worn condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovbSsLQJf1ObcTjxT09i3mYGYlOLnDLbUkmJE5Yt3iLiQ9tmj2Abm-0E6ZWrycIbEIQc7aF7YqVC6krjogpTv7sjJwCFjpGB8sjBahjvw/512fx384f', 13, 6, 1534.83, 11, '20,21,25'),
 ('★ StatTrak™ Flip Knife | Blue Steel (Minimal Wear)', 'Flip Knife skin with Blue Steel finish featuring patina in minimal wear condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovbSsLQJf1f_BYQJD_eO0mJWOk8j4OrzZgiVS6Zx12LjFp9T231G28kpqYW37cYXDJ1RrNQrZ_1Dtk-m5gp7vtcnN1zI97W0O2-2u/512fx384f', 11, 12, 1530.65, 11, '18,25'),
@@ -5032,9 +5032,13 @@ INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId
 ('Uncraftable Lingering Potion', 'Lingering potions are variants of splash potions that can be thrown to leave clouds with status effects that linger on the ground in an area. Stack size: 1. Perfect for Minecraft builders and adventurers.', 'https://minecraft-api.vercel.app/images/items/uncraftable_lingering_potion.png', 3, 8, 196.34, 8, '18,17,10');
 
 
--- Insert into BuyProducts from temp table
-INSERT INTO BuyProducts (title, description, seller_id, condition_id, category_id, price, stock)
-SELECT Title, Description, ABS(CHECKSUM(NEWID())) % 5 + 1, ConditionId, CategoryId, Price, Stock
+-- Insert into AuctionProducts from temp table
+INSERT INTO AuctionProducts (title, description, seller_id, condition_id, category_id, starting_price, current_price, price, stock, start_datetime, end_datetime)
+SELECT Title, Description,
+       ABS(CHECKSUM(NEWID())) % 5 + 1, -- Random seller_id between 1-5
+       ConditionId, CategoryId, StartingPrice, StartingPrice, StartingPrice, Stock,
+       DATEADD(hour, ABS(CHECKSUM(NEWID())) % 168, GETDATE()), -- start_datetime (random within next week)
+       DATEADD(day, 7 + ABS(CHECKSUM(NEWID())) % 14, GETDATE())
 FROM #TempProducts;
 
 -- Get the range of inserted product IDs
@@ -5048,7 +5052,7 @@ DECLARE @TempId INT = 1;
 WHILE @CurrentId <= @LastProductId
 BEGIN
     -- Insert image
-    INSERT INTO BuyProductImages (product_id, url)
+    INSERT INTO AuctionProductsImages (product_id, url)
     SELECT @CurrentId, ImageUrl
     FROM #TempProducts
     WHERE TempId = @TempId AND ImageUrl != '';
@@ -5068,10 +5072,10 @@ BEGIN
         
         SET @TagId = CAST(SUBSTRING(@Tags, @Pos, @NextPos - @Pos) AS INT);
         -- Different column names for different product types
-        IF 'buy' = 'auction'
-            INSERT INTO BuyProductProductTags (ProductId, TagId) VALUES (@CurrentId, @TagId);
+        IF 'auction' = 'auction'
+            INSERT INTO AuctionProductProductTags (ProductId, TagId) VALUES (@CurrentId, @TagId);
         ELSE
-            INSERT INTO BuyProductProductTags (product_id, tag_id) VALUES (@CurrentId, @TagId);
+            INSERT INTO AuctionProductProductTags (product_id, tag_id) VALUES (@CurrentId, @TagId);
         
         SET @Pos = @NextPos + 1;
     END;

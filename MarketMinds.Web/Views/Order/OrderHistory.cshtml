@@ -842,7 +842,7 @@
         function downloadContract(orderSummaryId, existingContractIdFromModal) {
             console.log(`downloadContract called. orderSummaryId: ${orderSummaryId}, existingContractIdFromModal: ${existingContractIdFromModal}`);
 
-            const apiBaseUrl = '@ViewData["ApiBaseUrl"]';
+            const apiBaseUrl = 'http://172.30.250.246:5001';
             if (!apiBaseUrl || apiBaseUrl.trim() === "") {
                 console.error("ApiBaseUrl is not defined or empty in ViewData.");
                 showSuccessModal("Error: API base URL is not configured for download.");

@@ -1,4 +1,4 @@
--- Buy Products Batch starting from product 10001
+-- Auction Products Batch starting from product 10001
 -- Create temporary table for bulk operations
 CREATE TABLE #TempProducts (
     TempId INT IDENTITY(1,1),
@@ -7,14 +7,14 @@ CREATE TABLE #TempProducts (
     ImageUrl NVARCHAR(1000),
     ConditionId INT,
     CategoryId INT,
-    Price DECIMAL(10,2),
+    StartingPrice DECIMAL(10,2),
     Stock INT,
     Tags NVARCHAR(100)
 );
 
 -- Bulk insert products
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('Glock-18 | Clear Polymer (Factory New)', 'Glock-18 skin with Clear Polymer finish featuring gunsmith in factory new condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposbaqKAxf1OD3djFN79eJhI-HjvrxIYTdn2xZ_IshjLvFoNSg2QewrhBsZm2hdoWUJFI8YlvZrgPtlOe70ce5vsyYmCZlpGB8spgh6Haq/512fx384f', 1, 1, 69.47, 13, '16,9,8'),
 ('StatTrak™ MAC-10 | Stalker (Well-Worn)', 'MAC-10 skin with Stalker finish featuring gunsmith in well-worn condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpou7umeldf1OD3fDxBvYyJh5SKm_zxIYTck29Y_cg_3O2YpNmn3wKw_UI4Y273JoeXeg85NFrR8we2lOu-1p7ptJ7My3Zn7j5iuyhcX6E2MQ/512fx384f', 13, 5, 2168.49, 13, '20,3'),
 ('StatTrak™ G3SG1 | Murky (Field-Tested)', 'G3SG1 skin with Murky finish featuring anodized multicolored in field-tested condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposem2LFZf0v73dm5R642JmZWZnO7LPr7Vn35cppcojr-To9WhjQ3j_EpqZW-ncYKXJgE6Mw7Xq1PoyOjq15C_uZ3AwHJ9-n515gl8HB8/512fx384f', 12, 10, 24.29, 5, '10,12'),
@@ -1019,7 +1019,7 @@ There are six patterns in Java Edition and seven in Bedrock Edition. Stack size:
 ('Souvenir Glock-18 | High Beam (Factory New)', 'Rare souvenir Glock-18 skin with High Beam finish featuring anodized airbrushed in factory new condition (Industrial Grade rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposbaqKAxf0vL3ZzhQ-NWxm7-Jm-LxDLfYkWNFpp0i3-2XoIijjAGyr0JlYW_1ddSQcVM-M1vQrFTqle6815W5uJqfmnV9-n51CHrduKk/512fx384f', 15, 11, 48.07, 8, '20,18');
 
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('UMP-45 | Minotaur''s Labyrinth (Field-Tested)', 'UMP-45 skin with Minotaur''s Labyrinth finish featuring custom paint job in field-tested condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpoo7e1f1Jf0Ob3fTxA9c6_mpSDqPrxN7LEmyUFv5cnjL7CrNqj2QTkqEppa2nyJ4STIFBoYVzS81C9wuq9gpa9uZ_P1zI97XTIHBjO/512fx384f', 12, 11, 34.19, 13, '24,19'),
 ('StatTrak™ FAMAS | Neural Net (Battle-Scarred)', 'FAMAS skin with Neural Net finish featuring anodized multicolored in battle-scarred condition (Restricted rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposLuoKhRf0v73dzxP7c-JkI-fhMj8NrrHjyVX7ZAm2e-Uo9X02wTm-ks4a276JI_EcFM-Z13T-Fi2lOrshpfvvsnO1zI97TtC78KW/512fx384f', 14, 8, 53.76, 17, '10,7'),
 ('★ Talon Knife | Scorched (Minimal Wear)', 'Talon Knife skin with Scorched finish featuring spray-paint in minimal wear condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovbSsLQJfxPrMfipP7dezhr-Yh8jwMqvBmm5u5Mx2gv2P89-t2A218hZqMmjyJICRIVA-NQqGrFnol-rmhp_otJzKwCEwsnYl5WGdwUK9YInkvw/512fx384f', 11, 11, 2494.9, 17, '6,17,21'),
@@ -2022,7 +2022,7 @@ INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId
 ('★ StatTrak™ Bayonet | Doppler Ruby (Factory New)', 'Bayonet skin with Doppler finish featuring anodized multicolored in factory new condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://csgostash.com/storage/img/skin_variants/s536_ruby.png?id=e9bd90d4ca8b2b7b7a9001007bab9a64', 1, 1, 1220.59, 15, '4,13,8');
 
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('StatTrak™ Glock-18 | Winterized (Well-Worn)', 'Glock-18 skin with Winterized finish featuring gunsmith in well-worn condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposbaqKAxf1OD3djFN79eJkYyCg_LLMLrcmVRc7cF4n-SP9tr33wex8hBlZG2gdY6QcgI6ZliCrlO5lOnm18K4uMjJyCNk7yRx4WGdwUKZtgf00w/512fx384f', 13, 3, 37.22, 2, '3,11'),
 ('USP-S | Monster Mashup (Factory New)', 'USP-S skin with Monster Mashup finish featuring custom paint job in factory new condition (Classified rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpoo6m1FBRp3_bGcjhQ09-jq5WYh8j_IbTamXhu5Mx2gv2PoIn03wziqUFqNzryd46dJARsaVnR8lPtxuq-h5K475yfmCAxvCkq7WGdwULJL1ALPg/512fx384f', 1, 7, 411.74, 5, '13,21,20'),
 ('M4A1-S | Imminent Danger (Well-Worn)', 'M4A1-S skin with Imminent Danger finish featuring gunsmith in well-worn condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpou-6kejhz2v_Nfz5H_uOxh7-Gw_alDK3UhH9Y78pOh-zF_Jn4xgW3_0FlNj_2dYbDdVU3MFqG_we-xe_tg8K8uZuYwXVh6XYh4X_dykGpwUYb-VH58g8/512fx384f', 13, 6, 1513.43, 13, '14,15,11'),
@@ -3026,7 +3026,7 @@ There are six patterns in Java Edition and seven in Bedrock Edition. Stack size:
 ('StatTrak™ Sawed-Off | Wasteland Princess (Minimal Wear)', 'Sawed-Off skin with Wasteland Princess finish featuring custom paint job in minimal wear condition (Classified rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpopbuyLgNv1fX3cih9-8yJh4GckvP7Nb3ummJW4NE_ieuX9I-h31Xi8xJvZzv7d4GRd1M2ZV7Y-AW5lOu6gZ67vM7MyHJhvj5iuygGQ5vxMQ/512fx384f', 11, 14, 306.11, 16, '13,9,16');
 
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('★ Survival Knife | Forest DDPAT (Minimal Wear)', 'Survival Knife skin with Forest DDPAT finish featuring hydrographic in minimal wear condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovbSsLQJf0PLGeC595MWJkISbluPLP7LWnn8fsJQh2bHAoNisi1Ky_0Rsa2n1dtOcIFc9aV_T_gC-w-zuhpTpv5TNyWwj5HfOFiPsEg/512fx384f', 11, 13, 2228.03, 7, '22,12,25'),
 ('StatTrak™ Dual Berettas | Elite 1.6 (Minimal Wear)', 'Dual Berettas skin with Elite 1.6 finish featuring gunsmith in minimal wear condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpos7asPwJf1OD3dShD4OOzmImfkuTLMLfQhXhY6_p9g-7J4cLwiVCy-EBuMjjzLYPAegc2ZV_Z-wXsyent0ZLovJzBm3dkvyki5HaPgVXp1m3aU6ho/512fx384f', 11, 11, 50.96, 6, '3,2'),
 ('★ StatTrak™ Flip Knife | Forest DDPAT (Battle-Scarred)', 'Flip Knife skin with Forest DDPAT finish featuring hydrographic in battle-scarred condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovbSsLQJf1f_BYQJK9eOykJCKg8j8NrrHjyUCuZxw2OjD84n2iwPmqhVrMmGiIYCQJANrZg6GrgK9xuu90J6_6s_P1zI97R9OdULH/512fx384f', 14, 13, 510.49, 10, '23,19'),
@@ -4030,7 +4030,7 @@ There are 3 kinds of mushroom blocks: red mushroom block, brown mushroom block a
 ('White Shulker Box', 'A shulker box is a block that can store and transport items. Stack size: 1. Perfect for Minecraft builders and adventurers.', 'https://minecraft-api.vercel.app/images/items/white_shulker_box.png', 6, 9, 302.93, 16, '17,18,1');
 
 
-INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, Price, Stock, Tags) VALUES
+INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId, StartingPrice, Stock, Tags) VALUES
 ('★ Survival Knife | Slaughter (Minimal Wear)', 'Survival Knife skin with Slaughter finish featuring anodized multicolored in minimal wear condition (Covert rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpovbSsLQJf0PLGeC597dGJjoWJhfbLP7LWnn8fu8Qn07zF89yjjlft_RJuZ2GlddCXcQ9oYV-D-FK6x-q8h8K86pibzWwj5HcehI_jEg/512fx384f', 11, 4, 2640.55, 6, '19,2,7'),
 ('MAG-7 | Rust Coat (Battle-Scarred)', 'MAG-7 skin with Rust Coat finish featuring patina in battle-scarred condition (Consumer Grade rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpou7uifDhhwszbZThH4OO_moaOhfn7DLPUl31IppJw3bnDoY_32AzkqBJuNW73LYaSdAZrYl6F-1K-yeq-gZ7pv5XBnHJ9-n51XHvgip8/512fx384f', 14, 12, 3.69, 11, '12,7'),
 ('SSG 08 | Detour (Minimal Wear)', 'SSG 08 skin with Detour finish featuring hydrographic in minimal wear condition (Mil-Spec rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpopamie19f2-r3Yi5FvISJmYGZnPLmDLfYkWNFpsd3i7CTp4-h0Qfs-0U5ZmzzctLGd1JrYVqEr1W_wO7vh8Tu7Zyfn3R9-n51etS7iBc/512fx384f', 11, 3, 45.14, 11, '24,16'),
@@ -4624,9 +4624,13 @@ INSERT INTO #TempProducts (Title, Description, ImageUrl, ConditionId, CategoryId
 ('StatTrak™ Glock-18 | Royal Legion (Battle-Scarred)', 'Glock-18 skin with Royal Legion finish featuring gunsmith in battle-scarred condition (Restricted rarity) Perfect for CS:GO collectors and players.', 'https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposbaqKAxf1OD3djFN79fnzL-KgPbmN4TZk2pH8Ysj2bqXpYqk3VWw-RZoNW70LNXAIAFoNQyG-AftwOfn0ZK5vMmfzCdgpGB8svC2tbLM/512fx384f', 14, 7, 41.91, 20, '14,23');
 
 
--- Insert into BuyProducts from temp table
-INSERT INTO BuyProducts (title, description, seller_id, condition_id, category_id, price, stock)
-SELECT Title, Description, ABS(CHECKSUM(NEWID())) % 5 + 1, ConditionId, CategoryId, Price, Stock
+-- Insert into AuctionProducts from temp table
+INSERT INTO AuctionProducts (title, description, seller_id, condition_id, category_id, starting_price, current_price, price, stock, start_datetime, end_datetime)
+SELECT Title, Description,
+       ABS(CHECKSUM(NEWID())) % 5 + 1, -- Random seller_id between 1-5
+       ConditionId, CategoryId, StartingPrice, StartingPrice, StartingPrice, Stock,
+       DATEADD(hour, ABS(CHECKSUM(NEWID())) % 168, GETDATE()), -- start_datetime (random within next week)
+       DATEADD(day, 7 + ABS(CHECKSUM(NEWID())) % 14, GETDATE())
 FROM #TempProducts;
 
 -- Get the range of inserted product IDs
@@ -4640,7 +4644,7 @@ DECLARE @TempId INT = 1;
 WHILE @CurrentId <= @LastProductId
 BEGIN
     -- Insert image
-    INSERT INTO BuyProductImages (product_id, url)
+    INSERT INTO AuctionProductsImages (product_id, url)
     SELECT @CurrentId, ImageUrl
     FROM #TempProducts
     WHERE TempId = @TempId AND ImageUrl != '';
@@ -4660,10 +4664,10 @@ BEGIN
         
         SET @TagId = CAST(SUBSTRING(@Tags, @Pos, @NextPos - @Pos) AS INT);
         -- Different column names for different product types
-        IF 'buy' = 'auction'
-            INSERT INTO BuyProductProductTags (ProductId, TagId) VALUES (@CurrentId, @TagId);
+        IF 'auction' = 'auction'
+            INSERT INTO AuctionProductProductTags (ProductId, TagId) VALUES (@CurrentId, @TagId);
         ELSE
-            INSERT INTO BuyProductProductTags (product_id, tag_id) VALUES (@CurrentId, @TagId);
+            INSERT INTO AuctionProductProductTags (product_id, tag_id) VALUES (@CurrentId, @TagId);
         
         SET @Pos = @NextPos + 1;
     END;
