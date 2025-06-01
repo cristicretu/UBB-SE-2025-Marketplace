@@ -7,6 +7,7 @@ using MarketMinds.Shared.Services.UserService;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Services.BorrowProductsService;
 using MarketMinds.Shared.Services.BuyProductsService;
+using MarketMinds.Shared.Services.AuctionProductsService;
 
 namespace WebMarketplace.Models
 {
@@ -286,47 +287,79 @@ namespace WebMarketplace.Models
                 {
                     int sellerId = Seller.Id;
                     int userId = Seller.User?.Id ?? 0;
-                    Console.WriteLine($"DEBUG: Loading products for Seller ID: {sellerId}, User ID: {userId} with pagination (offset: {offset}, count: {count}, search: '{search}')");
+                    Console.WriteLine($"DEBUG: Loading products for Seller ID: {sellerId}, Count: {count}, User ID: {userId} with pagination (offset: {offset}, count: {count}, search: '{search}')");
 
-                    // Get ALL products first (before filtering) to calculate total count
-                    var allBuyProducts = await _sellerService.GetAllProducts(sellerId);
-                    var allAuctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
-                    var sellerAuctionProducts = allAuctionProducts.Where(auction =>
-                        auction.SellerId == sellerId || auction.SellerId == userId).ToList();
-                    var allBorrowProducts = await _borrowProductsService.GetAllBorrowProductsAsync();
-                    var sellerBorrowProducts = allBorrowProducts.Where(borrow =>
-                        borrow.SellerId == sellerId || borrow.SellerId == userId).ToList();
+                    int borrowCount = 0;
+                    int auctionCount = 0;
+                    int buyCount = 0;
 
-                    // Calculate total count of ALL products (before any filtering)
-                    AllProductsCount = allBuyProducts.Count + sellerAuctionProducts.Count + sellerBorrowProducts.Count;
-
-                    // Now apply search filtering if needed
-                    if (!string.IsNullOrEmpty(search))
+                    // Use server-side filtering with sellerId parameter - THE SMART PAGINATION!
+                    Console.WriteLine($"DEBUG: About to call GetFilteredProductCount for Buy products with sellerId: {sellerId}, search: '{search}'");
+                    try 
                     {
-                        allBuyProducts = allBuyProducts.Where(p =>
-                            p.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                            p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
-
-                        sellerAuctionProducts = sellerAuctionProducts.Where(p =>
-                            p.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                            p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
-
-                        sellerBorrowProducts = sellerBorrowProducts.Where(p =>
-                            p.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                            p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+                        buyCount = ((MarketMinds.Shared.Services.BuyProductsService.BuyProductsService)_buyProductsService).GetFilteredProductCount(null, null, null, search, sellerId);
+                        Console.WriteLine($"DEBUG: Buy products count result: {buyCount}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"DEBUG: Exception in BuyProducts GetFilteredProductCount: {ex.Message}");
+                    }
+                    
+                    Console.WriteLine($"DEBUG: About to call GetFilteredAuctionProductCountAsync with sellerId: {sellerId}, search: '{search}'");
+                    try 
+                    {
+                        auctionCount = await _auctionProductService.GetFilteredAuctionProductCountAsync(null, null, null, search, sellerId);
+                        Console.WriteLine($"DEBUG: Auction products count result: {auctionCount}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"DEBUG: Exception in AuctionProducts GetFilteredAuctionProductCountAsync: {ex.Message}");
+                    }
+                    
+                    Console.WriteLine($"DEBUG: About to call GetFilteredProductCount for Borrow products with sellerId: {sellerId}, search: '{search}'");
+                    try 
+                    {
+                        borrowCount = _borrowProductsService.GetFilteredProductCount(conditionIds: null, categoryIds: null, maxPrice: null, searchTerm: search, sellerId: sellerId);
+                        Console.WriteLine($"DEBUG: Borrow products count result: {borrowCount}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"DEBUG: Exception in BorrowProducts GetFilteredProductCount: {ex.Message}");
                     }
 
-                    // Set filtered count for pagination
-                    TotalProductCount = allBuyProducts.Count + sellerAuctionProducts.Count + sellerBorrowProducts.Count;
-                    Console.WriteLine($"DEBUG: Total products for seller {sellerId}: {TotalProductCount} filtered, {AllProductsCount} total ({allBuyProducts.Count} buy + {sellerAuctionProducts.Count} auction + {sellerBorrowProducts.Count} borrow)");
+                    // Calculate total counts without search filter
+                    AllProductsCount = ((MarketMinds.Shared.Services.BuyProductsService.BuyProductsService)_buyProductsService).GetFilteredProductCount(null, null, null, null, sellerId) +
+                                      await _auctionProductService.GetFilteredAuctionProductCountAsync(null, null, null, null, sellerId) +
+                                      _borrowProductsService.GetFilteredProductCount(conditionIds: null, categoryIds: null, maxPrice: null, searchTerm: null, sellerId: sellerId);
+                    
+                    TotalProductCount = buyCount + auctionCount + borrowCount;
+                    Console.WriteLine($"DEBUG: Total counts - Buy: {buyCount}, Auction: {auctionCount}, Borrow: {borrowCount}");
+                    Console.WriteLine($"DEBUG: AllProductsCount: {AllProductsCount}, TotalProductCount: {TotalProductCount}");
 
-                    // Combine all products for sorting and pagination
                     var allSellerProducts = new List<Product>();
-                    allSellerProducts.AddRange(allBuyProducts.Cast<Product>());
-                    allSellerProducts.AddRange(sellerAuctionProducts.Cast<Product>());
-                    allSellerProducts.AddRange(sellerBorrowProducts.Cast<Product>());
 
-                    // Apply sorting if requested (before pagination)
+                    // If no pagination (count = 0), load all products using server-side filtering
+                    if (count <= 0)
+                    {
+                        // Load all filtered products using server-side methods with sellerId
+                        // var buyProducts = ((BuyProductsService.BuyProductsService)_buyProductsService).GetFilteredProducts(0, 0, null, null, null, search, sellerId);
+                        // var auctionProducts = await _auctionProductService.GetFilteredAuctionProductsAsync(0, 0, null, null, null, search, sellerId);
+                        var borrowProducts = _borrowProductsService.GetFilteredProducts(0, 0, null, null, null, search, sellerId);
+
+                        // allSellerProducts.AddRange(buyProducts.Cast<Product>());
+                        // allSellerProducts.AddRange(auctionProducts.Cast<Product>());
+                        // allSellerProducts.AddRange(borrowProducts.Cast<Product>());
+
+                        Console.WriteLine($"DEBUG: Loaded all products without pagination - Total: {allSellerProducts.Count}");
+                    }
+                    else
+                    {
+                        // Implement smart pagination across product types using server-side methods
+                        // Order: Buy -> Auction -> Borrow
+                        allSellerProducts = await LoadProductsWithServerSidePagination(sellerId, offset, count, search, buyCount, auctionCount, borrowCount);
+                    }
+
+                    // Apply sorting if requested
                     if (sortAscending.HasValue)
                     {
                         if (sortAscending.Value)
@@ -341,32 +374,100 @@ namespace WebMarketplace.Models
                         }
                     }
 
-                    // Apply pagination if count > 0
-                    if (count > 0)
-                    {
-                        _filteredProducts = allSellerProducts.Skip(offset).Take(count).ToList();
-                        Console.WriteLine($"DEBUG: Applied pagination - showing {_filteredProducts.Count} products (offset: {offset}, count: {count})");
-                    }
-                    else
-                    {
-                        _filteredProducts = allSellerProducts;
-                        Console.WriteLine($"DEBUG: No pagination - showing all {_filteredProducts.Count} products");
-                    }
+                    _filteredProducts = allSellerProducts;
+                    _allProducts = allSellerProducts; // For client-side operations if needed
 
-                    // Store all products for client-side operations (if needed)
-                    _allProducts = allSellerProducts;
-
+                    Console.WriteLine($"DEBUG: Final result - showing {_filteredProducts.Count} products");
                     OnPropertyChanged(nameof(Products));
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error loading products: {ex.Message}");
+                    Console.WriteLine($"Stack trace: {ex.StackTrace}");
                     TotalProductCount = 0;
                     AllProductsCount = 0;
                     _filteredProducts = new List<Product>();
                     _allProducts = new List<Product>();
                 }
             }
+        }
+
+        /// <summary>
+        /// Loads products with server-side pagination across different product types (Buy -> Auction -> Borrow).
+        /// Uses the GetFilteredProducts methods with sellerId parameter - THE REAL SMART PAGINATION!
+        /// </summary>
+        /// <param name="sellerId">The seller ID to filter by.</param>
+        /// <param name="offset">The starting offset for pagination.</param>
+        /// <param name="count">The number of products to load.</param>
+        /// <param name="search">The search term for filtering.</param>
+        /// <param name="buyCount">Total count of buy products.</param>
+        /// <param name="auctionCount">Total count of auction products.</param>
+        /// <param name="borrowCount">Total count of borrow products.</param>
+        /// <returns>A list of paginated products.</returns>
+        private async Task<List<Product>> LoadProductsWithServerSidePagination(int sellerId, int offset, int count, string? search,
+            int buyCount, int auctionCount, int borrowCount)
+        {
+            var result = new List<Product>();
+            int remainingCount = count;
+            int currentOffset = offset;
+
+            Console.WriteLine($"DEBUG: LoadProductsWithServerSidePagination - sellerId: {sellerId}, offset: {offset}, count: {count}");
+            Console.WriteLine($"DEBUG: Product counts - Buy: {buyCount}, Auction: {auctionCount}, Borrow: {borrowCount}");
+
+            // Phase 1: Buy Products
+            if (currentOffset < buyCount && remainingCount > 0)
+            {
+                int buyOffset = currentOffset;
+                int buyTake = Math.Min(remainingCount, buyCount - currentOffset);
+                
+                Console.WriteLine($"DEBUG: Loading buy products - offset: {buyOffset}, count: {buyTake}");
+                var buyProducts = ((MarketMinds.Shared.Services.BuyProductsService.BuyProductsService)_buyProductsService).GetFilteredProducts(buyOffset, buyTake, null, null, null, search, sellerId);
+                result.AddRange(buyProducts.Cast<Product>());
+                
+                remainingCount -= buyProducts.Count();
+                currentOffset = Math.Max(0, currentOffset - buyCount);
+                
+                Console.WriteLine($"DEBUG: Loaded {buyProducts.Count()} buy products, remaining: {remainingCount}");
+            }
+            else
+            {
+                currentOffset = Math.Max(0, currentOffset - buyCount);
+            }
+
+            // Phase 2: Auction Products
+            if (currentOffset < auctionCount && remainingCount > 0)
+            {
+                int auctionOffset = currentOffset;
+                int auctionTake = Math.Min(remainingCount, auctionCount - currentOffset);
+                
+                Console.WriteLine($"DEBUG: Loading auction products - offset: {auctionOffset}, count: {auctionTake}");
+                var auctionProducts = await _auctionProductService.GetFilteredAuctionProductsAsync(auctionOffset, auctionTake, null, null, null, search, sellerId);
+                result.AddRange(auctionProducts.Cast<Product>());
+                
+                remainingCount -= auctionProducts.Count();
+                currentOffset = Math.Max(0, currentOffset - auctionCount);
+                
+                Console.WriteLine($"DEBUG: Loaded {auctionProducts.Count()} auction products, remaining: {remainingCount}");
+            }
+            else
+            {
+                currentOffset = Math.Max(0, currentOffset - auctionCount);
+            }
+
+            // Phase 3: Borrow Products
+            if (currentOffset < borrowCount && remainingCount > 0)
+            {
+                int borrowOffset = currentOffset;
+                int borrowTake = Math.Min(remainingCount, borrowCount - currentOffset);
+                
+                Console.WriteLine($"DEBUG: Loading borrow products - offset: {borrowOffset}, count: {borrowTake}");
+                var borrowProducts = _borrowProductsService.GetFilteredProducts(borrowOffset, borrowTake, null, null, null, search, sellerId);
+                result.AddRange(borrowProducts.Cast<Product>());
+                
+            }
+
+            Console.WriteLine($"DEBUG: LoadProductsWithServerSidePagination complete - total loaded: {result.Count}");
+            return result;
         }
 
         /// <summary>
