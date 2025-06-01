@@ -389,7 +389,7 @@ namespace MarketMinds.Controllers
                 int oldStock = product.Stock;
 
                 // Calculate new stock (ensuring it doesn't go below 0)
-                int newStock = Math.Max(0, product.Stock - request.Quantity);
+                int newStock = Math.Max(0, request.Quantity);
 
                 // Update the product's stock
                 product.Stock = newStock;

@@ -703,7 +703,7 @@ namespace WebMarketplace.Controllers
                     System.Diagnostics.Debug.WriteLine($"Current stock for product {model.ProductId}: {buyProduct.Stock}");
 
                     // Calculate new stock
-                    int newStock = Math.Max(0, buyProduct.Stock - model.Quantity);
+                    int newStock = Math.Max(0, model.Quantity);
                     int oldStock = buyProduct.Stock;
 
                     // Update using service as intended

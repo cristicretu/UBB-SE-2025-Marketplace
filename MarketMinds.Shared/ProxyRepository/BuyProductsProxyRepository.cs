@@ -278,7 +278,7 @@ namespace MarketMinds.Shared.ProxyRepository
         /// <param name="id">Product ID</param>
         /// <param name="decreaseAmount">Amount to decrease from current stock</param>
         /// <returns>A task representing the asynchronous operation</returns>
-        public async Task UpdateProductStockAsync(int id, int decreaseAmount)
+        public async Task UpdateProductStockAsync(int id, int newStockQuantity)
         {
             if (httpClient == null || httpClient.BaseAddress == null)
             {
@@ -288,11 +288,11 @@ namespace MarketMinds.Shared.ProxyRepository
             try
             {
                 // Create simple request with just the quantity to decrease
-                var stockUpdateRequest = new { Quantity = decreaseAmount };
+                var stockUpdateRequest = new { Quantity = newStockQuantity };
 
                 // Use the dedicated stock update endpoint
                 string url = $"buyproducts/stock/{id}";
-                Console.WriteLine($"Sending POST request to update product {id} stock, decreasing by {decreaseAmount}");
+                Console.WriteLine($"Sending POST request to update product {id} stock with {newStockQuantity}");
 
                 var response = await httpClient.PostAsJsonAsync(url, stockUpdateRequest);
 
@@ -306,7 +306,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 }
 
                 await ThrowOnError(nameof(UpdateProductStockAsync), response);
-                Console.WriteLine($"Stock decreased successfully for product {id} by {decreaseAmount}");
+                Console.WriteLine($"Stock updated successfully for product {id} with {newStockQuantity}");
             }
             catch (Exception ex)
             {

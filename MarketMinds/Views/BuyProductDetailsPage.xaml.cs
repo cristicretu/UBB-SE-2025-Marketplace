@@ -10,6 +10,9 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
+using MarketMinds.Shared.Services.BuyProductsService;
+using MarketMinds.Shared.Helper;
+using MarketMinds.Shared.ProxyRepository;
 
 namespace MarketMinds.Views
 {
@@ -229,6 +232,55 @@ namespace MarketMinds.Views
                     XamlRoot = this.XamlRoot
                 };
                 await dialog.ShowAsync();
+            }
+        }
+
+        private async void UpdateStockButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Product == null || !IsCurrentUserSeller)
+            {
+                return;
+            }
+
+            // Read the new stock value from the NumberBox
+            int newStock = (int)(StockNumberBox.Value);
+
+            try
+            {
+                // Assume you have a BuyProductsService with an UpdateProductStockAsync method
+                var service = new BuyProductsService(new BuyProductsProxyRepository(App.Configuration));
+                await service.UpdateProductStockAsync(Product.Id, newStock);
+                // If the backend call succeeded, update local Product.Stock and fire PropertyChanged
+                Product.Stock = newStock;
+
+                OnPropertyChanged(nameof(Product));
+                OnPropertyChanged(nameof(HasStock));
+                OnPropertyChanged(nameof(IsLowStock));
+                OnPropertyChanged(nameof(StockText));
+                OnPropertyChanged(nameof(StockTextColor));
+                OnPropertyChanged(nameof(LowStockMessage));
+
+                // Optional: show a small confirmation dialog
+                var successDialog = new ContentDialog
+                {
+                    Title = "Stock Updated",
+                    Content = $"Stock for '{Product.Title}' is now {newStock}.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await successDialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error updating stock: {ex.Message}");
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "An error occurred while updating stock.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
             }
         }
 
