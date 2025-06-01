@@ -33,10 +33,10 @@ namespace MarketMinds.Views
         private bool isBuyer;
         private bool isSeller;
         private DispatcherTimer resizeTimer;
-        
+
         // Custom title bar fields
-        private AppWindow _apw;
-        private OverlappedPresenter _presenter;
+        private AppWindow appWindow;
+        private OverlappedPresenter presenter;
         private const int TitleBarHeight = 32;
 
         // Public property to expose ContentFrame for navigation from other classes
@@ -48,7 +48,7 @@ namespace MarketMinds.Views
 
             // Enable custom title bar
             ExtendsContentIntoTitleBar = true;
-            
+
             // Initialize custom title bar
             InitializeCustomTitleBar();
 
@@ -78,12 +78,12 @@ namespace MarketMinds.Views
                 // Get window handle and ID for AppWindow
                 IntPtr hWnd = WindowNative.GetWindowHandle(this);
                 WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-                _apw = AppWindow.GetFromWindowId(windowId);
-                _presenter = _apw.Presenter as OverlappedPresenter;
+                appWindow = AppWindow.GetFromWindowId(windowId);
+                presenter = appWindow.Presenter as OverlappedPresenter;
 
                 if (AppWindowTitleBar.IsCustomizationSupported())
                 {
-                    var titleBar = _apw.TitleBar;
+                    var titleBar = appWindow.TitleBar;
                     titleBar.ExtendsContentIntoTitleBar = true;
 
                     // Set transparent backgrounds for buttons
@@ -95,14 +95,22 @@ namespace MarketMinds.Views
                     var buttonPressedBackgroundBrush = Application.Current.Resources["SystemControlBackgroundListMediumBrush"] as SolidColorBrush;
 
                     if (buttonHoverBackgroundBrush != null)
+                    {
                         titleBar.ButtonHoverBackgroundColor = buttonHoverBackgroundBrush.Color;
+                    }
                     else
+                    {
                         titleBar.ButtonHoverBackgroundColor = Colors.Transparent;
+                    }
 
                     if (buttonPressedBackgroundBrush != null)
+                    {
                         titleBar.ButtonPressedBackgroundColor = buttonPressedBackgroundBrush.Color;
+                    }
                     else
+                    {
                         titleBar.ButtonPressedBackgroundColor = Colors.Transparent;
+                    }
 
                     // Set theme-aware foreground colors
                     var foregroundBrush = Application.Current.Resources["SystemControlForegroundBaseHighBrush"] as SolidColorBrush;
@@ -110,13 +118,19 @@ namespace MarketMinds.Views
                     var foregroundPressedBrush = Application.Current.Resources["SystemControlForegroundBaseMediumBrush"] as SolidColorBrush;
 
                     if (foregroundBrush != null)
+                    {
                         titleBar.ButtonForegroundColor = foregroundBrush.Color;
+                    }
 
                     if (foregroundHoverBrush != null)
+                    {
                         titleBar.ButtonHoverForegroundColor = foregroundHoverBrush.Color;
+                    }
 
                     if (foregroundPressedBrush != null)
+                    {
                         titleBar.ButtonPressedForegroundColor = foregroundPressedBrush.Color;
+                    }
 
                     // Set drag rectangles for title bar
                     SetTitleBarDragRectangles();
@@ -137,10 +151,10 @@ namespace MarketMinds.Views
         {
             try
             {
-                if (_apw?.TitleBar != null)
+                if (appWindow?.TitleBar != null)
                 {
-                    var titleBar = _apw.TitleBar;
-                    int windowWidth = (int)_apw.Size.Width;
+                    var titleBar = appWindow.TitleBar;
+                    int windowWidth = (int)appWindow.Size.Width;
                     int systemButtonsWidth = 138; // Width of minimize, maximize, close buttons
 
                     titleBar.SetDragRectangles(new RectInt32[]
@@ -168,8 +182,8 @@ namespace MarketMinds.Views
             try
             {
                 // Use the custom AppWindow if available, otherwise fall back to this.AppWindow
-                var appWindow = _apw ?? this.AppWindow;
-                
+                var appWindow = this.appWindow ?? this.AppWindow;
+
                 // Get the display area of the primary monitor
                 var displayArea = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Primary);
                 var workArea = displayArea.WorkArea;
@@ -198,7 +212,7 @@ namespace MarketMinds.Views
             // This ensures we only check minimum size after resizing stops
             resizeTimer.Stop();
             resizeTimer.Start();
-            
+
             // Update title bar drag rectangles
             SetTitleBarDragRectangles();
         }

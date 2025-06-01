@@ -1,8 +1,14 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Windowing;
+using Microsoft.UI;
+using Windows.Graphics;
+using WinRT.Interop;
+using Microsoft.UI.Xaml.Media;
+using XamlWindow = Microsoft.UI.Xaml.Window;
 
 namespace MarketMinds
 {
@@ -13,14 +19,25 @@ namespace MarketMinds
     {
         IntPtr WindowHandle { get; }
     }
-    public sealed partial class LoginWindow : Window
+    public sealed partial class LoginWindow : XamlWindow
     {
         private DispatcherTimer resizeTimer;
+
+        // Custom title bar fields
+        private AppWindow appWindow;
+        private OverlappedPresenter presenter;
+        private const int TitleBarHeight = 32;
 
         public LoginWindow()
         {
             this.InitializeComponent();
             this.Title = "MarketMinds";
+
+            // Enable custom title bar
+            ExtendsContentIntoTitleBar = true;
+
+            // Initialize custom title bar
+            InitializeCustomTitleBar();
 
             // Initialize resize timer
             resizeTimer = new DispatcherTimer();
@@ -62,6 +79,9 @@ namespace MarketMinds
             // This ensures we only check minimum size after resizing stops
             resizeTimer.Stop();
             resizeTimer.Start();
+
+            // Update title bar drag rectangles
+            SetTitleBarDragRectangles();
         }
 
         private void ResizeTimer_Tick(object sender, object e)
@@ -96,6 +116,105 @@ namespace MarketMinds
             if (needsResize)
             {
                 this.AppWindow.Resize(new Windows.Graphics.SizeInt32(newWidth, newHeight));
+            }
+        }
+
+        private void InitializeCustomTitleBar()
+        {
+            try
+            {
+                // Get window handle and ID for AppWindow
+                IntPtr hWnd = WindowNative.GetWindowHandle(this);
+                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+                appWindow = AppWindow.GetFromWindowId(windowId);
+                presenter = appWindow.Presenter as OverlappedPresenter;
+
+                if (AppWindowTitleBar.IsCustomizationSupported())
+                {
+                    var titleBar = appWindow.TitleBar;
+                    titleBar.ExtendsContentIntoTitleBar = true;
+
+                    // Set transparent backgrounds for buttons
+                    titleBar.ButtonBackgroundColor = Colors.Transparent;
+                    titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+                    // Get theme-aware brushes for button states
+                    var buttonHoverBackgroundBrush = Application.Current.Resources["SystemControlBackgroundListLowBrush"] as SolidColorBrush;
+                    var buttonPressedBackgroundBrush = Application.Current.Resources["SystemControlBackgroundListMediumBrush"] as SolidColorBrush;
+
+                    if (buttonHoverBackgroundBrush != null)
+                    {
+                        titleBar.ButtonHoverBackgroundColor = buttonHoverBackgroundBrush.Color;
+                    }
+                    else
+                    {
+                        titleBar.ButtonHoverBackgroundColor = Colors.Transparent;
+                    }
+
+                    if (buttonPressedBackgroundBrush != null)
+                    {
+                        titleBar.ButtonPressedBackgroundColor = buttonPressedBackgroundBrush.Color;
+                    }
+                    else
+                    {
+                        titleBar.ButtonPressedBackgroundColor = Colors.Transparent;
+                    }
+
+                    // Set theme-aware foreground colors
+                    var foregroundBrush = Application.Current.Resources["SystemControlForegroundBaseHighBrush"] as SolidColorBrush;
+                    var foregroundHoverBrush = Application.Current.Resources["SystemControlForegroundBaseHighBrush"] as SolidColorBrush;
+                    var foregroundPressedBrush = Application.Current.Resources["SystemControlForegroundBaseMediumBrush"] as SolidColorBrush;
+
+                    if (foregroundBrush != null)
+                    {
+                        titleBar.ButtonForegroundColor = foregroundBrush.Color;
+                    }
+
+                    if (foregroundHoverBrush != null)
+                    {
+                        titleBar.ButtonHoverForegroundColor = foregroundHoverBrush.Color;
+                    }
+
+                    if (foregroundPressedBrush != null)
+                    {
+                        titleBar.ButtonPressedForegroundColor = foregroundPressedBrush.Color;
+                    }
+
+                    // Set drag rectangles for title bar
+                    SetTitleBarDragRectangles();
+
+                    // Add padding to account for title bar height
+                    if (Content is FrameworkElement rootElement)
+                    {
+                        rootElement.Margin = new Thickness(0, TitleBarHeight, 0, 0);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Titlebar customization not supported: {ex.Message}");
+            }
+        }
+
+        private void SetTitleBarDragRectangles()
+        {
+            try
+            {
+                if (appWindow?.TitleBar != null)
+                {
+                    var titleBar = appWindow.TitleBar;
+                    int windowWidth = (int)appWindow.Size.Width;
+                    int systemButtonsWidth = 138; // Width of minimize, maximize, close buttons
+
+                    titleBar.SetDragRectangles(new RectInt32[]
+                    {
+                        new RectInt32(0, 0, windowWidth - systemButtonsWidth, TitleBarHeight)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error setting drag rectangles: {ex.Message}");
             }
         }
     }
