@@ -163,7 +163,7 @@
                                         
                                         <!-- Content Container -->
                                         <div id="notificationsContent">
-                                            @await Html.PartialAsync("_Notifications", currentUserId.HasValue ? await NotificationService.GetNotificationsForUser(currentUserId.Value) : new List<MarketMinds.Shared.Models.Notification>())
+                                            @await Html.PartialAsync("_Notifications", currentUserId.HasValue ? await NotificationService.GetUnreadNotificationsForUser(currentUserId.Value) : new List<MarketMinds.Shared.Models.Notification>())
                                         </div>
                                     </div>
                                 </div>
