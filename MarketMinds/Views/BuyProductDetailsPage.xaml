@@ -188,6 +188,12 @@
                                         </StackPanel>
                                     </StackPanel>
 
+                                    <StackPanel Orientation="Horizontal" Spacing="6" Visibility="{x:Bind IsCurrentUserBuyer, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                        <FontIcon Glyph="&#xE8A5;" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{x:Bind Product.Stock, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Stock: {0}'}"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+
                                     <StackPanel Visibility="{x:Bind IsCurrentUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
                                         <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
                                             CornerRadius="8"
