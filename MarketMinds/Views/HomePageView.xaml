@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Title="MarketMinds">
 
-    <Grid>
+    <Grid x:Name="ContentRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
