@@ -471,7 +471,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
 
             try
             {
-                var product = await GetProductByIdAsync(productId);
+                BuyProduct product = (BuyProduct)await GetProductByIdAsync(productId);
                 if (product == null)
                 {
                     throw new KeyNotFoundException($"Product with ID {productId} not found.");
