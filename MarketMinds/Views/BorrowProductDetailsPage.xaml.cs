@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -8,6 +8,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.Services.BorrowProductsService;
 
 namespace MarketMinds.Views
 {
@@ -502,5 +504,63 @@ namespace MarketMinds.Views
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        private async void UpdateDailyRateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Product == null || !IsCurrentUserSeller)
+                return;
+
+            // Read the new rate from NumberBox
+            double newRate = DailyRateNumberBox.Value;
+
+            // Store it on the model
+            Product.DailyRate = newRate;
+
+            try
+            {
+                // Use the “update entire product” method
+                var service = new BorrowProductsService();
+                bool success = await service.UpdateBorrowProductAsync(Product);
+
+                if (success)
+                {
+                    // Notify UI‐bindings that Product.DailyRate changed
+                    OnPropertyChanged(nameof(Product));
+
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Rate Updated",
+                        Content = $"Daily rate is now €{newRate:F2}.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    };
+                    await dialog.ShowAsync();
+                }
+                else
+                {
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = "Failed to save the new rate.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    };
+                    await dialog.ShowAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error updating daily rate: {ex.Message}");
+                var dialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "An error occurred while updating the daily rate.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+        }
     }
+
 } 
