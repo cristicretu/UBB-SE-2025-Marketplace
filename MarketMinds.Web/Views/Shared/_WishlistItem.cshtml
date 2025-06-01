@@ -3,16 +3,23 @@
 <div
     class="product-item bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:shadow-md border border-gray-200 cursor-pointer"
     onclick="window.location.href='@Url.Action("Details", "BuyProducts", new { id = Model.Id })'">
+    @{
+        int currentStock = Model.Stock; 
+
+        if (Model is MarketMinds.Shared.Models.BuyProduct buyProduct)
+        {
+            currentStock = buyProduct.Stock;
+        }
+    }
+
     <div class="relative">
         @{
             string imageUrl = string.Empty;
-            int currentStock = Model.Stock;
 
-            if (Model is MarketMinds.Shared.Models.BuyProduct buyProduct && buyProduct.Images != null &&
-            buyProduct.Images.Any())
+            if (Model is MarketMinds.Shared.Models.BuyProduct buyProduct2 && buyProduct2.Images != null &&
+            buyProduct2.Images.Any())
             {
-                imageUrl = buyProduct.Images.First().Url;
-                currentStock = buyProduct.Stock;
+                imageUrl = buyProduct2.Images.First().Url;
             }
         }
 
