@@ -6,6 +6,9 @@
 
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:grid lg:grid-cols-4 lg:gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-3">
         <!-- Header Section -->
         <div class="mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -182,5 +185,86 @@
                 </div>
             </div>
         }
+
+            </div>
+            <!-- End Main Content -->
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <i class="fas fa-map-marker-alt text-blue-500"></i>
+                        Discover Nearby Users
+                    </h3>
+                    
+                    @if (Model.SimilarAddressBuyers != null && Model.SimilarAddressBuyers.Any())
+                    {
+                        <p class="text-sm text-gray-600 mb-4">Users with similar shipping addresses:</p>
+                        <div class="space-y-3">
+                            @foreach (var similarBuyer in Model.SimilarAddressBuyers.Take(8))
+                            {
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                                            @{
+                                                var firstInitial = !string.IsNullOrEmpty(similarBuyer.FirstName) ? similarBuyer.FirstName.First().ToString().ToUpper() : "?";
+                                                var lastInitial = !string.IsNullOrEmpty(similarBuyer.LastName) ? similarBuyer.LastName.First().ToString().ToUpper() : "";
+                                            }
+                                            @firstInitial@lastInitial
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                @(!string.IsNullOrEmpty(similarBuyer.FirstName) ? similarBuyer.FirstName + " " + similarBuyer.LastName : "Anonymous User")
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                @if (similarBuyer.ShippingAddress != null)
+                                                {
+                                                    @similarBuyer.ShippingAddress.City@if (!string.IsNullOrEmpty(similarBuyer.ShippingAddress.Country)) {<text>, @similarBuyer.ShippingAddress.Country</text>}
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a href="@Url.Action("PublicProfile", "BuyerProfile", new { id = similarBuyer.Id })" 
+                                       class="text-blue-600 hover:text-blue-800 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                        
+                        @if (Model.SimilarAddressBuyers.Count > 8)
+                        {
+                            <div class="mt-4 text-center">
+                                <span class="text-sm text-gray-500">
+                                    And @(Model.SimilarAddressBuyers.Count - 8) more users in your area
+                                </span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-6">
+                            <div class="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-2">No users found in your area</p>
+                            <p class="text-xs text-gray-400">Make sure your shipping address is complete</p>
+                        </div>
+                    }
+
+                    <!-- Additional Info -->
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Users with matching city/country or postal code
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Sidebar -->
+
+        </div>
     </div>
 </div>

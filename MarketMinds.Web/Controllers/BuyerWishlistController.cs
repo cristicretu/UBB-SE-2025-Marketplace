@@ -45,13 +45,16 @@ namespace WebMarketplace.Controllers
         }
 
         /// <summary>
-        /// Gets the current user ID (placeholder - would be replaced with actual authentication)
+        /// Gets the current user ID
         /// </summary>
         /// <returns>The current user ID</returns>
         private int GetCurrentUserId()
         {
-            // This would be replaced with actual user authentication 
-            return UserSession.CurrentUserId ?? 1;
+            if (User.Identity.IsAuthenticated)
+            {
+                return UserSession.CurrentUserId ?? 0;
+            }
+            return 0;
         }
 
         /// <summary>
@@ -168,6 +171,9 @@ namespace WebMarketplace.Controllers
                         // Load friends' wishlists
                         await LoadFriendsWishlists(buyer, viewModel, debugInfo);
                     }
+
+                    // Load buyers with similar addresses for sidebar (for both modes)
+                    await LoadSimilarAddressBuyers(buyer, viewModel, debugInfo);
 
                     _logger.LogInformation("Wishlist loaded successfully in {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
 
@@ -416,6 +422,51 @@ namespace WebMarketplace.Controllers
             }
 
             return group;
+        }
+
+        /// <summary>
+        /// Loads buyers with similar shipping addresses for the sidebar
+        /// </summary>
+        /// <param name="buyer">The current buyer</param>
+        /// <param name="viewModel">The view model to populate</param>
+        /// <param name="debugInfo">Debug information</param>
+        private async Task LoadSimilarAddressBuyers(Buyer buyer, BuyerWishlistViewModel viewModel, StringBuilder debugInfo)
+        {
+            try
+            {
+                debugInfo.AppendLine("Loading buyers with similar addresses...");
+                
+                // Ensure buyer has shipping address loaded
+                if (buyer.ShippingAddress == null)
+                {
+                    await _buyerService.LoadBuyer(buyer, MarketMinds.Shared.Services.BuyerDataSegments.BasicInfo);
+                }
+
+                if (buyer.ShippingAddress != null)
+                {
+                    debugInfo.AppendLine($"Current buyer shipping address: {buyer.ShippingAddress.City}, {buyer.ShippingAddress.Country}, {buyer.ShippingAddress.PostalCode}");
+                    
+                    var similarBuyers = await _buyerService.FindBuyersWithShippingAddress(buyer.ShippingAddress);
+                    
+                    // Filter out the current buyer from the results
+                    var filteredBuyers = similarBuyers.Where(b => b.Id != buyer.Id).ToList();
+                    
+                    debugInfo.AppendLine($"Found {filteredBuyers.Count} buyers with similar addresses");
+                    
+                    viewModel.SimilarAddressBuyers = filteredBuyers;
+                }
+                else
+                {
+                    debugInfo.AppendLine("Current buyer has no shipping address");
+                    viewModel.SimilarAddressBuyers = new List<Buyer>();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading buyers with similar addresses for buyer {BuyerId}", buyer.Id);
+                debugInfo.AppendLine($"Error loading similar address buyers: {ex.Message}");
+                viewModel.SimilarAddressBuyers = new List<Buyer>();
+            }
         }
 
         /// <summary>

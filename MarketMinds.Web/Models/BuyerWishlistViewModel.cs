@@ -60,6 +60,11 @@ namespace WebMarketplace.Models
         public List<BuyerWishlistGroup> GroupedWishlistItems { get; set; } = new List<BuyerWishlistGroup>();
 
         /// <summary>
+        /// Gets or sets the list of buyers with similar shipping addresses
+        /// </summary>
+        public List<Buyer> SimilarAddressBuyers { get; set; } = new List<Buyer>();
+
+        /// <summary>
         /// Gets or sets the current view mode ("my" or "friends")
         /// </summary>
         public string ViewMode { get; set; } = "my";
