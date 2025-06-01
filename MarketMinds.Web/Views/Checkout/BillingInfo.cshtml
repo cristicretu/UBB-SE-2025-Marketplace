@@ -137,14 +137,14 @@
                                 {
                                     <div class="relative">
                                         <input type="radio" asp-for="SelectedPaymentMethod" value="cash" id="cash-payment" 
-                                               class="peer sr-only" />
+                                               class="sr-only" />
                                         <label for="cash-payment" 
-                                               class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:ring-2 peer-checked:ring-blue-500 transition-all">
-                                            <div class="flex items-center">
-                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full peer-checked:border-blue-500 peer-checked:bg-blue-500 relative">
-                                                    <div class="absolute inset-0 rounded-full peer-checked:bg-blue-500"></div>
+                                               class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-all">
+                                            <div class="flex items-center w-full">
+                                                <div class="radio-circle w-5 h-5 border-2 border-gray-300 rounded-full mr-3 relative flex items-center justify-center">
+                                                    <div class="radio-dot w-2 h-2 bg-white rounded-full opacity-0"></div>
                                                 </div>
-                                                <svg class="w-6 h-6 ml-3 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-6 h-6 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                                 </svg>
                                                 <div>
@@ -156,23 +156,23 @@
                                     </div>
                                 }
                                 
-                                @if (Model.IsCardEnabled)
+                                @if (Model.IsWalletEnabled)
                                 {
                                     <div class="relative">
-                                        <input type="radio" asp-for="SelectedPaymentMethod" value="card" id="card-payment" 
-                                               class="peer sr-only" />
-                                        <label for="card-payment" 
-                                               class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:ring-2 peer-checked:ring-blue-500 transition-all">
-                                            <div class="flex items-center">
-                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full peer-checked:border-blue-500 peer-checked:bg-blue-500 relative">
-                                                    <div class="absolute inset-0 rounded-full peer-checked:bg-blue-500"></div>
+                                        <input type="radio" asp-for="SelectedPaymentMethod" value="wallet" id="wallet-payment" 
+                                               class="sr-only" />
+                                        <label for="wallet-payment" 
+                                               class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-all">
+                                            <div class="flex items-center w-full">
+                                                <div class="radio-circle w-5 h-5 border-2 border-gray-300 rounded-full mr-3 relative flex items-center justify-center">
+                                                    <div class="radio-dot w-2 h-2 bg-white rounded-full opacity-0"></div>
                                                 </div>
-                                                <svg class="w-6 h-6 ml-3 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                                <svg class="w-6 h-6 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l5.9 3.9a2 2 0 002.2 0L17 8M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
                                                 <div>
-                                                    <p class="font-medium text-gray-900">Card Payment</p>
-                                                    <p class="text-sm text-gray-500">Secure credit/debit card payment</p>
+                                                    <p class="font-medium text-gray-900">Wallet Payment</p>
+                                                    <p class="text-sm text-gray-500">Pay using your digital wallet</p>
                                                 </div>
                                             </div>
                                         </label>
@@ -302,7 +302,7 @@
                         <div class="border-t border-gray-200 pt-3">
                             <div class="flex justify-between text-lg font-semibold text-gray-900">
                                 <span>Total:</span>
-                                <span>@Model.Total.ToString("0.00") €</span>
+                                <span class="total-amount">@Model.Total.ToString("0.00") €</span>
                             </div>
                         </div>
                     </div>
@@ -320,6 +320,9 @@
             if (document.getElementById('fillFromDatabase').checked) {
                 fillFormFromDatabase();
             }
+
+            // Add wallet balance functionality
+            initializeWalletBalance();
         });
 
         document.getElementById('fillFromDatabase').addEventListener('change', function() {
@@ -329,6 +332,137 @@
                 clearFormFields();
             }
         });
+
+        // Wallet Balance Functionality
+        function initializeWalletBalance() {
+            const walletRadio = document.getElementById('wallet-payment');
+            if (walletRadio) {
+                walletRadio.addEventListener('change', function() {
+                    if (this.checked) {
+                        loadWalletBalance();
+                    }
+                });
+
+                // If wallet is already selected on page load, show balance
+                if (walletRadio.checked) {
+                    loadWalletBalance();
+                }
+            }
+
+            // Add radio button styling functionality
+            initializeRadioButtons();
+        }
+
+        function initializeRadioButtons() {
+            const radioButtons = document.querySelectorAll('input[name="SelectedPaymentMethod"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateRadioButtonStyles();
+                });
+            });
+            
+            // Update styles on page load
+            updateRadioButtonStyles();
+        }
+
+        function updateRadioButtonStyles() {
+            const radioButtons = document.querySelectorAll('input[name="SelectedPaymentMethod"]');
+            radioButtons.forEach(radio => {
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                const circle = label?.querySelector('.radio-circle');
+                const dot = label?.querySelector('.radio-dot');
+                
+                if (radio.checked) {
+                    // Selected state
+                    label?.classList.add('border-blue-500', 'bg-blue-50', 'ring-2', 'ring-blue-500');
+                    label?.classList.remove('border-gray-300');
+                    circle?.classList.add('border-blue-500', 'bg-blue-500');
+                    circle?.classList.remove('border-gray-300');
+                    dot?.classList.remove('opacity-0');
+                    dot?.classList.add('opacity-100');
+                } else {
+                    // Unselected state
+                    label?.classList.remove('border-blue-500', 'bg-blue-50', 'ring-2', 'ring-blue-500');
+                    label?.classList.add('border-gray-300');
+                    circle?.classList.remove('border-blue-500', 'bg-blue-500');
+                    circle?.classList.add('border-gray-300');
+                    dot?.classList.add('opacity-0');
+                    dot?.classList.remove('opacity-100');
+                }
+            });
+        }
+
+        function loadWalletBalance() {
+            fetch('/Checkout/GetWalletBalance')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayWalletBalance(data.balance, data.formattedBalance);
+                    } else {
+                        showNotification('Error loading wallet balance: ' + (data.message || 'Unknown error'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching wallet balance:', error);
+                    showNotification('Error loading wallet balance. Please try again.', 'error');
+                });
+        }
+
+        function displayWalletBalance(balance, formattedBalance) {
+            const walletLabel = document.querySelector('label[for="wallet-payment"]');
+            if (walletLabel) {
+                // Remove existing balance display if any
+                const existingBalance = walletLabel.querySelector('.wallet-balance');
+                if (existingBalance) {
+                    existingBalance.remove();
+                }
+
+                // Get order total
+                const totalElement = document.querySelector('.total-amount');
+                let orderTotal = 0;
+                
+                if (totalElement) {
+                    const totalText = totalElement.textContent || '';
+                    // Extract number before €
+                    const match = totalText.match(/(\d+[.,]\d+)/);
+                    if (match) {
+                        orderTotal = parseFloat(match[1].replace(',', '.'));
+                    }
+                }
+                
+                // Convert to numbers for comparison
+                const walletBalance = parseFloat(balance);
+                const orderAmount = parseFloat(orderTotal);
+                
+                // Check if funds are sufficient
+                const hasInsufficientFunds = walletBalance < orderAmount;
+
+                // Add wallet balance display
+                const balanceDiv = document.createElement('div');
+                balanceDiv.className = 'wallet-balance mt-2 p-2 rounded bg-gray-50 border border-gray-200';
+                
+                balanceDiv.innerHTML = `
+                    <p class="text-xs text-gray-600">Current Balance: <span class="font-semibold ${hasInsufficientFunds ? 'text-red-600' : 'text-green-600'}">${formattedBalance}</span></p>
+                    ${hasInsufficientFunds ? '<p class="text-xs text-red-600 mt-1">⚠️ Insufficient funds for this order</p>' : '<p class="text-xs text-green-600 mt-1">✓ Sufficient funds available</p>'}
+                `;
+                
+                walletLabel.appendChild(balanceDiv);
+
+                // Disable form submission if insufficient funds
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    if (hasInsufficientFunds) {
+                        submitButton.disabled = true;
+                        submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+                        submitButton.title = 'Insufficient wallet balance';
+                    } else {
+                        submitButton.disabled = false;
+                        submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                        submitButton.title = '';
+                    }
+                }
+            }
+        }
 
         function fillFormFromDatabase() {
             fetch('/Checkout/GetBuyerBillingInfo')

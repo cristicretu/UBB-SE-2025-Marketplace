@@ -75,6 +75,36 @@ namespace WebMarketplace.Controllers
         }
 
         /// <summary>
+        /// API endpoint to get the current user's wallet balance
+        /// </summary>
+        /// <returns>JSON with wallet balance information</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetWalletBalance()
+        {
+            try
+            {
+                int userId = GetCurrentUserId();
+                if (userId == 0)
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                var walletBalance = await _dummyWalletService.GetWalletBalanceAsync(userId);
+
+                return Json(new
+                {
+                    success = true,
+                    balance = walletBalance,
+                    formattedBalance = $"{walletBalance:F2} €"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error retrieving wallet balance: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
         /// API endpoint to get buyer billing information for auto-filling the form
         /// </summary>
         /// <returns>JSON with buyer billing information</returns>
@@ -190,8 +220,25 @@ namespace WebMarketplace.Controllers
             if (model.SelectedPaymentMethod == "wallet")
             {
                 model.CalculateOrderTotal();
-                await ProcessWalletRefill(model);
-                System.Diagnostics.Debug.WriteLine("Wallet payment processed");
+                try
+                {
+                    await ProcessWalletRefill(model);
+                    System.Diagnostics.Debug.WriteLine("Wallet payment processed successfully");
+                }
+                catch (InvalidOperationException walletEx)
+                {
+                    // Handle wallet-specific errors (insufficient funds, authentication, etc.)
+                    ModelState.AddModelError(string.Empty, walletEx.Message);
+                    System.Diagnostics.Debug.WriteLine($"Wallet payment error: {walletEx.Message}");
+                    return View(model);
+                }
+                catch (Exception ex)
+                {
+                    // Handle other unexpected errors
+                    ModelState.AddModelError(string.Empty, "An error occurred while processing wallet payment. Please try again.");
+                    System.Diagnostics.Debug.WriteLine($"Unexpected wallet payment error: {ex.Message}");
+                    return View(model);
+                }
             }
             else
             {
@@ -315,7 +362,6 @@ namespace WebMarketplace.Controllers
             {
                 System.Diagnostics.Debug.WriteLine($"Error creating order (FULL EXCEPTION): {ex.ToString()}"); // Log full exception
                 ModelState.AddModelError(string.Empty, "An error occurred while creating your order. Please try again.");
-                ModelState.AddModelError(string.Empty, $"DEBUG: {ex.ToString()}"); // ADD FULL EXCEPTION TO MODELSTATE
                 model.CalculateOrderTotal();
                 return View(model);
             }
@@ -600,9 +646,36 @@ namespace WebMarketplace.Controllers
 
         private async Task ProcessWalletRefill(BillingInfoViewModel model)
         {
-            double walletBalance = await _dummyWalletService.GetWalletBalanceAsync(1);
-            double newBalance = walletBalance - model.Total;
-            await _dummyWalletService.UpdateWalletBalance(1, newBalance);
+            try
+            {
+                // Get the current user ID
+                int userId = GetCurrentUserId();
+                if (userId == 0)
+                {
+                    throw new InvalidOperationException("User not authenticated for wallet payment");
+                }
+
+                // Get current wallet balance
+                double walletBalance = await _dummyWalletService.GetWalletBalanceAsync(userId);
+                System.Diagnostics.Debug.WriteLine($"Current wallet balance for user {userId}: {walletBalance}");
+
+                // Check if user has sufficient funds
+                if (walletBalance < model.Total)
+                {
+                    throw new InvalidOperationException($"Insufficient wallet balance. Current balance: {walletBalance:F2} €, Required: {model.Total:F2} €");
+                }
+
+                // Deduct the amount from wallet
+                double newBalance = walletBalance - model.Total;
+                await _dummyWalletService.UpdateWalletBalance(userId, newBalance);
+
+                System.Diagnostics.Debug.WriteLine($"Wallet payment processed successfully. New balance: {newBalance:F2} €");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error processing wallet payment: {ex.Message}");
+                throw; // Re-throw to be handled by the calling method
+            }
         }
 
         [HttpPost]
