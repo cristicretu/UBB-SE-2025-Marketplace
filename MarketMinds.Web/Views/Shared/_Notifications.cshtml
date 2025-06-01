@@ -49,7 +49,7 @@
         @if (Model.Any())
         {
             <div class="divide-y divide-gray-100">
-                @foreach (var notification in Model.Take(5).OrderByDescending(n => n.Timestamp)) // Limit to recent 5 notifications
+                @foreach (var notification in Model.OrderByDescending(n => n.Timestamp).Take(5)) // Limit to recent 5 notifications
                 {
                     <div class="p-4 hover:bg-gray-50 transition-colors duration-150 @(notification.IsRead ? "" : "bg-blue-50 border-l-4 border-l-blue-500")" data-notification-id="@notification.NotificationID">
                         <div class="flex items-start space-x-3">
