@@ -46,18 +46,6 @@
             <StackPanel Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}" 
                        Spacing="24">
 
-                <!-- Breadcrumb -->
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <HyperlinkButton Content="Home" 
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   Click="HomeButton_Click"/>
-                    <TextBlock Text=">" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                    <TextBlock Text="Auction Products" 
-                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
-                              FontWeight="Medium"
-                              VerticalAlignment="Center"/>
-                </StackPanel>
-
                 <!-- Messages -->
                 <InfoBar x:Name="ErrorInfoBar"
                         IsOpen="{x:Bind ViewModel.HasErrorMessage, Mode=OneWay}"
@@ -76,12 +64,21 @@
                        CornerRadius="8" 
                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                        BorderThickness="1">
-                    <Grid ColumnDefinitions="1*,1*">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
                         
                         <!-- Product Images Section -->
-                        <StackPanel Grid.Column="0">
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
                             <!-- Main Image -->
-                            <Border Background="{ThemeResource LayerFillColorDefaultBrush}" Height="500" CornerRadius="8,0,0,0">
+                            <Border Grid.Row="0" Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}" MinHeight="500" CornerRadius="8,0,0,0">
                                 <Grid>
                                     <!-- Main Image Display -->
                                     <Image x:Name="MainImage" 
@@ -102,54 +99,58 @@
                                     
                                     <!-- Image Counter -->
                                     <Border x:Name="ImageCounterBorder"
-                                           Background="#80000000" 
-                                           CornerRadius="16"
+                                           Background="{ThemeResource SystemFillColorSolidNeutralBrush}" 
+                                           CornerRadius="12"
                                            Padding="12,6"
                                            Margin="16"
                                            HorizontalAlignment="Right"
                                            VerticalAlignment="Top">
                                         <TextBlock x:Name="ImageCounter" 
                                                   Text="1 / 1"
-                                                  Foreground="White" 
-                                                  FontSize="14"/>
+                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                                  FontSize="12"
+                                                  FontWeight="Medium"/>
                                     </Border>
                                 </Grid>
                             </Border>
 
                             <!-- Thumbnail Images -->
-                            <ScrollViewer x:Name="ThumbnailScroller"
+                            <ScrollViewer Grid.Row="1"
+                                         x:Name="ThumbnailScroller"
                                          HorizontalScrollMode="Auto" 
                                          HorizontalScrollBarVisibility="Auto"
                                          VerticalScrollMode="Disabled"
-                                         VerticalScrollBarVisibility="Disabled"
+                                         VerticalScrollBarVisibility="Hidden"
                                          Padding="16"
                                          Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                                <ItemsControl x:Name="ThumbnailsControl" ItemsSource="{x:Bind ViewModel.Images, Mode=OneWay}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" Spacing="12"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Width="64" Height="64" 
-                                                   CornerRadius="8"
-                                                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                   BorderThickness="2">
-                                                <Button Background="Transparent" 
-                                                       BorderThickness="0"
-                                                       Padding="0"
-                                                       CornerRadius="6"
-                                                       Click="ThumbnailImage_Click">
-                                                    <Image Source="{Binding Url}" 
-                                                          Stretch="UniformToFill"/>
-                                                </Button>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <ItemsControl x:Name="ThumbnailsControl" ItemsSource="{x:Bind ViewModel.Images, Mode=OneWay}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="12"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Width="64" Height="64" 
+                                                       CornerRadius="8"
+                                                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                       BorderThickness="2"
+                                                       Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}">
+                                                    <Button Background="Transparent" 
+                                                           BorderThickness="0"
+                                                           Padding="0"
+                                                           Click="ThumbnailImage_Click">
+                                                        <Image Source="{Binding Url}" 
+                                                              Stretch="UniformToFill"/>
+                                                    </Button>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </ScrollViewer>
-                        </StackPanel>
+                        </Grid>
 
                         <!-- Product Information Section -->
                         <StackPanel Grid.Column="1" Padding="32" Spacing="24">
@@ -294,51 +295,6 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- Owner Controls - Update End Date -->
-                            <StackPanel x:Name="OwnerControls" 
-                                       Spacing="12"
-                                       Visibility="{x:Bind ViewModel.IsOwner, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
-                                <TextBlock Text="Update Auction End Date" Style="{StaticResource SectionHeaderStyle}"/>
-
-                                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
-                                       CornerRadius="8" 
-                                       BorderBrush="{ThemeResource SystemAccentColor}" 
-                                       BorderThickness="1"
-                                       Padding="16">
-                                    <StackPanel Spacing="12">
-                                        <TextBlock Text="As the seller, you can extend the auction end date" 
-                                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
-                                                  FontSize="14"/>
-                                        
-                                        <StackPanel Spacing="8">
-                                            <TextBlock Text="New End Date" 
-                                                      FontWeight="Medium"
-                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                            <CalendarDatePicker x:Name="NewEndDatePicker"
-                                                               HorizontalAlignment="Stretch"
-                                                               PlaceholderText="Select new end date"
-                                                               DateChanged="NewEndDatePicker_DateChanged"/>
-                                        </StackPanel>
-                                        
-                                        <Button Background="{ThemeResource SystemAccentColor}"
-                                               Foreground="{ThemeResource AccentButtonForeground}"
-                                               CornerRadius="8"
-                                               Padding="16,10"
-                                               HorizontalAlignment="Left"
-                                               Command="{x:Bind ViewModel.UpdateEndDateCommand}">
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <ProgressRing Width="16" Height="16" 
-                                                             IsActive="{x:Bind ViewModel.IsUpdatingEndDate, Mode=OneWay}"
-                                                             Visibility="{x:Bind ViewModel.IsUpdatingEndDate, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"/>
-                                                <FontIcon Glyph="&#xE8DF;" FontSize="16"
-                                                         Visibility="{x:Bind ViewModel.IsUpdatingEndDate, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}"/>
-                                                <TextBlock Text="Update End Date" FontWeight="Medium"/>
-                                            </StackPanel>
-                                        </Button>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-
                             <!-- Product Information Sections -->
                             <StackPanel Spacing="24">
                                 
@@ -411,6 +367,51 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+                                </StackPanel>
+
+                                <!-- Owner Controls - Update End Date -->
+                                <StackPanel x:Name="OwnerControls" 
+                                           Spacing="12"
+                                           Visibility="{x:Bind ViewModel.IsOwner, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
+                                    <TextBlock Text="Update Auction End Date" Style="{StaticResource SectionHeaderStyle}"/>
+
+                                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
+                                           CornerRadius="8" 
+                                           BorderBrush="{ThemeResource SystemAccentColor}" 
+                                           BorderThickness="1"
+                                           Padding="16">
+                                        <StackPanel Spacing="12">
+                                            <TextBlock Text="As the seller, you can extend the auction end date" 
+                                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                                      FontSize="14"/>
+                                            
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="New End Date" 
+                                                          FontWeight="Medium"
+                                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                <CalendarDatePicker x:Name="NewEndDatePicker"
+                                                                   HorizontalAlignment="Stretch"
+                                                                   PlaceholderText="Select new end date"
+                                                                   DateChanged="NewEndDatePicker_DateChanged"/>
+                                            </StackPanel>
+                                            
+                                            <Button Background="{ThemeResource SystemAccentColor}"
+                                                   Foreground="{ThemeResource AccentButtonForeground}"
+                                                   CornerRadius="8"
+                                                   Padding="16,10"
+                                                   HorizontalAlignment="Left"
+                                                   Command="{x:Bind ViewModel.UpdateEndDateCommand}">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <ProgressRing Width="16" Height="16" 
+                                                                 IsActive="{x:Bind ViewModel.IsUpdatingEndDate, Mode=OneWay}"
+                                                                 Visibility="{x:Bind ViewModel.IsUpdatingEndDate, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}"/>
+                                                    <FontIcon Glyph="&#xE8DF;" FontSize="16"
+                                                             Visibility="{x:Bind ViewModel.IsUpdatingEndDate, Mode=OneWay, Converter={StaticResource InvertedBoolVisibilityConverter}}"/>
+                                                    <TextBlock Text="Update End Date" FontWeight="Medium"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>

@@ -21,7 +21,33 @@ namespace MarketMinds.Views
         public BorrowProduct Product
         {
             get => product;
-            set => SetProperty(ref product, value);
+            set
+            {
+                if (SetProperty(ref product, value))
+                {
+                    // Notify all dependent properties when Product changes
+                    OnPropertyChanged(nameof(TotalImages));
+                    OnPropertyChanged(nameof(HasMultipleImages));
+                    OnPropertyChanged(nameof(ProductDescription));
+                    OnPropertyChanged(nameof(SellerName));
+                    OnPropertyChanged(nameof(SellerId));
+                    OnPropertyChanged(nameof(HasTags));
+                    OnPropertyChanged(nameof(IsAvailable));
+                    OnPropertyChanged(nameof(IsAvailableNow));
+                    OnPropertyChanged(nameof(IsFutureAvailable));
+                    OnPropertyChanged(nameof(IsCurrentlyBorrowed));
+                    OnPropertyChanged(nameof(AvailabilityText));
+                    OnPropertyChanged(nameof(AvailabilityColor));
+                    OnPropertyChanged(nameof(CategoryName));
+                    OnPropertyChanged(nameof(ConditionName));
+                    OnPropertyChanged(nameof(RemainingTime));
+                    OnPropertyChanged(nameof(DaysUntilAvailable));
+                    OnPropertyChanged(nameof(MinBorrowDate));
+                    OnPropertyChanged(nameof(MaxBorrowDate));
+                    OnPropertyChanged(nameof(MinWaitlistDate));
+                    OnPropertyChanged(nameof(MaxWaitlistDate));
+                }
+            }
         }
 
         // Image handling properties
@@ -36,7 +62,22 @@ namespace MarketMinds.Views
         public int TotalImages => Product?.Images?.Count() ?? 0;
         public bool HasMultipleImages => TotalImages > 1;
         public string ProductDescription => Product?.Description ?? "No description available.";
-        public string SellerName => Product?.Seller?.Username ?? "Unknown Seller";
+        
+        private string sellerName;
+        public string SellerName 
+        { 
+            get
+            {
+                if (Product?.Seller?.Username != null)
+                {
+                    Debug.WriteLine($"SellerName: Found seller username: {Product.Seller.Username}");
+                    return Product.Seller.Username;
+                }
+                Debug.WriteLine($"SellerName: No seller found. Product: {Product != null}, Seller: {Product?.Seller != null}, Username: {Product?.Seller?.Username}");
+                return "Unknown Seller";
+            }
+        }
+        
         public int SellerId => Product?.Seller?.Id ?? 0;
         public bool HasTags => Product?.Tags?.Any() == true;
 
@@ -70,9 +111,12 @@ namespace MarketMinds.Views
                 }
                 catch
                 {
-                    if (IsAvailableNow) return new SolidColorBrush(Microsoft.UI.Colors.Green);
-                    if (IsFutureAvailable) return new SolidColorBrush(Microsoft.UI.Colors.Orange);
-                    return new SolidColorBrush(Microsoft.UI.Colors.Red);
+                    // Fallback to theme-aware colors
+                    if (IsAvailableNow) 
+                        return (SolidColorBrush)Application.Current.Resources["SystemAccentColor"];
+                    if (IsFutureAvailable) 
+                        return (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"];
+                    return (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                 }
             }
         }
@@ -147,8 +191,20 @@ namespace MarketMinds.Views
             
             if (e.Parameter is BorrowProduct borrowProduct)
             {
+                Debug.WriteLine($"BorrowProductDetailsPage: Received product: {borrowProduct?.Title}");
+                Debug.WriteLine($"BorrowProductDetailsPage: Product ID: {borrowProduct?.Id}");
+                Debug.WriteLine($"BorrowProductDetailsPage: Seller ID: {borrowProduct?.SellerId}");
+                Debug.WriteLine($"BorrowProductDetailsPage: Seller object: {borrowProduct?.Seller != null}");
+                if (borrowProduct?.Seller != null)
+                {
+                    Debug.WriteLine($"BorrowProductDetailsPage: Seller Username: {borrowProduct.Seller.Username}");
+                }
+                
                 Product = borrowProduct;
                 InitializeProductData();
+                
+                // Load complete product data if seller information is missing
+                LoadCompleteProductData();
             }
             else
             {
@@ -158,6 +214,37 @@ namespace MarketMinds.Views
                 {
                     Frame.GoBack();
                 }
+            }
+        }
+
+        private async void LoadCompleteProductData()
+        {
+            if (Product == null) return;
+
+            try
+            {
+                // If seller information is missing, try to load the complete product
+                if (Product.Seller == null && Product.SellerId > 0)
+                {
+                    Debug.WriteLine($"Seller information missing, loading complete product data for ID: {Product.Id}");
+                    
+                    var service = new BorrowProductsService();
+                    var completeProduct = await service.GetBorrowProductByIdAsync(Product.Id);
+                    
+                    if (completeProduct != null)
+                    {
+                        Debug.WriteLine($"Loaded complete product with seller: {completeProduct.Seller?.Username}");
+                        Product = completeProduct;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Failed to load complete product data");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading complete product data: {ex.Message}");
             }
         }
 
@@ -491,13 +578,15 @@ namespace MarketMinds.Views
             Frame.Navigate(typeof(MarketMindsPage), 2);
         }
 
-        private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
             if (!Equals(field, value))
             {
                 field = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                return true;
             }
+            return false;
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -518,13 +607,13 @@ namespace MarketMinds.Views
 
             try
             {
-                // Use the “update entire product” method
+                // Use the "update entire product" method
                 var service = new BorrowProductsService();
                 bool success = await service.UpdateBorrowProductAsync(Product);
 
                 if (success)
                 {
-                    // Notify UI‐bindings that Product.DailyRate changed
+                    // Notify UI-bindings that Product.DailyRate changed
                     OnPropertyChanged(nameof(Product));
 
                     var dialog = new ContentDialog
