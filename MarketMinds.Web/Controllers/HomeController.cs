@@ -250,30 +250,62 @@ namespace MarketMinds.Web.Controllers
                 ViewBag.Categories = categories;
                 ViewBag.Conditions = conditions;
 
-                // Calculate min and max prices based on ALL product types (not just paginated ones)
-                var allPrices = new List<double>();
-
-                // Add buy product prices
-                if (buyProducts.Any())
+                // Calculate min and max prices using optimized GetMaxPriceAsync methods
+                try
                 {
-                    allPrices.AddRange(buyProducts.Select(p => p.Price));
-                }
+                    // Get maximum prices from each product type using optimized database queries
+                    double buyMaxPrice = 0;
+                    double auctionMaxPrice = 0;
+                    double borrowMaxPrice = 0;
 
-                // Add auction product current prices
-                if (auctionProducts.Any())
+                    // Call GetMaxPriceAsync methods in parallel for better performance
+                    var maxPriceTasks = new List<Task<double>>();
+                    
+                    // Buy products max price
+                    if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService buyService)
+                    {
+                        maxPriceTasks.Add(buyService.GetMaxPriceAsync());
+                    }
+                    else
+                    {
+                        maxPriceTasks.Add(Task.FromResult(0.0));
+                    }
+
+                    // Auction products max price
+                    if (_auctionProductService is MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService auctionService)
+                    {
+                        maxPriceTasks.Add(auctionService.GetMaxPriceAsync());
+                    }
+                    else
+                    {
+                        maxPriceTasks.Add(Task.FromResult(0.0));
+                    }
+
+                    // Borrow products max price
+                    maxPriceTasks.Add(_borrowProductsService.GetMaxPriceAsync());
+
+                    // Wait for all max price queries to complete
+                    var maxPrices = await Task.WhenAll(maxPriceTasks);
+                    buyMaxPrice = maxPrices[0];
+                    auctionMaxPrice = maxPrices[1];
+                    borrowMaxPrice = maxPrices[2];
+
+                    // Calculate overall maximum price across all product types
+                    double overallMaxPrice = Math.Max(Math.Max(buyMaxPrice, auctionMaxPrice), borrowMaxPrice);
+
+                    // Set price range - minimum is always 0, maximum is from database
+                    ViewBag.MinPrice = 0;
+                    ViewBag.MaxPrice = overallMaxPrice > 0 ? (int)Math.Ceiling(overallMaxPrice) : 1000; // Fallback to 1000 if no products
+
+                    _logger.LogInformation($"HOME: Dynamic price calculation - Buy: {buyMaxPrice}, Auction: {auctionMaxPrice}, Borrow: {borrowMaxPrice}, Overall Max: {overallMaxPrice}");
+                }
+                catch (Exception ex)
                 {
-                    allPrices.AddRange(auctionProducts.Select(p => p.CurrentPrice));
+                    _logger.LogError(ex, "Error calculating dynamic max prices, using fallback values");
+                    // Fallback to default values if there's an error
+                    ViewBag.MinPrice = 0;
+                    ViewBag.MaxPrice = 1000;
                 }
-
-                // Add borrow product daily rates
-                if (borrowProducts.Any())
-                {
-                    allPrices.AddRange(borrowProducts.Select(p => p.DailyRate));
-                }
-
-                // Set price range based on all products
-                ViewBag.MinPrice = allPrices.Any() ? (int)Math.Floor(allPrices.Min()) : 0;
-                ViewBag.MaxPrice = allPrices.Any() ? (int)Math.Ceiling(allPrices.Max()) : 1000;
 
                 // Add pagination metadata
                 ViewBag.CurrentOffset = offset;
