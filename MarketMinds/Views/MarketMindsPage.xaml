@@ -454,8 +454,7 @@
             <!-- My Products Toggle (Seller only) -->
             <StackPanel Grid.Row="1" Margin="0,0,0,16"
                        Visibility="{x:Bind IsCurrentUserSeller, Mode=OneWay, Converter={StaticResource BoolVisibilityConverter}}">
-                <ToggleSwitch x:Name="MyProductsToggle" 
-                             Header="My Products" 
+                <ToggleSwitch x:Name="MyProductsToggle"
                              OnContent="Show only my products"
                              OffContent="Show all products"
                              IsOn="{x:Bind ShowOnlyMyProducts, Mode=TwoWay}"
