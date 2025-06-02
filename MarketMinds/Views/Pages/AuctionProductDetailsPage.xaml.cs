@@ -27,4 +27,4 @@ namespace MarketMinds.Views.Pages
             }
         }
     }
-} 
+}

@@ -56,7 +56,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
         public void CreateReview_WithNullSeller_ThrowsArgumentException()
         {
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => 
+            var ex = Assert.Throws<ArgumentException>(() =>
                 reviewCreationService.CreateReview("Description", new List<Image>(), 4, null, testBuyer));
             Assert.That(ex.Message, Contains.Substring("One of the required objects is null"));
         }
@@ -65,7 +65,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
         public void CreateReview_WithNullBuyer_ThrowsArgumentException()
         {
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => 
+            var ex = Assert.Throws<ArgumentException>(() =>
                 reviewCreationService.CreateReview("Description", new List<Image>(), 4, testSeller, null));
             Assert.That(ex.Message, Contains.Substring("One of the required objects is null"));
         }
@@ -77,7 +77,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
             var serviceWithNullDependency = new TestableReviewCreationService(null);
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => 
+            var ex = Assert.Throws<ArgumentException>(() =>
                 serviceWithNullDependency.CreateReview("Description", new List<Image>(), 4, testSeller, testBuyer));
             Assert.That(ex.Message, Contains.Substring("One of the required objects is null"));
         }
@@ -116,7 +116,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
         public void UpdateReview_WithNullReview_ThrowsArgumentException()
         {
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => 
+            var ex = Assert.Throws<ArgumentException>(() =>
                 reviewCreationService.UpdateReview(null, "New Description", 4.0));
             Assert.That(ex.Message, Contains.Substring("Current review cannot be null"));
         }
@@ -155,7 +155,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
         public void EditReview_WithNullReview_ThrowsArgumentException()
         {
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => 
+            var ex = Assert.Throws<ArgumentException>(() =>
                 reviewCreationService.EditReview(null, "New Description", 4.0));
             Assert.That(ex.Message, Contains.Substring("Review cannot be null"));
         }
@@ -190,7 +190,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
         public void DeleteReview_WithNullReview_ThrowsArgumentException()
         {
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => 
+            var ex = Assert.Throws<ArgumentException>(() =>
                 reviewCreationService.DeleteReview(null));
             Assert.That(ex.Message, Contains.Substring("Review cannot be null"));
         }
@@ -201,7 +201,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
             // This test would verify that the call is delegated to the image service
             // However, since we don't have direct access to mock IImageUploadService
             // and it's internally created, we'll verify the method exists
-            Assert.DoesNotThrow(() => 
+            Assert.DoesNotThrow(() =>
                 reviewCreationService.ParseImagesString("test-image-string"));
         }
 
@@ -211,7 +211,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
             // This test would verify that the call is delegated to the image service
             // However, since we don't have direct access to mock IImageUploadService
             // and it's internally created, we'll verify the method exists
-            Assert.DoesNotThrow(() => 
+            Assert.DoesNotThrow(() =>
                 reviewCreationService.FormatImagesString(new List<Image>()));
         }
 
@@ -279,7 +279,7 @@ namespace MarketMinds.Test.Services.ReviewCreationServiceTest
 
         private class TestableReviewCreationService : ReviewCreationService
         {
-            public TestableReviewCreationService(ReviewsServiceMock reviewsServiceMock) 
+            public TestableReviewCreationService(ReviewsServiceMock reviewsServiceMock)
                 : base(reviewsServiceMock, null)
             {
                 // No need to set additional fields as reviewsServiceMock is directly passed to base constructor

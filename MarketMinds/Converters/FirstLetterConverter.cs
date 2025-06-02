@@ -1,5 +1,5 @@
-using Microsoft.UI.Xaml.Data;
 using System;
+using Microsoft.UI.Xaml.Data;
 
 namespace MarketMinds.Converters
 {
@@ -33,4 +33,4 @@ namespace MarketMinds.Converters
             throw new NotImplementedException();
         }
     }
-} 
+}

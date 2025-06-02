@@ -262,7 +262,7 @@ namespace MarketMinds.Web.Controllers
 
                     // Call GetMaxPriceAsync methods in parallel for better performance
                     var maxPriceTasks = new List<Task<double>>();
-                    
+
                     // Buy products max price
                     if (_buyProductsService is MarketMinds.Shared.Services.BuyProductsService.BuyProductsService maxPriceBuyService)
                     {

@@ -33,6 +33,10 @@
 		<SelfContained>true</SelfContained>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Content Remove="Assets\Image1.png" />
+	  <Content Remove="Assets\MarketMindsLogo.png" />
+	</ItemGroup>
+	<ItemGroup>
 	  <None Remove="Views\HomePageView.xaml" />
 	</ItemGroup>
 

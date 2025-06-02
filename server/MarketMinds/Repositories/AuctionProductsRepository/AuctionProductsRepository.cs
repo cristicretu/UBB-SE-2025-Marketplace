@@ -572,7 +572,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             {
                 var maxPrice = await context.AuctionProducts
                     .MaxAsync(p => (double?)p.CurrentPrice);
-                
+
                 return maxPrice ?? 0.0; // Return 0 if no products found
             }
             catch (Exception ex)

@@ -208,7 +208,7 @@ namespace MarketMinds.Controllers
         public IActionResult CreateBuyProduct([FromBody] BuyProduct product)
         {
             Console.WriteLine($"Received CreateBuyProduct request");
-            
+
             if (product == null)
             {
                 Console.WriteLine("Product is null");
@@ -305,7 +305,7 @@ namespace MarketMinds.Controllers
                         // For now, we'll skip this to get the basic product creation working
                     }
                 }
-                
+
                 var buyProductDTO = BuyProductMapper.ToDTO(product);
                 return CreatedAtAction(nameof(GetBuyProductById), new { id = product.Id }, buyProductDTO);
             }

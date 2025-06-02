@@ -435,7 +435,7 @@ namespace WebMarketplace.Controllers
             try
             {
                 debugInfo.AppendLine("Loading buyers with similar addresses...");
-                
+
                 // Ensure buyer has shipping address loaded
                 if (buyer.ShippingAddress == null)
                 {
@@ -445,14 +445,14 @@ namespace WebMarketplace.Controllers
                 if (buyer.ShippingAddress != null)
                 {
                     debugInfo.AppendLine($"Current buyer shipping address: {buyer.ShippingAddress.City}, {buyer.ShippingAddress.Country}, {buyer.ShippingAddress.PostalCode}");
-                    
+
                     var similarBuyers = await _buyerService.FindBuyersWithShippingAddress(buyer.ShippingAddress);
-                    
+
                     // Filter out the current buyer from the results
                     var filteredBuyers = similarBuyers.Where(b => b.Id != buyer.Id).ToList();
-                    
+
                     debugInfo.AppendLine($"Found {filteredBuyers.Count} buyers with similar addresses");
-                    
+
                     viewModel.SimilarAddressBuyers = filteredBuyers;
                 }
                 else

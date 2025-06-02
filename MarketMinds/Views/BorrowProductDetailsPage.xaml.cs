@@ -62,10 +62,10 @@ namespace MarketMinds.Views
         public int TotalImages => Product?.Images?.Count() ?? 0;
         public bool HasMultipleImages => TotalImages > 1;
         public string ProductDescription => Product?.Description ?? "No description available.";
-        
+
         private string sellerName;
-        public string SellerName 
-        { 
+        public string SellerName
+        {
             get
             {
                 if (Product?.Seller?.Username != null)
@@ -77,7 +77,7 @@ namespace MarketMinds.Views
                 return "Unknown Seller";
             }
         }
-        
+
         public int SellerId => Product?.Seller?.Id ?? 0;
         public bool HasTags => Product?.Tags?.Any() == true;
 
@@ -91,8 +91,16 @@ namespace MarketMinds.Views
         {
             get
             {
-                if (IsAvailableNow) return "Available Now";
-                if (IsFutureAvailable) return $"Available {Product?.StartDate?.ToString("MMM dd")}";
+                if (IsAvailableNow)
+                {
+                    return "Available Now";
+                }
+
+                if (IsFutureAvailable)
+                {
+                    return $"Available {Product?.StartDate?.ToString("MMM dd")}";
+                }
+
                 return "Borrowed";
             }
         }
@@ -104,18 +112,30 @@ namespace MarketMinds.Views
                 try
                 {
                     if (IsAvailableNow)
+                    {
                         return (SolidColorBrush)Application.Current.Resources["SystemFillColorSuccessBrush"];
+                    }
+
                     if (IsFutureAvailable)
+                    {
                         return (SolidColorBrush)Application.Current.Resources["SystemFillColorCautionBrush"];
+                    }
+
                     return (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                 }
                 catch
                 {
                     // Fallback to theme-aware colors
-                    if (IsAvailableNow) 
+                    if (IsAvailableNow)
+                    {
                         return (SolidColorBrush)Application.Current.Resources["SystemAccentColor"];
-                    if (IsFutureAvailable) 
+                    }
+
+                    if (IsFutureAvailable)
+                    {
                         return (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"];
+                    }
+
                     return (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                 }
             }
@@ -132,7 +152,10 @@ namespace MarketMinds.Views
                 {
                     var timeLeft = Product.EndDate.Value - DateTime.Now;
                     if (timeLeft <= TimeSpan.Zero)
+                    {
                         return "Borrowing period ended";
+                    }
+
                     return $"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m";
                 }
                 return "No end date specified";
@@ -172,9 +195,15 @@ namespace MarketMinds.Views
             get
             {
                 if (IsCurrentlyBorrowed && Product?.EndDate.HasValue == true)
+                {
                     return Product.EndDate.Value.AddDays(1);
+                }
+
                 if (IsFutureAvailable && Product?.StartDate.HasValue == true)
+                {
                     return Product.StartDate.Value.AddDays(1);
+                }
+
                 return DateTime.Now.AddDays(1);
             }
         }
@@ -188,7 +217,7 @@ namespace MarketMinds.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            
+
             if (e.Parameter is BorrowProduct borrowProduct)
             {
                 Debug.WriteLine($"BorrowProductDetailsPage: Received product: {borrowProduct?.Title}");
@@ -199,10 +228,10 @@ namespace MarketMinds.Views
                 {
                     Debug.WriteLine($"BorrowProductDetailsPage: Seller Username: {borrowProduct.Seller.Username}");
                 }
-                
+
                 Product = borrowProduct;
                 InitializeProductData();
-                
+
                 // Load complete product data if seller information is missing
                 LoadCompleteProductData();
             }
@@ -219,7 +248,10 @@ namespace MarketMinds.Views
 
         private async void LoadCompleteProductData()
         {
-            if (Product == null) return;
+            if (Product == null)
+            {
+                return;
+            }
 
             try
             {
@@ -227,10 +259,10 @@ namespace MarketMinds.Views
                 if (Product.Seller == null && Product.SellerId > 0)
                 {
                     Debug.WriteLine($"Seller information missing, loading complete product data for ID: {Product.Id}");
-                    
+
                     var service = new BorrowProductsService();
                     var completeProduct = await service.GetBorrowProductByIdAsync(Product.Id);
-                    
+
                     if (completeProduct != null)
                     {
                         Debug.WriteLine($"Loaded complete product with seller: {completeProduct.Seller?.Username}");
@@ -250,7 +282,10 @@ namespace MarketMinds.Views
 
         private void InitializeProductData()
         {
-            if (Product == null) return;
+            if (Product == null)
+            {
+                return;
+            }
 
             // Initialize image index
             if (Product.Images?.Any() == true)
@@ -302,7 +337,7 @@ namespace MarketMinds.Views
                 {
                     // Update the main image source directly
                     MainImage.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(imageUrl));
-                    
+
                     // Update current image index
                     if (Product?.Images != null)
                     {
@@ -324,7 +359,10 @@ namespace MarketMinds.Views
 
         private async void BorrowButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !CanInteractWithProduct) return;
+            if (Product == null || !CanInteractWithProduct)
+            {
+                return;
+            }
 
             var endDate = BorrowEndDatePicker.Date;
             if (endDate == null)
@@ -364,10 +402,10 @@ namespace MarketMinds.Views
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error borrowing product: {ex.Message}");
-                
+
                 BorrowResult.Text = "Error processing request";
                 BorrowResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red);
-                
+
                 var dialog = new ContentDialog
                 {
                     Title = "Error",
@@ -385,7 +423,10 @@ namespace MarketMinds.Views
 
         private async void ReturnButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !IsCurrentBorrower) return;
+            if (Product == null || !IsCurrentBorrower)
+            {
+                return;
+            }
 
             var confirmDialog = new ContentDialog
             {
@@ -397,7 +438,10 @@ namespace MarketMinds.Views
             };
 
             var result = await confirmDialog.ShowAsync();
-            if (result != ContentDialogResult.Primary) return;
+            if (result != ContentDialogResult.Primary)
+            {
+                return;
+            }
 
             try
             {
@@ -423,7 +467,7 @@ namespace MarketMinds.Views
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error returning product: {ex.Message}");
-                
+
                 var dialog = new ContentDialog
                 {
                     Title = "Error",
@@ -441,7 +485,10 @@ namespace MarketMinds.Views
 
         private async void JoinWaitlistButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !CanInteractWithProduct) return;
+            if (Product == null || !CanInteractWithProduct)
+            {
+                return;
+            }
 
             var endDate = WaitlistEndDatePicker.Date;
             if (endDate == null)
@@ -478,10 +525,10 @@ namespace MarketMinds.Views
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error joining waitlist: {ex.Message}");
-                
+
                 WaitlistResult.Text = "Error processing request";
                 WaitlistResult.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red);
-                
+
                 var dialog = new ContentDialog
                 {
                     Title = "Error",
@@ -499,7 +546,10 @@ namespace MarketMinds.Views
 
         private async void LeaveWaitlistButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product == null || !CanInteractWithProduct) return;
+            if (Product == null || !CanInteractWithProduct)
+            {
+                return;
+            }
 
             var confirmDialog = new ContentDialog
             {
@@ -511,7 +561,10 @@ namespace MarketMinds.Views
             };
 
             var result = await confirmDialog.ShowAsync();
-            if (result != ContentDialogResult.Primary) return;
+            if (result != ContentDialogResult.Primary)
+            {
+                return;
+            }
 
             try
             {
@@ -534,7 +587,7 @@ namespace MarketMinds.Views
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error leaving waitlist: {ex.Message}");
-                
+
                 var dialog = new ContentDialog
                 {
                     Title = "Error",
@@ -552,7 +605,10 @@ namespace MarketMinds.Views
 
         private void LeaveReviewButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Product?.Seller == null) return;
+            if (Product?.Seller == null)
+            {
+                return;
+            }
 
             // Navigate to review page or show review dialog
             // For now, just show a placeholder dialog
@@ -597,7 +653,9 @@ namespace MarketMinds.Views
         private async void UpdateDailyRateButton_Click(object sender, RoutedEventArgs e)
         {
             if (Product == null || !IsCurrentUserSeller)
+            {
                 return;
+            }
 
             // Read the new rate from NumberBox
             double newRate = DailyRateNumberBox.Value;
@@ -651,5 +709,4 @@ namespace MarketMinds.Views
             }
         }
     }
-
-} 
+}

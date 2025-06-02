@@ -248,10 +248,10 @@ namespace MarketMinds.ViewModels
         /// </summary>
         public double RatingValue
         {
-            get 
-            { 
+            get
+            {
                 Debug.WriteLine($"RatingValue getter called, returning: {this.trustScore}");
-                return this.trustScore; 
+                return this.trustScore;
             }
         }
 
@@ -278,14 +278,14 @@ namespace MarketMinds.ViewModels
         {
             Debug.WriteLine("LoadProfileAsync started - setting IsLoading to true");
             this.IsLoading = true;
-            
+
             try
             {
                 await this.LoadSellerProfile();
                 await this.LoadNotifications();
                 await this.LoadProducts();
                 await this.LoadFollowers();
-                
+
                 Debug.WriteLine("LoadProfileAsync completed - setting IsLoading to false");
                 this.IsLoading = false;
             }
@@ -326,15 +326,15 @@ namespace MarketMinds.ViewModels
             {
                 var trustScore = await this.sellerService.CalculateAverageReviewScore(this.seller.Id);
                 Debug.WriteLine($"Calculated trust score from service: {trustScore}");
-                
+
                 // Force update the property and notify UI multiple times to ensure RatingControl gets it
                 this.trustScore = trustScore;
                 Debug.WriteLine($"TrustScore backing field set to: {this.trustScore}");
-                
+
                 // Trigger property changed multiple ways
                 this.OnPropertyChanged(nameof(this.TrustScore));
                 Debug.WriteLine($"TrustScore property after manual OnPropertyChanged: {this.TrustScore}");
-                
+
                 // Also update through the property setter to ensure all notifications
                 this.TrustScore = trustScore;
                 Debug.WriteLine($"TrustScore property after property setter: {this.TrustScore}");
@@ -352,7 +352,7 @@ namespace MarketMinds.ViewModels
 
             // Property setters now automatically notify UI of changes
             this.OnPropertyChanged(nameof(this.DisplayName));
-            
+
             // Explicitly notify UI about TrustScore to ensure RatingControl updates
             this.OnPropertyChanged(nameof(this.TrustScore));
 
@@ -374,7 +374,7 @@ namespace MarketMinds.ViewModels
                 Debug.WriteLine("Dialog was shown");
                 return false;
             }
-            
+
             Debug.WriteLine("UpdateProfile called");
             if (this.seller != null)
             {
@@ -585,7 +585,7 @@ namespace MarketMinds.ViewModels
         public List<string> ValidateFields()
         {
             var errors = new List<string>();
-            
+
             // Clear all error messages first
             this.UsernameError = string.Empty;
             this.StoreNameError = string.Empty;
@@ -593,42 +593,42 @@ namespace MarketMinds.ViewModels
             this.PhoneNumberError = string.Empty;
             this.AddressError = string.Empty;
             this.DescriptionError = string.Empty;
-            
+
             // Validate Username
             if (string.IsNullOrWhiteSpace(this.Username))
             {
                 errors.Add("Username is required.");
                 this.UsernameError = "Username is required.";
             }
-            
+
             // Validate Store Name
             if (string.IsNullOrWhiteSpace(this.StoreName))
             {
                 errors.Add("Store name is required.");
                 this.StoreNameError = "Store name is required.";
             }
-            
+
             // Validate Email
             if (string.IsNullOrWhiteSpace(this.Email) || !this.Email.Contains("@"))
             {
                 errors.Add("Valid email is required.");
                 this.EmailError = "Valid email is required.";
             }
-            
+
             // Validate Phone Number (Romanian format: +40 followed by 9 digits)
             if (string.IsNullOrWhiteSpace(this.PhoneNumber) || !this.PhoneNumber.StartsWith("+40") || this.PhoneNumber.Length != 12)
             {
                 errors.Add("Valid phone number is required (+40 followed by 9 digits).");
                 this.PhoneNumberError = "Valid phone number is required (+40 followed by 9 digits).";
             }
-            
+
             // Validate Address
             if (string.IsNullOrWhiteSpace(this.StoreAddress))
             {
                 errors.Add("Store address is required.");
                 this.AddressError = "Store address is required.";
             }
-            
+
             // Validate Description
             if (string.IsNullOrWhiteSpace(this.StoreDescription))
             {

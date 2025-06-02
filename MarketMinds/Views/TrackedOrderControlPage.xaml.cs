@@ -35,7 +35,7 @@ namespace MarketMinds.Views
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            
+
             // Handle navigation parameter
             if (e.Parameter is int trackedOrderID)
             {
@@ -315,7 +315,7 @@ namespace MarketMinds.Views
             {
                 // Get the current frame and navigate back
                 Frame currentFrame = null;
-                
+
                 // Try to find the frame by walking up the visual tree
                 var parent = this.Parent;
                 while (parent != null && currentFrame == null)
@@ -327,7 +327,7 @@ namespace MarketMinds.Views
                     }
                     parent = (parent as FrameworkElement)?.Parent;
                 }
-                
+
                 // If we found a frame, navigate back
                 if (currentFrame != null)
                 {

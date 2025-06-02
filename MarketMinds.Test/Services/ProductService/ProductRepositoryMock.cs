@@ -68,7 +68,7 @@ namespace MarketMinds.Tests.Mocks
 
         public MockProductRepository() : base(null) { }
 
-        public  Task<string> GetProductByIdAsync(int productId)
+        public Task<string> GetProductByIdAsync(int productId)
         {
             if (_productStore.TryGetValue(productId, out var product))
             {

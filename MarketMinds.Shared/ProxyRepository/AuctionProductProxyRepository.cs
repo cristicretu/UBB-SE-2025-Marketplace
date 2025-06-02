@@ -256,17 +256,17 @@ namespace MarketMinds.Shared.ProxyRepository
             try
             {
                 var response = httpClient.PutAsJsonAsync($"auctionproducts/{auctionProduct.Id}", productToSend).Result;
-                
+
                 Console.WriteLine($"TRACE: PUT request completed. Status: {(int)response.StatusCode} {response.StatusCode}");
                 Console.WriteLine($"TRACE: Response headers: {response.Headers}");
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = response.Content.ReadAsStringAsync().Result;
                     Console.WriteLine($"TRACE: Error response content: {errorContent}");
                     Console.WriteLine($"TRACE: Request URL was: {httpClient.BaseAddress}auctionproducts/{auctionProduct.Id}");
                     Console.WriteLine($"TRACE: Request payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
-                    
+
                     throw new HttpRequestException($"Failed to update auction product. Status: {(int)response.StatusCode} {response.ReasonPhrase}. Error: {errorContent}");
                 }
 
