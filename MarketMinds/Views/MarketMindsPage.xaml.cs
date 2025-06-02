@@ -24,6 +24,39 @@ using MarketMinds.Shared.Services.ProductConditionService;
 
 namespace MarketMinds.Views
 {
+    /// <summary>
+    /// Static class to preserve filter settings across page navigations
+    /// </summary>
+    public static class MarketMindsPageFilterState
+    {
+        public static string SearchTerm { get; set; } = string.Empty;
+        public static double MaxPrice { get; set; } = 1000;
+        public static double ActualMaxPriceFromDatabase { get; set; } = 1000;
+        public static List<int> SelectedCategoryIds { get; set; } = new List<int>();
+        public static List<int> SelectedConditionIds { get; set; } = new List<int>();
+        public static bool ShowOnlyMyProducts { get; set; } = false;
+        public static int CurrentPageIndex { get; set; } = 0;
+        public static int ItemsPerPage { get; set; } = 10;
+        public static int ActiveTabIndex { get; set; } = 0;
+        public static bool IsInitialized { get; set; } = false;
+
+        /// <summary>
+        /// Resets all filter state to default values
+        /// </summary>
+        public static void Reset()
+        {
+            SearchTerm = string.Empty;
+            MaxPrice = ActualMaxPriceFromDatabase;
+            SelectedCategoryIds.Clear();
+            SelectedConditionIds.Clear();
+            ShowOnlyMyProducts = false;
+            CurrentPageIndex = 0;
+            ItemsPerPage = 10;
+            ActiveTabIndex = 0;
+            IsInitialized = true;
+        }
+    }
+
     public sealed partial class MarketMindsPage : Page, INotifyPropertyChanged
     {
         // Property changed event
@@ -113,6 +146,9 @@ namespace MarketMinds.Views
             {
                 if (SetProperty(ref currentPageIndex, value) && !isInitializing)
                 {
+                    // Save filter state when page changes
+                    SaveFilterState();
+
                     // Load data based on active tab
                     switch (ActiveTabIndex)
                     {
@@ -145,6 +181,9 @@ namespace MarketMinds.Views
             {
                 if (SetProperty(ref itemsPerPage, value) && !isInitializing)
                 {
+                    // Save filter state when items per page changes
+                    SaveFilterState();
+
                     // Reset to first page and trigger data loading based on active tab
                     CurrentPageIndex = 0;
                     // Explicitly call load method based on active tab
@@ -338,7 +377,13 @@ namespace MarketMinds.Views
             // Check if a specific tab index is passed as parameter
             if (e.Parameter is int tabIndex && tabIndex >= 0 && tabIndex <= 2)
             {
-                ProductsPivot.SelectedIndex = tabIndex;
+                MarketMindsPageFilterState.ActiveTabIndex = tabIndex;
+            }
+
+            // Restore filter state if previously initialized
+            if (MarketMindsPageFilterState.IsInitialized)
+            {
+                RestoreFilterState();
             }
         }
 
@@ -524,6 +569,9 @@ namespace MarketMinds.Views
         {
             CurrentPageIndex = 0; // Reset to first page when filters change
 
+            // Save the current filter state
+            SaveFilterState();
+
             // Reload data for the current tab with the applied filters
             switch (ActiveTabIndex)
             {
@@ -569,6 +617,9 @@ namespace MarketMinds.Views
             // Uncheck all category checkboxes by iterating through the data source
             ClearCategoryCheckboxes();
             ClearConditionCheckboxes();
+
+            // Save the cleared state
+            SaveFilterState();
 
             // Reset pagination to first page and reload data for the active tab
             ApplyFilters();
@@ -1058,6 +1109,9 @@ namespace MarketMinds.Views
             // Reset pagination when switching tabs
             CurrentPageIndex = 0;
 
+            // Save the filter state with the new tab
+            SaveFilterState();
+
             // Always load data when switching tabs to ensure fresh data with current pagination settings
             switch (ProductsPivot.SelectedIndex)
             {
@@ -1185,13 +1239,27 @@ namespace MarketMinds.Views
             {
                 var actualMaxPrice = await GetMaxPriceAsync();
                 ActualMaxPriceFromDatabase = actualMaxPrice;
-                MaxPrice = actualMaxPrice; // Set current filter to max by default
+                
+                // Update static state with the database max price
+                MarketMindsPageFilterState.ActualMaxPriceFromDatabase = actualMaxPrice;
+
+                // Only set MaxPrice to database max if we haven't restored from static state
+                if (!MarketMindsPageFilterState.IsInitialized)
+                {
+                    MaxPrice = actualMaxPrice; // Set current filter to max by default
+                    MarketMindsPageFilterState.MaxPrice = actualMaxPrice;
+                }
 
                 // Update the price slider maximum if it exists
                 if (PriceRangeSlider != null)
                 {
                     PriceRangeSlider.Maximum = ActualMaxPriceFromDatabase;
-                    PriceRangeSlider.Value = ActualMaxPriceFromDatabase; // Set to max by default
+                    
+                    // Only set value if we haven't restored from static state
+                    if (!MarketMindsPageFilterState.IsInitialized)
+                    {
+                        PriceRangeSlider.Value = ActualMaxPriceFromDatabase; // Set to max by default
+                    }
                 }
 
                 Debug.WriteLine($"Initialized max price from database: {ActualMaxPriceFromDatabase}");
@@ -1201,7 +1269,193 @@ namespace MarketMinds.Views
                 Debug.WriteLine($"Error initializing max price: {ex.Message}");
                 // Keep the default fallback values if there's an error
                 ActualMaxPriceFromDatabase = 1000;
-                MaxPrice = 1000;
+                if (!MarketMindsPageFilterState.IsInitialized)
+                {
+                    MaxPrice = 1000;
+                }
+                MarketMindsPageFilterState.ActualMaxPriceFromDatabase = 1000;
+            }
+        }
+
+        /// <summary>
+        /// Saves the current filter state to the static storage
+        /// </summary>
+        private void SaveFilterState()
+        {
+            MarketMindsPageFilterState.SearchTerm = SearchTerm;
+            MarketMindsPageFilterState.MaxPrice = MaxPrice;
+            MarketMindsPageFilterState.ActualMaxPriceFromDatabase = ActualMaxPriceFromDatabase;
+            MarketMindsPageFilterState.SelectedCategoryIds = new List<int>(selectedCategoryIds);
+            MarketMindsPageFilterState.SelectedConditionIds = new List<int>(selectedConditionIds);
+            MarketMindsPageFilterState.ShowOnlyMyProducts = ShowOnlyMyProducts;
+            MarketMindsPageFilterState.CurrentPageIndex = CurrentPageIndex;
+            MarketMindsPageFilterState.ItemsPerPage = ItemsPerPage;
+            MarketMindsPageFilterState.ActiveTabIndex = ActiveTabIndex;
+            MarketMindsPageFilterState.IsInitialized = true;
+
+            Debug.WriteLine($"Filter state saved - Tab: {ActiveTabIndex}, Search: '{SearchTerm}', MaxPrice: {MaxPrice}, Categories: {string.Join(",", selectedCategoryIds)}, Conditions: {string.Join(",", selectedConditionIds)}");
+        }
+
+        /// <summary>
+        /// Restores the filter state from static storage
+        /// </summary>
+        private void RestoreFilterState()
+        {
+            Debug.WriteLine("Restoring filter state...");
+
+            // Temporarily disable initialization flag to prevent data loading during restoration
+            var wasInitializing = isInitializing;
+            isInitializing = true;
+
+            try
+            {
+                // Restore basic filter properties
+                SearchTerm = MarketMindsPageFilterState.SearchTerm;
+                MaxPrice = MarketMindsPageFilterState.MaxPrice;
+                ActualMaxPriceFromDatabase = MarketMindsPageFilterState.ActualMaxPriceFromDatabase;
+                selectedCategoryIds = new List<int>(MarketMindsPageFilterState.SelectedCategoryIds);
+                selectedConditionIds = new List<int>(MarketMindsPageFilterState.SelectedConditionIds);
+                ShowOnlyMyProducts = MarketMindsPageFilterState.ShowOnlyMyProducts;
+                CurrentPageIndex = MarketMindsPageFilterState.CurrentPageIndex;
+                ItemsPerPage = MarketMindsPageFilterState.ItemsPerPage;
+                ActiveTabIndex = MarketMindsPageFilterState.ActiveTabIndex;
+
+                // Restore UI elements when they become available
+                this.Loaded += (s, e) => RestoreUIElements();
+
+                Debug.WriteLine($"Filter state restored - Tab: {ActiveTabIndex}, Search: '{SearchTerm}', MaxPrice: {MaxPrice}, Categories: {string.Join(",", selectedCategoryIds)}, Conditions: {string.Join(",", selectedConditionIds)}");
+            }
+            finally
+            {
+                isInitializing = wasInitializing;
+            }
+        }
+
+        /// <summary>
+        /// Restores UI elements to match the restored filter state
+        /// </summary>
+        private void RestoreUIElements()
+        {
+            try
+            {
+                // Restore search box
+                if (SearchBox != null)
+                {
+                    SearchBox.Text = SearchTerm;
+                }
+
+                // Restore price slider
+                if (PriceRangeSlider != null)
+                {
+                    PriceRangeSlider.Maximum = ActualMaxPriceFromDatabase;
+                    PriceRangeSlider.Value = MaxPrice;
+                }
+
+                // Restore My Products toggle
+                if (MyProductsToggle != null)
+                {
+                    MyProductsToggle.IsOn = ShowOnlyMyProducts;
+                }
+
+                // Restore items per page combo box
+                if (ItemsPerPageComboBox != null && ItemsPerPageComboBox.Items != null)
+                {
+                    foreach (ComboBoxItem item in ItemsPerPageComboBox.Items)
+                    {
+                        if (int.TryParse(item.Tag?.ToString(), out int value) && value == ItemsPerPage)
+                        {
+                            ItemsPerPageComboBox.SelectedItem = item;
+                            break;
+                        }
+                    }
+                }
+
+                // Restore pivot selection
+                if (ProductsPivot != null)
+                {
+                    ProductsPivot.SelectedIndex = ActiveTabIndex;
+                }
+
+                // Restore category and condition checkboxes (will be handled when UI loads)
+                RestoreCheckboxes();
+
+                Debug.WriteLine("UI elements restored successfully");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error restoring UI elements: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Restores the state of category and condition checkboxes
+        /// </summary>
+        private void RestoreCheckboxes()
+        {
+            // Use a dispatcher to ensure this runs after the UI is fully loaded
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                try
+                {
+                    // Restore category checkboxes
+                    if (CategoriesRepeater != null)
+                    {
+                        RestoreCheckboxesInRepeater(CategoriesRepeater, selectedCategoryIds);
+                    }
+
+                    // Restore condition checkboxes
+                    if (ConditionsRepeater != null)
+                    {
+                        RestoreCheckboxesInRepeater(ConditionsRepeater, selectedConditionIds);
+                    }
+
+                    Debug.WriteLine($"Checkboxes restored - Categories: {string.Join(",", selectedCategoryIds)}, Conditions: {string.Join(",", selectedConditionIds)}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error restoring checkboxes: {ex.Message}");
+                }
+            });
+        }
+
+        /// <summary>
+        /// Helper method to restore checkboxes in a repeater
+        /// </summary>
+        private void RestoreCheckboxesInRepeater(FrameworkElement repeater, List<int> selectedIds)
+        {
+            if (repeater?.Parent is ScrollViewer scrollViewer)
+            {
+                RestoreCheckboxesInContainer(scrollViewer, selectedIds);
+            }
+        }
+
+        /// <summary>
+        /// Recursively restores checkboxes in a container
+        /// </summary>
+        private void RestoreCheckboxesInContainer(DependencyObject container, List<int> selectedIds)
+        {
+            if (container == null || selectedIds == null || selectedIds.Count == 0)
+            {
+                return;
+            }
+
+            int childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(container);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(container, i);
+
+                if (child is CheckBox checkBox && checkBox.Tag != null)
+                {
+                    if (int.TryParse(checkBox.Tag.ToString(), out int id))
+                    {
+                        checkBox.IsChecked = selectedIds.Contains(id);
+                    }
+                }
+                else
+                {
+                    // Recursively search in child elements
+                    RestoreCheckboxesInContainer(child, selectedIds);
+                }
             }
         }
     }
