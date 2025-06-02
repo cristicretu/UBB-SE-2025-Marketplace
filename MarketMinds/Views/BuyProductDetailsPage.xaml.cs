@@ -84,7 +84,7 @@ namespace MarketMinds.Views
 
         // User role properties
         public bool IsCurrentUserBuyer => App.CurrentUser?.UserType == 2;
-        public bool IsCurrentUserSeller => App.CurrentUser?.UserType == 3;
+        public bool IsCurrentUserSeller => App.CurrentUser?.UserType == 3 && App.CurrentUser?.Id == Product?.Seller?.Id;
         public bool ShowLoginPrompt => !IsCurrentUserBuyer;
 
         // Wishlist display properties
