@@ -176,7 +176,7 @@ namespace MarketMinds.Views
 
         // User role properties
         public bool IsCurrentUserBuyer => App.CurrentUser?.UserType == 2;
-        public bool IsCurrentUserSeller => App.CurrentUser?.UserType == 3;
+        public bool IsCurrentUserSeller => App.CurrentUser?.UserType == 3 && App.CurrentUser?.Id == Product?.SellerId;
         public bool IsProductOwner => Product?.SellerId == App.CurrentUser?.Id;
         public bool CanInteractWithProduct => IsCurrentUserBuyer && !IsProductOwner;
         public bool ShowLoginPrompt => !IsCurrentUserBuyer;

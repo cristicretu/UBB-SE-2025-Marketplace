@@ -222,7 +222,7 @@ namespace MarketMinds.ViewModels
 
         public double MinimumBid => CurrentPrice + 0.01;
 
-        public bool IsOwner => App.CurrentUser?.Id == Product?.Seller?.Id;
+        public bool IsOwner => App.CurrentUser?.UserType == 3 && App.CurrentUser?.Id == Product?.Seller?.Id;
 
         public DateTime NewEndDate
         {
